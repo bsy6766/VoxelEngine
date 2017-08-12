@@ -5,37 +5,40 @@
 #include <GLFW\glfw3.h>
 #include <string>
 
-class Program;
-
-class Application
+namespace Voxel
 {
-private:
-	GLFWwindow* window;
+	class Program;
 
-	void initGLFW();
-	void initWindow();
-	void initGLEW();
-	void initOpenGL();
+	class Application
+	{
+	private:
+		GLFWwindow* window;
 
-	// GLFW callback func
-	static void glfwErrorCallback(int error, const char* description);
-	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-	static void glfwCursorPosCallback(GLFWwindow* window, double x, double y);
-	static void glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		void initGLFW();
+		void initWindow();
+		void initGLEW();
+		void initOpenGL();
 
-	// wd
-	std::string workingDirectory;
+		// GLFW callback func
+		static void glfwErrorCallback(int error, const char* description);
+		static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void glfwCursorPosCallback(GLFWwindow* window, double x, double y);
+		static void glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
-	// temp
-	GLuint vao;
-	GLuint vbo;
-	Program* program;
-public:
-	Application();
-	~Application();
+		// wd
+		std::string workingDirectory;
 
-	void init();
-	void run();
-};
+		// temp
+		GLuint vao;
+		GLuint vbo;
+		Program* program;
+	public:
+		Application();
+		~Application();
+
+		void init();
+		void run();
+	};
+}
 
 #endif

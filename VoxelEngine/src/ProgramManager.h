@@ -4,30 +4,33 @@
 #include <unordered_map>
 #include <string>
 
-class Program;
-class Shader;
-
-class ProgramManager
+namespace Voxel
 {
-private:
-	ProgramManager() = default;
-	~ProgramManager();
+	class Program;
+	class Shader;
 
-	// Delete copy, move, assign operators
-	ProgramManager(ProgramManager const&) = delete;             // Copy construct
-	ProgramManager(ProgramManager&&) = delete;                  // Move construct
-	ProgramManager& operator=(ProgramManager const&) = delete;  // Copy assign
-	ProgramManager& operator=(ProgramManager &&) = delete;      // Move assign
-
-	std::unordered_map<std::string, Program*> programs;
-public:
-	static ProgramManager& getInstance()
+	class ProgramManager
 	{
-		static ProgramManager instance;
-		return instance;
-	}
+	private:
+		ProgramManager() = default;
+		~ProgramManager();
 
-	Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
-};
+		// Delete copy, move, assign operators
+		ProgramManager(ProgramManager const&) = delete;             // Copy construct
+		ProgramManager(ProgramManager&&) = delete;                  // Move construct
+		ProgramManager& operator=(ProgramManager const&) = delete;  // Copy assign
+		ProgramManager& operator=(ProgramManager &&) = delete;      // Move assign
+
+		std::unordered_map<std::string, Program*> programs;
+	public:
+		static ProgramManager& getInstance()
+		{
+			static ProgramManager instance;
+			return instance;
+		}
+
+		Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
+	};
+}
 
 #endif

@@ -5,7 +5,7 @@ int main()
 {
 	std::cout << "Hello World!. Voxel Engine. 08.12.2017. Seung Youp Baek." << std::endl;
 
-	Application* app = new Application();
+	Voxel::Application* app = new Voxel::Application();
 	
 	try
 	{

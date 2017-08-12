@@ -3,7 +3,9 @@
 #include <fstream>	//file
 #include <sstream>	//string stream
 
-Shader::~Shader()
+using namespace Voxel;
+
+Voxel::Shader::~Shader()
 {
 }
 

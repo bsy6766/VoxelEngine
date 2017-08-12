@@ -3,29 +3,32 @@
 
 #include <GL\glew.h>
 
-class Shader;
-
-/**
-*	@class Program
-*	@brief OpenGL Program instance
-*/
-class Program
+namespace Voxel
 {
-protected:
-	Program() = default;
-private:
-	GLuint programObject;
+	class Shader;
 
-	bool init(Shader* vertexShader, Shader* fragmentShader);
+	/**
+	*	@class Program
+	*	@brief OpenGL Program instance
+	*/
+	class Program
+	{
+	protected:
+		Program() = default;
+	private:
+		GLuint programObject;
 
-	void checkLinkError();
-public:
-	~Program();
-	static Program* create(Shader* vertexShader, Shader* fragmentShader);
+		bool init(Shader* vertexShader, Shader* fragmentShader);
 
-	GLuint getObject();
+		void checkLinkError();
+	public:
+		~Program();
+		static Program* create(Shader* vertexShader, Shader* fragmentShader);
 
-	GLint attrib(const GLchar* attributeName);
-};
+		GLuint getObject();
+
+		GLint attrib(const GLchar* attributeName);
+	};
+}
 
 #endif PROGRAM_H

@@ -6,36 +6,39 @@
 
 #include <GL\glew.h>
 
-class Shader;
-
-class ShaderManager
+namespace Voxel
 {
-private:
-	ShaderManager() = default;
-	~ShaderManager();
+	class Shader;
 
-	// Delete copy, move, assign operators
-	ShaderManager(ShaderManager const&) = delete;             // Copy construct
-	ShaderManager(ShaderManager&&) = delete;                  // Move construct
-	ShaderManager& operator=(ShaderManager const&) = delete;  // Copy assign
-	ShaderManager& operator=(ShaderManager &&) = delete;      // Move assign
-
-	std::unordered_map<std::string, Shader*> vertexShaders;
-	std::unordered_map<std::string, Shader*> fragmentShaders;
-public:
-	static ShaderManager& getInstance()
+	class ShaderManager
 	{
-		static ShaderManager instance;
-		return instance;
-	}
+	private:
+		ShaderManager() = default;
+		~ShaderManager();
 
-	Shader* createShader(const std::string& name, const std::string& filePath, GLenum shaderType);
+		// Delete copy, move, assign operators
+		ShaderManager(ShaderManager const&) = delete;             // Copy construct
+		ShaderManager(ShaderManager&&) = delete;                  // Move construct
+		ShaderManager& operator=(ShaderManager const&) = delete;  // Copy assign
+		ShaderManager& operator=(ShaderManager &&) = delete;      // Move assign
 
-	bool addVertexShader(const std::string& name, Shader* vertexShader);
-	bool addFragmentShader(const std::string& name, Shader* fragmentShader);
+		std::unordered_map<std::string, Shader*> vertexShaders;
+		std::unordered_map<std::string, Shader*> fragmentShaders;
+	public:
+		static ShaderManager& getInstance()
+		{
+			static ShaderManager instance;
+			return instance;
+		}
 
-	Shader* getVertexShader(const std::string& name);
-	Shader* getFragmentShader(const std::string& name);
-};
+		Shader* createShader(const std::string& name, const std::string& filePath, GLenum shaderType);
+
+		bool addVertexShader(const std::string& name, Shader* vertexShader);
+		bool addFragmentShader(const std::string& name, Shader* fragmentShader);
+
+		Shader* getVertexShader(const std::string& name);
+		Shader* getFragmentShader(const std::string& name);
+	};
+}
 
 #endif

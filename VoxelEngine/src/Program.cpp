@@ -1,7 +1,9 @@
 #include "Program.h"
 #include "Shader.h"
 
-Program::~Program()
+using namespace Voxel;
+
+Voxel::Program::~Program()
 {
 }
 

@@ -1,6 +1,8 @@
 #include "ShaderManager.h"
 #include "Shader.h"
 
+using namespace Voxel;
+
 ShaderManager::~ShaderManager()
 {
 	for (auto it : vertexShaders)

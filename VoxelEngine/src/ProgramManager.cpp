@@ -1,6 +1,8 @@
 #include "ProgramManager.h"
 #include "Program.h"
 
+using namespace Voxel;
+
 ProgramManager::~ProgramManager()
 {
 	for (auto it : programs)
