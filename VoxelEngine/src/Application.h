@@ -3,6 +3,9 @@
 
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
+#include <string>
+
+class Program;
 
 class Application
 {
@@ -19,6 +22,14 @@ private:
 	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void glfwCursorPosCallback(GLFWwindow* window, double x, double y);
 	static void glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+	// wd
+	std::string workingDirectory;
+
+	// temp
+	GLuint vao;
+	GLuint vbo;
+	Program* program;
 public:
 	Application();
 	~Application();

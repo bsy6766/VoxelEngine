@@ -3,12 +3,36 @@
 #include <iostream>
 #include <glm\glm.hpp>
 
+#include <stdio.h>  /* defines FILENAME_MAX */
+#include <direct.h>
+
+#include <ShaderManager.h>
+#include <ProgramManager.h>
+
+#include <Shader.h>
+#include <Program.h>
+
 using std::cout;
 using std::endl;
 
 Application::Application()
 {
 	cout << "Creating Application" << endl;
+
+	char cCurrentPath[FILENAME_MAX];
+
+	if (!_getcwd(cCurrentPath, sizeof(cCurrentPath)))
+	{
+		workingDirectory = "";
+	}
+	else
+	{
+		cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+
+		this->workingDirectory = std::string(cCurrentPath);
+	}
+
+	cout << "Working Directory is: " << workingDirectory << endl;
 }
 
 Application::~Application()
@@ -30,6 +54,32 @@ void Application::init()
 	initWindow();
 	initGLEW();
 	initOpenGL();
+
+	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
+	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
+	program = ProgramManager::getInstance().createProgram("defaultProgram", vertexShader, fragmentShader);
+
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	GLfloat vertexData[] = {
+		//  X     Y     Z
+		0.0f, 1.0f, 0.0f,
+		-1.0f,-1.0f, 0.0f,
+		1.0f,-1.0f, 0.0f,
+	};
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(program->attrib("vert"));
+	glVertexAttribPointer(program->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void Application::initGLFW()
@@ -147,6 +197,14 @@ void Application::run()
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(program->getObject());
+
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+		glUseProgram(0);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
