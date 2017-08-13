@@ -4,7 +4,7 @@
 using namespace Voxel;
 
 // static initialize
-const unsigned int Chunk::TOTAL_CHUNK_SECTION_PER_CHUNK = 4;
+const unsigned int Chunk::TOTAL_CHUNK_SECTION_PER_CHUNK = 2;
 
 Chunk::Chunk()
 	: position(0)

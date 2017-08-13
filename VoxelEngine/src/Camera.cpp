@@ -41,14 +41,18 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 
 mat4 Camera::getProjection()
 {
-	return perspective(fovy, aspect, nears, fars);
+	auto mat = perspective(fovy, aspect, nears, fars);
+	//mat[2] = { 0, 0, 0, nears };
+	//mat[3] = { 0, 0, -1.0f, 0 };
+	return mat;
 }
 
 mat4 Camera::getMatrix()
 {
 	if (needUpdate)
 	{
-		curMatrix = getProjection() * getView();
+		//curMatrix = getProjection() * getView();
+		curMatrix = glm::translate(getProjection() * getOrientation(), -position);
 		needUpdate = false;
 	}
 
@@ -57,14 +61,18 @@ mat4 Camera::getMatrix()
 
 mat4 Camera::getView()
 {
-	return translate(getOrientation(), position);
+	// View matrix defined the position (location and orientation) of the camera
+	//return lookAt(position, vec3(0), vec3(0, 1, 0));
+	return glm::translate(getOrientation(), -position);
 }
 
 mat4 Camera::getOrientation()
 {
 	mat4 orientation = mat4(1.0f);
-	orientation = glm::rotate(orientation, angle.x, vec3(1, 0, 0));
-	orientation = glm::rotate(orientation, angle.y, vec3(0, 1, 0));
+	orientation = glm::rotate(orientation, glm::radians(angle.x), vec3(1, 0, 0));
+	orientation = glm::rotate(orientation, glm::radians(angle.y), vec3(0, 1, 0));
+	orientation = glm::rotate(orientation, glm::radians(angle.z), vec3(0, 0, 1));
+	std::cout << "updated orientation. angle = " << angle.x << ", " << angle.y << ", " << angle.z << std::endl;
 	return orientation;
 }
 
@@ -81,7 +89,7 @@ void Camera::setPosition(const vec3& position)
 
 void Camera::addPosition(const vec3 & distance)
 {
-	position += distance;
+	position += (distance * 1.0f);
 	needUpdate = true;
 }
 

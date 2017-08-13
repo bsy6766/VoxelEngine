@@ -49,7 +49,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	worldPosition.y = (static_cast<float>(y) - 0.5f) * CHUNK_SECTION_HEIGHT;
 
 	// Fill vector in order of width(x), length(z) and then height(y)
-	for (int i = 0; i < CHUNK_SECTION_HEIGHT; i--)
+	for (int i = 0; i > -CHUNK_SECTION_HEIGHT; i--)
 	{
 		for (int j = 0; j < CHUNK_SECTION_LENGTH; j++)
 		{

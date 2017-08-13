@@ -9,7 +9,8 @@
 #include <ProgramManager.h>
 
 #include <InputHandler.h>
-#include <functional>
+
+#include <World.h>
 
 // temp
 #include <Shader.h>
@@ -60,6 +61,11 @@ Application::~Application()
 		delete Camera::mainCamera;
 		Camera::mainCamera = nullptr;
 	}
+
+	if (world)
+	{
+		delete world;
+	}
 }
 
 void Application::init()
@@ -70,6 +76,7 @@ void Application::init()
 	initOpenGL();
 
 	initMainCamera();
+	initWorld();
 
 	//camera->setPosition(vec3(0, 0, 0));
 	lastTime = 0;
@@ -226,11 +233,20 @@ void Application::initOpenGL()
 {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
 }
 
 void Voxel::Application::initMainCamera()
 {
-	Camera::mainCamera = Camera::create(vec3(0, 0, -10.0f), 90.0f, 0.001f, 50.0f, 1280.0f / 720.0f);
+	Camera::mainCamera = Camera::create(vec3(0, 0.0f, -100.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
+}
+
+void Voxel::Application::initWorld()
+{
+	world = new World();
 }
 
 void Application::run()
@@ -246,14 +262,23 @@ void Application::run()
 
 		glUseProgram(program->getObject());
 
+		world->update(static_cast<float>(elapsed));
+
 		float speed = 0.3f;
 
-		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
-		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 1, 0));
-		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
+		if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_LEFT))
+		{
+			//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
+			tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 1, 0));
+			//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
+		}
+		if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_RIGHT))
+		{
+			tempTralsnate = glm::translate(tempTralsnate, vec3(10.0f * static_cast<float>(elapsed), 0, 0));
+		}
 
 		program->setUniformMat4("cameraMat", Camera::mainCamera->getMatrix());
-		program->setUniformMat4("modelMat", tempRotation);
+		program->setUniformMat4("modelMat", tempTralsnate * tempRotation);
 
 		glBindVertexArray(vao);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);

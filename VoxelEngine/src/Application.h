@@ -7,9 +7,12 @@
 #include <string>
 #include <iostream>
 
+#define GLM_FORCE_DEGREES
+
 namespace Voxel
 {
 	class Program;
+	class World;
 
 	class Application
 	{
@@ -21,12 +24,16 @@ namespace Voxel
 		void initGLEW();
 		void initOpenGL();
 		void initMainCamera();
+		void initWorld();
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
 
 		// wd
 		std::string workingDirectory;
+
+		// world
+		World* world;
 
 		// temp
 		GLuint vao;
@@ -36,6 +43,7 @@ namespace Voxel
 		double lastTime;
 		glm::vec3 angle = glm::vec3(0);
 		glm::mat4 tempRotation = glm::mat4(1.0f);
+		glm::mat4 tempTralsnate = glm::mat4(1.0f);
 	public:
 		Application();
 		~Application();

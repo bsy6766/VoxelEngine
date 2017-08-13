@@ -99,7 +99,7 @@ const std::vector<float> Cube::verticies = {
 */
 
 
-
+/*
 const std::vector<std::vector<float>> Cube::verticies = {
 	// x, y, z
 	{ 0.0f, -1.0f, 0.0f, },
@@ -110,6 +110,19 @@ const std::vector<std::vector<float>> Cube::verticies = {
 	{ 1.0f, 0.0f, 1.0f, },
 	{ 0.0f, -1.0f, 1.0f, },
 	{ 0.0f, 0.0f, 1.0f },
+};
+*/
+
+const std::vector<std::vector<float>> Cube::verticies = {
+	// x, y, z
+	{ -0.5f, -0.5f, -0.5f, },
+	{ -0.5f, 0.5f, -0.5f, },
+	{ 0.5f, -0.5f, -0.5f, },
+	{ 0.5f, 0.5f, -0.5f, },
+	{ 0.5f, -0.5f, 0.5f, },
+	{ 0.5f, 0.5f, 0.5f, },
+	{ -0.5f, -0.5f, 0.5f, },
+	{ -0.5f, 0.5f, 0.5f },
 };
 
 const std::vector<unsigned int> Cube::indicies = {
@@ -151,16 +164,36 @@ std::vector<float> Voxel::Cube::getVerticies(Face face, float r, float g, float 
 
 	for (auto vertex : verticies)
 	{
+		bool y = false;
+		if (vertex.at(1) == 0) y = true;
 		for (auto point : vertex)
 		{
-			allVerticies.push_back(point);
+			allVerticies.push_back(point * 25.0f);
 		}
 
-		if (counter % 2 == 0)
+		if (counter == 0)
 		{
-			allVerticies.push_back(r);
-			allVerticies.push_back(g);
-			allVerticies.push_back(b);
+			allVerticies.push_back(1);
+			allVerticies.push_back(0);
+			allVerticies.push_back(0);
+		}
+		else if (counter == 1)
+		{
+			allVerticies.push_back(1);
+			allVerticies.push_back(1);
+			allVerticies.push_back(1);
+		}
+		else if (counter == 2)
+		{
+			allVerticies.push_back(0);
+			allVerticies.push_back(1);
+			allVerticies.push_back(0);
+		}
+		else if (counter == 3)
+		{
+			allVerticies.push_back(0.0f);
+			allVerticies.push_back(0.0f);
+			allVerticies.push_back(1.0f);
 		}
 		else
 		{
@@ -168,6 +201,21 @@ std::vector<float> Voxel::Cube::getVerticies(Face face, float r, float g, float 
 			allVerticies.push_back(1.0f);
 			allVerticies.push_back(0.0f);
 		}
+
+		/*
+		if (counter < 4)
+		{
+			allVerticies.push_back(1);
+			allVerticies.push_back(y ? 1 : 0);
+			allVerticies.push_back(0);
+		}
+		else
+		{
+			allVerticies.push_back(0.0f);
+			allVerticies.push_back(y ? 1 : 0);
+			allVerticies.push_back(1.0f);
+		}
+		*/
 
 		counter++;
 	}
