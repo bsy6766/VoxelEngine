@@ -26,10 +26,10 @@ namespace Voxel
 		};
 
 	private:
-
-	public:
+		// This is static class. 
 		Cube() = delete;
 		~Cube() = delete;
+	public:
 		// Cube size of 1 oriented zero to positive
 		//const static std::vector<float> verticies;
 		const static std::vector<std::vector<float>> verticies;

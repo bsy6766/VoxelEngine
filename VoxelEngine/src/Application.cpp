@@ -54,9 +54,11 @@ Application::~Application()
 
 	glfwTerminate();
 
-	if (camera)
+	// Delete main Camera
+	if (Camera::mainCamera)
 	{
-		delete camera;
+		delete Camera::mainCamera;
+		Camera::mainCamera = nullptr;
 	}
 }
 
@@ -67,7 +69,8 @@ void Application::init()
 	initGLEW();
 	initOpenGL();
 
-	camera = Camera::create(vec3(0, 0, -10.0f), 90.0f, 0.001f, 50.0f, 1280.0f / 720.0f);
+	initMainCamera();
+
 	//camera->setPosition(vec3(0, 0, 0));
 	lastTime = 0;
 	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
@@ -225,6 +228,11 @@ void Application::initOpenGL()
 	glDepthFunc(GL_LESS);
 }
 
+void Voxel::Application::initMainCamera()
+{
+	Camera::mainCamera = Camera::create(vec3(0, 0, -10.0f), 90.0f, 0.001f, 50.0f, 1280.0f / 720.0f);
+}
+
 void Application::run()
 {
 	while (!glfwWindowShouldClose(window))
@@ -233,16 +241,18 @@ void Application::run()
 		auto elapsed = cur - lastTime;
 		lastTime = cur;
 
+		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program->getObject());
 
 		float speed = 0.3f;
+
 		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
 		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 1, 0));
 		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
 
-		program->setUniformMat4("cameraMat", camera->getMatrix());
+		program->setUniformMat4("cameraMat", Camera::mainCamera->getMatrix());
 		program->setUniformMat4("modelMat", tempRotation);
 
 		glBindVertexArray(vao);

@@ -10,7 +10,6 @@
 namespace Voxel
 {
 	class Program;
-	class Camera;
 
 	class Application
 	{
@@ -21,6 +20,7 @@ namespace Voxel
 		void initWindow();
 		void initGLEW();
 		void initOpenGL();
+		void initMainCamera();
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
@@ -33,7 +33,6 @@ namespace Voxel
 		GLuint vbo;
 		GLuint ibo;
 		Program* program;
-		Camera* camera;
 		double lastTime;
 		glm::vec3 angle = glm::vec3(0);
 		glm::mat4 tempRotation = glm::mat4(1.0f);
