@@ -1,9 +1,11 @@
 #include "Program.h"
 #include "Shader.h"
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace Voxel;
+using namespace glm;
 
-Voxel::Program::~Program()
+Program::~Program()
 {
 }
 
@@ -55,20 +57,47 @@ GLuint Program::getObject()
 	return programObject;
 }
 
-GLint Program::attrib(const GLchar * attributeName)
+GLint Program::getAttribLocation(const GLchar * attributeName)
 {
 	if (!attributeName)
 	{
 		throw std::runtime_error("Attribute name was null");
 	}
 
-	GLint attrib = glGetAttribLocation(programObject, attributeName);
-	if (attrib == -1)
+	GLint location = glGetAttribLocation(programObject, attributeName);
+	if (location == -1)
 	{
 		throw std::runtime_error(std::string("Program attribute not found: ") + attributeName);
 	}
 
-	return attrib;
+	return location;
+}
+
+GLint Program::getUniformLocation(const GLchar * uniformName)
+{
+	if (!uniformName)
+	{
+		throw std::runtime_error("Uniform name was null");
+	}
+
+	GLint location = glGetUniformLocation(programObject, uniformName);
+	if (location == -1)
+	{
+		throw std::runtime_error(std::string("Program uniform not found: ") + uniformName);
+	}
+
+	return location;
+}
+
+void Program::setUniformMat4(const GLint location, const mat4 & mat)
+{
+	glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(mat));
+}
+
+void Program::setUniformMat4(const std::string & name, const mat4 & mat)
+{
+	auto location = getUniformLocation(name.c_str());
+	return setUniformMat4(location, mat);
 }
 
 void Program::checkLinkError()

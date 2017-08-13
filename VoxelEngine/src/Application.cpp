@@ -1,7 +1,6 @@
 #include "Application.h"
 
 #include <iostream>
-#include <glm\glm.hpp>
 
 #include <stdio.h>  /* defines FILENAME_MAX */
 #include <direct.h>
@@ -9,8 +8,15 @@
 #include <ShaderManager.h>
 #include <ProgramManager.h>
 
+#include <InputHandler.h>
+#include <functional>
+
+// temp
 #include <Shader.h>
 #include <Program.h>
+#include <Camera.h>
+#include <glm\gtx\transform.hpp>
+#include <Cube.h>
 
 using std::cout;
 using std::endl;
@@ -47,6 +53,11 @@ Application::~Application()
 	}
 
 	glfwTerminate();
+
+	if (camera)
+	{
+		delete camera;
+	}
 }
 
 void Application::init()
@@ -56,30 +67,50 @@ void Application::init()
 	initGLEW();
 	initOpenGL();
 
+	camera = Camera::create(vec3(0, 0, -10.0f), 90.0f, 0.001f, 50.0f, 1280.0f / 720.0f);
+	//camera->setPosition(vec3(0, 0, 0));
+	lastTime = 0;
 	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
 	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
 	program = ProgramManager::getInstance().createProgram("defaultProgram", vertexShader, fragmentShader);
 
-
+	// Generate vertex array object
 	glGenVertexArrays(1, &vao);
+	// Bind it
 	glBindVertexArray(vao);
 
+	// Generate buffer object
 	glGenBuffers(1, &vbo);
+	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	GLfloat vertexData[] = {
-		//  X     Y     Z
-		0.0f, 1.0f, 0.0f,
-		-1.0f,-1.0f, 0.0f,
-		1.0f,-1.0f, 0.0f,
-	};
+	// Get cube verticies and indicies
+	std::vector<float> cubeVerticies = Cube::getVerticies(Cube::Face::ALL, 1.0f, 0.0f, 0.0f);
+	std::vector<unsigned int> cubeIndicies = Cube::getIndicies(Cube::Face::ALL);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+	// Load cube verticies
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVerticies) * cubeVerticies.size(), &cubeVerticies[0], GL_STATIC_DRAW);
+	// Enable verticies attrib
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	// unbind buffer
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glEnableVertexAttribArray(program->attrib("vert"));
-	glVertexAttribPointer(program->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// Generate indicies object
+	glGenBuffers(1, &ibo);
+	// Bind indicies
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	// Load indicies
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndicies) * cubeIndicies.size(), &cubeIndicies[0], GL_STATIC_DRAW);
+	// unbind buffer
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
@@ -158,9 +189,9 @@ void Application::initWindow()
 	// Set callbacks
 	glfwSetErrorCallback(glfwErrorCallback);
 	glfwSetWindowUserPointer(window, this);
-	glfwSetKeyCallback(window, glfwKeyCallback);
-	glfwSetCursorPosCallback(window, glfwCursorPosCallback);
-	glfwSetMouseButtonCallback(window, glfwMouseButtonCallback);
+	glfwSetKeyCallback(window, InputHandler::glfwKeyCallback);
+	glfwSetCursorPosCallback(window, InputHandler::glfwCursorPosCallback);
+	glfwSetMouseButtonCallback(window, InputHandler::glfwMouseButtonCallback);
 }
 
 void Application::initGLEW()
@@ -190,19 +221,33 @@ void Application::initGLEW()
 
 void Application::initOpenGL()
 {
-
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void Application::run()
 {
 	while (!glfwWindowShouldClose(window))
 	{
+		auto cur = glfwGetTime();
+		auto elapsed = cur - lastTime;
+		lastTime = cur;
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program->getObject());
 
+		float speed = 0.3f;
+		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
+		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 1, 0));
+		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
+
+		program->setUniformMat4("cameraMat", camera->getMatrix());
+		program->setUniformMat4("modelMat", tempRotation);
+
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
@@ -211,25 +256,13 @@ void Application::run()
 	}
 }
 
-void Application::glfwErrorCallback(int error, const char * description)
+void Voxel::Application::onMouseMove(double x, double y)
 {
-}
-
-void Application::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (action == GLFW_PRESS)
 	{
-		if (key == GLFW_KEY_ESCAPE)
-		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
+		std::cout << "cursor pos " << x << ", " << y << std::endl;
 	}
 }
 
-void Application::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
-{
-}
-
-void Application::glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void Application::glfwErrorCallback(int error, const char * description)
 {
 }

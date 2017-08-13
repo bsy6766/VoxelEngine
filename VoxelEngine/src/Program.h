@@ -2,6 +2,10 @@
 #define PROGRAM_H
 
 #include <GL\glew.h>
+#include <glm\glm.hpp>
+#include <string>
+
+using namespace glm;
 
 namespace Voxel
 {
@@ -27,7 +31,10 @@ namespace Voxel
 
 		GLuint getObject();
 
-		GLint attrib(const GLchar* attributeName);
+		GLint getAttribLocation(const GLchar* attributeName);
+		GLint getUniformLocation(const GLchar* uniformName);
+		void setUniformMat4(const GLint location, const mat4& mat);
+		void setUniformMat4(const std::string& name, const mat4& mat);
 	};
 }
 
