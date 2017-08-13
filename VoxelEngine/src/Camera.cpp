@@ -5,6 +5,8 @@
 using namespace Voxel;
 using namespace glm;
 
+Camera* Camera::mainCamera = nullptr;
+
 Camera::Camera()
 	: position(0, 0, 0)
 	, fovy(0)
@@ -12,6 +14,7 @@ Camera::Camera()
 	, nears(0)
 	, fars(0)
 	, angle(0, 0, 0)
+	, needUpdate(true)
 	, curMatrix(mat4(1.0f))
 {}
 
@@ -43,7 +46,13 @@ mat4 Camera::getProjection()
 
 mat4 Camera::getMatrix()
 {
-	return getProjection() * getView();
+	if (needUpdate)
+	{
+		curMatrix = getProjection() * getView();
+		needUpdate = false;
+	}
+
+	return curMatrix;
 }
 
 mat4 Camera::getView()
@@ -67,4 +76,42 @@ vec3 Camera::getPosition()
 void Camera::setPosition(const vec3& position)
 {
 	this->position = position;
+	needUpdate = true;
+}
+
+void Camera::addPosition(const vec3 & distance)
+{
+	position += distance;
+	needUpdate = true;
+}
+
+void Camera::setAngle(const vec3 & angle)
+{
+	this->angle = angle;
+	needUpdate = true;
+}
+
+void Camera::addAngle(const vec3 & angle)
+{
+	this->angle += angle;
+	needUpdate = true;
+}
+
+void Camera::wrapAngle()
+{
+	wrapAngle(angle.x);
+	wrapAngle(angle.y);
+	wrapAngle(angle.z);
+}
+
+void Camera::wrapAngle(float& axis)
+{
+	if (axis >= 360.0f)
+	{
+		axis -= 360.0f;
+	}
+	else if (axis < 0.0f)
+	{
+		axis += 360.0f;
+	}
 }

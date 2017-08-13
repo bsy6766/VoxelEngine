@@ -21,12 +21,19 @@ namespace Voxel
 
 		vec3 angle;
 
+		bool needUpdate;
+
 		mat4 curMatrix;
+
+		void wrapAngle();
+		void wrapAngle(float& axis);
 	public:
 		~Camera();
 
 		static Camera* create(const vec3& position, const float fovy, const float nears, const float fars, const float aspect);
 		
+		static Camera* mainCamera;
+
 		// Get projection
 		mat4 getProjection();
 		// Get matrix (projection * view)
@@ -36,6 +43,9 @@ namespace Voxel
 		vec3 getPosition();
 
 		void setPosition(const vec3& position);
+		void addPosition(const vec3& distance);
+		void setAngle(const vec3& angle);
+		void addAngle(const vec3& angle);
 	};
 }
 
