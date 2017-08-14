@@ -32,9 +32,9 @@ namespace Voxel
 		glm::ivec3 worldCoordinate;
 
 		// World position of block in the chunk section 
-		//glm::vec3 localPosition;
+		glm::vec3 localPosition;
 		// World Position of block
-		glm::vec3 position;
+		glm::vec3 worldPosition;
 
 		// Color
 		glm::vec3 color;

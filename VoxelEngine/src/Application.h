@@ -47,9 +47,6 @@ namespace Voxel
 
 		void init();
 		void run();
-
-		void onMouseMove(double x, double y);
-		void test(int i) {};
 	};
 }
 

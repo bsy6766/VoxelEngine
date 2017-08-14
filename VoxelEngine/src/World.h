@@ -59,6 +59,8 @@ namespace Voxel
 		// Updates (tick) the world.
 		void update(const float delta);
 		void render(const float delta);
+
+		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 	};
 }
 

@@ -199,8 +199,8 @@ void Application::initOpenGL()
 
 void Voxel::Application::initMainCamera()
 {
-	Camera::mainCamera = Camera::create(vec3(0, 0.0f, 20.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
-	//Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
+	Camera::mainCamera = Camera::create(vec3(0, 0.0f, -20.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
 }
 
 void Voxel::Application::initWorld()
@@ -223,6 +223,10 @@ void Application::updateTime()
 
 void Application::run()
 {
+	// reset cursor
+	glfwSetCursorPos(window, 0, 0);
+	InputHandler::getInstance().setCursorToCenter();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		updateTime();
@@ -235,13 +239,7 @@ void Application::run()
 	}
 }
 
-void Voxel::Application::onMouseMove(double x, double y)
-{
-	{
-		std::cout << "cursor pos " << x << ", " << y << std::endl;
-	}
-}
-
 void Application::glfwErrorCallback(int error, const char * description)
 {
+	std::cout << "[GLFW] Error: " << std::string(description) << std::endl;
 }

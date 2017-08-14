@@ -3,6 +3,7 @@
 #include <ChunkMap.h>
 #include <ChunkLoader.h>
 #include <ChunkMeshGenerator.h>
+#include <ChunkUtil.h>
 
 #include <InputHandler.h>
 #include <Camera.h>
@@ -39,6 +40,8 @@ World::World()
 
 	//initDebugCube();
 	initTestChunk();
+
+	input->setCursorToCenter();
 }
 
 World::~World()
@@ -111,9 +114,18 @@ void Voxel::World::initDebugCube()
 
 void Voxel::World::initTestChunk()
 {
+	glm::vec3 playerPosition = glm::vec3(0);
+	std::cout << "[World] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
+
+	// Only need player x and z to find which chunk that player is in. This is world position
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+
+	std::cout << "[World] Player is in chunk (" << chunkX << ", " << chunkZ << ")" << std::endl;
+
 	// init chunk map
 	chunkMap = new ChunkMap();
-	chunkMap->init(glm::vec3(0));
+	chunkMap->init();
 
 	// init loader
 	chunkLoader = new ChunkLoader();
@@ -124,24 +136,44 @@ void Voxel::World::initTestChunk()
 	chunkMeshGenerator->generateChunkMesh(chunkLoader, chunkMap);
 }
 
+glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
+{
+	float angle = 0;
+	if (axis.y == 1.0f)
+	{
+		angle = Camera::mainCamera->getAngleY();
+	}
+
+	angle += angleMod;
+
+	if (angle < 0) angle += 360.0f;
+	else if (angle >= 360.0f) angle -= 360.0f;
+
+	auto rotateMat = glm::rotate(mat4(1.0f), glm::radians(angle), axis);
+	auto movedDist = glm::inverse(rotateMat) * glm::vec4(0, 0, distance, 1);
+
+	return movedDist;
+}
+
+
 void World::update(const float delta)
 {
 	if (input->getKeyDown(GLFW_KEY_W))
 	{
-		Camera::mainCamera->addPosition(glm::vec3(0, 0, cameraMovementSpeed * delta));
+		Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
 	}
 	else if (input->getKeyDown(GLFW_KEY_S))
 	{
-		Camera::mainCamera->addPosition(glm::vec3(0, 0, -cameraMovementSpeed * delta));
+		Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
 	}
 
 	if (input->getKeyDown(GLFW_KEY_A))
 	{
-		Camera::mainCamera->addPosition(glm::vec3(cameraMovementSpeed * delta, 0, 0));
+		Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
 	}
 	else if (input->getKeyDown(GLFW_KEY_D))
 	{
-		Camera::mainCamera->addPosition(glm::vec3(-cameraMovementSpeed * delta, 0, 0));
+		Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
 	}
 
 	if (input->getKeyDown(GLFW_KEY_SPACE))
@@ -189,6 +221,8 @@ void World::update(const float delta)
 
 	float dx = xf - prevX;
 	float dy = yf - prevY;
+
+	//std::cout << "Cursor pos (" << xf << ", " << yf << ")" << std::endl;
 
 	if (dx != 0)
 	{

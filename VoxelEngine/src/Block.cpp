@@ -2,11 +2,13 @@
 
 #include <Color.h>
 #include <glm/gtx/transform.hpp>
+#include <ChunkUtil.h>
+#include <Utility.h>
 
 using namespace Voxel;
 
 Block::Block()
-	: position(0)
+	: worldPosition(0)
 	//, localPosition(0)
 	, localCoordinate(0)
 	, worldCoordinate(0)
@@ -37,21 +39,33 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	localCoordinate = position;
 	// World coordinate
 	worldCoordinate = localCoordinate;
-	worldCoordinate.x += 16.0f * chunkSectionPosition.x;
-	worldCoordinate.y += 16.0f * chunkSectionPosition.y;
-	worldCoordinate.z += 16.0f * chunkSectionPosition.z;
+	worldCoordinate.x += Constant::CHUNK_SECTION_WIDTH * chunkSectionPosition.x;
+	worldCoordinate.y += Constant::CHUNK_SECTION_HEIGHT * chunkSectionPosition.y;
+	worldCoordinate.z += Constant::CHUNK_SECTION_LENGTH * chunkSectionPosition.z;
 
 	// Not sure if I would need local position. TODO: add local position if needed
-	
-	// Calculate position of block in the world
-	this->position = glm::vec3(localCoordinate) + 0.5f;
+	this->localPosition = glm::vec3(localCoordinate) + 0.5f;
+
+	// Calculate world position of block in the world
+	this->worldPosition = localPosition;
+	this->worldPosition.x += (static_cast<float>(chunkSectionPosition.x) * Constant::CHUNK_SECTION_WIDTH);
+	this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
+	this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
 
 	// update matrix
-	matrix = glm::translate(glm::mat4(1.0f), this->position);
+	matrix = glm::translate(glm::mat4(1.0f), this->worldPosition);
 
 	color = Color::getRandomColor();
 
-	id = BLOCK_ID::GRASS;
+	auto rand = Utility::Random::randomInt100();
+	if (rand <= 100)
+	{
+		id = BLOCK_ID::GRASS;
+	}
+	else
+	{
+		id = BLOCK_ID::AIR;
+	}
 
 	return true;
 }
