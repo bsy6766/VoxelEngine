@@ -62,6 +62,7 @@ namespace Voxel
 		void addPosition(const vec3& distance);
 		void setAngle(const vec3& angle);
 		void addAngle(const vec3& angle);
+		float getAngleY();
 
 		void print();
 	};

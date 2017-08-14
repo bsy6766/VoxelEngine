@@ -111,6 +111,11 @@ void Camera::addAngle(const vec3 & angle)
 	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
 }
 
+float Voxel::Camera::getAngleY()
+{
+	return angle.y;
+}
+
 void Camera::wrapAngle()
 {
 	wrapAngle(angle.x);
