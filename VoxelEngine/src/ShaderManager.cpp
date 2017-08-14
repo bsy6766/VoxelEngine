@@ -5,25 +5,7 @@ using namespace Voxel;
 
 ShaderManager::~ShaderManager()
 {
-	for (auto it : vertexShaders)
-	{
-		if (it.second != nullptr)
-		{
-			delete it.second;
-		}
-	}
-
-	vertexShaders.clear();
-
-	for (auto it : fragmentShaders)
-	{
-		if (it.second != nullptr)
-		{
-			delete it.second;
-		}
-	}
-
-	fragmentShaders.clear();
+	releaseAll();
 }
 
 Shader * ShaderManager::createShader(const std::string& name, const std::string & filePath, GLenum shaderType)
@@ -116,4 +98,27 @@ Shader * ShaderManager::getFragmentShader(const std::string & name)
 	{
 		return find_it->second;
 	}
+}
+
+void Voxel::ShaderManager::releaseAll()
+{
+	for (auto it : vertexShaders)
+	{
+		if (it.second != nullptr)
+		{
+			delete it.second;
+		}
+	}
+
+	vertexShaders.clear();
+
+	for (auto it : fragmentShaders)
+	{
+		if (it.second != nullptr)
+		{
+			delete it.second;
+		}
+	}
+
+	fragmentShaders.clear();
 }

@@ -7,6 +7,7 @@ using namespace glm;
 
 Program::~Program()
 {
+	glDeleteProgram(programObject);
 }
 
 Program * Program::create(Shader * vertexShader, Shader * fragmentShader)

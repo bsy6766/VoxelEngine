@@ -30,6 +30,10 @@ namespace Voxel
 		}
 
 		Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
+
+		Program* getDefaultProgram();
+
+		void releaseAll();
 	};
 }
 

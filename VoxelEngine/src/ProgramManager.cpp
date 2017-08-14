@@ -5,16 +5,7 @@ using namespace Voxel;
 
 ProgramManager::~ProgramManager()
 {
-	for (auto it : programs)
-	{
-		if (it.second)
-		{
-			//second.release();
-			delete it.second;
-		}
-	}
-
-	programs.clear();
+	releaseAll();
 }
 
 Program * ProgramManager::createProgram(const std::string & name, Shader * vertexShader, Shader * fragmentShader)
@@ -40,3 +31,21 @@ Program * ProgramManager::createProgram(const std::string & name, Shader * verte
 	}
 }
 
+Program * Voxel::ProgramManager::getDefaultProgram()
+{
+	return programs["defaultProgram"];
+}
+
+void ProgramManager::releaseAll()
+{
+	for (auto it : programs)
+	{
+		if (it.second)
+		{
+			//second.release();
+			delete it.second;
+		}
+	}
+
+	programs.clear();
+}

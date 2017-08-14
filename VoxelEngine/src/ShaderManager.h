@@ -38,6 +38,8 @@ namespace Voxel
 
 		Shader* getVertexShader(const std::string& name);
 		Shader* getFragmentShader(const std::string& name);
+
+		void releaseAll();
 	};
 }
 
