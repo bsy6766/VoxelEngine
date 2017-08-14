@@ -53,6 +53,8 @@ namespace Voxel
 		bool getKeyUp(int key);
 		bool getMouseDown(int button);
 		bool getMouseUp(int button);
+
+		void setCursorToCenter();
 	};
 }
 

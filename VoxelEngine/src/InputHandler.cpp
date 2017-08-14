@@ -75,3 +75,9 @@ bool InputHandler::getMouseUp(int button)
 {
 	return mouseButtonMap[button] == false;
 }
+
+void Voxel::InputHandler::setCursorToCenter()
+{
+	curX = 0;
+	curY = 0;
+}
