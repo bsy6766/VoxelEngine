@@ -113,7 +113,7 @@ const std::vector<std::vector<float>> Cube::verticies = {
 };
 */
 
-const std::vector<std::vector<float>> Cube::verticies = {
+const std::vector<std::vector<float>> Cube::allVerticies = {
 	// x, y, z
 	{ -0.5f, -0.5f, -0.5f, },
 	{ -0.5f, 0.5f, -0.5f, },
@@ -123,6 +123,58 @@ const std::vector<std::vector<float>> Cube::verticies = {
 	{ 0.5f, 0.5f, 0.5f, },
 	{ -0.5f, -0.5f, 0.5f, },
 	{ -0.5f, 0.5f, 0.5f },
+};
+
+const std::vector<float>  Cube::FrontVerticies = {
+	// x, y, z
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, 0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, 0.5f, -0.5f,
+};
+
+const std::vector<float> Cube::BackVerticies = {
+	// x, y, z
+	0.5f, -0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, 0.5f, 0.5f
+};
+
+const std::vector<float> Cube::LeftVerticies = {
+	// x, y, z
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, 0.5f, -0.5f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, 0.5f, 0.5f
+};
+
+const std::vector<float> Cube::RightVerticies = {
+	// x, y, z
+	0.5f, -0.5f, -0.5f,
+	0.5f, 0.5f, -0.5f,
+	0.5f, -0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+};
+
+const std::vector<float> Cube::TopVerticies = {
+	// x, y, z
+	-0.5f, 0.5f, -0.5f,
+	-0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, -0.5f,
+	0.5f, 0.5f, 0.5f
+};
+
+const std::vector<float> Cube::BottomVerticies = {
+	// x, y, z
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, 0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, 0.5f,
+};
+
+const std::vector<unsigned int> Cube::faceIndicies = {
+	0, 1, 2, 1, 2, 3
 };
 
 const std::vector<unsigned int> Cube::indicies = {
@@ -140,66 +192,146 @@ const std::vector<unsigned int> Cube::indicies = {
 	0, 6, 2, 6, 2, 4
 };
 
+int Voxel::Cube::countFaceBit(Face face)
+{
+	int count = 0;
+	unsigned int bit = static_cast<unsigned int>(face);
+
+	while (bit != 0)
+	{
+		if (bit & 1) count++;
+		bit >>= 1;
+	}
+
+	return count;
+}
+
 std::vector<float> Voxel::Cube::getVerticies()
 {
 	// build all
-	std::vector<float> allVerticies;
+	std::vector<float> vertecies;
 
-	for (auto vertex : verticies)
+	for (auto vertex : allVerticies)
 	{
 		for (auto point : vertex)
 		{
-			allVerticies.push_back(point * 50.0f);
+			vertecies.push_back(point * 10.0f);
 		}
 	}
 
-	return allVerticies;
+	return vertecies;
+}
+
+std::vector<float> Voxel::Cube::getVerticies(Face face)
+{
+	if (face == Cube::Face::NONE)
+	{
+		return std::vector<float>();
+	}
+	else if (face == Face::ALL)
+	{
+		return getVerticies();
+	}
+	else
+	{
+		std::vector<float> faceVerticies;
+
+		if (face & Cube::Face::FRONT)
+		{
+			for (auto vertex : FrontVerticies)
+			{
+				faceVerticies.push_back(vertex * 1.0f);
+			}
+		}
+
+		if (face & Cube::Face::LEFT)
+		{
+			for (auto vertex : LeftVerticies)
+			{
+				faceVerticies.push_back(vertex* 1.0f);
+			}
+		}
+
+		if (face & Cube::Face::BACK)
+		{
+			for (auto vertex : BackVerticies)
+			{
+				faceVerticies.push_back(vertex* 1.0f);
+			}
+		}
+
+		if (face & Cube::Face::RIGHT)
+		{
+			for (auto vertex : RightVerticies)
+			{
+				faceVerticies.push_back(vertex* 1.0f);
+			}
+		}
+
+		if (face & Cube::Face::TOP)
+		{
+			for (auto vertex : TopVerticies)
+			{
+				faceVerticies.push_back(vertex* 1.0f);
+			}
+		}
+
+		if (face & Cube::Face::BOTTOM)
+		{
+			for (auto vertex : BottomVerticies)
+			{
+				faceVerticies.push_back(vertex* 1.0f);
+			}
+		}
+
+		return faceVerticies;
+	}
 }
 
 std::vector<float> Voxel::Cube::getVerticies(Face face, float r, float g, float b)
 {
-	std::vector<float> allVerticies;
+	std::vector<float> verticies;
 
 	int counter = 0;
 
-	for (auto vertex : verticies)
+	for (auto vertex : allVerticies)
 	{
 		bool y = false;
 		if (vertex.at(1) == 0) y = true;
 		for (auto point : vertex)
 		{
-			allVerticies.push_back(point * 25.0f);
+			verticies.push_back(point * 5.0f);
 		}
 
 		if (counter == 0)
 		{
-			allVerticies.push_back(1);
-			allVerticies.push_back(0);
-			allVerticies.push_back(0);
+			verticies.push_back(1);
+			verticies.push_back(0);
+			verticies.push_back(0);
 		}
 		else if (counter == 1)
 		{
-			allVerticies.push_back(1);
-			allVerticies.push_back(1);
-			allVerticies.push_back(1);
+			verticies.push_back(1);
+			verticies.push_back(1);
+			verticies.push_back(1);
 		}
 		else if (counter == 2)
 		{
-			allVerticies.push_back(0);
-			allVerticies.push_back(1);
-			allVerticies.push_back(0);
+			verticies.push_back(0);
+			verticies.push_back(1);
+			verticies.push_back(0);
 		}
 		else if (counter == 3)
 		{
-			allVerticies.push_back(0.0f);
-			allVerticies.push_back(0.0f);
-			allVerticies.push_back(1.0f);
+			verticies.push_back(0.0f);
+			verticies.push_back(0.0f);
+			verticies.push_back(1.0f);
 		}
 		else
 		{
-			allVerticies.push_back(0.0f);
-			allVerticies.push_back(1.0f);
-			allVerticies.push_back(0.0f);
+			verticies.push_back(0.0f);
+			verticies.push_back(1.0f);
+			verticies.push_back(0.0f);
 		}
 
 		/*
@@ -220,10 +352,10 @@ std::vector<float> Voxel::Cube::getVerticies(Face face, float r, float g, float 
 		counter++;
 	}
 
-	return allVerticies;
+	return verticies;
 }
 
-std::vector<unsigned int> Voxel::Cube::getIndicies(Face face)
+std::vector<unsigned int> Voxel::Cube::getIndicies(Face face, const int cubeOffset)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -240,52 +372,17 @@ std::vector<unsigned int> Voxel::Cube::getIndicies(Face face)
 		{
 			std::vector<unsigned int> newIndicies;
 
-			if (face & Cube::Face::FRONT)
+			int num = countFaceBit(face);
+
+			int offset = 0 + cubeOffset;
+
+			for (int i = 0; i < num; i++)
 			{
 				for (int i = 0; i < 6; i++)
 				{
-					newIndicies.push_back(indicies.at(i));
+					newIndicies.push_back(faceIndicies.at(i) + offset);
 				}
-			}
-
-			if (face & Cube::Face::LEFT)
-			{
-				for (int i = 6; i < 12; i++)
-				{
-					newIndicies.push_back(indicies.at(i));
-				}
-			}
-
-			if (face & Cube::Face::BACK)
-			{
-				for (int i = 12; i < 18; i++)
-				{
-					newIndicies.push_back(indicies.at(i));
-				}
-			}
-
-			if (face & Cube::Face::RIGHT)
-			{
-				for (int i = 18; i < 24; i++)
-				{
-					newIndicies.push_back(indicies.at(i));
-				}
-			}
-
-			if (face & Cube::Face::TOP)
-			{
-				for (int i = 24; i < 30; i++)
-				{
-					newIndicies.push_back(indicies.at(i));
-				}
-			}
-
-			if (face & Cube::Face::BOTTOM)
-			{
-				for (int i = 30; i < 36; i++)
-				{
-					newIndicies.push_back(indicies.at(i));
-				}
+				offset += 4;
 			}
 
 			return newIndicies;
