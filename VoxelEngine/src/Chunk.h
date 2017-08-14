@@ -25,8 +25,6 @@ namespace Voxel
 		friend class ChunkMeshGenerator;
 		friend class ChunkLoader;
 	public:
-		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK;
-		const static float CHUNK_BORDER_SIZE;
 	private:
 		Chunk();
 
@@ -44,6 +42,9 @@ namespace Voxel
 
 		// Border
 		ChunkBorder border;
+
+		// active state. Only active chunk can be queried
+		bool active;
 
 		bool init(int x, int z);
 	public:
@@ -64,6 +65,9 @@ namespace Voxel
 		ChunkSection* getChunkSectionByY(int y);
 
 		void render();
+
+		void setActive(const bool state);
+		bool isActive();
 	};
 
 }

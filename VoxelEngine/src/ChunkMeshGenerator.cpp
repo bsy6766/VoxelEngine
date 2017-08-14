@@ -9,6 +9,7 @@
 #include <Cube.h>
 #include <iostream>
 #include <glm/gtx/transform.hpp>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -51,15 +52,19 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 			std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
 			std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
+			auto chunkStart = Utility::Time::now();
+
 			// Iterate all chunk sections O(16)
+			int indiciesOffsetPerBlock = 0;
 			for (auto chunkSection : chunk->chunkSections)
 			{
 				std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
+				
 				// Iterate all blocks. O(4096)
-				int indiciesOffsetPerBlock = 0;
+				auto chunkSectionStart = Utility::Time::now();
 				for (auto block : chunkSection->blocks)
 				{
-					std::cout << "[ChunkMeshGenerator] -> Generating for block at (" << block->worldCoordinate.x << ", " << block->worldCoordinate.y << ", " << block->worldCoordinate.z << ")" << std::endl;
+					//std::cout << "[ChunkMeshGenerator] -> Generating for block at (" << block->worldCoordinate.x << ", " << block->worldCoordinate.y << ", " << block->worldCoordinate.z << ")" << std::endl;
 					// Check block id
 					if (block->isEmpty())
 					{
@@ -173,7 +178,7 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 							for (int i = 0; i < blockVerticies.size(); i += 3)
 							{
 								auto vertex = glm::vec3(blockVerticies.at(i), blockVerticies.at(i + 1), blockVerticies.at(i + 2));
-								vertex += block->position;
+								vertex += block->worldPosition;
 								verticeis.push_back(vertex.x);
 								verticeis.push_back(vertex.y);
 								verticeis.push_back(vertex.z);
@@ -203,10 +208,16 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 						}
 					}
 				}
+				auto chunkSectionEnd = Utility::Time::now();
 				
+				std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
+
 				std::cout << "[ChunkMeshGenerator] -> Done." << std::endl;
 			}
-			
+
+			auto chunkEnd = Utility::Time::now();
+			std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
+
 			// Increment counter for z axis
 			z++;
 

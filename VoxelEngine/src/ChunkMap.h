@@ -40,14 +40,16 @@ namespace Voxel
 	private:
 		ChunkUnorderedMap map;
 
-		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been generated
+		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
+		// Active Chunk LUT. This stores chunk position that is currently loaded in game
+		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> activeChunkLUT;
 
 	public:
 		ChunkMap() = default;
 		~ChunkMap();
 
-		void init(const glm::vec3& playerPosition);
+		void init();
 
 		// Clears all the chunk in the map
 		void clear();
@@ -58,6 +60,9 @@ namespace Voxel
 		Chunk* getChunkAtXZ(int x, int z);
 
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
+
+		// Attemp to laod chunk in map. If map already has chunk, 
+		bool attempChunkLoad(int x, int z);
 
 		void render();
 	};

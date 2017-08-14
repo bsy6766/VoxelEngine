@@ -18,11 +18,6 @@ namespace Voxel
 	{
 		friend class ChunkMeshGenerator;
 	public:
-		const static unsigned int TOTAL_BLOCKS;
-		const static int CHUNK_SECTION_HEIGHT;
-		const static int CHUNK_SECTION_WIDTH;
-		const static int CHUNK_SECTION_LENGTH;
-
 		int XYZToIndex(const int x, const int y, const int z);
 	private:
 		ChunkSection();

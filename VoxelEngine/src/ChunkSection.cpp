@@ -1,13 +1,9 @@
 #include "ChunkSection.h"
 #include <Block.h>
 #include <iostream>
+#include <ChunkUtil.h>
 
 using namespace Voxel;
-
-const unsigned int ChunkSection::TOTAL_BLOCKS = 4096;
-const int ChunkSection::CHUNK_SECTION_HEIGHT = 16;
-const int ChunkSection::CHUNK_SECTION_WIDTH = 16;
-const int ChunkSection::CHUNK_SECTION_LENGTH = 16;
 
 ChunkSection::ChunkSection()
 	: position(0)
@@ -49,17 +45,17 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 	// calculate world position. Only need to calculate Y.
 	worldPosition = chunkPosition;
-	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(CHUNK_SECTION_HEIGHT); 
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 	
 	std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
 
 	// Fill vector in order of width(x), length(z) and then height(y)
 	std::cout << "[ChunkSection] Generating blocks..." << std::endl;
-	for (int i = 0; i < CHUNK_SECTION_HEIGHT; i++)
+	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
 	{
-		for (int j = 0; j < CHUNK_SECTION_LENGTH; j++)
+		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
 		{
-			for (int k = 0; k < CHUNK_SECTION_WIDTH; k++)
+			for (int k = 0; k < Constant::CHUNK_SECTION_WIDTH; k++)
 			{
 				auto newBlock = Block::create(glm::ivec3(k, i, j), position);
 				if (newBlock)
@@ -79,7 +75,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 int Voxel::ChunkSection::XYZToIndex(const int x, const int y, const int z)
 {
-	return x + (CHUNK_SECTION_WIDTH * z) + (y * CHUNK_SECTION_LENGTH * CHUNK_SECTION_WIDTH);
+	return x + (Constant::CHUNK_SECTION_WIDTH * z) + (y * Constant::CHUNK_SECTION_LENGTH * Constant::CHUNK_SECTION_WIDTH);
 }
 
 Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
