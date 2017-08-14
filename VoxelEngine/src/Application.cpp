@@ -5,19 +5,13 @@
 #include <stdio.h>  /* defines FILENAME_MAX */
 #include <direct.h>
 
+#include <InputHandler.h>
 #include <ShaderManager.h>
 #include <ProgramManager.h>
 
-#include <InputHandler.h>
-
 #include <World.h>
 
-// temp
-#include <Shader.h>
-#include <Program.h>
 #include <Camera.h>
-#include <glm\gtx\transform.hpp>
-#include <Cube.h>
 
 using std::cout;
 using std::endl;
@@ -61,6 +55,11 @@ Application::~Application()
 		delete Camera::mainCamera;
 		Camera::mainCamera = nullptr;
 	}
+	
+	// Delete all shaders
+	ShaderManager::getInstance().releaseAll();
+	ProgramManager::getInstance().releaseAll();
+	
 
 	if (world)
 	{
@@ -77,51 +76,9 @@ void Application::init()
 
 	initMainCamera();
 	initWorld();
+	initTime();
 
-	//camera->setPosition(vec3(0, 0, 0));
 	lastTime = 0;
-	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
-	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
-	program = ProgramManager::getInstance().createProgram("defaultProgram", vertexShader, fragmentShader);
-
-	// Generate vertex array object
-	glGenVertexArrays(1, &vao);
-	// Bind it
-	glBindVertexArray(vao);
-
-	// Generate buffer object
-	glGenBuffers(1, &vbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	// Get cube verticies and indicies
-	std::vector<float> cubeVerticies = Cube::getVerticies(Cube::Face::ALL, 1.0f, 0.0f, 0.0f);
-	std::vector<unsigned int> cubeIndicies = Cube::getIndicies(Cube::Face::ALL);
-
-	// Load cube verticies
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVerticies) * cubeVerticies.size(), &cubeVerticies[0], GL_STATIC_DRAW);
-	// Enable verticies attrib
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-	// unbind buffer
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// Generate indicies object
-	glGenBuffers(1, &ibo);
-	// Bind indicies
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// Load indicies
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndicies) * cubeIndicies.size(), &cubeIndicies[0], GL_STATIC_DRAW);
-	// unbind buffer
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
 }
 
 void Application::initGLFW()
@@ -196,6 +153,8 @@ void Application::initWindow()
 		glfwSwapInterval(0);
 	}
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	// Set callbacks
 	glfwSetErrorCallback(glfwErrorCallback);
 	glfwSetWindowUserPointer(window, this);
@@ -233,15 +192,15 @@ void Application::initOpenGL()
 {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
+	//glEnable(GL_CULL_FACE);
 	//glMatrixMode(GL_PROJECTION);
 	//glLoadIdentity();
 }
 
 void Voxel::Application::initMainCamera()
 {
-	Camera::mainCamera = Camera::create(vec3(0, 0.0f, -100.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
-	Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
+	Camera::mainCamera = Camera::create(vec3(0, 0.0f, 20.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	//Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
 }
 
 void Voxel::Application::initWorld()
@@ -249,42 +208,27 @@ void Voxel::Application::initWorld()
 	world = new World();
 }
 
+void Voxel::Application::initTime()
+{
+	lastTime = static_cast<float>(glfwGetTime());
+	elapsedTime = 0;
+}
+
+void Application::updateTime()
+{
+	float curTime = static_cast<float>(glfwGetTime());
+	elapsedTime = curTime - lastTime;
+	lastTime = curTime;
+}
+
 void Application::run()
 {
 	while (!glfwWindowShouldClose(window))
 	{
-		auto cur = glfwGetTime();
-		auto elapsed = cur - lastTime;
-		lastTime = cur;
+		updateTime();
 
-		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glUseProgram(program->getObject());
-
-		world->update(static_cast<float>(elapsed));
-
-		float speed = 0.3f;
-
-		if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_LEFT))
-		{
-			//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
-			tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 1, 0));
-			//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
-		}
-		if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_RIGHT))
-		{
-			tempTralsnate = glm::translate(tempTralsnate, vec3(10.0f * static_cast<float>(elapsed), 0, 0));
-		}
-
-		program->setUniformMat4("cameraMat", Camera::mainCamera->getMatrix());
-		program->setUniformMat4("modelMat", tempTralsnate * tempRotation);
-
-		glBindVertexArray(vao);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-		glUseProgram(0);
+		world->update(elapsedTime);
+		world->render(elapsedTime);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

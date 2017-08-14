@@ -15,6 +15,14 @@ namespace Voxel
 	*/
 	class Block
 	{
+		friend class ChunkMeshGenerator;
+	public:
+		// block id
+		enum class BLOCK_ID
+		{
+			AIR = 0,		// Default block. Transparent.
+			GRASS,
+		};
 	private:
 		Block();
 
@@ -34,10 +42,16 @@ namespace Voxel
 		// Matrix
 		glm::mat4 matrix;
 
+		// ID
+		BLOCK_ID id;
+
 		bool init(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
 	public:
 		~Block();
 		static Block* create(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
+
+		bool isTransparent();
+		bool isEmpty();
 	};
 }
 

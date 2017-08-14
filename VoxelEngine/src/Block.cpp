@@ -37,17 +37,45 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	localCoordinate = position;
 	// World coordinate
 	worldCoordinate = localCoordinate;
-	worldCoordinate.x += 16 * chunkSectionPosition.x;
-	worldCoordinate.y += 16 * chunkSectionPosition.y;
-	worldCoordinate.z += 16 * chunkSectionPosition.z;
+	worldCoordinate.x += 16.0f * chunkSectionPosition.x;
+	worldCoordinate.y += 16.0f * chunkSectionPosition.y;
+	worldCoordinate.z += 16.0f * chunkSectionPosition.z;
 
 	// Not sure if I would need local position. TODO: add local position if needed
 	
 	// Calculate position of block in the world
-	this->position = glm::vec3(worldCoordinate);
+	this->position = glm::vec3(localCoordinate) + 0.5f;
 
 	// update matrix
 	matrix = glm::translate(glm::mat4(1.0f), this->position);
 
+	color = Color::getRandomColor();
+
+	id = BLOCK_ID::GRASS;
+
 	return true;
+}
+
+bool Voxel::Block::isTransparent()
+{
+	if (id == BLOCK_ID::AIR)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::Block::isEmpty()
+{
+	if (id == BLOCK_ID::AIR)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

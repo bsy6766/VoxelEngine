@@ -7,6 +7,14 @@
 namespace Voxel
 {
 	class ChunkSection;
+	class ChunkMesh;
+
+	struct ChunkBorder
+	{
+		// In world position
+		glm::vec3 min;
+		glm::vec3 max;
+	};
 
 	/**
 	*	@class Chunk
@@ -14,8 +22,11 @@ namespace Voxel
 	*/
 	class Chunk
 	{
+		friend class ChunkMeshGenerator;
+		friend class ChunkLoader;
 	public:
 		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK;
+		const static float CHUNK_BORDER_SIZE;
 	private:
 		Chunk();
 
@@ -28,11 +39,31 @@ namespace Voxel
 		// ChunkSections
 		std::vector<ChunkSection*> chunkSections;
 
+		// Mesh. Contains mesh data and OpenGL objects
+		ChunkMesh* chunkMesh;
+
+		// Border
+		ChunkBorder border;
+
 		bool init(int x, int z);
 	public:
 		~Chunk();
 
 		static Chunk* create(const int x, const int z);
+
+		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
+		void unload();
+
+		// Checks if other chunk is next to it including diagonal
+		//bool isAdjacent(Chunk* other);
+
+		// Get position
+		glm::ivec3 getPosition();
+
+		// Get chunkSection by Y (chunk section's y level not world pos)
+		ChunkSection* getChunkSectionByY(int y);
+
+		void render();
 	};
 
 }

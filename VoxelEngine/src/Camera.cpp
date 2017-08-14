@@ -54,6 +54,7 @@ mat4 Camera::getMatrix()
 		//curMatrix = getProjection() * getView();
 		curMatrix = glm::translate(getProjection() * getOrientation(), -position);
 		needUpdate = false;
+		print();
 	}
 
 	return curMatrix;
@@ -72,7 +73,6 @@ mat4 Camera::getOrientation()
 	orientation = glm::rotate(orientation, glm::radians(angle.x), vec3(1, 0, 0));
 	orientation = glm::rotate(orientation, glm::radians(angle.y), vec3(0, 1, 0));
 	orientation = glm::rotate(orientation, glm::radians(angle.z), vec3(0, 0, 1));
-	std::cout << "updated orientation. angle = " << angle.x << ", " << angle.y << ", " << angle.z << std::endl;
 	return orientation;
 }
 
@@ -96,13 +96,19 @@ void Camera::addPosition(const vec3 & distance)
 void Camera::setAngle(const vec3 & angle)
 {
 	this->angle = angle;
+	wrapAngle();
 	needUpdate = true;
+
+	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
 }
 
 void Camera::addAngle(const vec3 & angle)
 {
 	this->angle += angle;
+	wrapAngle();
 	needUpdate = true;
+
+	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
 }
 
 void Camera::wrapAngle()
@@ -122,4 +128,10 @@ void Camera::wrapAngle(float& axis)
 	{
 		axis += 360.0f;
 	}
+}
+
+void Camera::print()
+{
+	std::cout << "[Camera] position = (" << this->position.x << ", " << this->position.y << ", " << this->position.z << ")" << std::endl;
+	std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
 }

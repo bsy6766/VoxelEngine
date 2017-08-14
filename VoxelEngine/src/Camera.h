@@ -8,6 +8,18 @@ using namespace glm;
 
 namespace Voxel
 {
+	/**
+	*	@class Camera
+	*	@brief Virtual camera in 3D OpenGL world
+	*	
+	*	Camera class calculates the MVP matrix.
+	*	Camera seems like function in the real camera, but actually it's just concept not real.
+	*	Camera itself doesn't move, rotate or scale. World does.
+	*	So camera calculates these matrices.
+	*	Projection matrix: A matrix for perspective camera that is computed with FOVY, Near, Far, Aspect.
+	*	World To View (aka view) matrix: A matrix that moves the world to camera's view. This is necessary because camera doesn't move and make player think like camera move.
+	*	Then these matrices are multiplied once more with model matrix, which is object's own transform matrix.
+	*/
 	class Camera
 	{
 	private:
@@ -41,6 +53,8 @@ namespace Voxel
 		// Get view matrix. This is 'world to view' matrix. 
 		// Camera doesn't move but world is. This moves world to view.
 		mat4 getView();
+		// Get orientation. Basically rotation. 
+		// This doesn't mean that camera is rotated. It's where camera want to look. 
 		mat4 getOrientation();
 		vec3 getPosition();
 
@@ -48,6 +62,8 @@ namespace Voxel
 		void addPosition(const vec3& distance);
 		void setAngle(const vec3& angle);
 		void addAngle(const vec3& angle);
+
+		void print();
 	};
 }
 

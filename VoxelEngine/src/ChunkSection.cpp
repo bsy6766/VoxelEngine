@@ -1,12 +1,13 @@
 #include "ChunkSection.h"
 #include <Block.h>
+#include <iostream>
 
 using namespace Voxel;
 
 const unsigned int ChunkSection::TOTAL_BLOCKS = 4096;
-const float ChunkSection::CHUNK_SECTION_HEIGHT = 16.0f;
-const float ChunkSection::CHUNK_SECTION_WIDTH = 16.0f;
-const float ChunkSection::CHUNK_SECTION_LENGTH = 16.0f;
+const int ChunkSection::CHUNK_SECTION_HEIGHT = 16;
+const int ChunkSection::CHUNK_SECTION_WIDTH = 16;
+const int ChunkSection::CHUNK_SECTION_LENGTH = 16;
 
 ChunkSection::ChunkSection()
 	: position(0)
@@ -29,8 +30,10 @@ ChunkSection::~ChunkSection()
 ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
+	std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
 	if (newChunkSection->init(x, y, z, chunkPosition))
 	{
+		std::cout << "[ChunkSection] Done." << std::endl;
 		return newChunkSection;
 	}
 	else
@@ -46,10 +49,13 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 	// calculate world position. Only need to calculate Y.
 	worldPosition = chunkPosition;
-	worldPosition.y = (static_cast<float>(y) - 0.5f) * CHUNK_SECTION_HEIGHT;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(CHUNK_SECTION_HEIGHT); 
+	
+	std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
 
 	// Fill vector in order of width(x), length(z) and then height(y)
-	for (int i = 0; i > -CHUNK_SECTION_HEIGHT; i--)
+	std::cout << "[ChunkSection] Generating blocks..." << std::endl;
+	for (int i = 0; i < CHUNK_SECTION_HEIGHT; i++)
 	{
 		for (int j = 0; j < CHUNK_SECTION_LENGTH; j++)
 		{
@@ -69,4 +75,22 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	}
 
 	return true;
+}
+
+int Voxel::ChunkSection::XYZToIndex(const int x, const int y, const int z)
+{
+	return x + (CHUNK_SECTION_WIDTH * z) + (y * CHUNK_SECTION_LENGTH * CHUNK_SECTION_WIDTH);
+}
+
+Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
+{
+	int index = XYZToIndex(x, y, z);
+	if (index >= 0 && index < blocks.size())
+	{
+		return blocks.at(index);
+	}
+	else
+	{
+		return nullptr;
+	}
 }

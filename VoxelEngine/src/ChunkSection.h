@@ -16,11 +16,14 @@ namespace Voxel
 	*/
 	class ChunkSection
 	{
+		friend class ChunkMeshGenerator;
 	public:
 		const static unsigned int TOTAL_BLOCKS;
-		const static float CHUNK_SECTION_HEIGHT;
-		const static float CHUNK_SECTION_WIDTH;
-		const static float CHUNK_SECTION_LENGTH;
+		const static int CHUNK_SECTION_HEIGHT;
+		const static int CHUNK_SECTION_WIDTH;
+		const static int CHUNK_SECTION_LENGTH;
+
+		int XYZToIndex(const int x, const int y, const int z);
 	private:
 		ChunkSection();
 
@@ -37,6 +40,9 @@ namespace Voxel
 	public:
 		~ChunkSection();
 		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+
+		// x,y,z must be local
+		Block* getBlockAt(const int x, const int y, const int z);
 	};
 }
 

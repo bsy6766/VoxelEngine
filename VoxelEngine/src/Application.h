@@ -25,6 +25,9 @@ namespace Voxel
 		void initOpenGL();
 		void initMainCamera();
 		void initWorld();
+		void initTime();
+
+		void updateTime();
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
@@ -35,15 +38,9 @@ namespace Voxel
 		// world
 		World* world;
 
-		// temp
-		GLuint vao;
-		GLuint vbo;
-		GLuint ibo;
-		Program* program;
-		double lastTime;
-		glm::vec3 angle = glm::vec3(0);
-		glm::mat4 tempRotation = glm::mat4(1.0f);
-		glm::mat4 tempTralsnate = glm::mat4(1.0f);
+		// Time
+		float lastTime;
+		float elapsedTime;
 	public:
 		Application();
 		~Application();
