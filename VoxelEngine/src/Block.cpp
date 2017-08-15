@@ -55,16 +55,27 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	// update matrix
 	matrix = glm::translate(glm::mat4(1.0f), this->worldPosition);
 
-	color = Color::getRandomColor();
+	//color = Color::getRandomColor();
 
-	auto rand = Utility::Random::randomInt100();
-	if (rand <= 100)
+	if (worldCoordinate.y == 0)
+	{
+		id = BLOCK_ID::BEDROCK;
+		color = Color::BEDROCK;
+	}
+	else if (worldCoordinate.y > 0 && worldCoordinate.y < 3)
+	{
+		id = BLOCK_ID::STONE;
+		color = Color::STONE;
+	}
+	else if (worldCoordinate.y >= 3 && worldCoordinate.y < 10)
 	{
 		id = BLOCK_ID::GRASS;
+		color = Color::GRASS;
 	}
 	else
 	{
 		id = BLOCK_ID::AIR;
+		color = Color::WHITE;
 	}
 
 	return true;

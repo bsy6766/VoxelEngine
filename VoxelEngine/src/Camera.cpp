@@ -34,7 +34,7 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 
 	newCamera->curMatrix = newCamera->getMatrix();
 
-	std::cout << "Creating camera. Fovy: " << fovy << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << aspect << std::endl;
+	std::cout << "[Camera] Creating camera. Fovy: " << fovy << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << aspect << std::endl;
 
 	return newCamera;
 }

@@ -15,6 +15,7 @@
 #include <glm\gtx\transform.hpp>
 #include <Cube.h>
 #include <Utility.h>
+#include <Color.h>
 
 #include <GLFW\glfw3.h>
 
@@ -158,36 +159,105 @@ glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::
 
 void World::update(const float delta)
 {
-	if (input->getKeyDown(GLFW_KEY_W))
+	// Keyboard
 	{
-		Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
-	}
-	else if (input->getKeyDown(GLFW_KEY_S))
-	{
-		Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+		if (input->getKeyDown(GLFW_KEY_W))
+		{
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+		}
+		else if (input->getKeyDown(GLFW_KEY_S))
+		{
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+		}
+
+		if (input->getKeyDown(GLFW_KEY_A))
+		{
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+		}
+		else if (input->getKeyDown(GLFW_KEY_D))
+		{
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+		}
+
+		if (input->getKeyDown(GLFW_KEY_SPACE))
+		{
+			Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
+		}
+		else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+		{
+			Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
+		}
+
+		if (input->getKeyDown(GLFW_KEY_BACKSPACE))
+		{
+			Camera::mainCamera->print();
+		}
 	}
 
-	if (input->getKeyDown(GLFW_KEY_A))
+	// Controller
 	{
-		Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
-	}
-	else if (input->getKeyDown(GLFW_KEY_D))
-	{
-		Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
-	}
+		if (input->hasController())
+		{
+			auto valueLeftAxisX = input->getAxisValue(IO::XBOX_360::AXIS::L_AXIS_X);
+			if (valueLeftAxisX  > 0.0f)
+			{
+				// Right
+				Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			}
+			else if (valueLeftAxisX < 0.0f)
+			{
+				Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			}
+			// Else, didn't move
 
-	if (input->getKeyDown(GLFW_KEY_SPACE))
-	{
-		Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
-	}
-	else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
-	{
-		Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
-	}
+			auto valueLeftAxisY = input->getAxisValue(IO::XBOX_360::AXIS::L_AXIS_Y);
+			if (valueLeftAxisY > 0.0f)
+			{
+				//foward
+				Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			}
+			else if (valueLeftAxisY < 0.0f)
+			{
+				// back
+				Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			}
 
-	if (input->getKeyDown(GLFW_KEY_BACKSPACE))
-	{
-		Camera::mainCamera->print();
+			auto valueLeftTrigger = input->getAxisValue(IO::XBOX_360::AXIS::LT);
+			if (valueLeftTrigger > 0.0f)
+			{
+				Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
+			}
+
+			auto valueRightTrigger = input->getAxisValue(IO::XBOX_360::AXIS::RT);
+			if (valueRightTrigger > 0.0f)
+			{
+				Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
+			}
+
+			auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
+			if (valueRightAxisX > 0.0f)
+			{
+				// Turn right
+				Camera::mainCamera->addAngle(vec3(0, delta * 100.0f, 0));
+			}
+			else if (valueRightAxisX < 0.0f)
+			{
+				// turn left
+				Camera::mainCamera->addAngle(vec3(0, delta * -100.0f, 0));
+			}
+
+			auto valueRightAxisY = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_Y);
+			if (valueRightAxisY > 0.0f)
+			{
+				// turn down
+				Camera::mainCamera->addAngle(vec3(delta * -100.0f, 0, 0));
+			}
+			else if (valueRightAxisY < 0.0f)
+			{
+				// Turn up
+				Camera::mainCamera->addAngle(vec3(delta * 100.0f, 0, 0));
+			}
+		}
 	}
 
 	/*
@@ -240,7 +310,8 @@ void World::update(const float delta)
 
 void World::render(const float delta)
 {
-	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	auto skyboxColor = Color::SKYBOX;
+	glClearColor(skyboxColor.x, skyboxColor.y, skyboxColor.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(program->getObject());

@@ -18,6 +18,8 @@ using std::endl;
 using namespace Voxel;
 
 Application::Application()
+	: world(nullptr)
+	//, controllerManager(nullptr)
 {
 	cout << "Creating Application" << endl;
 
@@ -59,7 +61,6 @@ Application::~Application()
 	// Delete all shaders
 	ShaderManager::getInstance().releaseAll();
 	ProgramManager::getInstance().releaseAll();
-	
 
 	if (world)
 	{
@@ -225,11 +226,16 @@ void Application::run()
 {
 	// reset cursor
 	glfwSetCursorPos(window, 0, 0);
-	InputHandler::getInstance().setCursorToCenter();
+	auto& input = InputHandler::getInstance();
+	input.setCursorToCenter();
+	input.initControllerManager();
+	input.update();
 
 	while (!glfwWindowShouldClose(window))
 	{
 		updateTime();
+
+		input.update();
 
 		world->update(elapsedTime);
 		world->render(elapsedTime);
