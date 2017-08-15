@@ -36,7 +36,7 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 	{
 		if (key == GLFW_KEY_ESCAPE)
 		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
+			Application::getInstance().getGLView()->close();
 		}
 	}
 

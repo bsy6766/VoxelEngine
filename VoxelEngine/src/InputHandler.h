@@ -2,6 +2,7 @@
 #define INPUT_HANDLER_H
 
 #include <unordered_map>
+#include <Application.h>
 #include <GLFW\glfw3.h>
 #include <unordered_map>
 #include <ControllerManager.h>

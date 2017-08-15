@@ -8,9 +8,7 @@
 #include <InputHandler.h>
 #include <Camera.h>
 
-#include <ShaderManager.h>
 #include <ProgramManager.h>
-#include <Shader.h>
 #include <Program.h>
 #include <glm\gtx\transform.hpp>
 #include <Cube.h>
@@ -34,12 +32,10 @@ World::World()
 	, keyCDown(false)
 	, cameraControlMode(false)
 	, keyXDown(false)
+	, debugPlayerCube(nullptr)
+	, defaultProgram(nullptr)
 {
-	Utility::Random::setSeed("ENGINE");
-
-	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
-	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
-	program = ProgramManager::getInstance().createProgram("defaultProgram", vertexShader, fragmentShader);
+	defaultProgram = ProgramManager::getInstance().getDefaultProgram();
 
 	//initDebugCube();
 	initPlayer();
@@ -68,6 +64,8 @@ void World::initPlayer()
 	player->setRotation(glm::vec3(0, 180.0f, 0));
 	player->setFly(true);
 	player->updateViewMatrix();
+
+	initDebugPlayerCube();
 }
 
 /*
@@ -177,6 +175,95 @@ void World::update(const float delta)
 	updateMouseInput(delta);
 	updateControllerInput(delta);
 	updateChunks();
+}
+
+void Voxel::World::initDebugPlayerCube()
+{
+	//debugPlayerCube = new ChunkMesh();
+	
+	//debugPlayerCube->initBuffer();
+	
+	// Generate vertex array object
+	glGenVertexArrays(1, &vao);
+	// Bind it
+	glBindVertexArray(vao);
+
+	// Generate buffer object
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	// Get cube vertices and indices
+	float line[] = {
+		-100, 100, 0,
+		100, 100, 0
+	};
+
+	float lineWithColor[] = {
+		-100, 100, 0,  1, 0, 0,
+		100, 100, 0,  1, 0, 0,
+	};
+	
+	GLfloat triangle[] = {
+		//  X     Y     Z
+		0.0f, 100.0f, 0.0f,
+		-100.0f,-100.0f, 0.0f,
+		100.0f,-100.0f, 0.0f,
+	};
+
+	GLfloat triangleWithColor[] = {
+		//  X     Y     Z
+		0.0f, 30.0f, 0.0f,      1, 0, 0,
+		-30.0f,-30.0f, 0.0f,   1, 0, 0,
+		30.0f,-30.0f, 0.0f,    1, 0, 0
+	};
+
+	// Load cube vertices
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lineWithColor), lineWithColor, GL_STATIC_DRAW);
+
+	float color[] = {
+		1, 0, 0,
+		1, 0, 0
+	};
+
+
+	float color2[] = {
+		1, 0, 0,
+		1, 0, 0,
+		1, 0, 0
+	};
+
+	/*
+	// Generate buffer object
+	glGenBuffers(1, &cbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+
+	// Load cube vertices
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(color2), color2, GL_STATIC_DRAW);
+	*/
+
+	// Enable vertices attrib
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	// vert
+	//glEnableVertexAttribArray(vertLoc);
+	//glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// color
+	//glEnableVertexAttribArray(colorLoc);
+	//glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glBindVertexArray(0);
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -413,12 +500,6 @@ void Voxel::World::updateChunks()
 
 void World::render(const float delta)
 {
-	auto skyboxColor = Color::SKYBOX;
-	glClearColor(skyboxColor.x, skyboxColor.y, skyboxColor.z, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glUseProgram(program->getObject());
-
 	glm::mat4 mat = glm::mat4(1.0f);
 	if (cameraMode)
 	{
@@ -429,38 +510,15 @@ void World::render(const float delta)
 		mat = player->getVP(Camera::mainCamera->getProjection());
 	}
 
-	program->setUniformMat4("cameraMat", mat);
+	defaultProgram->setUniformMat4("cameraMat", mat);
 
-	/*
-	chunkMesh->bind();
-	chunkMesh->render();
-	chunkMesh->unbind();
-	*/
 
-	chunkLoader->render();
-
-	/*
-	float speed = 0.3f;
-
-	if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_LEFT))
-	{
-		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(1, 0, 0));
-		tempRotation = glm::rotate(tempRotation, speed * delta, vec3(0, 1, 0));
-		//tempRotation = glm::rotate(tempRotation, speed * static_cast<float>(elapsed), vec3(0, 0, 1));
-	}
-	if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_RIGHT))
-	{
-		tempTralsnate = glm::translate(tempTralsnate, vec3(30.0f * delta, 0, 0));
-	}
-
-	program->setUniformMat4("cameraMat", Camera::mainCamera->getMatrix());
-	program->setUniformMat4("modelMat", tempTralsnate * tempRotation);
+	//chunkLoader->render();
 
 	glBindVertexArray(vao);
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_LINES, 0, 2);
 	glBindVertexArray(0);
-	*/
 
 	glUseProgram(0);
 

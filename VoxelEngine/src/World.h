@@ -29,8 +29,9 @@ namespace Voxel
 	class World
 	{
 	private:
-		// temp
-		Program* program;
+		// Store default program
+		Program* defaultProgram;
+
 		/*
 		GLuint vao;
 		GLuint vbo;
@@ -41,6 +42,13 @@ namespace Voxel
 		void initDebugCube();
 		ChunkMesh* chunkMesh;
 		*/
+
+		ChunkMesh* debugPlayerCube;
+		void initDebugPlayerCube();
+		GLuint vao;
+		GLuint vbo;
+		GLuint cbo;
+
 		bool cameraMode;
 		bool keyCDown;
 		bool cameraControlMode;
