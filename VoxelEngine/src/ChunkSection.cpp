@@ -26,10 +26,10 @@ ChunkSection::~ChunkSection()
 ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
 	if (newChunkSection->init(x, y, z, chunkPosition))
 	{
-		std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done." << std::endl;
 		return newChunkSection;
 	}
 	else
@@ -47,10 +47,10 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	worldPosition = chunkPosition;
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 	
-	std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
 
 	// Fill vector in order of width(x), length(z) and then height(y)
-	std::cout << "[ChunkSection] Generating blocks..." << std::endl;
+	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
 	{
 		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)

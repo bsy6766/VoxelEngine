@@ -19,6 +19,8 @@ using namespace Voxel;
 
 Application::Application()
 	: world(nullptr)
+	, fpsCounter(0)
+	, fpsLastTime(0)
 	//, controllerManager(nullptr)
 {
 	cout << "Creating Application" << endl;
@@ -224,6 +226,21 @@ void Application::updateTime()
 	lastTime = curTime;
 }
 
+void Application::updateFPS()
+{
+	fpsCounter++;
+	//std::cout << "Time: " << glfwGetTime() << std::endl;
+
+	double curTime = glfwGetTime();
+
+	if (curTime - fpsLastTime > 1.0)
+	{
+		std::cout << "fps = " << fpsCounter << std::endl;
+		fpsCounter = 0;
+		fpsLastTime += 1.0;
+	}
+}
+
 void Application::run()
 {
 	// reset cursor
@@ -232,9 +249,13 @@ void Application::run()
 	input.setCursorToCenter();
 	input.initControllerManager();
 	input.update();
+	glfwSetTime(0);
+	lastTime  = fpsLastTime = glfwGetTime();
 	
 	while (!glfwWindowShouldClose(window))
 	{
+		updateFPS();
+
 		updateTime();
 
 		input.update();

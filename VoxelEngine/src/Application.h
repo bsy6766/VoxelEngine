@@ -29,6 +29,7 @@ namespace Voxel
 		void initTime();
 
 		void updateTime();
+		void updateFPS();
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
@@ -42,6 +43,10 @@ namespace Voxel
 		// Time
 		float lastTime;
 		float elapsedTime;
+
+		// fps
+		int fpsCounter;
+		double fpsLastTime;
 	public:
 		Application();
 		~Application();

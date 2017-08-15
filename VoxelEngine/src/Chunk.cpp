@@ -34,10 +34,10 @@ Chunk::~Chunk()
 Chunk* Chunk::create(const int x, const int z)
 {
 	Chunk* newChunk = new Chunk();
-	std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
+	//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
 	if (newChunk->init(x, z))
 	{
-		std::cout << "[Chunk] Done.\n" << std::endl;
+		//std::cout << "[Chunk] Done.\n" << std::endl;
 		return newChunk;
 	}
 	else
@@ -65,8 +65,8 @@ bool Chunk::init(const int x, const int z)
 	worldPosition.y = 0;
 	worldPosition.z = 16.0f * (static_cast<float>(z) + 0.5f);
 
-	std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
-	std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
+	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
+	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
@@ -87,7 +87,7 @@ bool Chunk::init(const int x, const int z)
 	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
 	border.max = glm::vec3(worldPosition.x + borderDistance, 0, worldPosition.z + borderDistance);
 
-	std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
+	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
 
 	return true;
 }

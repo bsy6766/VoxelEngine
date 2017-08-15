@@ -30,23 +30,22 @@ namespace Voxel
 	{
 	private:
 		// temp
+		Program* program;
+		/*
 		GLuint vao;
 		GLuint vbo;
 		GLuint ibo;
-		Program* program;
 		glm::vec3 angle = glm::vec3(0);
 		glm::mat4 tempRotation = glm::mat4(1.0f);
 		glm::mat4 tempTralsnate = glm::mat4(1.0f);
 		void initDebugCube();
-		void initTestChunk();
+		ChunkMesh* chunkMesh;
+		*/
 
 		// Chunks
 		ChunkMap* chunkMap;
 		ChunkLoader* chunkLoader;
 		ChunkMeshGenerator* chunkMeshGenerator;
-
-		// temp
-		ChunkMesh* chunkMesh;
 
 		// Player
 		Player* player;
@@ -55,7 +54,14 @@ namespace Voxel
 		double mouseX;
 		double mouseY;
 
+		void initChunk();
 		void initPlayer();
+
+		void updateKeyboardInput(const float delta);
+		void updateMouseInput(const float delta);
+		void updateControllerInput(const float delta);
+		// Check if chunk loader needs to be updated
+		void updateChunkLoader();
 	public:
 		World();
 		~World();

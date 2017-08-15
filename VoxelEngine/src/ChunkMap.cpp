@@ -11,11 +11,11 @@ Voxel::ChunkMap::~ChunkMap()
 	clear();
 }
 
-void Voxel::ChunkMap::init()
+void Voxel::ChunkMap::initSpawnChunk()
 {
-	std::cout << "[ChunkMap] Creating map..." << std::endl;
+	//std::cout << "[ChunkMap] Creating map..." << std::endl;
 	
-	std::cout << "[ChunkMap] Initializing spawn chunks.." << std::endl;
+	//std::cout << "[ChunkMap] Initializing spawn chunks.." << std::endl;
 	
 	// spawn chunk is always loaded.
 	//glm::ivec2 spawnChunkMinPos = glm::ivec2(-SPAWN_CHUNK_DISTANCE);
@@ -44,10 +44,12 @@ void Voxel::ChunkMap::init()
 	{
 		for (int z = spawnZ; z < spawnMaxZ; z++)
 		{
-			std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") as spawn chunk." << std::endl;
+			//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") as spawn chunk." << std::endl;
+
+			// Add to LUT
 			chunkLUT.emplace(glm::ivec2(x, z));
 
-			// temp
+			// Add new spawn chunk
 			Chunk* newChunk = Chunk::create(x, z);
 			map.emplace(glm::ivec2(x, z), newChunk);
 		}
@@ -57,6 +59,46 @@ void Voxel::ChunkMap::init()
 	// Todo: get render distance from setting
 	int renderDistnace = 4;
 
+}
+
+void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
+{
+	// Get chunk X and Z where player is standing
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+
+	//std::cout << "[ChunkMap] Initializing chunk near player at (" << chunkX << ", " << chunkZ << ")" << std::endl;
+
+	// excluding the chunk where player stands
+	auto rdFromCenter = renderDistance - 1;
+
+	int minX = chunkX - rdFromCenter;
+	int maxX = chunkX + rdFromCenter;
+	int minZ = chunkZ - rdFromCenter;
+	int maxZ = chunkZ + rdFromCenter;
+
+	for (int x = minX; x <= maxX; x++)
+	{
+		for (int z = minZ; z <= maxZ; z++)
+		{
+			auto coordinate = glm::ivec2(x, z);
+			if (chunkLUT.find(coordinate) == chunkLUT.end())
+			{
+				// new chunk
+				//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") chunk." << std::endl;
+				Chunk* newChunk = Chunk::create(x, z);
+				map.emplace(coordinate, newChunk);
+
+				// Add to LUt
+				chunkLUT.emplace(coordinate);
+			}
+			else
+			{
+				// Chunk is already loaded on map
+				continue;
+			}
+		}
+	}
 }
 
 void ChunkMap::clear()

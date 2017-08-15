@@ -43,13 +43,16 @@ namespace Voxel
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
 		// Active Chunk LUT. This stores chunk position that is currently loaded in game
-		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> activeChunkLUT;
+		//std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> activeChunkLUT;
 
 	public:
 		ChunkMap() = default;
 		~ChunkMap();
 
-		void init();
+		// Initialize spawn chunk
+		void initSpawnChunk();
+		// Initialize map data near by player based on player's last position and render distance
+		void initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
 
 		// Clears all the chunk in the map
 		void clear();

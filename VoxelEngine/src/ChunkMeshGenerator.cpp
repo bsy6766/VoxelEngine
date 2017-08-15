@@ -27,7 +27,7 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 	const int maxX = static_cast<int>(chunkListXSize) - 1;
 	const int maxZ = static_cast<int>(chunkListZSize) - 1;
 
-	std::cout << "[ChunkMeshGenerator] Generating mesh..." << std::endl;
+	//std::cout << "[ChunkMeshGenerator] Generating mesh..." << std::endl;
 
 	int toalVerticies = 0;
 
@@ -49,16 +49,16 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 			std::vector<float> colors;
 			std::vector<unsigned int> indicies;
 
-			std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
-			std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
+			//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
+			//std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
-			auto chunkStart = Utility::Time::now();
+			//auto chunkStart = Utility::Time::now();
 
 			// Iterate all chunk sections O(16)
 			int indiciesOffsetPerBlock = 0;
 			for (auto chunkSection : chunk->chunkSections)
 			{
-				std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
+				//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
 				
 				// Iterate all blocks. O(4096)
 				auto chunkSectionStart = Utility::Time::now();
@@ -210,13 +210,13 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 				}
 				auto chunkSectionEnd = Utility::Time::now();
 				
-				std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
+				//std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
 
-				std::cout << "[ChunkMeshGenerator] -> Done." << std::endl;
+				//std::cout << "[ChunkMeshGenerator] -> Done." << std::endl;
 			}
 
-			auto chunkEnd = Utility::Time::now();
-			std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
+			//auto chunkEnd = Utility::Time::now();
+			//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
 
 			// Increment counter for z axis
 			z++;
@@ -257,7 +257,7 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 			chunk->chunkMesh = newChunkMesh;
 			toalVerticies += verticeis.size();
 
-			std::cout << "[ChunkMeshGenerator] -> Total verticies: " << verticeis.size() << std::endl;
+			//std::cout << "[ChunkMeshGenerator] -> Total verticies: " << verticeis.size() << std::endl;
 		}
 
 		// Increment counter for x axis
@@ -265,6 +265,6 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(ChunkLoader* chunkLoader, Chun
 		// Reset z counter for another iteration
 		z = 0;
 	}
-	std::cout << "[ChunkMeshGenerator] Total verticies " << toalVerticies <<  std::endl;
-	std::cout << "[ChunkMeshGenerator] Done. " << std::endl;
+	//std::cout << "[ChunkMeshGenerator] Total verticies " << toalVerticies <<  std::endl;
+	//std::cout << "[ChunkMeshGenerator] Done. " << std::endl;
 }

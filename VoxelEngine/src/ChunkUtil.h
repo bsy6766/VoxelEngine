@@ -16,6 +16,18 @@ namespace Voxel
 		const static int SPAWN_CHUNK_DISTANCE = 2;
 	}
 
+	namespace Direction
+	{
+		// East = positive X
+		// West = negative X
+		// South = positive Z
+		// North = negative Z
+		const static glm::vec3 EAST = glm::vec3(1, 0, 0);
+		const static glm::vec3 WEST = glm::vec3(-1, 0, 0);
+		const static glm::vec3 SOUTH = glm::vec3(0, 0, 1);
+		const static glm::vec3 NORTH = glm::vec3(0, 0, -1);
+	}
+
 	namespace Math
 	{
 	}

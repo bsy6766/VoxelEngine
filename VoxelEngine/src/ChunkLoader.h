@@ -19,10 +19,11 @@ namespace Voxel
 	{
 		friend class ChunkMeshGenerator;
 	private:
-		// A chunk where currently player is standing
-		Chunk* currentChunk;
+		// A chunk position currently player is standing
+		glm::ivec2 currentChunkPos;
+
 		// A chunk that needs to be current chunk
-		Chunk* nextChunk;
+		
 
 		// Chunks that are manually added to be active.
 		ChunkMap* manualChunks;
@@ -36,8 +37,11 @@ namespace Voxel
 		void init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
 
 		// Check if player moved to another chunk. If so, return true.
-		bool updatePlayerPosition(const glm::vec3& position);
+		bool updatePlayerPosition(const glm::vec3& playerPosition, ChunkMap* map);
 		// update active chunk
+
+		// Clears loaded chunk and make deactive.
+		void clear();
 	};
 }
 
