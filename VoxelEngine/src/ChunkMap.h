@@ -62,12 +62,13 @@ namespace Voxel
 		bool hasChunkAtXZ(int x, int z);
 		Chunk* getChunkAtXZ(int x, int z);
 
+		void generateChunk(const int x, const int z);
+		unsigned int getSize();
+
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
 
 		// Attemp to laod chunk in map. If map already has chunk, 
 		bool attempChunkLoad(int x, int z);
-
-		void render();
 	};
 }
 

@@ -43,6 +43,8 @@ namespace Voxel
 		// Time
 		float lastTime;
 		float elapsedTime;
+		bool displayFPS;
+		bool keyFDown;
 
 		// fps
 		int fpsCounter;

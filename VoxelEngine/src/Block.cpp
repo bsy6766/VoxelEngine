@@ -104,3 +104,8 @@ bool Voxel::Block::isEmpty()
 		return false;
 	}
 }
+
+void Voxel::Block::setColor(const glm::vec3 & color)
+{
+	this->color = color;
+}

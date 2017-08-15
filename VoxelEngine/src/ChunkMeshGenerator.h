@@ -17,15 +17,15 @@ namespace Voxel
 	*	@class ChunkMeshGenerator
 	*	@brief Generates mesh for single Chunk (not chunksection)
 	*
-	*	Single cube can have 48 verticies (including color) to 0 vertex.
+	*	Single cube can have 48 vertices (including color) to 0 vertex.
 	*	There are 4096 cubes in 16 x 16 x 16 (4096) in single chunk.
 	*	There is total 16 chucnk sections at this moment which equals to 65536 blocks.
-	*	65536 * 48 (max) verticies are 3145728, which is too much.
+	*	65536 * 48 (max) vertices are 3145728, which is too much.
 	*
 	*	So this is why we need mesh generator. 
 	*	Chunk mesh generator will only generate mesh that is visible. 
 	*	Speaking of visible, it means that block that is next to transparent block like air, glass, etc.
-	*	By doing this we can dramtically reduce the size of verticies and increase rendering performance
+	*	By doing this we can dramtically reduce the size of vertices and increase rendering performance
 	*
 	*	(Planned) However, we can once more optimize, with extra computaion.
 	*	We can determine that which side of face on block that can be visible by player's position
@@ -36,14 +36,18 @@ namespace Voxel
 	*/
 	class ChunkMeshGenerator
 	{
-	private:
-		// Returns list of block that is adjacent (up, left, right, down) from current world coordinate
-		std::vector<glm::ivec3> getAdjacentBlockWorldCoordinate(const glm::ivec3& curWorldCoordiate);
 	public:
 		ChunkMeshGenerator() = default;
 		~ChunkMeshGenerator() = default;
 
-		void generateChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap);
+		// Generates mesh for single chunk
+		void generateSingleChunkMesh(Chunk* chunk, ChunkMap* chunkMap);
+		// Generates mesh for all chunk in chunk loader
+		void generateAllChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap);
+		// Generates mesh for all chunk that is only new.
+		// This functions needs to be called only chunk loader is updated.
+		// The reason why we use this function is because i
+		void generateNewChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap, const glm::ivec2& mod);
 	};
 }
 

@@ -37,8 +37,11 @@ namespace Voxel
 		void init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
 
 		// Check if player moved to another chunk. If so, return true.
-		bool updatePlayerPosition(const glm::vec3& playerPosition, ChunkMap* map);
+		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);
 		// update active chunk
+
+		// Render active chunks
+		void render();
 
 		// Clears loaded chunk and make deactive.
 		void clear();

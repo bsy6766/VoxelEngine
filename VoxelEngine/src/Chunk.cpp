@@ -139,3 +139,12 @@ bool Voxel::Chunk::isActive()
 {
 	return active;
 }
+
+void Voxel::Chunk::releaseMesh()
+{
+	if (chunkMesh)
+	{
+		delete chunkMesh;
+		chunkMesh = nullptr;
+	}
+}

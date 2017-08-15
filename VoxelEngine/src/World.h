@@ -41,6 +41,11 @@ namespace Voxel
 		void initDebugCube();
 		ChunkMesh* chunkMesh;
 		*/
+		bool cameraMode;
+		bool keyCDown;
+		bool cameraControlMode;
+		bool keyXDown;
+		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
 		// Chunks
 		ChunkMap* chunkMap;
@@ -61,7 +66,7 @@ namespace Voxel
 		void updateMouseInput(const float delta);
 		void updateControllerInput(const float delta);
 		// Check if chunk loader needs to be updated
-		void updateChunkLoader();
+		void updateChunks();
 	public:
 		World();
 		~World();

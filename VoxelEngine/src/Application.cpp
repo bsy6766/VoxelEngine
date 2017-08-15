@@ -21,6 +21,8 @@ Application::Application()
 	: world(nullptr)
 	, fpsCounter(0)
 	, fpsLastTime(0)
+	, displayFPS(false)
+	, keyFDown(false)
 	//, controllerManager(nullptr)
 {
 	cout << "Creating Application" << endl;
@@ -139,6 +141,7 @@ void Application::initWindow()
 	}
 
 	window = glfwCreateWindow(screenWidth, screenHeight, title.c_str(), monitor, nullptr);
+	glfwSetWindowPos(window, 100 - 1920, 100);
 
 	if (!window)
 	{
@@ -204,7 +207,7 @@ void Voxel::Application::initMainCamera()
 {
 	//Camera::mainCamera = Camera::create(vec3(0), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
 	//Camera::mainCamera->addAngle(glm::vec3(0));
-	Camera::mainCamera = Camera::create(vec3(0, 0, -20), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.03f, 1000.0f, 1280.0f / 720.0f);
 	Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
 }
 
@@ -235,7 +238,10 @@ void Application::updateFPS()
 
 	if (curTime - fpsLastTime > 1.0)
 	{
-		std::cout << "fps = " << fpsCounter << std::endl;
+		if (displayFPS)
+		{
+			std::cout << "fps = " << fpsCounter << std::endl;
+		}
 		fpsCounter = 0;
 		fpsLastTime += 1.0;
 	}
@@ -255,6 +261,16 @@ void Application::run()
 	while (!glfwWindowShouldClose(window))
 	{
 		updateFPS();
+
+		if (keyFDown == false && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		{
+			keyFDown = true;
+		}
+		else if (keyFDown && glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)
+		{
+			keyFDown = false;
+			displayFPS = !displayFPS;
+		}
 
 		updateTime();
 

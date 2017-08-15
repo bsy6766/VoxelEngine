@@ -156,3 +156,8 @@ void Voxel::Player::setRotation(const glm::vec3 & newRotation)
 	rotation = newRotation;
 	updateViewMatrix();
 }
+
+glm::vec3 Voxel::Player::getRotation()
+{
+	return rotation; 
+}

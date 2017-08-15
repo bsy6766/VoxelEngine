@@ -54,6 +54,8 @@ namespace Voxel
 
 		bool isTransparent();
 		bool isEmpty();
+
+		void setColor(const glm::vec3& color);
 	};
 }
 

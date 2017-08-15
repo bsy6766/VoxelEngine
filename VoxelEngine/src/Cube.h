@@ -2,12 +2,13 @@
 #define CUBE_H
 
 #include <vector>
+#include <glm\glm.hpp>
 
 namespace Voxel
 {
 	/**
 	*	@class Cube
-	*	@brief Static class that provides cube verticies
+	*	@brief Static class that provides cube vertices
 	*/
 	class Cube
 	{
@@ -34,27 +35,27 @@ namespace Voxel
 		static int countFaceBit(Face face);
 	public:
 		// Cube size of 1 oriented zero to positive
-		//const static std::vector<float> verticies;
-		const static std::vector<std::vector<float>> allVerticies;
+		//const static std::vector<float> vertices;
+		const static std::vector<std::vector<float>> allVertices;
 
-		const static std::vector<float> FrontVerticies;
-		const static std::vector<float> BackVerticies;
-		const static std::vector<float> LeftVerticies;
-		const static std::vector<float> RightVerticies;
-		const static std::vector<float> TopVerticies;
-		const static std::vector<float> BottomVerticies;
+		const static std::vector<float> FrontVertices;
+		const static std::vector<float> BackVertices;
+		const static std::vector<float> LeftVertices;
+		const static std::vector<float> RightVertices;
+		const static std::vector<float> TopVertices;
+		const static std::vector<float> BottomVertices;
 
-		const static std::vector<unsigned int> faceIndicies;
-		const static std::vector<unsigned int> indicies;
+		const static std::vector<unsigned int> faceIndices;
+		const static std::vector<unsigned int> indices;
 
-		// Get cube verticies without any color
-		static std::vector<float> getVerticies();
-		// Get cube verticies on specific face
-		static std::vector<float> getVerticies(Face face);
-		// Get cube verticies with color
-		static std::vector<float> getVerticies(Face face, float r, float g, float b);
-		// Get cube indicies
-		static std::vector<unsigned int> getIndicies(Face face, const int cubeOffset);
+		// Get cube vertices without any color
+		static std::vector<float> getVertices();
+		// Get cube vertices on specific face
+		static std::vector<float> getVertices(Face face, const glm::vec3& translation);
+		// Get color
+		static std::vector<float> getColors(const Face face, glm::vec3 color);
+		// Get cube indices
+		static std::vector<unsigned int> getIndices(Face face, const int cubeOffset);
 	};
 }
 

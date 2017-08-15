@@ -46,6 +46,10 @@ namespace Voxel
 		// active state. Only active chunk can be queried
 		bool active;
 
+		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
+		double timestamp;
+
+		// Initialize
 		bool init(int x, int z);
 	public:
 		~Chunk();
@@ -68,6 +72,7 @@ namespace Voxel
 
 		void setActive(const bool state);
 		bool isActive();
+		void releaseMesh();
 	};
 
 }

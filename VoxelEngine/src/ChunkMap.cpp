@@ -138,6 +138,24 @@ Chunk * Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 	}
 }
 
+void Voxel::ChunkMap::generateChunk(const int x, const int z)
+{
+	// for sake, just check one more time
+	if (!hasChunkAtXZ(x, z))
+	{
+		Chunk* newChunk = Chunk::create(x, z);
+		map.emplace(glm::ivec2(x, z), newChunk);
+
+		// Add to LUt
+		chunkLUT.emplace(glm::ivec2(x, z));
+	}
+}
+
+unsigned int Voxel::ChunkMap::getSize()
+{
+	return map.size();
+}
+
 Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 {
 	int chunkX = x / Constant::CHUNK_SECTION_WIDTH;
@@ -234,12 +252,4 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 bool Voxel::ChunkMap::attempChunkLoad(int x, int z)
 {
 	return false;
-}
-
-void Voxel::ChunkMap::render()
-{
-	for (auto chunk : map)
-	{
-		(chunk.second)->render();
-	}
 }

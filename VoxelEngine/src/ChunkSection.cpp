@@ -2,6 +2,7 @@
 #include <Block.h>
 #include <iostream>
 #include <ChunkUtil.h>
+#include <Color.h>
 
 using namespace Voxel;
 
@@ -51,6 +52,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 	// Fill vector in order of width(x), length(z) and then height(y)
 	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
+	auto color = Color::getRandomColor();
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
 	{
 		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
@@ -61,6 +63,8 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 				if (newBlock)
 				{
 					blocks.push_back(newBlock);
+					// debug
+					newBlock->setColor(color);
 				}
 				else
 				{

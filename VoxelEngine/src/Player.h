@@ -34,7 +34,7 @@ namespace Voxel
 		bool fly;
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
-		void updateViewMatrix();
+
 
 		void wrapAngle(float& axis);
 	public:
@@ -53,6 +53,7 @@ namespace Voxel
 		void addRotationX(const float x);
 		void addRotationY(const float y);
 		void setRotation(const glm::vec3& newRotation);
+		glm::vec3 getRotation();
 
 		// Movement by inputs
 		void moveFoward(const float delta);
@@ -64,7 +65,9 @@ namespace Voxel
 		void jump();
 		void sneak();
 
-		void setFly(const bool mode);
+		void setFly(const bool mode);		
+		
+		void updateViewMatrix();
 
 		glm::mat4 getVP(const glm::mat4& projection);
 	};

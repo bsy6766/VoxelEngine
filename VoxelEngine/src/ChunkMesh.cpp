@@ -12,17 +12,16 @@ ChunkMesh::ChunkMesh()
 	, vbo(0)
 	, cbo(0)
 	, ibo(0)
-	, tbo(0)
 {
 }
 
 ChunkMesh::~ChunkMesh()
 {
-	// Todo: Instead of deleting verticies, freeze chunk and save mesh for future?
+	// Todo: Instead of deleting vertices, freeze chunk and save mesh for future?
 	// clear vector
-	verticies.clear();
+	vertices.clear();
 	colors.clear();
-	indicies.clear();
+	indices.clear();
 
 	// Delte buffers
 	glDeleteBuffers(1, &vbo);
@@ -32,25 +31,12 @@ ChunkMesh::~ChunkMesh()
 	glDeleteVertexArrays(1, &vao);
 }
 
-void Voxel::ChunkMesh::initBuffer(const std::vector<float>& verticies, const std::vector<float>& colors, const std::vector<unsigned int>& indicies)
+void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices)
 {
-	// Copy verticies
-	this->verticies = verticies;
+	// Copy vertices
+	this->vertices = vertices;
 	this->colors = colors;
-	this->indicies = indicies;
-}
-
-void Voxel::ChunkMesh::initMatrix(const std::vector<glm::vec3>& blockPositions)
-{
-	positions = blockPositions;
-	for (auto pos : positions)
-	{
-		pos *= 10.0f;
-	}
-	for (auto pos : blockPositions)
-	{
-		this->transforms.push_back(glm::translate(mat4(1.0f), pos));
-	}
+	this->indices = indices;
 }
 
 void Voxel::ChunkMesh::initOpenGLObjects()
@@ -66,13 +52,13 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	glGenBuffers(1, &vbo);
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// Load cube verticies
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->verticies.size(), &this->verticies.front(), GL_STATIC_DRAW);
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->vertices.size(), &this->vertices.front(), GL_STATIC_DRAW);
 
 	// Get program
 	auto program = ProgramManager::getInstance().getDefaultProgram();
 
-	// Enable verticies attrib
+	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 	//GLint transformLoc = program->getAttribLocation("modelTransform");
@@ -95,34 +81,23 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	//glVertexAttribDivisor(colorLoc, 1);
 
-	// 4. TBO
-	// Generate buffer object
-	/*
-	glGenBuffers(1, &tbo);
-	glBindBuffer(GL_ARRAY_BUFFER, tbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * this->transforms.size(), &this->transforms.front(), GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * this->positions.size(), &this->positions.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(transformLoc);
-	glVertexAttribPointer(transformLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glVertexAttribDivisor(transformLoc, 1);
-	*/
-
 	// 4. IBO
-	// Generate indicies object
+	// Generate indices object
 	glGenBuffers(1, &ibo);
-	// Bind indicies
+	// Bind indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// Load indicies
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indicies.size(), &this->indicies[0], GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indicies.size(), &this->indicies.front(), GL_STATIC_DRAW);
+	// Load indices
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices.front(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 }
 
-void Voxel::ChunkMesh::initTest(const std::vector<float>& verticies, const std::vector<unsigned int>& indicies)
+/*
+void Voxel::ChunkMesh::initTest(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
 {
-	this->verticies = verticies;
-	this->indicies = indicies;
+	this->vertices = vertices;
+	this->indices = indices;
 
 	// Generate vertex array object
 	glGenVertexArrays(1, &vao);
@@ -134,10 +109,10 @@ void Voxel::ChunkMesh::initTest(const std::vector<float>& verticies, const std::
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	// Load cube verticies
-	glBufferData(GL_ARRAY_BUFFER, sizeof(this->verticies) * this->verticies.size(), &this->verticies[0], GL_STATIC_DRAW);
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices) * this->vertices.size(), &this->vertices[0], GL_STATIC_DRAW);
 
-	// Enable verticies attrib
+	// Enable vertices attrib
 	auto program = ProgramManager::getInstance().getDefaultProgram();
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
@@ -150,17 +125,18 @@ void Voxel::ChunkMesh::initTest(const std::vector<float>& verticies, const std::
 	// unbind buffer
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// Generate indicies object
+	// Generate indices object
 	glGenBuffers(1, &ibo);
-	// Bind indicies
+	// Bind indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// Load indicies
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(this->indicies) * this->indicies.size(), &this->indicies[0], GL_STATIC_DRAW);
+	// Load indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(this->indices) * this->indices.size(), &this->indices[0], GL_STATIC_DRAW);
 	// unbind buffer
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 }
+*/
 
 void ChunkMesh::bind()
 {
@@ -180,11 +156,16 @@ void ChunkMesh::render()
 		offset += 3;
 	}
 
-	glDrawElements(GL_TRIANGLES, this->indicies.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
 	//glDrawElements(GL_TRIANGLES, 3 + offset, GL_UNSIGNED_INT, 0);
 }
 
 void ChunkMesh::unbind()
 {
 	glBindVertexArray(0);
+}
+
+int Voxel::ChunkMesh::getVerticesSize()
+{
+	return vertices.size();
 }
