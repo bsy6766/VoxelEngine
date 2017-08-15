@@ -16,6 +16,7 @@ namespace Voxel
 	class ChunkLoader;
 	class ChunkMeshGenerator;
 	class InputHandler;
+	class Player;
 
 	/**
 	*	@class World
@@ -28,7 +29,6 @@ namespace Voxel
 	class World
 	{
 	private:
-
 		// temp
 		GLuint vao;
 		GLuint vbo;
@@ -47,20 +47,24 @@ namespace Voxel
 
 		// temp
 		ChunkMesh* chunkMesh;
+
+		// Player
+		Player* player;
+
+		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
+		double mouseX;
+		double mouseY;
+
+		void initPlayer();
 	public:
 		World();
 		~World();
 
 		InputHandler* input;
-		float cameraMovementSpeed;
-
-		float prevX, prevY;
 
 		// Updates (tick) the world.
 		void update(const float delta);
 		void render(const float delta);
-
-		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 	};
 }
 

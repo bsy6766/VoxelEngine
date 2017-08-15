@@ -16,6 +16,7 @@
 #include <Cube.h>
 #include <Utility.h>
 #include <Color.h>
+#include <Player.h>
 
 #include <GLFW\glfw3.h>
 
@@ -25,15 +26,12 @@ World::World()
 	: chunkMap(nullptr)
 	, chunkLoader(nullptr)
 	, chunkMeshGenerator(nullptr)
-	, cameraMovementSpeed(15.0f)
 	, input(&InputHandler::getInstance())
+	, player(nullptr)
+	, mouseX(0)
+	, mouseY(0)
 {
 	Utility::Random::setSeed("ENGINE");
-
-	double x, y;
-	input->getMousePosition(x, y);
-	prevX = static_cast<float>(x);
-	prevY = static_cast<float>(y);
 
 	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
 	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
@@ -41,6 +39,7 @@ World::World()
 
 	//initDebugCube();
 	initTestChunk();
+	initPlayer();
 
 	input->setCursorToCenter();
 }
@@ -53,6 +52,17 @@ World::~World()
 	delete chunkMeshGenerator;
 
 	//delete chunkMesh;
+
+	if (player)
+		delete player;
+}
+
+void World::initPlayer()
+{
+	player = new Player();
+	player->init(glm::vec3(0, 0, -20.0f));
+	player->setRotation(glm::vec3(0, 180.0f, 0));
+	player->setFly(true);
 }
 
 void Voxel::World::initDebugCube()
@@ -137,60 +147,64 @@ void Voxel::World::initTestChunk()
 	chunkMeshGenerator->generateChunkMesh(chunkLoader, chunkMap);
 }
 
-glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
-{
-	float angle = 0;
-	if (axis.y == 1.0f)
-	{
-		angle = Camera::mainCamera->getAngleY();
-	}
-
-	angle += angleMod;
-
-	if (angle < 0) angle += 360.0f;
-	else if (angle >= 360.0f) angle -= 360.0f;
-
-	auto rotateMat = glm::rotate(mat4(1.0f), glm::radians(angle), axis);
-	auto movedDist = glm::inverse(rotateMat) * glm::vec4(0, 0, distance, 1);
-
-	return movedDist;
-}
-
-
 void World::update(const float delta)
 {
 	// Keyboard
 	{
 		if (input->getKeyDown(GLFW_KEY_W))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			player->moveFoward(delta);
 		}
 		else if (input->getKeyDown(GLFW_KEY_S))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			player->moveBackward(delta);
 		}
 
 		if (input->getKeyDown(GLFW_KEY_A))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			player->moveLeft(delta);
 		}
 		else if (input->getKeyDown(GLFW_KEY_D))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			player->moveRight(delta);
 		}
 
 		if (input->getKeyDown(GLFW_KEY_SPACE))
 		{
-			Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
+			player->moveUp(delta);
 		}
 		else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
 		{
-			Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
+			player->moveDown(delta);
 		}
 
 		if (input->getKeyDown(GLFW_KEY_BACKSPACE))
 		{
 			Camera::mainCamera->print();
+		}
+	}
+
+	// Mouse
+	{
+		
+		double x, y;
+		input->getMousePosition(x, y);
+
+		double dx = x - mouseX;
+		double dy = y - mouseY;
+		mouseX = x;
+		mouseY = y;
+
+		//std::cout << "Cursor pos (" << xf << ", " << yf << ")" << std::endl;
+
+		if (dx != 0)
+		{
+			player->addRotationY(delta * static_cast<float>(dx));
+		}
+
+		if (dy != 0)
+		{
+			player->addRotationX(delta * static_cast<float>(dy));
 		}
 	}
 
@@ -202,11 +216,11 @@ void World::update(const float delta)
 			if (valueLeftAxisX  > 0.0f)
 			{
 				// Right
-				Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+				player->moveRight(delta);
 			}
 			else if (valueLeftAxisX < 0.0f)
 			{
-				Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+				player->moveLeft(delta);
 			}
 			// Else, didn't move
 
@@ -214,48 +228,36 @@ void World::update(const float delta)
 			if (valueLeftAxisY > 0.0f)
 			{
 				//foward
-				Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+				player->moveFoward(delta);
 			}
 			else if (valueLeftAxisY < 0.0f)
 			{
 				// back
-				Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+				player->moveBackward(delta);
 			}
 
 			auto valueLeftTrigger = input->getAxisValue(IO::XBOX_360::AXIS::LT);
 			if (valueLeftTrigger > 0.0f)
 			{
-				Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
+				player->moveUp(delta);
 			}
 
 			auto valueRightTrigger = input->getAxisValue(IO::XBOX_360::AXIS::RT);
 			if (valueRightTrigger > 0.0f)
 			{
-				Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
+				player->moveDown(delta);
 			}
 
 			auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
-			if (valueRightAxisX > 0.0f)
+			if (valueRightAxisX != 0.0f)
 			{
-				// Turn right
-				Camera::mainCamera->addAngle(vec3(0, delta * 100.0f, 0));
-			}
-			else if (valueRightAxisX < 0.0f)
-			{
-				// turn left
-				Camera::mainCamera->addAngle(vec3(0, delta * -100.0f, 0));
+				player->addRotationY(delta * valueRightAxisX * 0.6f);
 			}
 
 			auto valueRightAxisY = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_Y);
-			if (valueRightAxisY > 0.0f)
+			if (valueRightAxisY != 0.0f)
 			{
-				// turn down
-				Camera::mainCamera->addAngle(vec3(delta * -100.0f, 0, 0));
-			}
-			else if (valueRightAxisY < 0.0f)
-			{
-				// Turn up
-				Camera::mainCamera->addAngle(vec3(delta * 100.0f, 0, 0));
+				player->addRotationX(delta * -valueRightAxisY * 0.6f);
 			}
 		}
 	}
@@ -273,39 +275,12 @@ void World::update(const float delta)
 
 	if (input->getKeyDown(GLFW_KEY_C))
 	{
-		Camera::mainCamera->setAngle(glm::vec3(0, 180.0f, 0));
-		Camera::mainCamera->setPosition(glm::vec3(0, 0, -20.0f));
+		//Camera::mainCamera->setAngle(glm::vec3(0, 180.0f, 0));
+		//Camera::mainCamera->setPosition(glm::vec3(0, 0, -20.0f));
+
+		player->setPosition(glm::vec3(0));
+		player->setRotation(glm::vec3(0, 180.0f, 0));
 	}
-
-	if (input->getKeyDown(GLFW_KEY_V))
-	{
-		Camera::mainCamera->setAngle(glm::vec3(0));
-		Camera::mainCamera->setPosition(glm::vec3(0, 0, 20.0f));
-	}
-
-	double x, y;
-	input->getMousePosition(x, y);
-
-	float xf = static_cast<float>(x);
-	float yf = static_cast<float>(y);
-
-	float dx = xf - prevX;
-	float dy = yf - prevY;
-
-	//std::cout << "Cursor pos (" << xf << ", " << yf << ")" << std::endl;
-
-	if (dx != 0)
-	{
-		Camera::mainCamera->addAngle(vec3(0, dx * delta * 100.0f, 0));
-	}
-
-	if (dy != 0)
-	{
-		Camera::mainCamera->addAngle(vec3(dy * delta * 100.0f, 0, 0));
-	}
-
-	prevX = xf;
-	prevY = yf; 
 }
 
 void World::render(const float delta)
@@ -316,8 +291,9 @@ void World::render(const float delta)
 
 	glUseProgram(program->getObject());
 
-	program->setUniformMat4("cameraMat", Camera::mainCamera->getMatrix());
-	//program->setUniformMat4("modelMat", mat4(1.0f));
+	auto VPMatrix = player->getVP(Camera::mainCamera->getProjection());
+
+	program->setUniformMat4("cameraMat", VPMatrix);
 
 	/*
 	chunkMesh->bind();

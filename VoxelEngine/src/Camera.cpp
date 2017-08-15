@@ -54,7 +54,7 @@ mat4 Camera::getMatrix()
 		//curMatrix = getProjection() * getView();
 		curMatrix = glm::translate(getProjection() * getOrientation(), -position);
 		needUpdate = false;
-		print();
+		//print();
 	}
 
 	return curMatrix;

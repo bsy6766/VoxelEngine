@@ -20,6 +20,7 @@ void Voxel::InputHandler::update()
 	controllerManager->update();
 }
 
+
 void Voxel::InputHandler::initControllerManager()
 {
 	controllerManager->onButtonPressed = InputHandler::onButtonPressed;

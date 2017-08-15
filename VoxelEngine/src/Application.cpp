@@ -200,8 +200,10 @@ void Application::initOpenGL()
 
 void Voxel::Application::initMainCamera()
 {
-	Camera::mainCamera = Camera::create(vec3(0, 0.0f, -20.0f), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
-	Camera::mainCamera->addAngle(glm::vec3(0, 180.0f, 0));
+	//Camera::mainCamera = Camera::create(vec3(0), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	//Camera::mainCamera->addAngle(glm::vec3(0));
+	Camera::mainCamera = Camera::create(vec3(0, 0, -20), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
+	Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
 }
 
 void Voxel::Application::initWorld()
@@ -230,7 +232,7 @@ void Application::run()
 	input.setCursorToCenter();
 	input.initControllerManager();
 	input.update();
-
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		updateTime();
@@ -238,9 +240,11 @@ void Application::run()
 		input.update();
 
 		world->update(elapsedTime);
+
 		world->render(elapsedTime);
 
 		glfwSwapBuffers(window);
+
 		glfwPollEvents();
 	}
 }
