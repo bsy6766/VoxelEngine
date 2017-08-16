@@ -234,7 +234,7 @@ std::vector<float> Voxel::Cube::getVertices(Face face, const glm::vec3& translat
 	}
 }
 
-std::vector<float> Voxel::Cube::getColors(const Face face, glm::vec3 color)
+std::vector<float> Voxel::Cube::getColors3(const Face face, glm::vec3 color)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -306,6 +306,91 @@ std::vector<float> Voxel::Cube::getColors(const Face face, glm::vec3 color)
 				colors.push_back(bottomColor.r);
 				colors.push_back(bottomColor.g);
 				colors.push_back(bottomColor.b);
+			}
+		}
+
+		return colors;
+	}
+}
+
+std::vector<float> Voxel::Cube::getColors4(const Face face, glm::vec4 color)
+{
+	if (face == Cube::Face::NONE)
+	{
+		return std::vector<float>();
+	}
+	else
+	{
+		std::vector<float> colors;
+
+		if (face & Cube::Face::FRONT)
+		{
+			glm::vec3 sideColor = color * 0.8f;
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(sideColor.r);
+				colors.push_back(sideColor.g);
+				colors.push_back(sideColor.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		if (face & Cube::Face::LEFT)
+		{
+			glm::vec3 sideColor = color * 0.8f;
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(sideColor.r);
+				colors.push_back(sideColor.g);
+				colors.push_back(sideColor.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		if (face & Cube::Face::BACK)
+		{
+			glm::vec3 sideColor = color * 0.8f;
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(sideColor.r);
+				colors.push_back(sideColor.g);
+				colors.push_back(sideColor.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		if (face & Cube::Face::RIGHT)
+		{
+			glm::vec3 sideColor = color * 0.8f;
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(sideColor.r);
+				colors.push_back(sideColor.g);
+				colors.push_back(sideColor.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		if (face & Cube::Face::TOP)
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(color.r);
+				colors.push_back(color.g);
+				colors.push_back(color.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		if (face & Cube::Face::BOTTOM)
+		{
+			glm::vec3 bottomColor = color * 0.4f;
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(bottomColor.r);
+				colors.push_back(bottomColor.g);
+				colors.push_back(bottomColor.b);
+				colors.push_back(color.a);
 			}
 		}
 

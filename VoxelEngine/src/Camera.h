@@ -27,6 +27,7 @@ namespace Voxel
 
 		vec3 position;
 		float fovy;
+		float fovx;
 		float aspect;
 		float nears;
 		float fars;
@@ -36,6 +37,8 @@ namespace Voxel
 		bool needUpdate;
 
 		mat4 curMatrix;
+
+		void initFrustumPlanes();
 
 		void wrapAngle();
 		void wrapAngle(float& axis);
@@ -65,6 +68,15 @@ namespace Voxel
 		float getAngleY();
 
 		void print();
+
+
+		vec4 nearPlane;
+		vec4 farPlane;
+		vec4 leftPlane;
+		vec4 rightPlane;
+
+		void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
+		bool isPointIsInFrustum(const vec3& point, const mat4& playerViewMat);
 	};
 }
 

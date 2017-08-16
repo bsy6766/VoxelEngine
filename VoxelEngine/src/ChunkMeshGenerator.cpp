@@ -151,7 +151,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 					}
 
 					// temporary function for fake lighting. 
-					auto blockColors = Cube::getColors(static_cast<Cube::Face>(face), block->color);					
+					//auto blockColors = Cube::getColors3(static_cast<Cube::Face>(face), block->color);
+					auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(block->color, 1.0f));
 					for (auto color : blockColors)
 					{
 						colors.push_back(color);

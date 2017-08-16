@@ -79,7 +79,8 @@ namespace Voxel
 		// Get cube vertices on specific face
 		static std::vector<float> getVertices(Face face, const glm::vec3& translation);
 		// Get color
-		static std::vector<float> getColors(const Face face, glm::vec3 color);
+		static std::vector<float> getColors3(const Face face, glm::vec3 color);
+		static std::vector<float> getColors4(const Face face, glm::vec4 color);
 		// Get cube indices
 		static std::vector<unsigned int> getIndices(Face face, const int cubeOffset);
 	};

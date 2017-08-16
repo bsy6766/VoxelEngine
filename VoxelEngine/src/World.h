@@ -49,12 +49,19 @@ namespace Voxel
 		void initDebugCube();
 		ChunkMesh* chunkMesh;
 		*/
-
+		/*
 		ChunkMesh* debugPlayerCube;
 		void initDebugPlayerCube();
 		GLuint vao;
 		GLuint vbo;
 		GLuint cbo;
+		*/
+
+		// For camera frustum
+		GLuint vao;
+		GLuint vbo;
+		GLuint cbo;
+		void initDebugCamerafrustum();
 
 		bool cameraMode;
 		bool keyCDown;

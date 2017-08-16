@@ -32,7 +32,7 @@ World::World()
 	, keyCDown(false)
 	, cameraControlMode(false)
 	, keyXDown(false)
-	, debugPlayerCube(nullptr)
+	//, debugPlayerCube(nullptr)
 	, defaultProgram(nullptr)
 {
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram();
@@ -142,7 +142,8 @@ void World::initPlayer()
 	player->setFly(true);
 	player->updateViewMatrix();
 
-	initDebugPlayerCube();
+	//initDebugPlayerCube();
+	initDebugCamerafrustum();
 }
 
 /*
@@ -268,8 +269,29 @@ void World::update(const float delta)
 		//chunkQueueMutex.unlock();
 		chunkElapsedTime -= 0.5f;
 	}
-}
 
+	if (input->getKeyDown(GLFW_KEY_Y))
+	{
+		Camera::mainCamera->updateFrustumPlane(player->getPosition(), player->getRotation());
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+		GLfloat frustumVertex[] = {
+			Camera::mainCamera->nearPlane.x, 1, Camera::mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
+			Camera::mainCamera->nearPlane.z, 1, Camera::mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
+			Camera::mainCamera->farPlane.x, 1, Camera::mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+			Camera::mainCamera->nearPlane.z, 1, Camera::mainCamera->nearPlane.w, 1, 0, 0, 0.5f, 
+			Camera::mainCamera->farPlane.x, 1, Camera::mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+			Camera::mainCamera->farPlane.z, 1, Camera::mainCamera->farPlane.w, 1, 0, 0, 0.5f,
+		};
+
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(frustumVertex), frustumVertex);
+
+
+		glBindVertexArray(0);
+	}
+}
+/*
 void Voxel::World::initDebugPlayerCube()
 {
 	//debugPlayerCube = new ChunkMesh();
@@ -327,17 +349,6 @@ void Voxel::World::initDebugPlayerCube()
 		1, 0, 0
 	};
 
-	/*
-	// Generate buffer object
-	glGenBuffers(1, &cbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-
-	// Load cube vertices
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(color2), color2, GL_STATIC_DRAW);
-	*/
-
 	// Enable vertices attrib
 	GLint vertLoc = defaultProgram->getAttribLocation("vert");
 	GLint colorLoc = defaultProgram->getAttribLocation("color");
@@ -349,14 +360,46 @@ void Voxel::World::initDebugPlayerCube()
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
-	// vert
-	//glEnableVertexAttribArray(vertLoc);
-	//glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	// color
-	//glEnableVertexAttribArray(colorLoc);
-	//glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
 	glBindVertexArray(0);
+}
+*/
+
+void Voxel::World::initDebugCamerafrustum()
+{
+	// Generate vertex array object
+	glGenVertexArrays(1, &vao);
+	// Bind it
+	glBindVertexArray(vao);
+
+	// Generate buffer object
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	auto mainCamera = Camera::mainCamera;
+
+
+
+	GLfloat frustumVertex[] = {
+		mainCamera->nearPlane.x, 1, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, 1, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, 1, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, 1, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, 1, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.z, 1, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
+	};
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(frustumVertex), frustumVertex, GL_STATIC_DRAW);
+
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -606,12 +649,14 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("cameraMat", mat);
 
 
-	//chunkLoader->render();
+	chunkLoader->render();
+
 
 	glBindVertexArray(vao);
-	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawArrays(GL_LINES, 0, 2);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//glDrawArrays(GL_LINES, 0, 2);
 	glBindVertexArray(0);
+
 
 	glUseProgram(0);
 

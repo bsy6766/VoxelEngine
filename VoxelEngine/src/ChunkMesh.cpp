@@ -78,7 +78,7 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	// color
 	glEnableVertexAttribArray(colorLoc);
 	//glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 	//glVertexAttribDivisor(colorLoc, 1);
 
 	// 4. IBO
