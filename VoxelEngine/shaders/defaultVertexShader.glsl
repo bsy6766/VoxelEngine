@@ -1,11 +1,11 @@
 #version 430
 
 layout(location = 0) in vec3 vert;
-layout(location = 1) in vec3 color;
+layout(location = 1) in vec4 color;
 
 uniform mat4 cameraMat;
 
-out vec3 vertColor;
+out vec4 vertColor;
 
 void main()
 {
