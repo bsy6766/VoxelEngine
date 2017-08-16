@@ -41,9 +41,6 @@ namespace Voxel
 		// Color
 		glm::vec3 color;
 
-		// Matrix
-		glm::mat4 matrix;
-
 		// ID
 		BLOCK_ID id;
 

@@ -33,7 +33,6 @@ using namespace Voxel;
 			z-  y- x-
 */
 
-
 /*
 const std::vector<std::vector<float>> Cube::vertices = {
 	// x, y, z

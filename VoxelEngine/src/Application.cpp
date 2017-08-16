@@ -101,17 +101,6 @@ void Application::run()
 	}
 
 	cleanUp();
-		/*
-		if (keyFDown == false && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-		{
-			keyFDown = true;
-		}
-		else if (keyFDown && glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)
-		{
-			keyFDown = false;
-			displayFPS = !displayFPS;
-		}
-		*/
 }
 
 void Voxel::Application::end()
@@ -137,6 +126,8 @@ void Voxel::Application::cleanUp()
 
 	if (world)
 	{
+		world->threadRunning = false;
+		world->cv.notify_all();
 		delete world;
 	}
 

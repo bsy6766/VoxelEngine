@@ -33,6 +33,8 @@ namespace Voxel
 		double elapsedTime;
 		int fps;
 		double fpsElapsedTime;
+		bool fpsDisplay;
+		bool fpsKeyDown;
 
 		// Default program
 		Program* defaultProgram;
@@ -60,6 +62,8 @@ namespace Voxel
 		void resetTime();
 		int getFPS();
 		double getElaspedTime();
+
+		void setFPSDisplay(const bool mode);
 
 		void close();
 	};

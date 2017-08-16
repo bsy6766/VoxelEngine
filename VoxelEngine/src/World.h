@@ -5,6 +5,13 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 
+// Multithreading
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <list>
+#include <condition_variable>
+
 //temp
 #include <ChunkMesh.h>
 
@@ -80,6 +87,16 @@ namespace Voxel
 		~World();
 
 		InputHandler* input;
+
+
+		// threads
+		std::vector<std::thread> testThreads;
+		void testThreadFunc();
+		std::atomic<bool> threadRunning;
+		std::list<int> chunkQueue;
+		float chunkElapsedTime;
+		std::mutex chunkQueueMutex;
+		std::condition_variable cv;
 
 		// Updates (tick) the world.
 		void update(const float delta);

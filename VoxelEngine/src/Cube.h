@@ -7,6 +7,27 @@
 namespace Voxel
 {
 	/**
+	*	@class Line
+	*	@brief Static class that provides line vertices
+	*/
+	/*
+	class Line
+	{
+	private:
+		// This is static class
+		Line() = delete;
+		~Line() = delete;
+	public:
+		static std::vector<float> getvertices(const glm::vec3& start, const glm::vec3& end);
+		static std::vector<float> getColors(const glm::vec3& color);
+		static std::vector<float> getColors(const glm::vec3& colorStart, const glm::vec3& colorEnd);
+		static std::vector<float> getVertices(const glm::vec3& start, const glm::vec3& end, const glm::vec3& color);
+		static std::vector<float> getVertices(const glm::vec3& start, const glm::vec3& end, const glm::vec3& colorStart, const glm::vec3& colorEnd);
+	};
+	*/
+
+
+	/**
 	*	@class Cube
 	*	@brief Static class that provides cube vertices
 	*/
@@ -38,6 +59,7 @@ namespace Voxel
 		//const static std::vector<float> vertices;
 		const static std::vector<std::vector<float>> allVertices;
 
+		// Vertices
 		const static std::vector<float> FrontVertices;
 		const static std::vector<float> BackVertices;
 		const static std::vector<float> LeftVertices;
@@ -45,8 +67,12 @@ namespace Voxel
 		const static std::vector<float> TopVertices;
 		const static std::vector<float> BottomVertices;
 
+		// Indices
 		const static std::vector<unsigned int> faceIndices;
 		const static std::vector<unsigned int> indices;
+
+		// normals
+		const static std::vector<float> FaceNormals;
 
 		// Get cube vertices without any color
 		static std::vector<float> getVertices();

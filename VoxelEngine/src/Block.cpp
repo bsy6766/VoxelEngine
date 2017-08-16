@@ -13,7 +13,6 @@ Block::Block()
 	, localCoordinate(0)
 	, worldCoordinate(0)
 	, color(Color::WHITE)
-	, matrix(1.0f)
 {}
 
 Block::~Block()
@@ -51,9 +50,6 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	this->worldPosition.x += (static_cast<float>(chunkSectionPosition.x) * Constant::CHUNK_SECTION_WIDTH);
 	this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
 	this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
-
-	// update matrix
-	matrix = glm::translate(glm::mat4(1.0f), this->worldPosition);
 
 	//color = Color::getRandomColor();
 

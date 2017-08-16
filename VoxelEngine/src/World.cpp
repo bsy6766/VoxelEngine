@@ -42,6 +42,19 @@ World::World()
 	initChunk();
 
 	input->setCursorToCenter();
+	
+	threadRunning = true;
+
+	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
+
+	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
+	chunkElapsedTime = 0;
+	for (int i = 0; i < concurentThreadsSupported - 1; i++)
+	{
+		testThreads.push_back(std::thread(&World::testThreadFunc, this));
+		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
+	}
+	
 }
 
 World::~World()
@@ -55,6 +68,70 @@ World::~World()
 
 	if (player)
 		delete player;
+
+
+	/*
+	int threadCount = testThreads.size();
+
+	while (threadCount > 0)
+	{
+		for (auto& thread : testThreads)
+		{
+			if (thread.joinable())
+			{
+				thread.join();
+				std::cout << "joining test thread #" << thread.get_id() << std::endl;
+			}
+		}
+	}
+	*/
+
+	{
+		// wait unilt lock is free
+		std::unique_lock<std::mutex> lock(chunkQueueMutex);
+		for (auto& thread : testThreads)
+		{
+			if (thread.joinable())
+			{
+				thread.join();
+				std::cout << "joining test thread #" << thread.get_id() << std::endl;
+			}
+		}
+	}
+}
+
+void World::testThreadFunc()
+{
+	while (threadRunning)
+	{
+		{
+			std::unique_lock<std::mutex> lock(chunkQueueMutex);
+			while (chunkQueue.empty() && threadRunning)
+			{
+				cv.wait(lock);
+			}
+
+			if (threadRunning == false)
+			{
+				break;
+			}
+
+			std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
+			chunkQueue.pop_front();
+		}
+		/*
+
+		//chunkQueueMutex.lock();
+		if (chunkQueue.empty() == false)
+		{
+			//std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
+			chunkQueue.pop_front();
+		}
+		//chunkQueueMutex.unlock();
+		*/
+	}
+
+	std::cout << "Thread #" << std::this_thread::get_id() << " joining" << std::endl;
 }
 
 void World::initPlayer()
@@ -175,6 +252,22 @@ void World::update(const float delta)
 	updateMouseInput(delta);
 	updateControllerInput(delta);
 	updateChunks();
+
+	chunkElapsedTime += delta;
+	if (chunkElapsedTime > 0.5f)
+	{
+		// Add number to queue every 0.5f seconds
+		//chunkQueueMutex.lock();
+		{
+			std::unique_lock<std::mutex> lock(chunkQueueMutex);
+			chunkQueue.push_back(Utility::Random::randomInt(0, 10));
+			std::cout << "Main thread added " << chunkQueue.back() << std::endl;
+		}
+
+		cv.notify_one();
+		//chunkQueueMutex.unlock();
+		chunkElapsedTime -= 0.5f;
+	}
 }
 
 void Voxel::World::initDebugPlayerCube()

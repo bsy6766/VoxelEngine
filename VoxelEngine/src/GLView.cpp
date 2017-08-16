@@ -19,6 +19,8 @@ GLView::GLView()
 	, elapsedTime(0)
 	, fps(0)
 	, fpsElapsedTime(0)
+	, fpsDisplay(false)
+	, fpsKeyDown(false)
 {
 }
 
@@ -208,8 +210,23 @@ void Voxel::GLView::updateFPS()
 	fpsElapsedTime += elapsedTime;
 	fps++;
 
+	if (fpsKeyDown == false && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+	{
+		fpsKeyDown = true;
+	}
+	else if (fpsKeyDown && glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)
+	{
+		fpsKeyDown = false;
+		fpsDisplay = !fpsDisplay;
+	}
+
 	if (fpsElapsedTime > 1.0)
 	{
+		if (fpsDisplay)
+		{
+			std::cout << "Fps: " << fps << std::endl;
+		}
+
 		fps = 0;
 		fpsElapsedTime -= 1.0;
 	}
@@ -233,6 +250,11 @@ int Voxel::GLView::getFPS()
 double Voxel::GLView::getElaspedTime()
 {
 	return elapsedTime;
+}
+
+void Voxel::GLView::setFPSDisplay(const bool mode)
+{
+	fpsDisplay = mode;
 }
 
 void Voxel::GLView::close()
