@@ -21,6 +21,7 @@ GLView::GLView()
 	, fpsElapsedTime(0)
 	, fpsDisplay(false)
 	, fpsKeyDown(false)
+	, monitor(nullptr)
 {
 }
 
@@ -92,7 +93,7 @@ void Voxel::GLView::initWindow()
 
 	glfwWindowHint(GLFW_AUTO_ICONIFY, fullscreen ? GL_TRUE : GL_FALSE);
 
-	GLFWmonitor* monitor = nullptr;
+	monitor = nullptr;
 
 	if (fullscreen)
 	{
@@ -257,6 +258,146 @@ double Voxel::GLView::getElaspedTime()
 void Voxel::GLView::setFPSDisplay(const bool mode)
 {
 	fpsDisplay = mode;
+}
+
+bool Voxel::GLView::isFullScreen()
+{
+	return (monitor != nullptr && isWindowDecorated() == GLFW_FALSE);
+}
+
+void Voxel::GLView::setFullScreen()
+{
+	auto monitor = glfwGetPrimaryMonitor();
+
+	if (monitor == nullptr)
+	{
+		this->monitor = nullptr;
+		return;
+	}
+
+	setFullScreen(monitor);
+}
+
+void Voxel::GLView::setFullScreen(const int monitorIndex)
+{
+	auto targetMonitor = getMonitorFromIndex(monitorIndex);
+	if (targetMonitor == nullptr)
+	{
+		this->monitor = nullptr;
+		return;
+	}
+	else
+	{
+		setFullScreen(targetMonitor);
+	}
+}
+
+void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
+{
+	if (monitor == nullptr)
+	{
+		this->monitor = nullptr;
+		return;
+	}
+
+	const GLFWvidmode* videoMode = glfwGetVideoMode(this->monitor);
+	glfwSetWindowMonitor(window, this->monitor, 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
+}
+
+GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
+{
+	int count = 0;
+	GLFWmonitor** monitors = glfwGetMonitors(&count);
+	if (monitorIndex < 0 || monitorIndex >= count)
+	{
+		return nullptr;
+	}
+	else
+	{
+		return monitors[monitorIndex];
+	}
+}
+
+bool Voxel::GLView::isWindowed()
+{
+	return (monitor == nullptr && isWindowDecorated() == GLFW_TRUE);
+}
+
+void Voxel::GLView::setWindowed(int width, int height)
+{
+	if (isWindowed())
+	{
+		glfwSetWindowSize(window, width, height);
+	}
+	else
+	{
+		glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+
+		if (monitor == nullptr)
+		{
+			monitor = glfwGetPrimaryMonitor();
+		}
+
+		const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+
+		int xpos = 0, ypos = 0;
+		glfwGetMonitorPos(monitor, &xpos, &ypos);
+		xpos += (videoMode->width - width) * 0.5;
+		ypos += (videoMode->height - height) * 0.5;
+
+		monitor = nullptr;
+
+		glfwSetWindowMonitor(window, monitor, xpos, ypos, width, height, GLFW_DONT_CARE);
+	}
+}
+
+bool Voxel::GLView::isWindowedFullScreen()
+{
+	return glfwGetWindowMonitor(window) == nullptr && isWindowDecorated() == GLFW_FALSE;
+}
+
+void Voxel::GLView::setWindowedFullScreen()
+{
+	monitor = glfwGetPrimaryMonitor();
+
+	if (monitor == nullptr)
+	{
+		return;
+	}
+	else
+	{
+		setWindowedFullScreen(monitor);
+	}
+}
+
+void Voxel::GLView::setWindowedFullScreen(const int monitorIndex)
+{
+	auto targetMonitor = getMonitorFromIndex(monitorIndex);
+
+	if (targetMonitor == nullptr)
+	{
+		return;
+	}
+	else
+	{
+		setWindowedFullScreen(targetMonitor);
+	}
+}
+
+void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
+{
+	const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+
+	int xpos = 0, ypos = 0;
+	glfwGetMonitorPos(monitor, &xpos, &ypos);
+
+	glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+	glfwSetWindowMonitor(window, nullptr, xpos, ypos, videoMode->width, videoMode->height, videoMode->refreshRate);
+}
+
+bool Voxel::GLView::isWindowDecorated()
+{
+	glfwGetWindowAttrib(window, GLFW_DECORATED);
 }
 
 void Voxel::GLView::close()

@@ -26,6 +26,7 @@ namespace Voxel
 
 		// Window
 		GLFWwindow* window;
+		GLFWmonitor* monitor;
 
 		// Time & FPS
 		double currentTime;
@@ -64,6 +65,23 @@ namespace Voxel
 		double getElaspedTime();
 
 		void setFPSDisplay(const bool mode);
+
+		bool isFullScreen();
+		void setFullScreen();
+		void setFullScreen(const int monitorIndex);
+		void setFullScreen(GLFWmonitor* monitor);
+
+		GLFWmonitor* getMonitorFromIndex(const int monitorIndex);
+
+		bool isWindowed();
+		void setWindowed(int width, int height);
+		
+		bool isWindowedFullScreen();
+		void setWindowedFullScreen();
+		void setWindowedFullScreen(const int monitorIndex);
+		void setWindowedFullScreen(GLFWmonitor* monitor);
+
+		bool isWindowDecorated();
 
 		void close();
 	};
