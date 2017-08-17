@@ -91,30 +91,48 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
-		mouseButtonMap[button] = true;
-		mouseButtonTickMap[button] = true;
+		mouseButtonMap[button] = GLFW_PRESS;
+		mouseButtonTickMap[button] = GLFW_PRESS;
 	}
 	else if (action == GLFW_RELEASE)
 	{
-		mouseButtonMap[button] = false;
-		mouseButtonTickMap[button] = false;
+		mouseButtonMap[button] = GLFW_RELEASE;
+		mouseButtonTickMap[button] = GLFW_RELEASE;
 	}
-	// Else, action is GLFW_REPEAT, which we don't need
+	else if (action == GLFW_REPEAT)
+	{
+		mouseButtonMap[button] = GLFW_REPEAT;
+		mouseButtonTickMap[button] = GLFW_REPEAT;
+	}
+	else
+	{
+		mouseButtonMap[button] = -1;
+		mouseButtonTickMap[button] = -1;
+	}
 }
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
-		keyMap[key] = true;
-		keyTickMap[key] = true;
+		keyMap[key] = GLFW_PRESS;
+		keyTickMap[key] = GLFW_PRESS;
 	}
 	else if (action == GLFW_RELEASE)
 	{
-		keyMap[key] = false;
-		keyTickMap[key] = false;
+		keyMap[key] = GLFW_RELEASE;
+		keyTickMap[key] = GLFW_RELEASE;
 	}
-	// Else, action is GLFW_REPEAT, which we don't need
+	else if (action == GLFW_REPEAT)
+	{
+		keyMap[key] = GLFW_REPEAT;
+		keyTickMap[key] = GLFW_REPEAT;
+	}
+	else
+	{
+		keyMap[key] = -1;
+		keyTickMap[key] = -1;
+	}
 	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
@@ -128,11 +146,27 @@ bool InputHandler::getKeyDown(int key, const bool tick)
 {
 	if (tick)
 	{
-		return keyTickMap[key] == true;
+		auto find_key = keyTickMap.find(key);
+		if (find_key == keyTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyTickMap[key] == GLFW_PRESS;
+		}
 	}
 	else
 	{
-		return keyMap[key] == true;
+		auto find_key = keyMap.find(key);
+		if (find_key == keyMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyMap[key] == GLFW_PRESS;
+		}
 	}
 }
 
@@ -140,22 +174,140 @@ bool InputHandler::getKeyUp(int key, const bool tick)
 {
 	if (tick)
 	{
-		return keyTickMap[key] == false;
+		auto find_key = keyTickMap.find(key);
+		if (find_key == keyTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyTickMap[key] == GLFW_RELEASE;
+		}
 	}
 	else
 	{
-		return keyMap[key] == false;
+		auto find_key = keyMap.find(key);
+		if (find_key == keyMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyMap[key] == GLFW_RELEASE;
+		}
+	}
+}
+
+bool InputHandler::getKeyRepeat(int key, const bool tick)
+{
+	if (tick)
+	{
+		auto find_key = keyTickMap.find(key);
+		if (find_key == keyTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyTickMap[key] == GLFW_REPEAT;
+		}
+	}
+	else
+	{
+		auto find_key = keyMap.find(key);
+		if (find_key == keyMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return keyMap[key] == GLFW_REPEAT;
+		}
 	}
 }
 
 bool InputHandler::getMouseDown(int button, const bool tick)
 {
-	return mouseButtonMap[button] == true;
+	if (tick)
+	{
+		auto find_button = mouseButtonTickMap.find(button);
+		if (find_button == mouseButtonTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonTickMap[button] == GLFW_PRESS;
+		}
+	}
+	else
+	{
+		auto find_button = mouseButtonMap.find(button);
+		if (find_button == mouseButtonMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonMap[button] == GLFW_PRESS;
+		}
+	}
 }
 
 bool InputHandler::getMouseUp(int button, const bool tick)
 {
-	return mouseButtonMap[button] == false;
+	if (tick)
+	{
+		auto find_button = mouseButtonTickMap.find(button);
+		if (find_button == mouseButtonTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonTickMap[button] == GLFW_RELEASE;
+		}
+	}
+	else
+	{
+		auto find_button = mouseButtonMap.find(button);
+		if (find_button == mouseButtonMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonMap[button] == GLFW_RELEASE;
+		}
+	}
+}
+
+bool InputHandler::getMouseRepeat(int button, const bool tick)
+{
+	if (tick)
+	{
+		auto find_button = mouseButtonTickMap.find(button);
+		if (find_button == mouseButtonTickMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonTickMap[button] == GLFW_REPEAT;
+		}
+	}
+	else
+	{
+		auto find_button = mouseButtonMap.find(button);
+		if (find_button == mouseButtonMap.end())
+		{
+			return false;
+		}
+		else
+		{
+			return mouseButtonMap[button] == GLFW_REPEAT;
+		}
+	}
 }
 
 void Voxel::InputHandler::setCursorToCenter()

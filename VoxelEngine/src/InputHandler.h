@@ -22,13 +22,13 @@ namespace Voxel
 		// Mouse
 		double curX;
 		double curY;
-		std::unordered_map<int/*GLFW Mouse button*/, bool> mouseButtonMap;
-		std::unordered_map<int/*GLFW Mouse button*/, bool> mouseButtonTickMap;
+		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonMap;
+		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonTickMap;
 
 		// Keyboard map that saves input state
-		std::unordered_map<int/*GLFW Key*/, bool/*press or released*/> keyMap;
+		std::unordered_map<int/*GLFW Key*/, int> keyMap;
 		// Keyboard map that saves input state for only single frame
-		std::unordered_map<int/*GLFW Key*/, bool/*press or released*/> keyTickMap;
+		std::unordered_map<int/*GLFW Key*/, int> keyTickMap;
 
 		// Controller
 		ControllerManager* controllerManager;
@@ -70,8 +70,10 @@ namespace Voxel
 		// Check if key is down. Set tick true to check if it's pressed on current tick(frame)
 		bool getKeyDown(int key, const bool tick = false);
 		bool getKeyUp(int key, const bool tick = false);
+		bool getKeyRepeat(int key, const bool tick = false);
 		bool getMouseDown(int button, const bool tick = false);
 		bool getMouseUp(int button, const bool tick = false);
+		bool getMouseRepeat(int button, const bool tick = false);
 
 		// TODO: Controller id can be change at connection and disctionection. save id to player and update
 		// For now, assume it's 0
