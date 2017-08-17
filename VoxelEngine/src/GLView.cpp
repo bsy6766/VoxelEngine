@@ -7,6 +7,8 @@
 #include <Program.h>
 #include <Color.h>
 
+#include <Camera.h>
+
 using namespace Voxel;
 using std::cout;
 using std::endl;
@@ -276,15 +278,15 @@ bool Voxel::GLView::isFullScreen()
 
 void Voxel::GLView::setFullScreen()
 {
-	auto monitor = glfwGetPrimaryMonitor();
+	auto targetMonitor = glfwGetPrimaryMonitor();
 
-	if (monitor == nullptr)
+	if (targetMonitor == nullptr)
 	{
 		this->monitor = nullptr;
 		return;
 	}
 
-	setFullScreen(monitor);
+	setFullScreen(targetMonitor);
 }
 
 void Voxel::GLView::setFullScreen(const int monitorIndex)
@@ -309,8 +311,11 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 		return;
 	}
 
-	const GLFWvidmode* videoMode = glfwGetVideoMode(this->monitor);
-	glfwSetWindowMonitor(window, this->monitor, 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
+	this->monitor = monitor;
+
+	const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+	glfwSetWindowMonitor(window, monitor, 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
+	glViewport(0, 0, videoMode->width, videoMode->height);
 }
 
 GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
@@ -337,6 +342,7 @@ void Voxel::GLView::setWindowed(int width, int height)
 	if (isWindowed())
 	{
 		glfwSetWindowSize(window, width, height);
+		glViewport(0, 0, width, height);
 	}
 	else
 	{
@@ -357,7 +363,13 @@ void Voxel::GLView::setWindowed(int width, int height)
 		monitor = nullptr;
 
 		glfwSetWindowMonitor(window, monitor, xpos, ypos, width, height, GLFW_DONT_CARE);
+		glViewport(0, 0, width, height);
 	}
+}
+
+void Voxel::GLView::setWindowPosition(int x, int y)
+{
+	glfwSetWindowPos(window, x, y);
 }
 
 bool Voxel::GLView::isWindowedFullScreen()
@@ -402,6 +414,7 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 
 	glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
 	glfwSetWindowMonitor(window, nullptr, xpos, ypos, videoMode->width, videoMode->height, videoMode->refreshRate);
+	glViewport(0, 0, videoMode->width, videoMode->height);
 }
 
 bool Voxel::GLView::isWindowDecorated()

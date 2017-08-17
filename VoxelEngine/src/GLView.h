@@ -80,6 +80,7 @@ namespace Voxel
 
 		bool isWindowed();
 		void setWindowed(int width, int height);
+		void setWindowPosition(int x, int y);
 		
 		bool isWindowedFullScreen();
 		void setWindowedFullScreen();
