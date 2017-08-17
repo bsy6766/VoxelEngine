@@ -12,6 +12,10 @@ Player::Player()
 	, fly(false)
 	, mainCamera(Camera::mainCamera)
 	, viewMatrix(mat4(1.0f))
+	, moved(false)
+	, rotated(false)
+	, direction(0)
+	, rayRange(0)
 {
 
 }
@@ -24,21 +28,25 @@ Player::~Player()
 void Player::moveFoward(const float delta)
 {
 	position += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	moved = true;
 }
 
 void Player::moveBackward(const float delta)
 {
 	position += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
+	moved = true;
 }
 
 void Player::moveLeft(const float delta)
 {
 	position += getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	moved = true;
 }
 
 void Player::moveRight(const float delta)
 {
 	position += getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	moved = true;
 }
 
 void Player::moveUp(const float delta)
@@ -53,6 +61,7 @@ void Player::moveUp(const float delta)
 		// jump
 		jump();
 	}
+	moved = true;
 }
 
 void Player::moveDown(const float delta)
@@ -67,6 +76,7 @@ void Player::moveDown(const float delta)
 		// sneak
 		sneak();
 	}
+	moved = true;
 }
 
 void Player::jump()
@@ -92,6 +102,21 @@ glm::mat4 Voxel::Player::getVP(const glm::mat4& projection)
 glm::mat4 Voxel::Player::getOrientation()
 {
 	return viewMatrix;
+}
+
+bool Voxel::Player::didMoveThisFrame()
+{
+	return moved;
+}
+
+bool Voxel::Player::didRotateThisFrame()
+{
+	return rotated;
+}
+
+glm::vec3 Voxel::Player::getRayEnd()
+{
+	return position + (direction * rayRange);
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -121,9 +146,27 @@ void Voxel::Player::updateViewMatrix()
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.z), vec3(0, 0, 1));
 }
 
+void Voxel::Player::updateDirection()
+{
+	auto defaultDiretion = glm::vec3(0, 0, -1);
+	direction = vec3(viewMatrix * vec4(defaultDiretion, 1));
+	// x direction in player's view and world is opposite
+	direction.x *= -1.0f;
+}
+
 void Voxel::Player::init(const glm::vec3 & position)
 {
+	// Todo: load player info from save file
 	this->position = position;
+	this->direction = glm::vec3(0, 0, -1);
+	// can reach up to 5 blocks from position
+	this->rayRange = 5.0f;
+}
+
+void Voxel::Player::update()
+{
+	moved = false;
+	rotated = false;
 }
 
 glm::vec3 Player::getPosition()
@@ -141,6 +184,8 @@ void Voxel::Player::addRotationX(const float x)
 	rotation.x += x * rotationSpeed;
 	wrapAngle(rotation.x);
 	updateViewMatrix();
+	updateDirection();
+	rotated = true;
 }
 
 void Voxel::Player::addRotationY(const float y)
@@ -148,6 +193,8 @@ void Voxel::Player::addRotationY(const float y)
 	rotation.y += y * rotationSpeed;
 	wrapAngle(rotation.y);
 	updateViewMatrix();
+	updateDirection();
+	rotated = true;
 }
 
 void Player::wrapAngle(float& axis)
@@ -160,6 +207,7 @@ void Voxel::Player::setRotation(const glm::vec3 & newRotation)
 {
 	rotation = newRotation;
 	updateViewMatrix();
+	updateDirection();
 }
 
 glm::vec3 Voxel::Player::getRotation()

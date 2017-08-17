@@ -20,8 +20,12 @@ namespace Voxel
 	private:
 		// World position of player
 		glm::vec3 position;
-		// direction player is viewing
+		// player's rotation angle in degree
 		glm::vec3 rotation;
+		// direction vector of player
+		glm::vec3 direction;
+		// Range in blocks that player can reach from position
+		float rayRange;
 
 		// Matrix
 		glm::mat4 viewMatrix;
@@ -32,6 +36,10 @@ namespace Voxel
 
 		// True if player can fly
 		bool fly;
+
+		// True if player moved or rotated this frame
+		bool moved;
+		bool rotated;
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
@@ -68,9 +76,18 @@ namespace Voxel
 		void setFly(const bool mode);		
 		
 		void updateViewMatrix();
+		void updateDirection();
+
+		void update();
 
 		glm::mat4 getVP(const glm::mat4& projection);
 		glm::mat4 getOrientation();
+
+		bool didMoveThisFrame();
+		bool didRotateThisFrame();
+
+		// Get end point of player's raycast
+		glm::vec3 getRayEnd();
 	};
 }
 
