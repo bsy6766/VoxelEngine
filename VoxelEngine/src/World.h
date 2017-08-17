@@ -65,6 +65,8 @@ namespace Voxel
 
 		GLuint pvao;
 		GLuint pvbo;
+		GLuint rvao;
+		GLuint rvbo;
 
 		bool cameraMode;
 		bool keyCDown;

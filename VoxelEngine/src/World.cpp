@@ -143,13 +143,15 @@ void World::testThreadFunc()
 void World::initPlayer()
 {
 	player = new Player();
-	player->init(glm::vec3(0, 60.0f, 0.0f));
+	player->init(glm::vec3(0));
 	//player->setRotation(glm::vec3(0, 180.0f, 0));
 	player->setFly(true);
 	player->updateViewMatrix();
 
 	//initDebugPlayerCube();
 	initDebugCamerafrustum();
+
+	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
 
 
 	// Generate vertex array object
@@ -163,19 +165,46 @@ void World::initPlayer()
 	glBindBuffer(GL_ARRAY_BUFFER, pvbo);
 
 	auto playerPos = player->getPosition();
+	auto playerRayEnd = player->getRayEnd();
 
 	GLfloat lines[] = {
 		playerPos.x, -100.0f, playerPos.z, 1, 0, 0,
-		playerPos.x, 300.0f, playerPos.z, 1, 0, 0
+		playerPos.x, 300.0f, playerPos.z, 1, 0, 0,
 	};
-
-	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
 
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
 	// Enable vertices attrib
 	GLint vertLoc = defaultProgram->getAttribLocation("vert");
 	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	glBindVertexArray(0);
+
+
+
+	// Generate vertex array object
+	glGenVertexArrays(1, &rvao);
+	// Bind it
+	glBindVertexArray(rvao);
+
+	// Generate buffer object
+	glGenBuffers(1, &rvbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, rvbo);
+
+	GLfloat ray[] = {
+		playerPos.x, playerPos.y, playerPos.z, 1, 0, 0,
+		playerRayEnd.x, playerRayEnd.y, playerRayEnd.z, 1, 0, 0
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
+	// Enable vertices attrib
 	// vert
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
@@ -300,6 +329,10 @@ void World::update(const float delta)
 	{
 		// If player either move or rotated, update frustum
 		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+		// After updating frustum, run frustum culling to find visible chunk
+		chunkLoader->findVisibleChunk();
+		// Also update raycast
+		chunkLoader->raycast(player->getPosition(), player->getRayEnd());
 	}
 
 	if (playerMoved)
@@ -334,46 +367,6 @@ void World::update(const float delta)
 		chunkElapsedTime -= 0.5f;
 	}
 	*/
-
-	if (input->getKeyDown(GLFW_KEY_1))
-	{
-		player->setPosition(glm::vec3(0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT))
-	{
-		player->setPosition(glm::vec3(8.0, 0, 8.0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_2))
-	{
-		player->setRotation(glm::vec3(0, 0, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_3))
-	{
-		player->setRotation(glm::vec3(0, 90, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_4))
-	{
-		player->setRotation(glm::vec3(0, 180, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_5))
-	{
-		player->setRotation(glm::vec3(0, 270, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_6))
-	{
-		player->setRotation(glm::vec3(90, 180, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_Y))
-	{
-	}
-
 	/*
 	Camera::mainCamera->updateFrustumPlane(player->getPosition(), player->getRotation());
 	glBindVertexArray(vao);
@@ -398,6 +391,7 @@ void World::update(const float delta)
 
 	glBindVertexArray(0);
 	*/
+
 
 	player->update();
 
@@ -592,6 +586,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		if (input->getKeyDown(GLFW_KEY_W))
 		{
 			player->moveFoward(delta);
+			//std::cout << "!" << std::endl;
 		}
 		else if (input->getKeyDown(GLFW_KEY_S))
 		{
@@ -645,10 +640,39 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
 	}
 
-	if (input->getKeyDown(GLFW_KEY_V))
+	if (input->getKeyDown(GLFW_KEY_1))
 	{
 		player->setPosition(glm::vec3(0));
-		player->setRotation(glm::vec3(0, 180.0f, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT))
+	{
+		player->setPosition(glm::vec3(8.0, 0, 8.0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_2))
+	{
+		player->setRotation(glm::vec3(0, 0, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_3))
+	{
+		player->setRotation(glm::vec3(0, 90, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_4))
+	{
+		player->setRotation(glm::vec3(0, 180, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_5))
+	{
+		player->setRotation(glm::vec3(0, 270, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_6))
+	{
+		player->setRotation(glm::vec3(90, 180, 0));
 	}
 }
 
@@ -694,14 +718,12 @@ void Voxel::World::updateMouseClickInput()
 {
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
-		std::cout << "mouse button 1 down" << std::endl;
-	}
 
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, false))
+	}
+	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
 		std::cout << "mouse button 1 up" << std::endl;
 	}
-
 }
 
 void Voxel::World::updateControllerInput(const float delta)
@@ -790,8 +812,26 @@ void World::render(const float delta)
 	chunkLoader->render();
 
 	glBindVertexArray(pvao);
-	defaultProgram->setUniformMat4("modelMat", glm::translate(glm::mat4(1.0f), player->getPosition()));
+
+	glm::mat4 lineMat = mat4(1.0f);
+	lineMat = glm::translate(lineMat, player->getPosition());
+	lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
+	//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
+	//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
+
+	defaultProgram->setUniformMat4("modelMat", lineMat);
 	glDrawArrays(GL_LINES, 0, 2);
+
+	glBindVertexArray(rvao);
+	glm::mat4 rayMat = mat4(1.0f);
+	rayMat = glm::translate(rayMat, player->getPosition());
+	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
+
+	defaultProgram->setUniformMat4("modelMat", rayMat);
+	glDrawArrays(GL_LINES, 0, 2);
+
 	glBindVertexArray(0);
 
 	/*

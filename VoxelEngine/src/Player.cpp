@@ -177,6 +177,7 @@ glm::vec3 Player::getPosition()
 void Voxel::Player::setPosition(const glm::vec3 & newPosition)
 {
 	position = newPosition;
+	moved = true;
 }
 
 void Voxel::Player::addRotationX(const float x)
@@ -208,6 +209,7 @@ void Voxel::Player::setRotation(const glm::vec3 & newRotation)
 	rotation = newRotation;
 	updateViewMatrix();
 	updateDirection();
+	rotated = true;
 }
 
 glm::vec3 Voxel::Player::getRotation()
