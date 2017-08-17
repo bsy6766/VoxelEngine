@@ -145,6 +145,16 @@ bool Voxel::Chunk::isActive()
 	return active;
 }
 
+void Voxel::Chunk::setVisibility(const bool visibility)
+{
+	visible = visibility;
+}
+
+bool Voxel::Chunk::isVisible()
+{
+	return visible;
+}
+
 void Voxel::Chunk::releaseMesh()
 {
 	if (chunkMesh)

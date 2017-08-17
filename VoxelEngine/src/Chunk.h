@@ -45,6 +45,8 @@ namespace Voxel
 
 		// active state. Only active chunk can be queried
 		bool active;
+		// visible state. True if chunk is visible to player
+		bool visible;
 
 		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
 		double timestamp;
@@ -62,8 +64,9 @@ namespace Voxel
 		// Checks if other chunk is next to it including diagonal
 		//bool isAdjacent(Chunk* other);
 
-		// Get position
+		// Get position of chunk in coordinate
 		glm::ivec3 getPosition();
+		// Get chunk position in world (center of chunk)
 		glm::vec3 getWorldPosition();
 
 		// Get chunkSection by Y (chunk section's y level not world pos)
@@ -73,6 +76,8 @@ namespace Voxel
 
 		void setActive(const bool state);
 		bool isActive();
+		void setVisibility(const bool visibility);
+		bool isVisible();
 		void releaseMesh();
 	};
 

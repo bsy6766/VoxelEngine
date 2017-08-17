@@ -329,6 +329,44 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 	return false;
 }
 
+void Voxel::ChunkLoader::findVisibleChunk()
+{
+	for (auto x : activeChunks)
+	{
+		for (auto chunk : x)
+		{
+			if (chunk != nullptr)
+			{
+				if (glm::ivec2(chunk->position.x, chunk->position.z) == currentChunkPos)
+				{
+					// make current chunk always visible
+					chunk->setVisibility(true);
+				}
+				else
+				{
+					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
+					chunk->setVisibility(visible);
+				}
+			}
+		}
+	}
+}
+
+void Voxel::ChunkLoader::raycast(const glm::vec3 & rayStart, const glm::vec3 & rayEnd)
+{
+	glm::vec3 diff = rayEnd - rayStart;
+
+	// iterate through all active chunk and only test chunks that are near by player
+	for (auto activeChunkX : activeChunks)
+	{
+		for (auto activeChunk : activeChunkX)
+		{
+			auto chunkPos = glm::ivec2(activeChunk->getPosition().x, activeChunk->getPosition().z);
+			auto diff = chunkPos - currentChunkPos;
+		}
+	}
+}
+
 void Voxel::ChunkLoader::render()
 {
 	//auto start = Utility::Time::now();
@@ -338,17 +376,9 @@ void Voxel::ChunkLoader::render()
 		{
 			if (chunk != nullptr)
 			{
-				if (glm::ivec2(chunk->position.x, chunk->position.z) == currentChunkPos)
+				if (chunk->isVisible())
 				{
 					chunk->render();
-				}
-				else
-				{
-					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
-					if (visible)
-					{
-						chunk->render();
-					}
 				}
 			}
 		}

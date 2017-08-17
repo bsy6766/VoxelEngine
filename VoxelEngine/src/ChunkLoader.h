@@ -38,7 +38,10 @@ namespace Voxel
 
 		// Check if player moved to another chunk. If so, return true.
 		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);
-		// update active chunk
+		// find visible chunk
+		void findVisibleChunk();
+
+		void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 
 		// Render active chunks
 		void render();
