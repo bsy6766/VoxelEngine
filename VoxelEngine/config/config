@@ -1,0 +1,11 @@
+system 
+	window 
+		resolution 
+			width 1280
+			height 720
+		mode 0
+		title Voxel Engine
+		vsync true
+build 
+	number 4
+	version 0
