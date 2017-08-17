@@ -18,6 +18,9 @@
 
 #include <GLFW\glfw3.h>
 
+#include <Application.h>
+#include <GLView.h>
+
 using namespace Voxel;
 
 World::World()
@@ -56,7 +59,6 @@ World::World()
 		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
 	*/
-	
 }
 
 World::~World()
@@ -142,7 +144,7 @@ void World::initPlayer()
 {
 	player = new Player();
 	player->init(glm::vec3(0, 60.0f, 0.0f));
-	player->setRotation(glm::vec3(0, 180.0f, 0));
+	//player->setRotation(glm::vec3(0, 180.0f, 0));
 	player->setFly(true);
 	player->updateViewMatrix();
 
@@ -287,12 +289,33 @@ void Voxel::World::initChunk()
 void World::update(const float delta)
 {
 	updateKeyboardInput(delta);
-	updateMouseInput(delta);
+	updateMouseMoveInput(delta);
+	updateMouseClickInput();
 	updateControllerInput(delta);
 
-	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+	bool playerMoved = player->didMoveThisFrame();
+	bool playerRotated = player->didRotateThisFrame();
 
-	updateChunks();
+	if (playerMoved || playerRotated)
+	{
+		// If player either move or rotated, update frustum
+		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+	}
+
+	if (playerMoved)
+	{
+		// if player moved, update chunk
+		updateChunks();
+	}
+	
+	/*
+	if (input->getKeyDown(GLFW_KEY_R))
+	{
+		std::cout << "raycasting = origin(" << rayOrigin.x << ", " << rayOrigin.y << ", " << rayOrigin.z << ")" << std::endl;
+		std::cout << "raycasting = direction(" << rayDirection.x << ", " << rayDirection.y << ", " << rayDirection.z << ")" << std::endl;
+		std::cout << "raycasting = end(" << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;
+	}
+	*/
 
 	/*
 	chunkElapsedTime += delta;
@@ -350,6 +373,8 @@ void World::update(const float delta)
 	if (input->getKeyDown(GLFW_KEY_Y))
 	{
 	}
+
+	/*
 	Camera::mainCamera->updateFrustumPlane(player->getPosition(), player->getRotation());
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -372,7 +397,12 @@ void World::update(const float delta)
 
 
 	glBindVertexArray(0);
+	*/
 
+	player->update();
+
+	// Wipe input data for current frame
+	input->postUpdate();
 }
 /*
 void Voxel::World::initDebugPlayerCube()
@@ -507,12 +537,22 @@ glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::
 
 void Voxel::World::updateKeyboardInput(const float delta)
 {
-	if (input->getKeyDown(GLFW_KEY_P))
+	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
 		Camera::mainCamera->print();
 		auto playerPos = player->getPosition();
 		auto playerRot = player->getRotation();
 		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")" << std::endl;
+	}
+
+	if (input->getKeyDown(GLFW_KEY_M, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+	{
+		Application::getInstance().getGLView()->setWindowedFullScreen(1);
+	}	
+	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+	{
+		Application::getInstance().getGLView()->setWindowed(1280, 720);
+		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 	}
 
 	// Keyboard
@@ -612,7 +652,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	}
 }
 
-void Voxel::World::updateMouseInput(const float delta)
+void Voxel::World::updateMouseMoveInput(const float delta)
 {
 	double x, y;
 	input->getMousePosition(x, y);
@@ -648,6 +688,20 @@ void Voxel::World::updateMouseInput(const float delta)
 			player->addRotationX(delta * static_cast<float>(dy));
 		}
 	}
+}
+
+void Voxel::World::updateMouseClickInput()
+{
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+	{
+		std::cout << "mouse button 1 down" << std::endl;
+	}
+
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, false))
+	{
+		std::cout << "mouse button 1 up" << std::endl;
+	}
+
 }
 
 void Voxel::World::updateControllerInput(const float delta)
@@ -740,10 +794,12 @@ void World::render(const float delta)
 	glDrawArrays(GL_LINES, 0, 2);
 	glBindVertexArray(0);
 
+	/*
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	//glDrawArrays(GL_LINES, 0, 2);
 	glBindVertexArray(0);
+	*/
 
 
 	glUseProgram(0);

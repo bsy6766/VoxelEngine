@@ -15,9 +15,6 @@
 //temp
 #include <ChunkMesh.h>
 
-#include <ft2build.h>
-#include <freetype\freetype.h>
-
 namespace Voxel
 {
 	// Foward
@@ -91,7 +88,8 @@ namespace Voxel
 		void initPlayer();
 
 		void updateKeyboardInput(const float delta);
-		void updateMouseInput(const float delta);
+		void updateMouseMoveInput(const float delta);
+		void updateMouseClickInput();
 		void updateControllerInput(const float delta);
 		// Check if chunk loader needs to be updated
 		void updateChunks();
