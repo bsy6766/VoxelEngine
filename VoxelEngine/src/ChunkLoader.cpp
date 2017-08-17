@@ -5,6 +5,7 @@
 #include <iostream>
 #include <Camera.h>
 #include <Frustum.h>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -330,6 +331,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 void Voxel::ChunkLoader::render()
 {
+	//auto start = Utility::Time::now();
 	for (auto x : activeChunks)
 	{
 		for (auto chunk : x)
@@ -342,9 +344,7 @@ void Voxel::ChunkLoader::render()
 				}
 				else
 				{
-
 					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
-
 					if (visible)
 					{
 						chunk->render();
@@ -353,6 +353,8 @@ void Voxel::ChunkLoader::render()
 			}
 		}
 	}
+	//auto end = Utility::Time::now();
+	//std::cout << " t = " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }
 
 

@@ -94,3 +94,8 @@ Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
 		return nullptr;
 	}
 }
+
+glm::vec3 Voxel::ChunkSection::getWorldPosition()
+{
+	return worldPosition;
+}

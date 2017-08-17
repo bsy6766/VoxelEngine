@@ -38,6 +38,9 @@ namespace Voxel
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);
+
+
+		glm::vec3 getWorldPosition();
 	};
 }
 

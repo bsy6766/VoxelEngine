@@ -1,5 +1,9 @@
 #include "Frustum.h"
 #include <Chunk.h>
+#include <ChunkUtil.h>
+#include <ChunkSection.h>
+#include <iostream>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -66,11 +70,14 @@ void Frustum::update(const glm::mat4& MVP)
 
 bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 {
+	//std::cout << "Frustum culling chunk at (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")" << std::endl;
+
+	/*
+	// This was used for testing frustum culling. This only checks the most bottom chunk .
 	bool result = true;
-	for (auto& plane : planes)
+
 	{
 		auto chunkWorldPos = chunk->getWorldPosition();
-		chunkWorldPos.y = 8.0f;
 
 		auto chunkBBMin = glm::vec3(chunkWorldPos.x - 8.0f, 0, chunkWorldPos.z - 8.0f);
 		auto chunkBBMax = glm::vec3(chunkWorldPos.x + 8.0f, 256.0f, chunkWorldPos.z + 8.0f);
@@ -86,73 +93,112 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 
 		std::vector<glm::vec3> chunkBorderPoints = { a, b, c, d, e, f, g, h };
 
-		// if at least one point of chunk border is visible, 
-
-		int out = 0;
-
-		for (auto& point : chunkBorderPoints)
+		for (auto& plane : planes)
 		{
-			if (plane.distanceToPoint(point) < 0)
+			// if at least one point of chunk border is visible, 
+
+			int out = 0;
+
+			for (auto& point : chunkBorderPoints)
 			{
-				out++;
+				if (plane.distanceToPoint(point) < 0)
+				{
+					out++;
+				}
+			}
+
+			if (out == 8)
+			{
+				result = false;
+				break;
+			}
+		}
+	}
+
+	return result;
+	*/
+
+	const float chunkHalf = Constant::CHUNK_BORDER_SIZE * 0.5f;
+
+	std::vector<int> visibleChunkSection;
+
+	std::vector<glm::vec3> chunkBorderPoints(8, glm::vec3(0));
+
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		auto chunkSection = chunk->getChunkSectionByY(i);
+		//std::cout << "checking chunk section at y: " << i << std::endl;
+
+		auto chunkSectionWorldPos = chunkSection->getWorldPosition();
+
+		float y = static_cast<float>(i);
+
+		auto chunkSectionMin = glm::vec3(chunkSectionWorldPos.x - chunkHalf, Constant::CHUNK_BORDER_SIZE * y, chunkSectionWorldPos.z - chunkHalf);
+		auto chunkSectionMax = glm::vec3(chunkSectionWorldPos.x + chunkHalf, Constant::CHUNK_BORDER_SIZE * y + Constant::CHUNK_BORDER_SIZE, chunkSectionWorldPos.z + chunkHalf);
+
+		chunkBorderPoints.at(0).x = chunkSectionMin.x;
+		chunkBorderPoints.at(0).y = chunkSectionMin.y;
+		chunkBorderPoints.at(0).z = chunkSectionMin.z;
+		chunkBorderPoints.at(1).x = chunkSectionMin.x;
+		chunkBorderPoints.at(1).y = chunkSectionMin.y;
+		chunkBorderPoints.at(1).z = chunkSectionMax.z;
+		chunkBorderPoints.at(2).x = chunkSectionMax.x;
+		chunkBorderPoints.at(2).y = chunkSectionMin.y;
+		chunkBorderPoints.at(2).z = chunkSectionMin.z;
+		chunkBorderPoints.at(3).x = chunkSectionMax.x;
+		chunkBorderPoints.at(3).y = chunkSectionMin.y;
+		chunkBorderPoints.at(3).z = chunkSectionMax.z;
+		chunkBorderPoints.at(4).x = chunkSectionMin.x;
+		chunkBorderPoints.at(4).y = chunkSectionMax.y;
+		chunkBorderPoints.at(4).z = chunkSectionMin.z;
+		chunkBorderPoints.at(5).x = chunkSectionMin.x;
+		chunkBorderPoints.at(5).y = chunkSectionMax.y;
+		chunkBorderPoints.at(5).z = chunkSectionMax.z;
+		chunkBorderPoints.at(6).x = chunkSectionMax.x;
+		chunkBorderPoints.at(6).y = chunkSectionMax.y;
+		chunkBorderPoints.at(6).z = chunkSectionMin.z;
+		chunkBorderPoints.at(7).x = chunkSectionMax.x;
+		chunkBorderPoints.at(7).y = chunkSectionMax.y;
+		chunkBorderPoints.at(7).z = chunkSectionMax.z;
+
+		bool sectionResult = true;
+		for (auto& plane : planes)
+		{
+			int out = 0;
+
+			for (auto& point : chunkBorderPoints)
+			{
+				if (plane.distanceToPoint(point) < 0)
+				{
+					out++;
+				}
+			}
+
+			if (out == 8)
+			{
+				sectionResult = false;
+				break;
 			}
 		}
 
-		if (out == 8)
+		if (sectionResult)
 		{
-			return false;
-		}
+			visibleChunkSection.push_back(i);
 
-		//auto VN = chunkWorldPos;
-		/*
-		if (plane.normal.x < 0)
-		{
-			VN.x += 4.0f;
-		}
+			// Todo: I'm just returning true when there is at least 1 chunk section visible from player. 
+			// To findout which chunk is visible, don't return and use the vector that contains y level of chunk sections
+			// that are visible.
 
-		if (plane.normal.y < 0)
-		{
-			VN.y += 4.0f;
+			return true;
 		}
-
-		if (plane.normal.z < 0)
-		{
-			VN.z += 4.0f;
-		}
-		*/
-
-		//auto VP = chunkWorldPos;
-
-		/*
-		if (plane.normal.x > 0)
-		{
-			VP.x += 4.0f;
-		}
-
-		if (plane.normal.y > 0)
-		{
-			VP.y += 4.0f;
-		}
-
-		if (plane.normal.z > 0)
-		{
-			VP.z += 4.0f;
-		}
-		*/
-
-		/*
-		if (plane.distanceToPoint(VN) < 0)
-		{
-			return false;
-		}
-		*/
-		/*
-		else if (plane.distanceToPoint(VP) < 0)
-		{
-			result = true;
-		}
-		*/
 	}
 
-	return true;
+	if (visibleChunkSection.empty())
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }

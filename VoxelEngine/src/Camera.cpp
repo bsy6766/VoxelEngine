@@ -110,7 +110,7 @@ void Voxel::Camera::initFrustumPlanes()
 
 void Voxel::Camera::updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation)
 {
-	auto MVP = glm::translate(getProjection() * playerOrientation, -playerPosition);
+	auto MVP = glm::translate(perspective(fovy, aspect, nears, 256.0f) * playerOrientation, -playerPosition);
 	frustum->update(MVP);
 }
 

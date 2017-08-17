@@ -342,6 +342,11 @@ void World::update(const float delta)
 		player->setRotation(glm::vec3(0, 270, 0));
 	}
 
+	if (input->getKeyDown(GLFW_KEY_6))
+	{
+		player->setRotation(glm::vec3(90, 180, 0));
+	}
+
 	if (input->getKeyDown(GLFW_KEY_Y))
 	{
 	}

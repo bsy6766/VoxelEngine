@@ -53,6 +53,7 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 
 	//color = Color::getRandomColor();
 
+	/*
 	if (worldCoordinate.y == 0)
 	{
 		id = BLOCK_ID::BEDROCK;
@@ -72,6 +73,16 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	{
 		id = BLOCK_ID::AIR;
 		color = Color::WHITE;
+	}
+	*/
+
+	if (worldCoordinate.y < 32.0f)
+	{
+		id = BLOCK_ID::GRASS;
+	}
+	else
+	{
+		id = BLOCK_ID::AIR;
 	}
 
 	return true;
