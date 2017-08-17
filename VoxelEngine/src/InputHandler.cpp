@@ -99,6 +99,7 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 		mouseButtonMap[button] = GLFW_RELEASE;
 		mouseButtonTickMap[button] = GLFW_RELEASE;
 	}
+	/*
 	else if (action == GLFW_REPEAT)
 	{
 		mouseButtonMap[button] = GLFW_REPEAT;
@@ -109,6 +110,7 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 		mouseButtonMap[button] = -1;
 		mouseButtonTickMap[button] = -1;
 	}
+	*/
 }
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
@@ -123,6 +125,7 @@ void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 		keyMap[key] = GLFW_RELEASE;
 		keyTickMap[key] = GLFW_RELEASE;
 	}
+	/*
 	else if (action == GLFW_REPEAT)
 	{
 		keyMap[key] = GLFW_REPEAT;
@@ -133,6 +136,7 @@ void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 		keyMap[key] = -1;
 		keyTickMap[key] = -1;
 	}
+	*/
 	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
