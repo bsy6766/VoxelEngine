@@ -23,16 +23,18 @@ namespace Voxel
 		double curX;
 		double curY;
 		std::unordered_map<int/*GLFW Mouse button*/, bool> mouseButtonMap;
+		std::unordered_map<int/*GLFW Mouse button*/, bool> mouseButtonTickMap;
 
-		// Keyboard
+		// Keyboard map that saves input state
 		std::unordered_map<int/*GLFW Key*/, bool/*press or released*/> keyMap;
-		//std::unordered_map<int/*GLFW modifier keys*/, bool> keyModsMap;
+		// Keyboard map that saves input state for only single frame
+		std::unordered_map<int/*GLFW Key*/, bool/*press or released*/> keyTickMap;
 
 		// Controller
 		ControllerManager* controllerManager;
 
 		void updateMousePosition(double x, double y);
-		void updateMouse(int button, int action, int mods);
+		void updateMouseButton(int button, int action, int mods);
 		void updateKeyboard(int key, int action, int mods);
 	private:
 		// Delete copy, move, assign operators
@@ -62,12 +64,14 @@ namespace Voxel
 		static void onControllerConnected(ControllerID id);
 		static void onControllerDisconnected(ControllerID id);
 		
-		// InputHandler functions
+		// InputHandler functions. 
+		// Get mouse position. Pass x, y as reference
 		void getMousePosition(double& x, double& y);
-		bool getKeyDown(int key);
-		bool getKeyUp(int key);
-		bool getMouseDown(int button);
-		bool getMouseUp(int button);
+		// Check if key is down. Set tick true to check if it's pressed on current tick(frame)
+		bool getKeyDown(int key, const bool tick = false);
+		bool getKeyUp(int key, const bool tick = false);
+		bool getMouseDown(int button, const bool tick = false);
+		bool getMouseUp(int button, const bool tick = false);
 
 		// TODO: Controller id can be change at connection and disctionection. save id to player and update
 		// For now, assume it's 0
@@ -76,6 +80,7 @@ namespace Voxel
 		bool hasController();
 
 		void update();
+		void postUpdate();
 
 		void setCursorToCenter();
 	};

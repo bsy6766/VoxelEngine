@@ -20,6 +20,12 @@ void Voxel::InputHandler::update()
 	controllerManager->update();
 }
 
+void Voxel::InputHandler::postUpdate()
+{
+	mouseButtonTickMap.clear();
+	keyTickMap.clear();
+}
+
 
 void Voxel::InputHandler::initControllerManager()
 {
@@ -50,7 +56,7 @@ void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
 
 void InputHandler::glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-	InputHandler::getInstance().updateMouse(button, action, mods);
+	InputHandler::getInstance().updateMouseButton(button, action, mods);
 }
 
 void Voxel::InputHandler::onButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button)
@@ -81,16 +87,34 @@ void InputHandler::updateMousePosition(double x, double y)
 	curY = y;
 }
 
-void Voxel::InputHandler::updateMouse(int button, int action, int mods)
+void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 {
-	mouseButtonMap[button] = action;
-	// Do we really need to update mods here?
+	if (action == GLFW_PRESS)
+	{
+		mouseButtonMap[button] = true;
+		mouseButtonTickMap[button] = true;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		mouseButtonMap[button] = false;
+		mouseButtonTickMap[button] = false;
+	}
+	// Else, action is GLFW_REPEAT, which we don't need
 }
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 {
-	keyMap[key] = action;
-
+	if (action == GLFW_PRESS)
+	{
+		keyMap[key] = true;
+		keyTickMap[key] = true;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		keyMap[key] = false;
+		keyTickMap[key] = false;
+	}
+	// Else, action is GLFW_REPEAT, which we don't need
 	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
@@ -100,22 +124,36 @@ void Voxel::InputHandler::getMousePosition(double & x, double & y)
 	y = curY;
 }
 
-bool InputHandler::getKeyDown(int key)
+bool InputHandler::getKeyDown(int key, const bool tick)
 {
-	return keyMap[key] == true;
+	if (tick)
+	{
+		return keyTickMap[key] == true;
+	}
+	else
+	{
+		return keyMap[key] == true;
+	}
 }
 
-bool InputHandler::getKeyUp(int key)
+bool InputHandler::getKeyUp(int key, const bool tick)
 {
-	return keyMap[key] == false;
+	if (tick)
+	{
+		return keyTickMap[key] == false;
+	}
+	else
+	{
+		return keyMap[key] == false;
+	}
 }
 
-bool InputHandler::getMouseDown(int button)
+bool InputHandler::getMouseDown(int button, const bool tick)
 {
 	return mouseButtonMap[button] == true;
 }
 
-bool InputHandler::getMouseUp(int button)
+bool InputHandler::getMouseUp(int button, const bool tick)
 {
 	return mouseButtonMap[button] == false;
 }
