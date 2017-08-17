@@ -3,6 +3,8 @@
 #include "Chunk.h"
 #include <ChunkUtil.h>
 #include <iostream>
+#include <Camera.h>
+#include <Frustum.h>
 
 using namespace Voxel;
 
@@ -330,11 +332,24 @@ void Voxel::ChunkLoader::render()
 {
 	for (auto x : activeChunks)
 	{
-		for (auto z : x)
+		for (auto chunk : x)
 		{
-			if (z != nullptr)
+			if (chunk != nullptr)
 			{
-				z->render();
+				if (glm::ivec2(chunk->position.x, chunk->position.z) == currentChunkPos)
+				{
+					chunk->render();
+				}
+				else
+				{
+
+					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
+
+					if (visible)
+					{
+						chunk->render();
+					}
+				}
 			}
 		}
 	}

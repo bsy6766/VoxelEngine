@@ -70,6 +70,7 @@ namespace Voxel
 		void updateViewMatrix();
 
 		glm::mat4 getVP(const glm::mat4& projection);
+		glm::mat4 getOrientation();
 	};
 }
 

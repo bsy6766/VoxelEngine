@@ -108,6 +108,11 @@ glm::ivec3 Chunk::getPosition()
 	return position;
 }
 
+glm::vec3 Chunk::getWorldPosition()
+{
+	return worldPosition;
+}
+
 ChunkSection * Voxel::Chunk::getChunkSectionByY(int y)
 {
 	if (y >= 0 && y < chunkSections.size())

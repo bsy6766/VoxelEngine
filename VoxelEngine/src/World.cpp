@@ -43,6 +43,7 @@ World::World()
 
 	input->setCursorToCenter();
 	
+	/*
 	threadRunning = true;
 
 	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
@@ -54,6 +55,7 @@ World::World()
 		testThreads.push_back(std::thread(&World::testThreadFunc, this));
 		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
+	*/
 	
 }
 
@@ -86,6 +88,7 @@ World::~World()
 	}
 	*/
 
+	/*
 	{
 		// wait unilt lock is free
 		std::unique_lock<std::mutex> lock(chunkQueueMutex);
@@ -98,6 +101,7 @@ World::~World()
 			}
 		}
 	}
+	*/
 }
 
 void World::testThreadFunc()
@@ -144,6 +148,39 @@ void World::initPlayer()
 
 	//initDebugPlayerCube();
 	initDebugCamerafrustum();
+
+
+	// Generate vertex array object
+	glGenVertexArrays(1, &pvao);
+	// Bind it
+	glBindVertexArray(pvao);
+
+	// Generate buffer object
+	glGenBuffers(1, &pvbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, pvbo);
+
+	auto playerPos = player->getPosition();
+
+	GLfloat lines[] = {
+		playerPos.x, -100.0f, playerPos.z, 1, 0, 0,
+		playerPos.x, 300.0f, playerPos.z, 1, 0, 0
+	};
+
+	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	glBindVertexArray(0);
 }
 
 /*
@@ -252,8 +289,12 @@ void World::update(const float delta)
 	updateKeyboardInput(delta);
 	updateMouseInput(delta);
 	updateControllerInput(delta);
+
+	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+
 	updateChunks();
 
+	/*
 	chunkElapsedTime += delta;
 	if (chunkElapsedTime > 0.5f)
 	{
@@ -269,27 +310,64 @@ void World::update(const float delta)
 		//chunkQueueMutex.unlock();
 		chunkElapsedTime -= 0.5f;
 	}
+	*/
+
+	if (input->getKeyDown(GLFW_KEY_1))
+	{
+		player->setPosition(glm::vec3(0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT))
+	{
+		player->setPosition(glm::vec3(8.0, 0, 8.0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_2))
+	{
+		player->setRotation(glm::vec3(0, 0, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_3))
+	{
+		player->setRotation(glm::vec3(0, 90, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_4))
+	{
+		player->setRotation(glm::vec3(0, 180, 0));
+	}
+
+	if (input->getKeyDown(GLFW_KEY_5))
+	{
+		player->setRotation(glm::vec3(0, 270, 0));
+	}
 
 	if (input->getKeyDown(GLFW_KEY_Y))
 	{
-		Camera::mainCamera->updateFrustumPlane(player->getPosition(), player->getRotation());
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-		GLfloat frustumVertex[] = {
-			Camera::mainCamera->nearPlane.x, 1, Camera::mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
-			Camera::mainCamera->nearPlane.z, 1, Camera::mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
-			Camera::mainCamera->farPlane.x, 1, Camera::mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-			Camera::mainCamera->nearPlane.z, 1, Camera::mainCamera->nearPlane.w, 1, 0, 0, 0.5f, 
-			Camera::mainCamera->farPlane.x, 1, Camera::mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-			Camera::mainCamera->farPlane.z, 1, Camera::mainCamera->farPlane.w, 1, 0, 0, 0.5f,
-		};
-
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(frustumVertex), frustumVertex);
-
-
-		glBindVertexArray(0);
 	}
+	Camera::mainCamera->updateFrustumPlane(player->getPosition(), player->getRotation());
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	auto playerY = player->getPosition().y - 10.0f;
+	playerY = 30.0f;
+
+	auto mainCamera = Camera::mainCamera;
+
+	GLfloat frustumVertex[] = {
+		mainCamera->nearPlane.x, playerY, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.z, playerY, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
+	};
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(frustumVertex), frustumVertex);
+
+
+	glBindVertexArray(0);
+
 }
 /*
 void Voxel::World::initDebugPlayerCube()
@@ -378,15 +456,16 @@ void Voxel::World::initDebugCamerafrustum()
 
 	auto mainCamera = Camera::mainCamera;
 
-
+	auto playerY = player->getPosition().y - 10.0f;
+	playerY = 30.0f;
 
 	GLfloat frustumVertex[] = {
-		mainCamera->nearPlane.x, 1, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->nearPlane.z, 1, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
-		mainCamera->farPlane.x, 1, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->nearPlane.z, 1, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
-		mainCamera->farPlane.x, 1, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->farPlane.z, 1, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.x, playerY, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+		mainCamera->farPlane.z, playerY, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(frustumVertex), frustumVertex, GL_STATIC_DRAW);
@@ -647,10 +726,14 @@ void World::render(const float delta)
 	}
 
 	defaultProgram->setUniformMat4("cameraMat", mat);
-
+	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	chunkLoader->render();
 
+	glBindVertexArray(pvao);
+	defaultProgram->setUniformMat4("modelMat", glm::translate(glm::mat4(1.0f), player->getPosition()));
+	glDrawArrays(GL_LINES, 0, 2);
+	glBindVertexArray(0);
 
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 6);

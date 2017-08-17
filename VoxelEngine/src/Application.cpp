@@ -64,7 +64,7 @@ void Voxel::Application::initMainCamera()
 {
 	//Camera::mainCamera = Camera::create(vec3(0), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
 	//Camera::mainCamera->addAngle(glm::vec3(0));
-	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.03f, 500.0f, 1280.0f / 720.0f);
+	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 500.0f, 1280.0f / 720.0f);
 	Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
 }
 

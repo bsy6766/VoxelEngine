@@ -89,6 +89,11 @@ glm::mat4 Voxel::Player::getVP(const glm::mat4& projection)
 	return glm::translate(projection * viewMatrix, -position);
 }
 
+glm::mat4 Voxel::Player::getOrientation()
+{
+	return viewMatrix;
+}
+
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;

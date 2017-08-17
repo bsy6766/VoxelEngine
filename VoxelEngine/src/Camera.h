@@ -8,6 +8,8 @@ using namespace glm;
 
 namespace Voxel
 {
+	class Frustum;
+
 	/**
 	*	@class Camera
 	*	@brief Virtual camera in 3D OpenGL world
@@ -38,6 +40,7 @@ namespace Voxel
 
 		mat4 curMatrix;
 
+		Frustum* frustum;
 		void initFrustumPlanes();
 
 		void wrapAngle();
@@ -69,14 +72,21 @@ namespace Voxel
 
 		void print();
 
-
+		// Frustum plane
 		vec4 nearPlane;
 		vec4 farPlane;
 		vec4 leftPlane;
 		vec4 rightPlane;
+		// Frustum normal
+		vec2 nearNormal;
+		vec2 farNormal;
+		vec2 leftNormal;
+		vec2 rightNormal;
+
+		void updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation);
 
 		void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
-		bool isPointIsInFrustum(const vec3& point, const mat4& playerViewMat);
+		Frustum* getFrustum();
 	};
 }
 

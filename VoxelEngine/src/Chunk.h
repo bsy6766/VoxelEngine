@@ -64,6 +64,7 @@ namespace Voxel
 
 		// Get position
 		glm::ivec3 getPosition();
+		glm::vec3 getWorldPosition();
 
 		// Get chunkSection by Y (chunk section's y level not world pos)
 		ChunkSection* getChunkSectionByY(int y);

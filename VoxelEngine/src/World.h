@@ -63,6 +63,9 @@ namespace Voxel
 		GLuint cbo;
 		void initDebugCamerafrustum();
 
+		GLuint pvao;
+		GLuint pvbo;
+
 		bool cameraMode;
 		bool keyCDown;
 		bool cameraControlMode;
