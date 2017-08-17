@@ -37,16 +37,21 @@ namespace Voxel
 		bool fpsDisplay;
 		bool fpsKeyDown;
 
+		// Screen resolution
+		int screenWidth;
+		int screenHeight;
+		std::string windowTitle;
+
 		// Default program
 		Program* defaultProgram;
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
 
-		void init(); 
+		void init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync); 
 		
 		void initGLFW();
-		void initWindow();
+		void initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync);
 		void initGLEW();
 		void initOpenGL();
 		void initDefaultShaderProgram();

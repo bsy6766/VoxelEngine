@@ -15,6 +15,9 @@
 //temp
 #include <ChunkMesh.h>
 
+#include <ft2build.h>
+#include <freetype\freetype.h>
+
 namespace Voxel
 {
 	// Foward

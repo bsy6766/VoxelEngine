@@ -11,6 +11,7 @@ namespace Voxel
 {
 	// Foward
 	class World;
+	class DataTree;
 
 	class Application
 	{
@@ -30,12 +31,15 @@ namespace Voxel
 		void initGLView();
 		void initMainCamera();
 		void initWorld();
+		void initConfig();
 
 		// wd
 		std::string workingDirectory;
 
 		// world
 		World* world;
+
+		DataTree* configData;
 
 		// Clean up
 		void cleanUp();

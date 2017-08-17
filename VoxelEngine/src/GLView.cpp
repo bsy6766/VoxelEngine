@@ -22,6 +22,9 @@ GLView::GLView()
 	, fpsDisplay(false)
 	, fpsKeyDown(false)
 	, monitor(nullptr)
+	, screenWidth(0)
+	, screenHeight(0)
+	, windowTitle("")
 {
 }
 
@@ -40,10 +43,10 @@ GLView::~GLView()
 	glfwTerminate();
 }
 
-void Voxel::GLView::init()
+void Voxel::GLView::init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
 {
 	initGLFW();
-	initWindow();
+	initWindow(screenWidth, screenHeight, windowTitle, windowMode, vsync);
 	initGLEW();
 	initOpenGL();
 
@@ -70,7 +73,7 @@ void Voxel::GLView::initGLFW()
 	}
 }
 
-void Voxel::GLView::initWindow()
+void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
 {//set to OpenGL 4.3
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -84,29 +87,37 @@ void Voxel::GLView::initWindow()
 	glfwWindowHint(GLFW_BLUE_BITS, 8);
 	glfwWindowHint(GLFW_ALPHA_BITS, 8);
 
-	// TODO: make config for these
-	bool fullscreen = false;
-	bool borderelss = false;
-	int screenWidth = 1280;
-	int screenHeight = 720;
-	std::string title = "Voxel Engine";
-
-	glfwWindowHint(GLFW_AUTO_ICONIFY, fullscreen ? GL_TRUE : GL_FALSE);
+	this->screenWidth = screenWidth;
+	this->screenHeight = screenHeight;
 
 	monitor = nullptr;
 
-	if (fullscreen)
+	if (windowMode == 0)
 	{
-		// TODO: make window fullscreen
+		// windowed
+		glfwWindowHint(GLFW_DECORATED, GL_TRUE);
+	}
+	else if (windowMode == 1)
+	{
+		// fullscreen
+		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_TRUE);
+	}
+	else if (windowMode == 2)
+	{
+		// borderless fullscreen
+		glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 	}
 	else
 	{
-		// Not fullscreen, but can be borderless
-		glfwWindowHint(GLFW_DECORATED, borderelss ? GL_FALSE : GL_TRUE);
+		// Forcing windowed to 1280 x 720 resolution
+		glfwWindowHint(GLFW_DECORATED, GL_TRUE);
+		this->screenWidth = 1280;
+		this->screenHeight = 720;
 	}
 
-	window = glfwCreateWindow(screenWidth, screenHeight, title.c_str(), monitor, nullptr);
-	glfwSetWindowPos(window, 100 - 1920, 100);
+	window = glfwCreateWindow(this->screenWidth, this->screenHeight, windowTitle.c_str(), monitor, nullptr);
+	//glfwSetWindowPos(window, 100 - 1920, 100);
 
 	if (!window)
 	{
@@ -117,8 +128,6 @@ void Voxel::GLView::initWindow()
 	// if window successfully made, make it current window
 	glfwMakeContextCurrent(window);
 
-	// Todo: move to config
-	bool vsync = true;
 	if (vsync)
 	{
 		glfwSwapInterval(0);
@@ -397,7 +406,7 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 
 bool Voxel::GLView::isWindowDecorated()
 {
-	glfwGetWindowAttrib(window, GLFW_DECORATED);
+	return glfwGetWindowAttrib(window, GLFW_DECORATED);
 }
 
 void Voxel::GLView::close()

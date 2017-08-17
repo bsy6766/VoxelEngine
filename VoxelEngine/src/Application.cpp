@@ -12,6 +12,8 @@
 #include <Camera.h>
 #include <InputHandler.h>
 
+#include <DataTree.h>
+
 using std::cout;
 using std::endl;
 using namespace Voxel;
@@ -19,6 +21,7 @@ using namespace Voxel;
 Application::Application()
 	: world(nullptr)
 	, glView(nullptr)
+	, configData(nullptr)
 {
 	cout << "Creating Application" << endl;
 
@@ -48,6 +51,8 @@ void Application::init()
 {
 	Utility::Random::setSeed("ENGINE");
 
+	initConfig();
+
 	initGLView();
 
 	initMainCamera();
@@ -57,20 +62,45 @@ void Application::init()
 void Voxel::Application::initGLView()
 {
 	glView = new GLView();
-	glView->init();
+
+	auto title = configData->getString("system.window.title") + " / version: 0 / build: " + configData->getString("build.number");
+
+	glView->init(configData->getInt("system.window.resolution.width"),
+		configData->getInt("system.window.resolution.height"), 
+		title,
+		configData->getInt("system.window.mode"),
+		configData->getBool("system.window.vsync"));
 }
 
 void Voxel::Application::initMainCamera()
 {
-	//Camera::mainCamera = Camera::create(vec3(0), 70.0f, 0.03f, 200.0f, 1280.0f / 720.0f);
-	//Camera::mainCamera->addAngle(glm::vec3(0));
-	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 500.0f, 1280.0f / 720.0f);
+	auto sWidth = configData->getFloat("system.window.resolution.width");
+	auto sHeight = configData->getFloat("system.window.resolution.height");
+	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 500.0f, sWidth / sHeight);
 	Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
 }
 
 void Voxel::Application::initWorld()
 {
 	world = new World();
+}
+
+void Voxel::Application::initConfig()
+{
+	if (configData) 
+	{
+		delete configData;
+	}
+
+	configData = DataTree::create("config/config");
+
+	if (configData)
+	{
+		int build = configData->getInt("build.number");
+		build++;
+		configData->setInt("build.number", build);
+		configData->save("config/config");
+	}
 }
 
 void Application::run()
@@ -134,5 +164,10 @@ void Voxel::Application::cleanUp()
 	if (glView)
 	{
 		delete glView;
+	}
+
+	if (configData)
+	{
+		delete configData;
 	}
 }
