@@ -321,6 +321,10 @@ void Voxel::World::initChunk()
 	// Bind it
 	glBindVertexArray(cvao);
 
+	// Enable vertices attrib
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
 	// Generate buffer object
 	glGenBuffers(1, &cvbo);
 	// Bind it
@@ -353,17 +357,23 @@ void Voxel::World::initChunk()
 	unsigned int indices[] = {
 		0, 1, 1, 2, 2, 3, 3, 0,
 		4, 5, 5, 6, 6, 7, 7, 4,
-		0, 4, 1, 5, 2, 7, 3, 8
+		0, 4, 1, 5, 2, 6, 3, 7
 	};
 
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-	// Enable vertices attrib
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
 	// vert
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	// Generate buffer object
+	glGenBuffers(1, &ccbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, ccbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
 	// color
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);

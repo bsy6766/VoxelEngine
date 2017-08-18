@@ -384,12 +384,12 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 
 	glm::vec3 dirVec = rayEnd - rayStart;
 
-	float div = 16.0f;
-	glm::vec3 step = dirVec / 16.0f;
+	float div = 200.0f;
+	glm::vec3 step = dirVec / div;
 
 	//std::cout << "step = " << step.x << ", " << step.y << ", " << step.z << ")" << std::endl;
 
-	int threshold = 16.0f;
+	int threshold = 200;
 
 	glm::vec3 curRayPoint = rayStart;
 
@@ -401,6 +401,11 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 	while (threshold >= 0 || rayEnd != rayStart)
 	{
 		curRayPoint += step;
+
+		if (glm::distance(curRayPoint, rayStart) >playerRange)
+		{
+			return nullptr;
+		}
 		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")" << std::endl;
 
 		auto visitingBlockPos = glm::ivec3(Utility::Math::fastFloor(curRayPoint.x), Utility::Math::fastFloor(curRayPoint.y), Utility::Math::fastFloor(curRayPoint.z));
