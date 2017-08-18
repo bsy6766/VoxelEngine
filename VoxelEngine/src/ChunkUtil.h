@@ -30,6 +30,10 @@ namespace Voxel
 
 	namespace Math
 	{
+		static glm::ivec3 worldPosToBlockWorldCoordinate(const glm::vec3& position)
+		{
+			return glm::ivec3(position / 16.0f);
+		}
 	}
 }
 

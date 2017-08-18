@@ -49,10 +49,14 @@ namespace Voxel
 		~Block();
 		static Block* create(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
 
+		// Check if block is transparent. Transparent can still be a block than air.
 		bool isTransparent();
+		// Check if block is empty. Empty means it's air
 		bool isEmpty();
 
 		void setColor(const glm::vec3& color);
+
+		glm::vec3 getWorldPosition();
 	};
 }
 

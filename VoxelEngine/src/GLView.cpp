@@ -132,6 +132,10 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 
 	if (vsync)
 	{
+		glfwSwapInterval(1);
+	}
+	else
+	{
 		glfwSwapInterval(0);
 	}
 
@@ -177,6 +181,11 @@ void Voxel::GLView::initOpenGL()
 	//glEnable(GL_CULL_FACE);
 	//glMatrixMode(GL_PROJECTION);
 	//glLoadIdentity();
+
+	glEnable(GL_LINE_SMOOTH);
+	//GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
+	//glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
+
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

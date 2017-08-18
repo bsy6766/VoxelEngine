@@ -21,10 +21,7 @@ namespace Voxel
 	private:
 		// A chunk position currently player is standing
 		glm::ivec2 currentChunkPos;
-
-		// A chunk that needs to be current chunk
 		
-
 		// Chunks that are manually added to be active.
 		ChunkMap* manualChunks;
 		// Chunks that are currently active
@@ -40,8 +37,6 @@ namespace Voxel
 		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);
 		// find visible chunk
 		void findVisibleChunk();
-
-		void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 
 		// Render active chunks
 		void render();

@@ -11,11 +11,6 @@ namespace Voxel
 {
 	namespace Utility
 	{
-		namespace WorkingDirectory
-		{
-
-		}
-
 		class Random
 		{
 		private:
@@ -195,6 +190,14 @@ namespace Voxel
 				return ss.str();
 			}
 		};
+
+		namespace Math
+		{
+			static float fastFloor(float value)
+			{
+				return static_cast<float>(value >= 0 ? static_cast<int>(value) : static_cast<int>(value) - 1);
+			}
+		}
 	}
 }
 

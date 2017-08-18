@@ -64,7 +64,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 				{
 					blocks.push_back(newBlock);
 					// debug
-					newBlock->setColor(color);
+					//newBlock->setColor(color);
 				}
 				else
 				{

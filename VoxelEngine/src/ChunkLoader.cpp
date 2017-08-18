@@ -351,22 +351,101 @@ void Voxel::ChunkLoader::findVisibleChunk()
 		}
 	}
 }
-
+/*
 void Voxel::ChunkLoader::raycast(const glm::vec3 & rayStart, const glm::vec3 & rayEnd)
 {
-	glm::vec3 diff = rayEnd - rayStart;
+	std::cout << "RayCasting" << std::endl;
+	std::cout << "rayStart = " << rayStart.x << ", " << rayStart.y << ", " << rayStart.z << ")" << std::endl;
+	std::cout << "rayEnd = " << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;
+	// From rayStart to rayEnd, visit all blocks.
+	// Then find the closest block that hits
+	auto start = rayStart;
+	//start.x = Utility::Math::fastFloor(start.x);
+	//start.y = Utility::Math::fastFloor(start.y);
+	//start.z = Utility::Math::fastFloor(start.z);
 
-	// iterate through all active chunk and only test chunks that are near by player
-	for (auto activeChunkX : activeChunks)
+	auto end = rayEnd;
+	//end.x = Utility::Math::fastFloor(end.x);
+	//end.y = Utility::Math::fastFloor(end.y);
+	//end.z = Utility::Math::fastFloor(end.z);
+
+	std::cout << "start = " << start.x << ", " << start.y << ", " << start.z << ")" << std::endl;
+	std::cout << "end = " << end.x << ", " << end.y << ", " << end.z << ")" << std::endl;
+
+	float stepValue = 0.5f;
+
+	float sx = end.x > start.x ? stepValue : end.x < start.x ? -stepValue : 0;
+	float sy = end.y > start.y ? stepValue : end.y < start.y ? -stepValue : 0;
+	float sz = end.z > start.z ? stepValue : end.z < start.z ? -stepValue : 0;
+
+	std::cout << "sx = " << sx << ", sy = " << sy << ", sz = " << sz << std::endl;
+	float gx = start.x;
+	float gy = start.y;
+	float gz = start.z;
+
+	//Planes for each axis that we will next cross
+	float gxp = gx + (end.x > start.x ? stepValue : 0);
+	float gyp = gy + (end.y > start.y ? stepValue : 0);
+	float gzp = gz + (end.z > start.z ? stepValue : 0);
+
+	//Only used for multiplying up the error margins
+	float vx = rayEnd.x == rayStart.x ? stepValue : rayEnd.x - rayStart.x;
+	float vy = rayEnd.y == rayStart.y ? stepValue : rayEnd.y - rayStart.y;
+	float vz = rayEnd.z == rayStart.z ? stepValue : rayEnd.z - rayStart.z;
+
+	//Error is normalized to vx * vy * vz so we only have to multiply up
+	float vxvy = vx * vy;
+	float vxvz = vx * vz;
+	float vyvz = vy * vz;
+
+	//Error from the next plane accumulators, scaled up by vx*vy*vz
+	float errx = (gxp - rayStart.x) * vyvz;
+	float erry = (gyp - rayStart.y) * vxvz;
+	float errz = (gzp - rayStart.z) * vxvy;
+
+	float derrx = sx * vyvz;
+	float derry = sy * vxvz;
+	float derrz = sz * vxvy;
+
+	std::cout << "v = " << vx << ", " << vy << ", " << vz << ")" << std::endl;
+	std::cout << "step = " << sx << ", " << sy << ", " << sz << ")" << std::endl;
+
+	int stepLimit = 20;
+
+	do
 	{
-		for (auto activeChunk : activeChunkX)
+		std::cout << "Visiting (" << gx << ", " << gy << ", " << gz << ")" << std::endl;
+
+		if (gx == end.x && gy == end.y && gz == end.z)
 		{
-			auto chunkPos = glm::ivec2(activeChunk->getPosition().x, activeChunk->getPosition().z);
-			auto diff = chunkPos - currentChunkPos;
+			break;
 		}
-	}
+
+		float xr = abs(errx);
+		float yr = abs(erry);
+		float zr = abs(errz);
+
+		std::cout << "err (" << errx << ", " << erry << ", " << errz << ")" << std::endl;
+
+		if (sx != 0 && (sy == 0 || xr < yr) && (sz == 0 || xr < zr)) 
+		{
+			gx += sx;
+			errx += derrx;
+		}
+		else if (sy != 0 && (sz == 0 || yr < zr)) {
+			gy += sy;
+			erry += derry;
+		}
+		else if (sz != 0) {
+			gz += sz;
+			errz += derrz;
+		}
+
+
+	} while (stepLimit-- > 0);
 }
 
+*/
 void Voxel::ChunkLoader::render()
 {
 	//auto start = Utility::Time::now();

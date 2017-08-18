@@ -7,6 +7,7 @@ namespace Voxel
 {
 	// forward
 	class Camera;
+	class Block;
 
 	/**
 	*	@class Player
@@ -40,6 +41,9 @@ namespace Voxel
 		// True if player moved or rotated this frame
 		bool moved;
 		bool rotated;
+
+		// Block that player is looking at
+		Block* lookingBlock;
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
@@ -86,8 +90,16 @@ namespace Voxel
 		bool didMoveThisFrame();
 		bool didRotateThisFrame();
 
+		glm::vec3 getDirection();
+		float getRange();
 		// Get end point of player's raycast
 		glm::vec3 getRayEnd();
+
+
+		void setLookingBlock(Block* block);
+		// Check if player is looking at block
+		bool isLookingAtBlock();
+		Block* getLookingBlock();
 	};
 }
 

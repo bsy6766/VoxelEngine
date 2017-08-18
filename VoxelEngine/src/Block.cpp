@@ -51,7 +51,7 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
 	this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
 
-	//color = Color::getRandomColor();
+	color = Color::getRandomColor();
 
 	/*
 	if (worldCoordinate.y == 0)
@@ -115,4 +115,9 @@ bool Voxel::Block::isEmpty()
 void Voxel::Block::setColor(const glm::vec3 & color)
 {
 	this->color = color;
+}
+
+glm::vec3 Voxel::Block::getWorldPosition()
+{
+	return worldPosition;
 }

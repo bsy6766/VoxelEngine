@@ -4,6 +4,7 @@
 #include <ChunkLoader.h>
 #include <ChunkMeshGenerator.h>
 #include <ChunkUtil.h>
+#include <Block.h>
 
 #include <InputHandler.h>
 #include <Camera.h>
@@ -313,6 +314,72 @@ void Voxel::World::initChunk()
 
 	auto end = Utility::Time::now();
 	std::cout << "Total ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+
+	// Create debug chunk box
+	// Generate vertex array object
+	glGenVertexArrays(1, &cvao);
+	// Bind it
+	glBindVertexArray(cvao);
+
+	// Generate buffer object
+	glGenBuffers(1, &cvbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, cvbo);
+
+	GLfloat cube[] = {
+		// x, y, z
+		0.502f, -0.502f, -0.502f,
+		-0.502f, -0.502f, -0.502f,
+		-0.502f, -0.502f, 0.502f,
+		0.502f, -0.502f, 0.502f,
+		0.502f, 0.502f, -0.502f,
+		-0.502f, 0.502f, -0.502f,
+		-0.502f, 0.502f, 0.502f,
+		0.502f, 0.502f, 0.502f,
+	};
+
+	GLfloat color[] = {
+		// x, y, z
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f
+	};
+
+	unsigned int indices[] = {
+		0, 1, 1, 2, 2, 3, 3, 0,
+		4, 5, 5, 6, 6, 7, 7, 4,
+		0, 4, 1, 5, 2, 7, 3, 8
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// unbind buffer
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Generate indices object
+	glGenBuffers(1, &cibo);
+	// Bind indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cibo);
+	// Load indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// unbind buffer
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
 }
 
 void World::update(const float delta)
@@ -332,7 +399,15 @@ void World::update(const float delta)
 		// After updating frustum, run frustum culling to find visible chunk
 		chunkLoader->findVisibleChunk();
 		// Also update raycast
-		chunkLoader->raycast(player->getPosition(), player->getRayEnd());
+		Block* hit = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
+		if (hit)
+		{
+			player->setLookingBlock(hit);
+		}
+		else
+		{
+			player->setLookingBlock(nullptr);
+		}
 	}
 
 	if (playerMoved)
@@ -692,12 +767,12 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	{
 		if (dx != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(0, dx * delta * 100.0f, 0));
+			Camera::mainCamera->addAngle(vec3(0, dx * delta * 15.0f, 0));
 		}
 
 		if (dy != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(dy * delta * 100.0f, 0, 0));
+			Camera::mainCamera->addAngle(vec3(dy * delta * 15.0f, 0, 0));
 		}
 	}
 	else
@@ -718,7 +793,8 @@ void Voxel::World::updateMouseClickInput()
 {
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
-
+		//auto dir = player->getDirection();
+		//std::cout << "dir = " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -832,7 +908,6 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", rayMat);
 	glDrawArrays(GL_LINES, 0, 2);
 
-	glBindVertexArray(0);
 
 	/*
 	glBindVertexArray(vao);
@@ -841,7 +916,17 @@ void World::render(const float delta)
 	glBindVertexArray(0);
 	*/
 
+	if (player->isLookingAtBlock())
+	{
+		glBindVertexArray(cvao);
 
+		glm::mat4 cubeMat = glm::translate(glm::mat4(1.0f), player->getLookingBlock()->getWorldPosition());
+		defaultProgram->setUniformMat4("modelMat", cubeMat);
+
+		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	}
+
+	glBindVertexArray(0);
 	glUseProgram(0);
 
 }

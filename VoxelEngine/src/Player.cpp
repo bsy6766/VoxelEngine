@@ -1,6 +1,7 @@
 #include "Player.h"
 #include <Camera.h>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace Voxel;
 
@@ -8,7 +9,7 @@ Player::Player()
 	: position(glm::vec3(0))
 	, rotation(glm::vec3(0))
 	, movementSpeed(15.0f)
-	, rotationSpeed(170.0f)
+	, rotationSpeed(15.0f)
 	, fly(false)
 	, mainCamera(Camera::mainCamera)
 	, viewMatrix(mat4(1.0f))
@@ -16,6 +17,7 @@ Player::Player()
 	, rotated(false)
 	, direction(0)
 	, rayRange(0)
+	, lookingBlock(nullptr)
 {
 
 }
@@ -114,9 +116,34 @@ bool Voxel::Player::didRotateThisFrame()
 	return rotated;
 }
 
+glm::vec3 Voxel::Player::getDirection()
+{
+	return direction;
+}
+
+float Voxel::Player::getRange()
+{
+	return rayRange;
+}
+
 glm::vec3 Voxel::Player::getRayEnd()
 {
 	return position + (direction * rayRange);
+}
+
+void Voxel::Player::setLookingBlock(Block* block)
+{
+	lookingBlock = block;
+}
+
+bool Voxel::Player::isLookingAtBlock()
+{
+	return lookingBlock != nullptr;
+}
+
+Block* Voxel::Player::getLookingBlock()
+{
+	return lookingBlock;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -149,9 +176,20 @@ void Voxel::Player::updateViewMatrix()
 void Voxel::Player::updateDirection()
 {
 	auto defaultDiretion = glm::vec3(0, 0, -1);
-	direction = vec3(viewMatrix * vec4(defaultDiretion, 1));
+
+
+	glm::mat4 rayMat = mat4(1.0f);
+	//rayMat = glm::translate(rayMat, position);
+	rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-rotation.x), glm::vec3(1, 0, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+
+
+	direction = vec3(rayMat * vec4(defaultDiretion, 1));
 	// x direction in player's view and world is opposite
-	direction.x *= -1.0f;
+	//direction.x *= -1.0f;
+	// direction = glm::normalize(direction);
+	//std::cout << "Updating player view direction (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
 }
 
 void Voxel::Player::init(const glm::vec3 & position)
