@@ -48,6 +48,8 @@ Image* Image::create(const std::string& textureName, const glm::vec2& screenPosi
 
 void Voxel::UI::Image::render()
 {
+	texture->bind(GL_TEXTURE0);
+
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	//glBindVertexArray(0);
@@ -74,9 +76,8 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram();
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
+	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -84,16 +85,21 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+	GLint colorLoc = program->getAttribLocation("color");
+
 	glGenBuffers(1, &cbo);
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	//glGenBuffers(1, &uvbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
-	//glVertexAttribPointer(defaultProgram->getAttribLocation("uvVert"), 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);

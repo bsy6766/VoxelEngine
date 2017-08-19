@@ -228,6 +228,11 @@ float Voxel::Camera::getFovy()
 	return fovy;
 }
 
+glm::mat4 Voxel::Camera::getScreenSpaceMatrix()
+{
+	return glm::translate(glm::mat4(1.0f), -screenSpacePos);
+}
+
 mat4 Camera::getProjection()
 {
 	auto mat = perspective(glm::radians(fovy), aspect, nears, fars);

@@ -1,6 +1,8 @@
 #include "Texture2D.h"
 #include <stb_image.h>
 #include <Application.h>
+#include <ProgramManager.h>
+#include <Program.h>
 
 using namespace Voxel;
 
@@ -39,6 +41,13 @@ glm::ivec2 Voxel::Texture2D::getTextureSize()
 	return glm::ivec2(width, height);
 }
 
+void Voxel::Texture2D::bind(GLenum textureUnit)
+{
+	glActiveTexture(textureUnit);
+	glBindTexture(textureTarget, textureObject);
+	glUniform1i(textureLocation, 0);
+}
+
 bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureTarget)
 {
 	unsigned char* data = loadImage(textureFilePath, this->width, this->height, this->channel);
@@ -49,6 +58,7 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 	}
 
 	this->textureTarget = textureTarget;
+	this->textureLocation = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR)->getUniformLocation("tex");
 
 	if (data)
 	{
@@ -133,9 +143,12 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 	case Channel::RGBA:
 		// PNG
 		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		std::cout << "[Texture2D] Created texture size of (" << width << ", " << height << ") with RGBA channel" << std::endl;
 		break;
 	case Channel::NONE:
 	default:
 		break;
 	}
+
+	glBindTexture(textureTarget, 0);
 }

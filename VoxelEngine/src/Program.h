@@ -35,6 +35,8 @@ namespace Voxel
 		GLint getUniformLocation(const GLchar* uniformName);
 		void setUniformMat4(const GLint location, const mat4& mat);
 		void setUniformMat4(const std::string& name, const mat4& mat);
+
+		void use(const bool use);
 	};
 }
 

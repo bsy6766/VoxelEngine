@@ -48,7 +48,6 @@ namespace Voxel
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
-		void checkAngleBoundary();
 		void wrapAngle(float& axis);
 	public:
 		Player();

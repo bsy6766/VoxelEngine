@@ -42,7 +42,9 @@ World::World()
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 {
-	defaultProgram = ProgramManager::getInstance().getDefaultProgram();
+	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
+
+	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
 
 	//initDebugCube();
 	initPlayer();
@@ -232,7 +234,7 @@ void Voxel::World::initUI()
 
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
-	defaultCanvas->addImage("64", "64.png", glm::vec2(0));
+	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
 }
 
 /*
@@ -779,6 +781,17 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	{
 		player->setRotation(glm::vec3(90, 180, 0));
 	}
+
+	if (input->getKeyDown(GLFW_KEY_KP_1, true))
+	{
+		Camera::mainCamera->setFovy(Camera::mainCamera->getFovy() + 5.0f);
+		std::cout << "fovy = " << Camera::mainCamera->getFovy() << std::endl;
+	}
+	if (input->getKeyDown(GLFW_KEY_KP_2, true))
+	{
+		Camera::mainCamera->setFovy(Camera::mainCamera->getFovy() - 5.0f);
+		std::cout << "fovy = " << Camera::mainCamera->getFovy() << std::endl;
+	}
 }
 
 void Voxel::World::updateMouseMoveInput(const float delta)
@@ -915,6 +928,8 @@ void World::render(const float delta)
 		mat = player->getVP(Camera::mainCamera->getProjection());
 	}
 
+	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
+
 	defaultProgram->setUniformMat4("cameraMat", mat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
@@ -934,16 +949,16 @@ void World::render(const float delta)
 	}
 	*/
 
-	glm::mat4 rayMat = mat4(1.0f);
-	rayMat = glm::translate(rayMat, player->getPosition());
-	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0)); 
-	rayMat = glm::rotate(rayMat, glm::radians(player->getRotation().x), glm::vec3(1, 0, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
-
 	/*
 	{
 		glBindVertexArray(rvao);
 
+
+		glm::mat4 rayMat = mat4(1.0f);
+		rayMat = glm::translate(rayMat, player->getPosition());
+		rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(player->getRotation().x), glm::vec3(1, 0, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
 
 		defaultProgram->setUniformMat4("modelMat", rayMat);
 		glDrawArrays(GL_LINES, 0, 2);
@@ -973,11 +988,24 @@ void World::render(const float delta)
 	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
 	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
 	
+	/*
 	auto screenSpacePos = (Camera::mainCamera->getScreenSpacePos() * -1.0f);
-	auto UIModelMat = glm::translate(rayMat, screenSpacePos);
+	//screenSpacePos = glm::vec3(0);
+	auto UIModelMat = glm::translate(player->getDirMatrix(), screenSpacePos);
 
-	//defaultProgram->setUniformMat4("cameraMat", pDirViewMat);
+	auto testMat = glm::translate(glm::mat4(1.0f), screenSpacePos);
+
+	//defaultProgram->setUniformMat4("cameraMat", glm::mat4(1.0f));
 	defaultProgram->setUniformMat4("modelMat", UIModelMat);
+	*/
+
+
+	auto uiProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
+	uiProgram->use(true);
+	uiProgram->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
+	uiProgram->setUniformMat4("modelMat", Camera::mainCamera->getScreenSpaceMatrix());
+
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	defaultCanvas->render();
 

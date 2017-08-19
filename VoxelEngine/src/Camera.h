@@ -39,6 +39,7 @@ namespace Voxel
 		// This is screen space position in camera's point of view. 
 		// All the UI objects will follow this position
 		vec3 screenSpacePos;
+		mat4 screenSpaceMatrix;
 
 		vec3 angle;
 
@@ -101,6 +102,8 @@ namespace Voxel
 
 		void setFovy(const float fovy);
 		float getFovy();
+
+		glm::mat4 getScreenSpaceMatrix();
 	};
 }
 

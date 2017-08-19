@@ -11,6 +11,14 @@ namespace Voxel
 
 	class ProgramManager
 	{
+		friend class GLView;
+	public:
+		enum PROGRAM : unsigned int
+		{
+			SHADER_COLOR = 0,
+			SHADER_TEXTURE_COLOR = 1,
+			SHADER_MAX_COUNT
+		};
 	private:
 		ProgramManager() = default;
 		~ProgramManager();
@@ -21,7 +29,10 @@ namespace Voxel
 		ProgramManager& operator=(ProgramManager const&) = delete;  // Copy assign
 		ProgramManager& operator=(ProgramManager &&) = delete;      // Move assign
 
-		std::unordered_map<std::string, Program*> programs;
+		std::unordered_map<unsigned int/*id*/, Program*> defaultPrograms;
+		std::unordered_map<std::string, Program*> userProgram;
+
+		void initDefaultPrograms();
 	public:
 		static ProgramManager& getInstance()
 		{
@@ -31,7 +42,10 @@ namespace Voxel
 
 		Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
 
-		Program* getDefaultProgram();
+		Program* getDefaultProgram(PROGRAM programID);
+		Program* getProgram(const std::string& name);
+
+		void useDefaultProgram(PROGRAM programID);
 
 		void releaseAll();
 	};

@@ -5,7 +5,6 @@
 #include <ProgramManager.h>
 #include <Shader.h>
 #include <Program.h>
-#include <Color.h>
 
 #include <Camera.h>
 
@@ -15,7 +14,6 @@ using std::endl;
 
 GLView::GLView()
 	: window(nullptr)
-	, defaultProgram(nullptr)
 	, currentTime(0)
 	, previousTime(0)
 	, elapsedTime(0)
@@ -27,6 +25,7 @@ GLView::GLView()
 	, screenWidth(0)
 	, screenHeight(0)
 	, windowTitle("")
+	, clearColor(0)
 {
 }
 
@@ -181,6 +180,8 @@ void Voxel::GLView::initOpenGL()
 	//glEnable(GL_CULL_FACE);
 	//glMatrixMode(GL_PROJECTION);
 	//glLoadIdentity();
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
 
 	glEnable(GL_LINE_SMOOTH);
 	//GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
@@ -192,9 +193,7 @@ void Voxel::GLView::initOpenGL()
 
 void Voxel::GLView::initDefaultShaderProgram()
 {
-	auto vertexShader = ShaderManager::getInstance().createShader("defaultVert", "shaders/defaultVertexShader.glsl", GL_VERTEX_SHADER);
-	auto fragmentShader = ShaderManager::getInstance().createShader("defaultFrag", "shaders/defaultFragmentShader.glsl", GL_FRAGMENT_SHADER);
-	defaultProgram = ProgramManager::getInstance().createProgram("defaultProgram", vertexShader, fragmentShader);
+	ProgramManager::getInstance().initDefaultPrograms();
 }
 
 bool Voxel::GLView::isRunning()
@@ -204,12 +203,8 @@ bool Voxel::GLView::isRunning()
 
 void Voxel::GLView::clearBuffer()
 {
-	auto skyboxColor = Color::SKYBOX;
-	//glClearColor(skyboxColor.x, skyboxColor.y, skyboxColor.z, 1.0f);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(clearColor.r, clearColor.g, clearColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glUseProgram(defaultProgram->getObject());
 }
 
 void Voxel::GLView::render()
@@ -445,6 +440,11 @@ bool Voxel::GLView::isWindowDecorated()
 glm::ivec2 Voxel::GLView::getScreenSize()
 {
 	return glm::ivec2(screenWidth, screenHeight);
+}
+
+void Voxel::GLView::setClearColor(const glm::vec3 & color)
+{
+	clearColor = color;
 }
 
 void Voxel::GLView::close()

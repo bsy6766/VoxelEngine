@@ -101,6 +101,18 @@ void Program::setUniformMat4(const std::string & name, const mat4 & mat)
 	return setUniformMat4(location, mat);
 }
 
+void Voxel::Program::use(const bool use)
+{
+	if (use)
+	{
+		glUseProgram(programObject);
+	}
+	else
+	{
+		glUseProgram(0);
+	}
+}
+
 void Program::checkLinkError()
 {
 	GLint status;

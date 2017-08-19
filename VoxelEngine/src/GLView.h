@@ -37,13 +37,13 @@ namespace Voxel
 		bool fpsDisplay;
 		bool fpsKeyDown;
 
+		// GL clear color
+		glm::vec3 clearColor;
+
 		// Screen resolution
 		int screenWidth;
 		int screenHeight;
 		std::string windowTitle;
-
-		// Default program
-		Program* defaultProgram;
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
@@ -90,6 +90,8 @@ namespace Voxel
 		bool isWindowDecorated();
 
 		glm::ivec2 getScreenSize();
+
+		void setClearColor(const glm::vec3& color);
 
 		void close();
 	};

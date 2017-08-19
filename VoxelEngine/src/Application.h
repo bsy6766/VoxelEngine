@@ -22,41 +22,51 @@ namespace Voxel
 		Application& operator=(Application const&) = delete;  // Copy assign
 		Application& operator=(Application &&) = delete;      // Move assign
 	private:
+		// Consturctor and Destructor. 
 		Application();
 		~Application();
 
 		// OpenGL
 		GLView* glView;
 
+		// Initialize functions
 		void initGLView();
 		void initMainCamera();
 		void initWorld();
 		void initConfig();
 
-		// wd
+		// Path to working directory
 		std::string workingDirectory;
 
 		// world
 		World* world;
 
+		// Config
 		DataTree* configData;
 
 		// Clean up
 		void cleanUp();
 	public:
+		// Get application instance
 		static Application& getInstance()
 		{
 			static Application instance;
 			return instance;
 		}
 
+		// initialize 
 		void init();
+
+		// Run the main loop
 		void run();
 
+		// end the main loop
 		void end();
 
+		// Get OpenGL
 		GLView* getGLView();
 
+		// Get working directory
 		std::string getWorkingDirectory();
 	};
 }

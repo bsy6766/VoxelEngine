@@ -56,7 +56,7 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->vertices.size(), &this->vertices.front(), GL_STATIC_DRAW);
 
 	// Get program
-	auto program = ProgramManager::getInstance().getDefaultProgram();
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
 
 	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");
