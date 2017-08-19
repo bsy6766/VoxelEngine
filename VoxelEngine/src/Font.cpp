@@ -152,16 +152,16 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	return true;
 }
 
-Glyph Font::getCharGlyph(const char c)
+Glyph* Font::getCharGlyph(const char c)
 {
 	auto find_it = glyphMap.find(c);
 	if (find_it == glyphMap.end())
 	{
-		return Glyph();
+		return nullptr;
 	}
 	else
 	{
-		return find_it->second;
+		return &(find_it->second);
 	}
 }
 
@@ -173,4 +173,14 @@ void Voxel::Font::closeFreetype()
 	}
 
 	Font::library = nullptr;
+}
+
+void Voxel::Font::activateTexture(unsigned int textureUnit)
+{
+	texture->activate(textureUnit);
+}
+
+void Voxel::Font::bind()
+{
+	texture->bind();
 }

@@ -65,11 +65,14 @@ namespace Voxel
 		static Font* create(const std::string& fontName, const int fontSize);
 		~Font();
 
-		Glyph getCharGlyph(const char c);
+		Glyph* getCharGlyph(const char c);
 
 		int getLineSpace();
 
 		static void closeFreetype();
+
+		void activateTexture(unsigned int/*glenum*/ textureUnit);
+		void bind();
 	};
 }
 

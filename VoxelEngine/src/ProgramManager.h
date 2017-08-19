@@ -17,6 +17,7 @@ namespace Voxel
 		{
 			SHADER_COLOR = 0,
 			SHADER_TEXTURE_COLOR = 1,
+			SHADER_TEXT = 2,
 			SHADER_MAX_COUNT
 		};
 	private:

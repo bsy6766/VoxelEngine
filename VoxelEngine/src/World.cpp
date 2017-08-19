@@ -45,7 +45,8 @@ World::World()
 {
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
 
-	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
+
+	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
 
 	//initDebugCube();
 	initPlayer();
@@ -67,8 +68,6 @@ World::World()
 		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
 	*/
-
-	FontManager::getInstance().addFont("Crazy Pixel.ttf", 30);
 }
 
 World::~World()
@@ -232,6 +231,8 @@ void World::initPlayer()
 
 void Voxel::World::initUI()
 {
+	FontManager::getInstance().addFont("Crazy Pixel.ttf", 30);
+
 	if (defaultCanvas)
 	{
 		delete defaultCanvas;
@@ -239,7 +240,8 @@ void Voxel::World::initUI()
 
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
-	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
+	//defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
+	defaultCanvas->addText("FPS", "FPS: 60", glm::vec2(0), 1);
 }
 
 /*
@@ -1012,11 +1014,6 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", UIModelMat);
 	*/
 
-
-	auto uiProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
-	uiProgram->use(true);
-	uiProgram->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
-	uiProgram->setUniformMat4("modelMat", Camera::mainCamera->getScreenSpaceMatrix());
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 

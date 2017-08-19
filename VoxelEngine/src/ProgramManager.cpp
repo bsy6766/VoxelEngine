@@ -44,6 +44,11 @@ void Voxel::ProgramManager::initDefaultPrograms()
 	auto voxelShaderTextureColorProgram = Program::create(voxelShaderTextureColorVert, voxelShaderTextureColorFrag);
 	defaultPrograms.emplace(SHADER_TEXTURE_COLOR, voxelShaderTextureColorProgram);
 
+	auto voxelShaderTextVert = ShaderManager::getInstance().createShader("voxelShaderText", "shaders/voxelShaderText.vert", GL_VERTEX_SHADER);
+	auto voxelShaderTextFrag = ShaderManager::getInstance().createShader("voxelShaderText", "shaders/voxelShaderText.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderTextProgram = Program::create(voxelShaderTextVert, voxelShaderTextFrag);
+	defaultPrograms.emplace(SHADER_TEXT, voxelShaderTextProgram);
+
 }
 
 Program * Voxel::ProgramManager::getDefaultProgram(PROGRAM programID)
