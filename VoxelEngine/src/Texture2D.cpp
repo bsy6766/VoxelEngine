@@ -1,5 +1,6 @@
 #include "Texture2D.h"
 #include <stb_image.h>
+#include <Application.h>
 
 using namespace Voxel;
 
@@ -33,6 +34,11 @@ Texture2D * Voxel::Texture2D::create(const std::string & textureFilePath, GLenum
 	}
 }
 
+glm::ivec2 Voxel::Texture2D::getTextureSize()
+{
+	return glm::ivec2(width, height);
+}
+
 bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureTarget)
 {
 	unsigned char* data = loadImage(textureFilePath, this->width, this->height, this->channel);
@@ -49,6 +55,8 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 		generate2DTexture(width, height, channel, data);
 
 		stbi_image_free(data);
+
+		return true;
 	}
 	else
 	{
@@ -58,8 +66,8 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 
 unsigned char * Voxel::Texture2D::loadImage(const std::string& textureFilePath, int & width, int & height, int & channel)
 {
-	auto filePath = Texture2D::DEFAULT_TEXTURE_PATH + textureFilePath;
-
+	auto filePath = Application::getInstance().getWorkingDirectory() + "/" + Texture2D::DEFAULT_TEXTURE_PATH + textureFilePath;
+	
 	FILE* file = nullptr;
 	auto err = fopen_s(&file, filePath.c_str(), "rb");
 	if (err != 0)

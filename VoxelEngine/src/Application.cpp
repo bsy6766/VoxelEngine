@@ -76,8 +76,8 @@ void Voxel::Application::initMainCamera()
 {
 	auto sWidth = configData->getFloat("system.window.resolution.width");
 	auto sHeight = configData->getFloat("system.window.resolution.height");
-	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 500.0f, sWidth / sHeight);
-	Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
+	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 1000.0f, sWidth, sHeight);
+	//Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
 }
 
 void Voxel::Application::initWorld()
@@ -141,6 +141,11 @@ void Voxel::Application::end()
 GLView * Voxel::Application::getGLView()
 {
 	return glView;
+}
+
+std::string Voxel::Application::getWorkingDirectory()
+{
+	return workingDirectory;
 }
 
 void Voxel::Application::cleanUp()

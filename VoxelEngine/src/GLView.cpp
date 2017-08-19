@@ -205,7 +205,8 @@ bool Voxel::GLView::isRunning()
 void Voxel::GLView::clearBuffer()
 {
 	auto skyboxColor = Color::SKYBOX;
-	glClearColor(skyboxColor.x, skyboxColor.y, skyboxColor.z, 1.0f);
+	//glClearColor(skyboxColor.x, skyboxColor.y, skyboxColor.z, 1.0f);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(defaultProgram->getObject());
@@ -323,8 +324,13 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 	this->monitor = monitor;
 
 	const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
-	glfwSetWindowMonitor(window, monitor, 0, 0, videoMode->width, videoMode->height, videoMode->refreshRate);
-	glViewport(0, 0, videoMode->width, videoMode->height);
+
+	auto w = videoMode->width;
+	auto h = videoMode->height;	
+
+	glfwSetWindowMonitor(window, monitor, 0, 0, w, h, videoMode->refreshRate);
+	glViewport(0, 0, w, h);
+	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
 }
 
 GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
@@ -373,6 +379,7 @@ void Voxel::GLView::setWindowed(int width, int height)
 
 		glfwSetWindowMonitor(window, monitor, xpos, ypos, width, height, GLFW_DONT_CARE);
 		glViewport(0, 0, width, height);
+		Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(width), static_cast<float>(height));
 	}
 }
 
@@ -421,14 +428,23 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 	int xpos = 0, ypos = 0;
 	glfwGetMonitorPos(monitor, &xpos, &ypos);
 
+	auto w = videoMode->width;
+	auto h = videoMode->height;
+
 	glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
-	glfwSetWindowMonitor(window, nullptr, xpos, ypos, videoMode->width, videoMode->height, videoMode->refreshRate);
-	glViewport(0, 0, videoMode->width, videoMode->height);
+	glfwSetWindowMonitor(window, nullptr, xpos, ypos, w, h, videoMode->refreshRate);
+	glViewport(0, 0, w, h);
+	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
 }
 
 bool Voxel::GLView::isWindowDecorated()
 {
 	return glfwGetWindowAttrib(window, GLFW_DECORATED);
+}
+
+glm::ivec2 Voxel::GLView::getScreenSize()
+{
+	return glm::ivec2(screenWidth, screenHeight);
 }
 
 void Voxel::GLView::close()

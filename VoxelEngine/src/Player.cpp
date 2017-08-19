@@ -13,6 +13,7 @@ Player::Player()
 	, fly(false)
 	, mainCamera(Camera::mainCamera)
 	, viewMatrix(mat4(1.0f))
+	, dirMatrix(mat4(1.0f))
 	, moved(false)
 	, rotated(false)
 	, direction(0)
@@ -101,9 +102,29 @@ glm::mat4 Voxel::Player::getVP(const glm::mat4& projection)
 	return glm::translate(projection * viewMatrix, -position);
 }
 
+glm::mat4 Voxel::Player::getDirVP(const glm::mat4 & projection)
+{
+	return glm::translate(projection * dirMatrix, -position);
+}
+
 glm::mat4 Voxel::Player::getOrientation()
 {
 	return viewMatrix;
+}
+
+glm::mat4 Voxel::Player::getDirMatrix()
+{
+	return dirMatrix;
+}
+
+glm::mat4 Voxel::Player::getBillboardMatrix()
+{
+	auto billboardMatrix = mat4(1.0f);
+	billboardMatrix = glm::rotate(billboardMatrix, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	billboardMatrix = glm::rotate(billboardMatrix, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+	//billboardMatrix = glm::rotate(billboardMatrix, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+
+	return billboardMatrix;
 }
 
 bool Voxel::Player::didMoveThisFrame()
@@ -168,27 +189,22 @@ glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm:
 void Voxel::Player::updateViewMatrix()
 {
 	viewMatrix = mat4(1.0f);
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.x), vec3(1, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(-rotation.x), vec3(1, 0, 0));
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.y), vec3(0, 1, 0));
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.z), vec3(0, 0, 1));
 }
 
+void Voxel::Player::updateDirMatrix()
+{
+	dirMatrix = mat4(1.0f);
+	dirMatrix = glm::rotate(dirMatrix, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+	dirMatrix = glm::rotate(dirMatrix, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	dirMatrix = glm::rotate(dirMatrix, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+}
+
 void Voxel::Player::updateDirection()
 {
-	auto defaultDiretion = glm::vec3(0, 0, -1);
-
-
-	glm::mat4 rayMat = mat4(1.0f);
-	//rayMat = glm::translate(rayMat, position);
-	rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-rotation.x), glm::vec3(1, 0, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
-
-
-	direction = vec3(rayMat * vec4(defaultDiretion, 1));
-	// x direction in player's view and world is opposite
-	//direction.x *= -1.0f;
-	// direction = glm::normalize(direction);
+	direction = vec3(dirMatrix * vec4(0, 0, -1, 1));
 	//std::cout << "Updating player view direction (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
 }
 
@@ -221,8 +237,29 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition)
 void Voxel::Player::addRotationX(const float x)
 {
 	rotation.x += x * rotationSpeed;
+	
+	// Angle x range: 0~90, 360 ~ 270
 	wrapAngle(rotation.x);
+
+	if (rotation.x < 180.0f)
+	{
+		if (rotation.x > 90.0f)
+		{
+			rotation.x = 90.0f;
+		}
+	}
+	else if (rotation.x >= 180.0f)
+	{
+		if (rotation.x < 270.0f)
+		{
+			rotation.x = 270.0f;
+		}
+	}
+
+	//std::cout << "x = " << rotation.x << std::endl;
+
 	updateViewMatrix();
+	updateDirMatrix();
 	updateDirection();
 	rotated = true;
 }
@@ -230,8 +267,10 @@ void Voxel::Player::addRotationX(const float x)
 void Voxel::Player::addRotationY(const float y)
 {
 	rotation.y += y * rotationSpeed;
+
 	wrapAngle(rotation.y);
 	updateViewMatrix();
+	updateDirMatrix();
 	updateDirection();
 	rotated = true;
 }
@@ -246,6 +285,7 @@ void Voxel::Player::setRotation(const glm::vec3 & newRotation)
 {
 	rotation = newRotation;
 	updateViewMatrix();
+	updateDirMatrix();
 	updateDirection();
 	rotated = true;
 }

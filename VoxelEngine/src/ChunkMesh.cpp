@@ -145,17 +145,6 @@ void ChunkMesh::bind()
 
 void ChunkMesh::render()
 {
-	if (InputHandler::getInstance().getMouseDown(GLFW_MOUSE_BUTTON_RIGHT))
-	{
-		down = true;
-	}
-	
-	if (down && InputHandler::getInstance().getMouseUp(GLFW_MOUSE_BUTTON_RIGHT))
-	{
-		down = false;
-		offset += 3;
-	}
-
 	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
 	//glDrawElements(GL_TRIANGLES, 3 + offset, GL_UNSIGNED_INT, 0);
 }

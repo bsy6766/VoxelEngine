@@ -56,6 +56,8 @@ namespace Voxel
 		void end();
 
 		GLView* getGLView();
+
+		std::string getWorkingDirectory();
 	};
 }
 

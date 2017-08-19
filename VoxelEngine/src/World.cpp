@@ -9,6 +9,8 @@
 #include <InputHandler.h>
 #include <Camera.h>
 
+#include <UI.h>
+
 #include <ProgramManager.h>
 #include <Program.h>
 #include <glm\gtx\transform.hpp>
@@ -38,12 +40,14 @@ World::World()
 	, keyXDown(false)
 	//, debugPlayerCube(nullptr)
 	, defaultProgram(nullptr)
+	, defaultCanvas(nullptr)
 {
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram();
 
 	//initDebugCube();
 	initPlayer();
 	initChunk();
+	initUI();
 
 	input->setCursorToCenter();
 	
@@ -74,6 +78,10 @@ World::~World()
 	if (player)
 		delete player;
 
+	if (defaultCanvas)
+	{
+		delete defaultCanvas;
+	}
 
 	/*
 	int threadCount = testThreads.size();
@@ -213,6 +221,18 @@ void World::initPlayer()
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 	glBindVertexArray(0);
+}
+
+void Voxel::World::initUI()
+{
+	if (defaultCanvas)
+	{
+		delete defaultCanvas;
+	}
+
+	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
+
+	defaultCanvas->addImage("64", "64.png", glm::vec2(0));
 }
 
 /*
@@ -766,12 +786,13 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
+	//std::cout << "prev pos (" << mouseX << ", " << mouseY << ")" << std::endl;
+	//std::cout << "Cursor pos (" << x << ", " << y << ")" << std::endl;
+
 	double dx = x - mouseX;
 	double dy = y - mouseY;
 	mouseX = x;
 	mouseY = y;
-
-	//std::cout << "Cursor pos (" << xf << ", " << yf << ")" << std::endl;
 
 	if (cameraControlMode)
 	{
@@ -787,14 +808,16 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	}
 	else
 	{
-		if (dx != 0)
+		if (dx != 0.0)
 		{
+			//std::cout << "dx = " << dx << std::endl;
 			player->addRotationY(delta * static_cast<float>(dx));
 		}
 
-		if (dy != 0)
+		if (dy != 0.0)
 		{
-			player->addRotationX(delta * static_cast<float>(dy));
+			//std::cout << "dy = " << dx << std::endl;
+			player->addRotationX(delta * static_cast<float>(-dy));
 		}
 	}
 }
@@ -855,13 +878,13 @@ void Voxel::World::updateControllerInput(const float delta)
 		auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
 		if (valueRightAxisX != 0.0f)
 		{
-			player->addRotationY(delta * valueRightAxisX * 0.6f);
+			player->addRotationY(delta * valueRightAxisX * 3.0f);
 		}
 
 		auto valueRightAxisY = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_Y);
 		if (valueRightAxisY != 0.0f)
 		{
-			player->addRotationX(delta * -valueRightAxisY * 0.6f);
+			player->addRotationX(delta * -valueRightAxisY * 3.0f);
 		}
 	}
 }
@@ -896,28 +919,37 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	chunkLoader->render();
+	/*
+	{
+		glBindVertexArray(pvao);
 
-	glBindVertexArray(pvao);
+		glm::mat4 lineMat = mat4(1.0f);
+		lineMat = glm::translate(lineMat, player->getPosition());
+		lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
+		//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
+		//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
 
-	glm::mat4 lineMat = mat4(1.0f);
-	lineMat = glm::translate(lineMat, player->getPosition());
-	lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-	//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
-	//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
+		defaultProgram->setUniformMat4("modelMat", lineMat);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+	*/
 
-	defaultProgram->setUniformMat4("modelMat", lineMat);
-	glDrawArrays(GL_LINES, 0, 2);
-
-	glBindVertexArray(rvao);
 	glm::mat4 rayMat = mat4(1.0f);
 	rayMat = glm::translate(rayMat, player->getPosition());
-	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0)); 
+	rayMat = glm::rotate(rayMat, glm::radians(player->getRotation().x), glm::vec3(1, 0, 0));
 	rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
 
-	defaultProgram->setUniformMat4("modelMat", rayMat);
-	glDrawArrays(GL_LINES, 0, 2);
+	/*
+	{
+		glBindVertexArray(rvao);
 
+
+		defaultProgram->setUniformMat4("modelMat", rayMat);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	*/
 
 	/*
 	glBindVertexArray(vao);
@@ -935,6 +967,19 @@ void World::render(const float delta)
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
+
+	// Render UI
+	//glm::mat4 bMat = mat4(1.0f);
+	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
+	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
+	
+	auto screenSpacePos = (Camera::mainCamera->getScreenSpacePos() * -1.0f);
+	auto UIModelMat = glm::translate(rayMat, screenSpacePos);
+
+	//defaultProgram->setUniformMat4("cameraMat", pDirViewMat);
+	defaultProgram->setUniformMat4("modelMat", UIModelMat);
+
+	defaultCanvas->render();
 
 	glBindVertexArray(0);
 	glUseProgram(0);

@@ -89,6 +89,8 @@ namespace Voxel
 
 		bool isWindowDecorated();
 
+		glm::ivec2 getScreenSize();
+
 		void close();
 	};
 }

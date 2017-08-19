@@ -30,6 +30,7 @@ namespace Voxel
 
 		// Matrix
 		glm::mat4 viewMatrix;
+		glm::mat4 dirMatrix;
 
 		// speed
 		float movementSpeed;
@@ -47,7 +48,7 @@ namespace Voxel
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
-
+		void checkAngleBoundary();
 		void wrapAngle(float& axis);
 	public:
 		Player();
@@ -80,12 +81,16 @@ namespace Voxel
 		void setFly(const bool mode);		
 		
 		void updateViewMatrix();
+		void updateDirMatrix();
 		void updateDirection();
 
 		void update();
 
 		glm::mat4 getVP(const glm::mat4& projection);
+		glm::mat4 getDirVP(const glm::mat4& projection);
 		glm::mat4 getOrientation();
+		glm::mat4 getDirMatrix();
+		glm::mat4 getBillboardMatrix();
 
 		bool didMoveThisFrame();
 		bool didRotateThisFrame();

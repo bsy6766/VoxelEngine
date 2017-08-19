@@ -24,6 +24,10 @@ namespace Voxel
 	class ChunkMeshGenerator;
 	class InputHandler;
 	class Player;
+	namespace UI
+	{
+		class Canvas;
+	}
 
 	/**
 	*	@class World
@@ -87,12 +91,16 @@ namespace Voxel
 		// Player
 		Player* player;
 
+		// Default UI canvas
+		UI::Canvas* defaultCanvas;
+
 		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
 		double mouseX;
 		double mouseY;
 
 		void initChunk();
 		void initPlayer();
+		void initUI();
 
 		void updateKeyboardInput(const float delta);
 		void updateMouseMoveInput(const float delta);

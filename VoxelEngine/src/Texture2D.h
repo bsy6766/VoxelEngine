@@ -47,6 +47,8 @@ namespace Voxel
 
 		static Texture2D* create(const std::string& textureFilePath, GLenum textureTarget);
 
+		glm::ivec2 getTextureSize();
+
 		void bind(GLenum textureUnit);
 	};
 }

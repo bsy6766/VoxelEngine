@@ -13,6 +13,8 @@ Camera::Camera()
 	: position(0, 0, 0)
 	, fovy(0)
 	, fovx(0)
+	, screenWidth(0)
+	, screenHeight(0)
 	, aspect(0)
 	, nears(0)
 	, fars(0)
@@ -20,6 +22,7 @@ Camera::Camera()
 	, needUpdate(true)
 	, curMatrix(mat4(1.0f))
 	, frustum(nullptr)
+	, screenSpacePos(0)
 {}
 
 Camera::~Camera()
@@ -30,26 +33,34 @@ Camera::~Camera()
 	}
 }
 
-Camera* Camera::create(const vec3& position, const float fovy, const float nears, const float fars, const float aspect)
+Camera* Camera::create(const vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight)
 {
 	Camera* newCamera = new Camera();
 
 	newCamera->position = position;
 	newCamera->nears = nears;
 	newCamera->fars = fars;
-	newCamera->aspect = aspect;
+	newCamera->screenWidth = screenWidth;
+	newCamera->screenHeight = screenHeight;
+	newCamera->aspect = screenWidth / screenHeight;
 	newCamera->fovy = fovy;
 
 	// Refernce: http://wiki.panotools.org/Field_of_View
-	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * aspect));
+	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * newCamera->aspect));
 
-	newCamera->initFrustumPlanes();
+	//newCamera->initFrustumPlanes();
 
 	newCamera->curMatrix = newCamera->getMatrix();
 
 	newCamera->frustum = new Frustum();
 
-	std::cout << "[Camera] Creating camera. Fovy: " << fovy << ", Fovx: " << newCamera->fovx << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << aspect << std::endl;
+	newCamera->screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
+
+	std::cout << "[Camera] Creating camera. Fovy: " << fovy << ", Fovx: " << newCamera->fovx << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << newCamera->aspect << std::endl;
+	std::cout << "[Camera] Camera position (" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
+	std::cout << "[Camera] Camera rotation (" << newCamera->angle.x << ", " << newCamera->angle.y << ", " << newCamera->angle.z << ")" << std::endl;
+	std::cout << "[Camera] Camera screen space (" << newCamera->screenSpacePos.x << ", " << newCamera->screenSpacePos.y << ", " << newCamera->screenSpacePos.z << ")" << std::endl;
+	std::cout << std::endl;
 
 	return newCamera;
 }
@@ -192,6 +203,19 @@ void Voxel::Camera::updateFrustumPlane(const vec3 & playerPosition, const vec3 &
 Frustum * Voxel::Camera::getFrustum()
 {
 	return frustum;
+}
+
+glm::vec3 Voxel::Camera::getScreenSpacePos()
+{
+	return screenSpacePos;
+}
+
+void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const float screenHeight)
+{
+	this->screenWidth = screenWidth;
+	this->screenHeight = screenHeight;
+	aspect = screenWidth / screenHeight;
+	screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 }
 
 mat4 Camera::getProjection()

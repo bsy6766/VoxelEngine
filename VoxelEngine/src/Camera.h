@@ -30,9 +30,15 @@ namespace Voxel
 		vec3 position;
 		float fovy;
 		float fovx;
+		float screenWidth;
+		float screenHeight;
 		float aspect;
 		float nears;
 		float fars;
+
+		// This is screen space position in camera's point of view. 
+		// All the UI objects will follow this position
+		vec3 screenSpacePos;
 
 		vec3 angle;
 
@@ -48,7 +54,7 @@ namespace Voxel
 	public:
 		~Camera();
 
-		static Camera* create(const vec3& position, const float fovy, const float nears, const float fars, const float aspect);
+		static Camera* create(const vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
 		
 		static Camera* mainCamera;
 
@@ -77,6 +83,7 @@ namespace Voxel
 		vec4 farPlane;
 		vec4 leftPlane;
 		vec4 rightPlane;
+
 		// Frustum normal
 		vec2 nearNormal;
 		vec2 farNormal;
@@ -87,6 +94,10 @@ namespace Voxel
 
 		void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
 		Frustum* getFrustum();
+
+		glm::vec3 getScreenSpacePos();
+
+		void updateScreenSizeAndAspect(const float screenWidth, const float screenHeight);
 	};
 }
 
