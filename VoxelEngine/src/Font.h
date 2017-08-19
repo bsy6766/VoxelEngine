@@ -6,9 +6,12 @@
 #include <freetype\ftglyph.h>
 #include <glm\glm.hpp>
 #include <unordered_map>
+#include <string>
 
 namespace Voxel
 {
+	class Texture2D;
+
 	/**
 	*	@class Glyph
 	*	@brief Contains each character's glyph metric and texture data in font.
@@ -34,14 +37,22 @@ namespace Voxel
 	*/
 	class Font
 	{
+	public:
+		const static int MIN_FONT_SIZE;
+		const static std::string DEFAULT_FONT_PATH;
 	private:
 		// Freetype library. Reads library.
 		static FT_Library library;
 
+		// Font attributes
 		int size;
 		int linespace;
+
+		// Font texture
+		Texture2D* texture;
 		float texAtlasWidth;
 		float texAtlasHeight;
+
 
 		// Glyph map
 		std::unordered_map<char, Glyph> glyphMap;
@@ -49,6 +60,7 @@ namespace Voxel
 		Font();
 
 		bool init(const std::string& fontName, const int fontSize);
+		void initLibrary();
 	public:
 		static Font* create(const std::string& fontName, const int fontSize);
 		~Font();
@@ -56,6 +68,8 @@ namespace Voxel
 		Glyph getCharGlyph(const char c);
 
 		int getLineSpace();
+
+		static void closeFreetype();
 	};
 }
 

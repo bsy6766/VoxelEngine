@@ -36,14 +36,32 @@ Texture2D * Voxel::Texture2D::create(const std::string & textureFilePath, GLenum
 	}
 }
 
+Texture2D * Voxel::Texture2D::createFontTexturx(const int width, const int height)
+{
+	auto newTexture = new Texture2D();
+	if (newTexture->initFontTexture(width, height))
+	{
+		return newTexture;
+	}
+	else
+	{
+		delete newTexture;
+		return nullptr;
+	}
+}
+
 glm::ivec2 Voxel::Texture2D::getTextureSize()
 {
 	return glm::ivec2(width, height);
 }
 
-void Voxel::Texture2D::bind(GLenum textureUnit)
+void Voxel::Texture2D::activate(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
+}
+
+void Voxel::Texture2D::bind()
+{
 	glBindTexture(textureTarget, textureObject);
 	glUniform1i(textureLocation, 0);
 }
@@ -72,6 +90,24 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 	{
 		return false;
 	}
+}
+
+bool Voxel::Texture2D::initFontTexture(const int width, const int height)
+{
+	//allocate blank texture.
+	glGenTextures(1, &this->textureObject);
+	glBindTexture(GL_TEXTURE_2D, this->textureObject);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//Generate empty texture.
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
+	return true;
 }
 
 unsigned char * Voxel::Texture2D::loadImage(const std::string& textureFilePath, int & width, int & height, int & channel)

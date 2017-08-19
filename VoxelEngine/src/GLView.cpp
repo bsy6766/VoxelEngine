@@ -26,6 +26,7 @@ GLView::GLView()
 	, screenHeight(0)
 	, windowTitle("")
 	, clearColor(0)
+	, vsync(false)
 {
 }
 
@@ -129,6 +130,8 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	// if window successfully made, make it current window
 	glfwMakeContextCurrent(window);
 
+
+	this->vsync = vsync;
 	if (vsync)
 	{
 		glfwSwapInterval(1);
@@ -430,6 +433,20 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 	glfwSetWindowMonitor(window, nullptr, xpos, ypos, w, h, videoMode->refreshRate);
 	glViewport(0, 0, w, h);
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
+}
+
+void Voxel::GLView::setVsync(const bool vsync)
+{
+	this->vsync = vsync;
+
+	if (vsync)
+	{
+		glfwSwapInterval(1);
+	}
+	else
+	{
+		glfwSwapInterval(0);
+	}
 }
 
 bool Voxel::GLView::isWindowDecorated()

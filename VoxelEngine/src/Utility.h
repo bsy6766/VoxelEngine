@@ -197,6 +197,18 @@ namespace Voxel
 			{
 				return static_cast<float>(value >= 0 ? static_cast<int>(value) : static_cast<int>(value) - 1);
 			}
+
+			static unsigned int findNearestPowTwo(unsigned int num)
+			{
+				num--;
+				num |= num >> 1;
+				num |= num >> 2;
+				num |= num >> 4;
+				num |= num >> 8;
+				num |= num >> 16;
+				num++;
+				return num;
+			}
 		}
 	}
 }

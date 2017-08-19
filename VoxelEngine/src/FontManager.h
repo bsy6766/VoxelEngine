@@ -9,16 +9,16 @@ namespace Voxel
 	class Font;
 	/**
 	*	@class FontManager
-	*	@brief Manages Font instances. Has Ariel.ttf as default font.
+	*	@brief Manages Font instances. Has Ariel.ttf (size 50) as default font.
 	*/
 	class FontManager
 	{
 	public:
 		const static std::string DEFAULT_FONT_NAME;
-		const static std::string DEFAULT_FONT_PATH;
 	private:
 		FontManager();
 
+		static int idCounter;
 		std::unordered_map<int, Font*> fonts;
 
 		void initDefaultFont();
@@ -41,10 +41,13 @@ namespace Voxel
 
 		// Add font. Returns integer font ID or -1 if fails to load font.
 		// Id starts from 1. 0 is used by default font
-		int addFont(const std::string& fontPath);
+		int addFont(const std::string& fontName, const int fontSize);
 
 		// Get font by id
 		Font* getFont(const int id);
+
+		// Clear all fonts
+		void clear();
 	};
 }
 

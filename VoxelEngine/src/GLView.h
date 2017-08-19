@@ -37,6 +37,9 @@ namespace Voxel
 		bool fpsDisplay;
 		bool fpsKeyDown;
 
+		// vsync
+		bool vsync;
+
 		// GL clear color
 		glm::vec3 clearColor;
 
@@ -86,6 +89,8 @@ namespace Voxel
 		void setWindowedFullScreen();
 		void setWindowedFullScreen(const int monitorIndex);
 		void setWindowedFullScreen(GLFWmonitor* monitor);
+
+		void setVsync(const bool vsync);
 
 		bool isWindowDecorated();
 

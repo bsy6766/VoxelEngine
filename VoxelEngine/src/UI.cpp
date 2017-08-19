@@ -48,7 +48,8 @@ Image* Image::create(const std::string& textureName, const glm::vec2& screenPosi
 
 void Voxel::UI::Image::render()
 {
-	texture->bind(GL_TEXTURE0);
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

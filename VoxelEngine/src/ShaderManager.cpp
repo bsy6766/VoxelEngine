@@ -24,6 +24,11 @@ Shader * ShaderManager::createShader(const std::string& name, const std::string 
 				return nullptr;
 			}
 		}
+		else
+		{
+			delete newShader;
+			return nullptr;
+		}
 	}
 	else if (shaderType == GL_FRAGMENT_SHADER)
 	{
@@ -38,6 +43,11 @@ Shader * ShaderManager::createShader(const std::string& name, const std::string 
 			{
 				return nullptr;
 			}
+		}
+		else
+		{
+			delete newShader;
+			return nullptr;
 		}
 	}
 	else

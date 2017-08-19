@@ -5,7 +5,7 @@ system
 			height 720
 		mode 0
 		title Voxel Engine
-		vsync true
+		vsync false
 build 
-	number 264
+	number 272
 	version 0

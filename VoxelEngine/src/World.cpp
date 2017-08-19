@@ -10,6 +10,7 @@
 #include <Camera.h>
 
 #include <UI.h>
+#include <FontManager.h>
 
 #include <ProgramManager.h>
 #include <Program.h>
@@ -66,6 +67,8 @@ World::World()
 		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
 	*/
+
+	FontManager::getInstance().addFont("Crazy Pixel.ttf", 30);
 }
 
 World::~World()
@@ -84,6 +87,8 @@ World::~World()
 	{
 		delete defaultCanvas;
 	}
+
+	FontManager::getInstance().clear();
 
 	/*
 	int threadCount = testThreads.size();
@@ -656,6 +661,14 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 	}
 
+	if (input->getKeyDown(GLFW_KEY_V, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+	{
+		Application::getInstance().getGLView()->setVsync(true);
+	}
+	else if (input->getKeyDown(GLFW_KEY_V, true) && input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+	{
+		Application::getInstance().getGLView()->setVsync(false);
+	}
 	// Keyboard
 	if (cameraControlMode)
 	{

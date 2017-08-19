@@ -42,14 +42,17 @@ namespace Voxel
 		void generate2DTexture(const int width, const int height, const int channel, unsigned char* data);
 
 		bool init(const std::string& textureFilePath, GLenum textureTarget);
+		bool initFontTexture(const int width, const int height);
 	public:
 		~Texture2D();
 
 		static Texture2D* create(const std::string& textureFilePath, GLenum textureTarget);
+		static Texture2D* createFontTexturx(const int width, const int height);
 
 		glm::ivec2 getTextureSize();
 
-		void bind(GLenum textureUnit);
+		void activate(GLenum textureUnit);
+		void bind();
 	};
 }
 

@@ -84,7 +84,7 @@ int Voxel::ChunkSection::XYZToIndex(const int x, const int y, const int z)
 
 Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
 {
-	int index = XYZToIndex(x, y, z);
+	unsigned int index = XYZToIndex(x, y, z);
 	if (index >= 0 && index < blocks.size())
 	{
 		return blocks.at(index);
