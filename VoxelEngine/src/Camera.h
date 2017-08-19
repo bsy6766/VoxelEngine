@@ -98,6 +98,9 @@ namespace Voxel
 		glm::vec3 getScreenSpacePos();
 
 		void updateScreenSizeAndAspect(const float screenWidth, const float screenHeight);
+
+		void setFovy(const float fovy);
+		float getFovy();
 	};
 }
 

@@ -48,7 +48,7 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 	// Refernce: http://wiki.panotools.org/Field_of_View
 	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * newCamera->aspect));
 
-	//newCamera->initFrustumPlanes();
+	newCamera->initFrustumPlanes();
 
 	newCamera->curMatrix = newCamera->getMatrix();
 
@@ -121,7 +121,7 @@ void Voxel::Camera::initFrustumPlanes()
 
 void Voxel::Camera::updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation)
 {
-	auto MVP = glm::translate(perspective(fovy, aspect, nears, 256.0f) * playerOrientation, -playerPosition);
+	auto MVP = glm::translate(perspective(glm::radians(fovy), aspect, nears, 256.0f) * playerOrientation, -playerPosition);
 	frustum->update(MVP);
 }
 
@@ -218,9 +218,19 @@ void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const flo
 	screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 }
 
+void Voxel::Camera::setFovy(const float fovy)
+{
+	this->fovy = fovy;
+}
+
+float Voxel::Camera::getFovy()
+{
+	return fovy;
+}
+
 mat4 Camera::getProjection()
 {
-	auto mat = perspective(fovy, aspect, nears, fars);
+	auto mat = perspective(glm::radians(fovy), aspect, nears, fars);
 	//mat[2] = { 0, 0, 0, nears };
 	//mat[3] = { 0, 0, -1.0f, 0 };
 	return mat;
