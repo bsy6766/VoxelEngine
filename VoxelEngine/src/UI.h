@@ -59,6 +59,12 @@ namespace Voxel
 				CENTER,
 				RIGHT
 			};
+
+			enum class TYPE
+			{
+				STATIC = 0,
+				DYNAMIC
+			};
 		private:
 			Text();
 
@@ -76,20 +82,27 @@ namespace Voxel
 			GLuint uvbo;
 			GLuint ibo;
 
+			TYPE type;
+
 			unsigned int indicesSize;
+			int maxTextLength;
 			
 			float maxWidth;
 			float totalHeight;
 			
 			ALIGN align;
 
-			bool init(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT);
-			bool buildMesh(const int fontID);
+			bool init(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			bool buildMesh(const int fontID, const bool update);
+			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
 		public:
 			~Text();
 
-			static Text* create(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT);
+			static Text* create(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+
+			void setText(const std::string& text);
 
 			void render();
 		};
@@ -123,7 +136,7 @@ namespace Voxel
 			bool addImage(const std::string& name, Image* image, const int z);
 
 			// add test
-			bool addText(const std::string& name, const std::string& text, const glm::vec2& position, const int fontID, Text::ALIGN align = Text::ALIGN::LEFT);
+			bool addText(const std::string& name, const std::string& text, const glm::vec2& position, const int fontID, Text::ALIGN align = Text::ALIGN::LEFT, Text::TYPE type = Text::TYPE::STATIC, const int maxLength = 0);
 			bool addText(const std::string& name, Text* text, const int z);
 
 			// Render all UI objects

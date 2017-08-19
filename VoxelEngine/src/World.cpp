@@ -42,16 +42,18 @@ World::World()
 	//, debugPlayerCube(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
+	, fpsNumber(nullptr)
 {
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
+	initUI();
 
-	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
+	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
+	GLView::onFPSCounted = std::bind(&World::onFPSCounted, this, std::placeholders::_1);
 
 	//initDebugCube();
 	initPlayer();
 	initChunk();
-	initUI();
 
 	input->setCursorToCenter();
 	
@@ -231,7 +233,7 @@ void World::initPlayer()
 
 void Voxel::World::initUI()
 {
-	FontManager::getInstance().addFont("Crazy Pixel.ttf", 100);
+	FontManager::getInstance().addFont("Crazy Pixel.ttf", 120);
 
 	if (defaultCanvas)
 	{
@@ -241,7 +243,9 @@ void Voxel::World::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
-	defaultCanvas->addText("FPS", "FPS: 60\nWith new line!", glm::vec2(0, 0), 1);
+	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(0, 100), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	fpsNumber = UI::Text::create(" ", glm::vec2(150, 100), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
+	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
 }
 
 /*
@@ -1023,4 +1027,9 @@ void World::render(const float delta)
 	glBindVertexArray(0);
 	glUseProgram(0);
 
+}
+
+void Voxel::World::onFPSCounted(int fps)
+{
+	fpsNumber->setText(std::to_string(fps));
 }

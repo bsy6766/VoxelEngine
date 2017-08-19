@@ -12,6 +12,8 @@ using namespace Voxel;
 using std::cout;
 using std::endl;
 
+std::function<void(int)> GLView::onFPSCounted = nullptr;
+
 GLView::GLView()
 	: window(nullptr)
 	, currentTime(0)
@@ -248,6 +250,11 @@ void Voxel::GLView::updateFPS()
 		if (fpsDisplay)
 		{
 			std::cout << "Fps: " << fps << std::endl;
+		}
+
+		if (onFPSCounted)
+		{
+			onFPSCounted(fps);
 		}
 
 		fps = 0;

@@ -27,6 +27,7 @@ namespace Voxel
 	namespace UI
 	{
 		class Canvas;
+		class Text;
 	}
 
 	/**
@@ -127,6 +128,10 @@ namespace Voxel
 		// Updates (tick) the world.
 		void update(const float delta);
 		void render(const float delta);
+
+		// for debug
+		void onFPSCounted(int fps);
+		UI::Text* fpsNumber;
 	};
 }
 

@@ -76,7 +76,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	// Set font size. Larger size = Higher font texture
 	FT_Set_Pixel_Sizes(face, 0, size);
 
-	linespace = (face->height >> 6);
+	//linespace = (face->height >> 6);
 
 	FT_GlyphSlot glyphSlot = face->glyph;
 
@@ -84,7 +84,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	unsigned int maxHeight = 0;
 
 	int widthPadding = 2;
+	int heightPadding = 2;
 
+	const int textureSizeLimit = 2048;
+	
 	// whitespace to tilde. Iterate all character to find the size of character map
 	// this loops find the texture size we are going to make for this font.
 	for (size_t i = ' '; i < '~'; i++)
@@ -104,13 +107,37 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		}
 	}
 
-	int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
-	int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
+	linespace = maxHeight + heightPadding;
 
-	texAtlasWidth = static_cast<float>(pow2WidthSum);
-	texAtlasHeight = static_cast<float>(pow2MaxHeight);
+	int widthDiv = widthSum / 8;
+	int heightDiv = linespace * 16;
+	
+	if (widthDiv > textureSizeLimit || heightDiv > textureSizeLimit)
+	{
+		FT_Done_Face(face);
+		std::cout << "[Font] Font size is too big to generate font texture" << std::endl;
+		return false;
+	}
 
-	texture = Texture2D::createFontTexture(pow2WidthSum, pow2MaxHeight, GL_TEXTURE_2D);
+	int pow2Width = Utility::Math::findNearestPowTwo(widthDiv);
+	int pow2Height = Utility::Math::findNearestPowTwo(heightDiv);
+
+	// Todo: don't foce to 1024. make algorithm that finds minimum power 2 rentangular shape.
+	pow2Width = 1024;
+	pow2Height = 1024;
+
+	std::cout << "[Font] Generating font texture sized (" << pow2Width << ", " << pow2Height << ")" << std::endl;
+
+	//int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
+	//int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
+
+	//texAtlasWidth = static_cast<float>(pow2WidthSum);
+	//texAtlasHeight = static_cast<float>(pow2MaxHeight);
+
+	texAtlasWidth = static_cast<float>(pow2Width);
+	texAtlasHeight = static_cast<float>(pow2Height);
+
+	texture = Texture2D::createFontTexture(pow2Width, pow2Height, GL_TEXTURE_2D);
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 
 	// bind font texture
@@ -118,7 +145,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 
 	// iterate over char map (whitespace to tilde) again. 
 	// x offset
-	float x = 0;
+	float x = 2;
+	float y = 2;
 	for (size_t i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -126,9 +154,6 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 			std::cout << "[Font] Failed to load character" << static_cast<char>(i) << std::endl;
 			continue;
 		}
-
-		// substitude bitmap buffer to texture
-		glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(x), 0, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
 
 		// create glyph data
 		char c = static_cast<char>(i);
@@ -140,11 +165,35 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		glyph.c = c;
 		glyph.metrics = glyphSlot->metrics;
 
-		glyph.uvTopLeft = glm::vec2(x / texAtlasWidth, 0);
+		int botRightX = (int)x + glyphSlot->bitmap.width;
+		int xWidthPad = botRightX + widthPadding;
+
+		if (xWidthPad > pow2Width)
+		{
+			// go to next line
+			y += static_cast<float>(linespace);
+
+			if (y > pow2Height)
+			{
+				std::cout << "[Font] Error. Font size is too big to fit in texture" << std::endl;
+				return false;
+			}
+			x = 2;
+		}
+
+		// substitude bitmap buffer to texture
+		glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(x), static_cast<int>(y), glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
+
+
+		glyph.uvTopLeft = glm::vec2(x / texAtlasWidth, y / texAtlasHeight);
 
 		x += glyphSlot->bitmap.width;
 
-		glyph.uvBotRight = glm::vec2(x / texAtlasWidth, (glyphSlot->bitmap.rows / texAtlasHeight));
+		glyph.uvBotRight = glm::vec2(x / texAtlasWidth, ((static_cast<float>(glyphSlot->bitmap.rows) + y) / texAtlasHeight));
+
+		//std::cout << "char = \"" << c << "\"" << std::endl;
+		//std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")" << std::endl;
+		//std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")" << std::endl;
 
 		x += widthPadding;
 	}
@@ -168,6 +217,11 @@ Glyph* Font::getCharGlyph(const char c)
 	{
 		return &(find_it->second);
 	}
+}
+
+int Voxel::Font::getLineSpace()
+{
+	return linespace;
 }
 
 void Voxel::Font::closeFreetype()

@@ -21,13 +21,15 @@ Voxel::UI::Text::Text()
 	, totalHeight(0)
 	, align(ALIGN::LEFT)
 	, indicesSize(0)
+	, type(TYPE::STATIC)
+	, maxTextLength(0)
 {
 }
 
-Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align)
+Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align, TYPE type, const int maxLength)
 {
 	Text* newText = new Text();
-	if (newText->init(text, position, fontID, align))
+	if (newText->init(text, position, fontID, align, type, maxLength))
 	{
 		return newText;
 	}
@@ -35,6 +37,29 @@ Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& positi
 	{
 		delete newText;
 		newText = nullptr;
+		return nullptr;
+	}
+}
+
+void Voxel::UI::Text::setText(const std::string & text)
+{
+	if (type == TYPE::STATIC)
+	{
+		std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text" << std::endl;
+	}
+	else
+	{
+		// Can modify text. reject larger texts
+		if (text.length() >= maxTextLength)
+		{
+			std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+			return;
+		}
+		else
+		{
+			this->text = text;
+			buildMesh(1, true);
+		}
 	}
 }
 
@@ -49,7 +74,7 @@ Voxel::UI::Text::~Text()
 	glDeleteVertexArrays(1, &vao);
 }
 
-bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align)
+bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align, TYPE type, const int maxLength)
 {
 	if (text.empty())
 	{
@@ -59,14 +84,27 @@ bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, 
 	this->text = text;
 	this->align = align;
 	this->position = position;
+	this->align = align;
+	this->type = type;
+	this->maxTextLength = maxLength;
 	//color will be same for all color for now
 	// Todo: make char quad to have own separate color
 
-	return buildMesh(fontID);
+	return buildMesh(fontID, false);
 }
 
-bool Voxel::UI::Text::buildMesh(const int fontID)
+bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 {
+	if (type == TYPE::DYNAMIC)
+	{
+		if (text.length() >= this->maxTextLength)
+		{
+			// Todo: automatically reallocate buffer with new size
+			std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+			return false;
+		}
+	}
+
 	// Split text label by line
 	std::vector<std::string> split;
 
@@ -170,41 +208,14 @@ bool Voxel::UI::Text::buildMesh(const int fontID)
 			}
 		}
 
-		// based on data, load
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
-		GLint vertLoc = program->getAttribLocation("vert");
-
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		GLint colorLoc = program->getAttribLocation("color");
-
-		glGenBuffers(1, &cbo);
-		glBindBuffer(GL_ARRAY_BUFFER, cbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		GLint uvVertLoc = program->getAttribLocation("uvVert");
-
-		glGenBuffers(1, &uvbo);
-		glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvVertices.size(), &uvVertices.front(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(uvVertLoc);
-		glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		glGenBuffers(1, &ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-		indicesSize = indices.size();
-
-		glBindVertexArray(0);
+		if (update)
+		{
+			updateBuffer(vertices, colors, uvVertices, indices);
+		}
+		else
+		{
+			loadBuffers(vertices, colors, uvVertices, indices);
+		}
 
 		return true;
 	}
@@ -212,6 +223,118 @@ bool Voxel::UI::Text::buildMesh(const int fontID)
 	{
 		std::cout << "[Text] Error: Failed to build mesh with font id: " << fontID << std::endl;
 		return false;
+	}
+}
+
+void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	// based on data, load data for the first time
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	if (type == TYPE::STATIC)
+	{
+		// Allocate buffer just enough for the text
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	}
+	else
+	{
+		// Allocate empty buffer for max length. 12 vertices(4 vec3) per char * max length
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 12, nullptr, GL_DYNAMIC_DRAW);
+		// fill buffer
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
+	}
+
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+
+	if (type == TYPE::STATIC)
+	{
+		// Allocate buffer just enough for the text
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	}
+	else
+	{
+		// Allocate empty buffer for max length. 16 vertices(4 vec4) per char * max length
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 16, nullptr, GL_DYNAMIC_DRAW);
+		// fill buffer
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * colors.size(), &colors.front());
+	}
+
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+
+	if (type == TYPE::STATIC)
+	{
+		// Allocate buffer just enough for the text
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	}
+	else
+	{
+		// Allocate empty buffer for max length. 8 verticies (4 vec2) per char * max len
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 8, nullptr, GL_DYNAMIC_DRAW);
+		// fill buffer
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * uvs.size(), &uvs.front());
+	}
+
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+	if (type == TYPE::STATIC)
+	{
+		// Allocate buffer just enough for the text
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	}
+	else
+	{
+		// Allocate empty buffer for max length. 6 indices ( 2 tri) per char * max len
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * maxTextLength * 8, nullptr, GL_DYNAMIC_DRAW);
+		// fill buffer
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * indices.size(), &indices.front());
+	}
+
+	indicesSize = indices.size();
+
+	glBindVertexArray(0);
+}
+
+void Voxel::UI::Text::updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (type == TYPE::DYNAMIC)
+	{
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
+
+		glBindBuffer(GL_ARRAY_BUFFER, cbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * colors.size(), &colors.front());
+
+		glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * uvs.size(), &uvs.front());
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(float) * indices.size(), &indices.front());
+
+		indicesSize = indices.size();
 	}
 }
 
@@ -227,8 +350,8 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 	int maxBearingY = 0;
 	int maxBotY = 0;
 
-	std::vector<int> bearingYList;
-	std::vector<int> botYList;
+	//std::vector<int> bearingYList;
+	//std::vector<int> botYList;
 	std::vector<int> widthList;
 
 	// iterate text that is separted by new line
@@ -297,14 +420,14 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 		originList.push_back(origin);
 
 		// save offset and width
-		bearingYList.push_back(maxBearingY);
-		botYList.push_back(maxBotY);
+		//bearingYList.push_back(maxBearingY);
+		//botYList.push_back(maxBotY);
 		widthList.push_back(w);
 	}
 
 	// get center of height
 	int baseY = totalHeight / 2;
-	int newY = 0 - bearingYList.at(0) + baseY;
+	int newY = 0 - maxBearingY + baseY;
 
 	int originIndex = 0;
 
@@ -333,7 +456,8 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 		originList.at(originIndex).y = static_cast<float>(newY);
 		// move down the y position
 		// Todo: check if offsetY is correct.
-		newY -= (bearingYList.at(i) + botYList.at(i));
+		//newY -= (bearingYList.at(i) + botYList.at(i));
+		newY -= font->getLineSpace();
 
 		// inc index
 		originIndex++;
@@ -533,9 +657,9 @@ bool Voxel::UI::Canvas::addImage(const std::string & name, Image * image, const 
 	return false;
 }
 
-bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & text, const glm::vec2 & position, const int fontID, Text::ALIGN align)
+bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & text, const glm::vec2 & position, const int fontID, Text::ALIGN align, Text::TYPE type, const int maxLength)
 {
-	auto newText = Text::create(text, position, fontID, align);
+	auto newText = Text::create(text, position, fontID, align, type, maxLength);
 	if (newText)
 	{
 		return addText(name, newText, 0);
@@ -576,7 +700,7 @@ void Voxel::UI::Canvas::render()
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 	textShader->use(true);
 	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
-	textShader->setUniformMat4("modelMat", glm::scale(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(1)));
+	textShader->setUniformMat4("modelMat", glm::scale(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(0.5f, 0.5f, 1)));
 
 
 	for (auto text : texts)

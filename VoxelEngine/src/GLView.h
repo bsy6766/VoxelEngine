@@ -6,6 +6,7 @@
 #include <GLFW\glfw3.h>
 #include <string>
 #include <iostream>
+#include <functional>
 
 namespace Voxel
 {
@@ -99,6 +100,9 @@ namespace Voxel
 		void setClearColor(const glm::vec3& color);
 
 		void close();
+
+		// FPS callback
+		static std::function<void(int)> onFPSCounted;
 	};
 }
 
