@@ -4,6 +4,7 @@
 #include <GL\glew.h>
 #include <glm\glm.hpp>
 #include <string>
+#include <ProgramManager.h>
 
 namespace Voxel
 {
@@ -42,14 +43,16 @@ namespace Voxel
 		void generate2DTexture(const int width, const int height, const int channel, unsigned char* data);
 
 		bool init(const std::string& textureFilePath, GLenum textureTarget);
-		bool initFontTexture(const int width, const int height);
+		bool initFontTexture(const int width, const int height, GLenum textureTarget);
 	public:
 		~Texture2D();
 
 		static Texture2D* create(const std::string& textureFilePath, GLenum textureTarget);
-		static Texture2D* createFontTexturx(const int width, const int height);
+		static Texture2D* createFontTexture(const int width, const int height, GLenum textureTarget);
 
 		glm::ivec2 getTextureSize();
+
+		void setLocationOnProgram(ProgramManager::PROGRAM_NAME programName);
 
 		void activate(GLenum textureUnit);
 		void bind();

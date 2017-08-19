@@ -13,7 +13,7 @@ namespace Voxel
 	{
 		friend class GLView;
 	public:
-		enum PROGRAM : unsigned int
+		enum PROGRAM_NAME : unsigned int
 		{
 			SHADER_COLOR = 0,
 			SHADER_TEXTURE_COLOR = 1,
@@ -43,10 +43,10 @@ namespace Voxel
 
 		Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
 
-		Program* getDefaultProgram(PROGRAM programID);
+		Program* getDefaultProgram(PROGRAM_NAME programID);
 		Program* getProgram(const std::string& name);
 
-		void useDefaultProgram(PROGRAM programID);
+		void useDefaultProgram(PROGRAM_NAME programID);
 
 		void releaseAll();
 	};

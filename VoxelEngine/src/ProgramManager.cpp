@@ -51,7 +51,7 @@ void Voxel::ProgramManager::initDefaultPrograms()
 
 }
 
-Program * Voxel::ProgramManager::getDefaultProgram(PROGRAM programID)
+Program * Voxel::ProgramManager::getDefaultProgram(PROGRAM_NAME programID)
 {
 	if (programID >= 0 && programID < SHADER_MAX_COUNT)
 	{
@@ -76,7 +76,7 @@ Program * Voxel::ProgramManager::getProgram(const std::string & name)
 	}
 }
 
-void Voxel::ProgramManager::useDefaultProgram(PROGRAM programID)
+void Voxel::ProgramManager::useDefaultProgram(PROGRAM_NAME programID)
 {
 	auto find_it = defaultPrograms.find(programID);
 	if (find_it != defaultPrograms.end())

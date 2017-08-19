@@ -43,7 +43,7 @@ World::World()
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 {
-	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
+	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
 
 	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
@@ -231,7 +231,7 @@ void World::initPlayer()
 
 void Voxel::World::initUI()
 {
-	FontManager::getInstance().addFont("Crazy Pixel.ttf", 30);
+	FontManager::getInstance().addFont("Crazy Pixel.ttf", 100);
 
 	if (defaultCanvas)
 	{
@@ -240,8 +240,8 @@ void Voxel::World::initUI()
 
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
-	//defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
-	defaultCanvas->addText("FPS", "FPS: 60", glm::vec2(0), 1);
+	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
+	defaultCanvas->addText("FPS", "FPS: 60\nWith new line!", glm::vec2(0, 0), 1);
 }
 
 /*
@@ -943,7 +943,7 @@ void World::render(const float delta)
 		mat = player->getVP(Camera::mainCamera->getProjection());
 	}
 
-	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM::SHADER_COLOR);
+	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
 	defaultProgram->setUniformMat4("cameraMat", mat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
@@ -1016,6 +1016,7 @@ void World::render(const float delta)
 
 
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
 
 	defaultCanvas->render();
 

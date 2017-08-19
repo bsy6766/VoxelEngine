@@ -9,6 +9,7 @@
 #include <FontManager.h>
 #include <Font.h>
 #include <Camera.h>
+#include <glm/gtx/transform.hpp>
 
 using namespace Voxel::UI;
 
@@ -173,7 +174,7 @@ bool Voxel::UI::Text::buildMesh(const int fontID)
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
+		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 		GLint vertLoc = program->getAttribLocation("vert");
 
 		glGenBuffers(1, &vbo);
@@ -204,6 +205,8 @@ bool Voxel::UI::Text::buildMesh(const int fontID)
 		indicesSize = indices.size();
 
 		glBindVertexArray(0);
+
+		return true;
 	}
 	else
 	{
@@ -417,6 +420,8 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 		return false;
 	}
 
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+
 	position = screenPosition;
 
 	auto size = texture->getTextureSize();
@@ -429,7 +434,7 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);
@@ -558,7 +563,7 @@ bool Voxel::UI::Canvas::addText(const std::string & name, Text * text, const int
 
 void Voxel::UI::Canvas::render()
 {
-	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR);
+	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	imageShader->use(true);
 	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
 	imageShader->setUniformMat4("modelMat", Camera::mainCamera->getScreenSpaceMatrix());
@@ -568,10 +573,11 @@ void Voxel::UI::Canvas::render()
 		(image.second)->render();
 	}
 
-	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXT);
+	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 	textShader->use(true);
 	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
-	textShader->setUniformMat4("modelMat", Camera::mainCamera->getScreenSpaceMatrix());
+	textShader->setUniformMat4("modelMat", glm::scale(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(1)));
+
 
 	for (auto text : texts)
 	{

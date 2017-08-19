@@ -86,6 +86,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	int widthPadding = 2;
 
 	// whitespace to tilde. Iterate all character to find the size of character map
+	// this loops find the texture size we are going to make for this font.
 	for (size_t i = ' '; i < '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -103,10 +104,14 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		}
 	}
 
-	texAtlasWidth = static_cast<float>(widthSum);
-	texAtlasHeight = static_cast<float>(maxHeight);
+	int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
+	int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
 
-	texture = Texture2D::createFontTexturx(widthSum, maxHeight);
+	texAtlasWidth = static_cast<float>(pow2WidthSum);
+	texAtlasHeight = static_cast<float>(pow2MaxHeight);
+
+	texture = Texture2D::createFontTexture(pow2WidthSum, pow2MaxHeight, GL_TEXTURE_2D);
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 
 	// bind font texture
 	texture->bind();

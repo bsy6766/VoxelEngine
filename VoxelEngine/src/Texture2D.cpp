@@ -36,10 +36,10 @@ Texture2D * Voxel::Texture2D::create(const std::string & textureFilePath, GLenum
 	}
 }
 
-Texture2D * Voxel::Texture2D::createFontTexturx(const int width, const int height)
+Texture2D * Voxel::Texture2D::createFontTexture(const int width, const int height, GLenum textureTarget)
 {
 	auto newTexture = new Texture2D();
-	if (newTexture->initFontTexture(width, height))
+	if (newTexture->initFontTexture(width, height, textureTarget))
 	{
 		return newTexture;
 	}
@@ -53,6 +53,12 @@ Texture2D * Voxel::Texture2D::createFontTexturx(const int width, const int heigh
 glm::ivec2 Voxel::Texture2D::getTextureSize()
 {
 	return glm::ivec2(width, height);
+}
+
+void Voxel::Texture2D::setLocationOnProgram(ProgramManager::PROGRAM_NAME programName)
+{
+	//ProgramManager::getInstance().getDefaultProgram(programName)->use(true);
+	this->textureLocation = ProgramManager::getInstance().getDefaultProgram(programName)->getUniformLocation("tex");
 }
 
 void Voxel::Texture2D::activate(GLenum textureUnit)
@@ -76,8 +82,7 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 	}
 
 	this->textureTarget = textureTarget;
-	this->textureLocation = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM::SHADER_TEXTURE_COLOR)->getUniformLocation("tex");
-
+	
 	if (data)
 	{
 		generate2DTexture(width, height, channel, data);
@@ -92,7 +97,7 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 	}
 }
 
-bool Voxel::Texture2D::initFontTexture(const int width, const int height)
+bool Voxel::Texture2D::initFontTexture(const int width, const int height, GLenum textureTarget)
 {
 	//allocate blank texture.
 	glGenTextures(1, &this->textureObject);
@@ -106,6 +111,8 @@ bool Voxel::Texture2D::initFontTexture(const int width, const int height)
 
 	//Generate empty texture.
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
+	this->textureTarget = textureTarget;
 
 	return true;
 }
