@@ -243,8 +243,8 @@ void Voxel::World::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
-	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(0, 100), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::create(" ", glm::vec2(150, 100), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
+	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(0, 0), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	fpsNumber = UI::Text::create(" ", glm::vec2(150, 0), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
 	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
 }
 
@@ -857,9 +857,12 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 void Voxel::World::updateMouseClickInput()
 {
 	//auto image = defaultCanvas->getImage("crossHair");
+	auto fpsLabel = defaultCanvas->getText("FPSLabel");
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
 		//image->setPivot(glm::vec2(0, 0));
+		auto bb = fpsLabel->getBoundingBox();
+		std::cout << "bb(" << bb.x << ", " << bb.y << ", " << bb.z << ", " << bb.w << ")" << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -868,16 +871,19 @@ void Voxel::World::updateMouseClickInput()
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 	{
 		//image->setPivot(glm::vec2(0.5f, 0));
+		fpsLabel->addPosition(glm::vec2(10, 0));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
 	{
 		//image->setPivot(glm::vec2(0, 0.5f));
+		fpsLabel->addPosition(glm::vec2(10, 10));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_4, true))
 	{
 		//image->setPivot(glm::vec2(0.5f, -0.5f));
+		fpsLabel->addPosition(glm::vec2(0, 10));
 	}
 }
 

@@ -151,7 +151,7 @@ namespace Voxel
 
 			void setText(const std::string& text);
 
-			void render();
+			void render(const glm::mat4& screenMat, Program* prog);
 		};
 
 		/**
@@ -190,6 +190,7 @@ namespace Voxel
 			void render();
 
 			Image* getImage(const std::string& name);
+			Text* getText(const std::string& name);
 		};
 
 	}

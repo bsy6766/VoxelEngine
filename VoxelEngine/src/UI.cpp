@@ -214,6 +214,9 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 		// Think like how human writes in lined paper. 
 		originList = computeOrigins(font, split);
 
+		glm::vec2 min(10000, 10000);
+		glm::vec2 max(-10000, -10000);
+
 		unsigned int indicesIndex = 0;
 		int index = 0;
 		for (auto& line : split)
@@ -255,9 +258,24 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 				// So add to vertex to translate
 				p1 += fPos;
 				p2 += fPos;
-				// Then translate to object's position
-				p1 += position;
-				p2 += position;
+
+				if (p1.x < min.x)
+				{
+					min.x = p1.x;
+				}
+				else if (p2.x > max.x)
+				{
+					max.x = p2.x;
+				}
+
+				if (p1.y < min.y)
+				{
+					min.y = p1.y;
+				}
+				else if (p2.y > max.y)
+				{
+					max.y = p2.y;
+				}
 
 				// add to vertices
 				vertices.push_back(p1.x); vertices.push_back(p1.y); vertices.push_back(0);	// left bottom
@@ -291,6 +309,14 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 				origin.x += (glyph->metrics.horiAdvance >> 6);
 			}
 		}
+
+		this->boxMin = min;
+		this->boxMax = max;
+
+		this->updateMatrix();
+
+		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
+
 
 		if (update)
 		{
@@ -547,19 +573,18 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 		originIndex++;
 	}
 
-	this->maxWidth = static_cast<float>(maxWidth);
-	this->totalHeight = static_cast<float>(totalHeight);
-
 	return originList;
 }
 
-void Voxel::UI::Text::render()
+void Voxel::UI::Text::render(const glm::mat4& screenMat, Program* prog)
 {
 	if (!visible) return;
 	if (indicesSize == 0) return;
 
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
+
+	prog->setUniformMat4("modelMat", screenMat * modelMatrix);
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
@@ -793,12 +818,10 @@ void Voxel::UI::Canvas::render()
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 	textShader->use(true);
 	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
-	textShader->setUniformMat4("modelMat", glm::scale(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(0.5f, 0.5f, 1)));
-
 
 	for (auto text : texts)
 	{
-		(text.second)->render();
+		(text.second)->render(uiMat, textShader);
 	}
 }
 
@@ -806,6 +829,19 @@ Image * Voxel::UI::Canvas::getImage(const std::string & name)
 {
 	auto find_it = images.find(name);
 	if (find_it == images.end())
+	{
+		return nullptr;
+	}
+	else
+	{
+		return find_it->second;
+	}
+}
+
+Text * Voxel::UI::Canvas::getText(const std::string & name)
+{
+	auto find_it = texts.find(name);
+	if (find_it == texts.end())
 	{
 		return nullptr;
 	}
