@@ -16,6 +16,7 @@ Font::Font()
 	, texAtlasWidth(0)
 	, texAtlasHeight(0)
 	, texture(nullptr)
+	, outlineSize(0)
 {
 	initLibrary();
 }
@@ -43,7 +44,7 @@ void Voxel::Font::initLibrary()
 Font* Font::create(const std::string& fontName, const int fontSize)
 {
 	auto newFont = new Font();
-	if (newFont->init(fontName, fontSize))
+	if (newFont->init(fontName, fontSize, 0))
 	{
 		return newFont;
 	}
@@ -54,10 +55,26 @@ Font* Font::create(const std::string& fontName, const int fontSize)
 	}
 }
 
-bool Voxel::Font::init(const std::string & fontName, const int fontSize)
+Font * Voxel::Font::createWithOutline(const std::string & fontName, const int fontSize, const int outlineSize)
+{
+	auto newFont = new Font();
+	if (newFont->init(fontName, fontSize, outlineSize))
+	{
+		return newFont;
+	}
+	else
+	{
+		delete newFont;
+		return nullptr;
+	}
+}
+
+bool Voxel::Font::init(const std::string & fontName, const int fontSize, const int outlineSize)
 {
 	// Load the font with freetype2
 	FT_Face face;
+
+	this->outlineSize = outlineSize;
 
 	std::string fontPath = Application::getInstance().getWorkingDirectory() + "/" + DEFAULT_FONT_PATH + fontName;
 	if (FT_New_Face(library, fontPath.c_str(), 0, &face))
@@ -85,8 +102,9 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	unsigned int widthSum = 0;
 	unsigned int maxHeight = 0;
 
-	int widthPadding = 2;
-	int heightPadding = 2;
+	// This is a 2 pixel wide extra padding in x, y coordinate in texture to prevent bleeding. So 1 pixels per side.
+	unsigned int widthPadding = 1;
+	unsigned int heightPadding = 1;
 
 	const int textureSizeLimit = 2048;
 	
@@ -102,16 +120,17 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		}
 
 		// Adding pad
-		widthSum += glyphSlot->bitmap.width + widthPadding;
+		widthSum += glyphSlot->bitmap.width + (widthPadding * 2) + (outlineSize * 2);
 
-		if (maxHeight < glyphSlot->bitmap.rows)
+		unsigned int curHeight = (glyphSlot->bitmap.rows + (heightPadding * 2) + (outlineSize + 2));
+		if (maxHeight < curHeight)
 		{
-			maxHeight = glyphSlot->bitmap.rows;
+			maxHeight = curHeight;
 		}
 	}
 
 	// Add another padding at the end to prevent bleeding
-	maxHeight += heightPadding;
+	//maxHeight += heightPadding;
 
 	int widthDiv = widthSum / 8;
 	int heightDiv = maxHeight * 16;
@@ -148,9 +167,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	texture->bind();
 
 	// iterate over char map (whitespace to tilde) again. 
-	// x offset
-	float x = 2;
-	float y = 2;
+	// x offset. 
+	float x = 0;
+	// y offset.
+	float y = static_cast<float>(heightPadding + outlineSize);
 	for (size_t i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -175,10 +195,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		glyph.botY = glyph.height - glyph.bearingY;
 		glyph.advance = glyphSlot->metrics.horiAdvance >> 6;
 
-		int botRightX = (int)x + glyphSlot->bitmap.width;
-		int xWidthPad = botRightX + widthPadding;
+		// get next X.
+		int nextX = (int)x + glyphSlot->bitmap.width + ((widthPadding + outlineSize) * 2);
 
-		if (xWidthPad > pow2Width)
+		if (nextX > pow2Width)
 		{
 			// go to next line. Use max height as y offset instead of linespace
 			y += static_cast<float>(maxHeight);
@@ -188,24 +208,35 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 				std::cout << "[Font] Error. Font size is too big to fit in texture" << std::endl;
 				return false;
 			}
-			x = 2;
+			x = 0;
 		}
+
+		// advance by paddings
+		x += static_cast<float>(widthPadding + outlineSize);
 
 		// substitude bitmap buffer to texture
 		glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(x), static_cast<int>(y), glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
 
+		// Top left of uv. Advance back by outline padding
+		glyph.uvTopLeft = glm::vec2((x - static_cast<float>(outlineSize)) / texAtlasWidth, (y - static_cast<float>(outlineSize)) / texAtlasHeight);
 
-		glyph.uvTopLeft = glm::vec2(x / texAtlasWidth, y / texAtlasHeight);
+		// advance by size of char bitmap width
+		x += static_cast<float>(glyphSlot->bitmap.width);
 
-		x += glyphSlot->bitmap.width;
+		// Bottom right of uv. advance more 
+		glyph.uvBotRight = glm::vec2((x + static_cast<float>(outlineSize)) / texAtlasWidth, ((static_cast<float>(glyphSlot->bitmap.rows) + y + static_cast<float>(outlineSize)) / texAtlasHeight));
 
-		glyph.uvBotRight = glm::vec2(x / texAtlasWidth, ((static_cast<float>(glyphSlot->bitmap.rows) + y) / texAtlasHeight));
+		/*
+		if (i == 70)
+		{
+			std::cout << "char = \"" << c << "\"" << std::endl;
+			std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")" << std::endl;
+			std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")" << std::endl;
+		}
+		*/
 
-		//std::cout << "char = \"" << c << "\"" << std::endl;
-		//std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")" << std::endl;
-		//std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")" << std::endl;
-
-		x += widthPadding;
+		// advance by paddings
+		x += static_cast<float>(widthPadding + outlineSize);
 	}
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -232,6 +263,11 @@ Glyph* Font::getCharGlyph(const char c)
 int Voxel::Font::getLineSpace()
 {
 	return linespace;
+}
+
+int Voxel::Font::getOutlineSize()
+{
+	return outlineSize;
 }
 
 void Voxel::Font::closeFreetype()

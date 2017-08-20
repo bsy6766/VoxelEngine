@@ -118,6 +118,8 @@ Voxel::UI::Text::Text()
 	, indicesSize(0)
 	, type(TYPE::STATIC)
 	, maxTextLength(0)
+	, outlined(false)
+	, loaded(false)
 {
 }
 
@@ -153,9 +155,14 @@ void Voxel::UI::Text::setText(const std::string & text)
 		else
 		{
 			this->text = text;
-			buildMesh(1, true);
+			buildMesh(true);
 		}
 	}
+}
+
+bool Voxel::UI::Text::isOutlined()
+{
+	return outlined;
 }
 
 Voxel::UI::Text::~Text()
@@ -171,48 +178,57 @@ Voxel::UI::Text::~Text()
 
 bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align, TYPE type, const int maxLength)
 {
-	if (text.empty())
+	this->font = FontManager::getInstance().getFont(fontID);
+
+	if (font == nullptr)
 	{
 		return false;
 	}
+	else
+	{
+		this->text = text;
+		this->align = align;
+		this->position = position;
+		this->align = align;
+		this->type = type;
+		this->maxTextLength = maxLength;
+		//color will be same for all color for now
+		// Todo: make char quad to have own separate color
 
-	this->text = text;
-	this->align = align;
-	this->position = position;
-	this->align = align;
-	this->type = type;
-	this->maxTextLength = maxLength;
-	//color will be same for all color for now
-	// Todo: make char quad to have own separate color
-
-	return buildMesh(fontID, false);
+		return buildMesh(false);
+	}
 }
 
-bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
+bool Voxel::UI::Text::buildMesh(const bool update)
 {
-	if (type == TYPE::DYNAMIC)
-	{
-		if (text.length() >= this->maxTextLength)
-		{
-			// Todo: automatically reallocate buffer with new size
-			std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
-			return false;
-		}
-	}
-
-	// Split text label by line
-	std::vector<std::string> split;
-	std::stringstream ss(text); // Turn the string into a stream.
-	std::string tok;
-	while (getline(ss, tok, '\n'))
-	{
-		split.push_back(tok);
-	}
-
-	this->font = FontManager::getInstance().getFont(fontID);
-
 	if (font)
 	{
+		this->outlined = (font->getOutlineSize() > 0);
+
+		if (text.empty())
+		{
+			return true;
+		}
+
+		if (type == TYPE::DYNAMIC)
+		{
+			if (text.length() >= this->maxTextLength)
+			{
+				// Todo: automatically reallocate buffer with new size
+				std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+				return false;
+			}
+		}
+
+		// Split text label by line
+		std::vector<std::string> split;
+		std::stringstream ss(text); // Turn the string into a stream.
+		std::string tok;
+		while (getline(ss, tok, '\n'))
+		{
+			split.push_back(tok);
+		}
+
 		struct LineSize
 		{
 			int width;
@@ -224,6 +240,9 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 
 		int maxWidth = 0;
 		int totalHeight = 0;
+
+		int lineGap = 0;
+		int lineGapHeight = 2;
 
 		// Iterate per line. Find the maximum width and height
 		for (auto& line : split)
@@ -265,8 +284,11 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 				maxWidth = totalWidth;
 			}
 
-			//totalHeight += (maxBearingY + maxBotY);
-			totalHeight += font->getLineSpace();
+			// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
+			// I'm going to customize just for MunroSmall. 
+			totalHeight += (maxBearingY + maxBotY);
+			lineGap += lineGapHeight;
+			//totalHeight += font->getLineSpace();
 		}
 
 		// Make max width and height even number because this is UI(?)
@@ -280,14 +302,11 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 			totalHeight++;
 		}
 
-		// Set size of Text object
-		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight) * -0.5f);
-		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight) * 0.5f);
+		// Set size of Text object. Ignore last line's line gap
+		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * -0.5f);
+		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * 0.5f);
 
 		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
-
-		this->boxMin += position;
-		this->boxMax += position;
 
 		this->updateMatrix();
 
@@ -295,7 +314,7 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 		// Pen position. Also called as origin or base line in y pos.
 		std::vector<glm::vec2> penPositions;
 		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
-		float curY = static_cast<float>(totalHeight) * 0.5f;
+		float curY = static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * 0.5f;
 		// Iterate line sizes to find out each line's pen position from origin
 		for (auto lineSize : lineSizes)
 		{
@@ -322,8 +341,9 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 			penPositions.push_back(penPos);
 			// Update y to next line
 			// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
-			//curY -= (lineSize.maxBearingY + lineSize.maxBotY);
-			curY -= font->getLineSpace();
+			//curY -= font->getLineSpace();
+			// As I said, customizing for MunroSmall
+			curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
 		}
 
 		// We have pen position for each line. Iterate line and build vertices based on 
@@ -336,6 +356,8 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 		std::vector<float> uvVertices;
 		unsigned int indicesIndex = 0;
 
+		const float outlineSize = static_cast<float>(font->getOutlineSize());
+		
 		for (auto& line : split)
 		{
 			//lineVertices.push_back(std::vector<float>());
@@ -352,15 +374,20 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 				glm::vec2 leftBottom(0);
 				glm::vec2 rightTop(0);
 				float x = curX;
+
 				// Advance x for bearing x
 				x += static_cast<float>(glyph->bearingX);
-				leftBottom.x = x;
+
+				// outline
+				leftBottom.x = (x - outlineSize);
+
 				// Advance x again for width
 				x += static_cast<float>(glyph->width);
-				rightTop.x = x;
+				rightTop.x = (x + outlineSize);
+
 				// Calculate Y based on pen position
-				leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY);
-				rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY);
+				leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY) - outlineSize;
+				rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY) + outlineSize;
 
 				// Advnace pen pos x to next char
 				curX += glyph->advance;
@@ -409,11 +436,13 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 			loadBuffers(vertices, colors, uvVertices, indices);
 		}
 
+		this->loaded = true;
+
 		return true;
 	}
 	else
 	{
-		std::cout << "[Text] Error: Failed to build mesh with font id: " << fontID << std::endl;
+		std::cout << "[Text] Error: Font is nullptr" << std::endl;
 		return false;
 	}
 
@@ -802,6 +831,7 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, Program* prog)
 {
 	if (!visible) return;
 	if (indicesSize == 0) return;
+	if (!loaded) return;
 
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
@@ -1043,6 +1073,17 @@ void Voxel::UI::Canvas::render()
 
 	for (auto text : texts)
 	{
+		bool outlined = (text.second)->isOutlined();
+		if (outlined)
+		{
+			textShader->setUniformBool("outlined", outlined);
+			textShader->setUniformInt("outlineSize", 2);
+		}
+		else
+		{
+			textShader->setUniformBool("outlined", outlined);
+			textShader->setUniformInt("outlineSize", 0);
+		}
 		(text.second)->render(uiMat, textShader);
 	}
 }

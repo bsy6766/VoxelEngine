@@ -121,6 +121,8 @@ namespace Voxel
 		private:
 			Text();
 
+			bool loaded;
+
 			std::string text;
 
 			Font* font;
@@ -141,8 +143,10 @@ namespace Voxel
 			
 			ALIGN align;
 
+			bool outlined;
+
 			bool init(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
-			bool buildMesh(const int fontID, const bool update);
+			bool buildMesh(const bool update);
 			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
@@ -152,6 +156,8 @@ namespace Voxel
 			static Text* create(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
 
 			void setText(const std::string& text);
+
+			bool isOutlined();
 
 			void render(const glm::mat4& screenMat, Program* prog);
 		};

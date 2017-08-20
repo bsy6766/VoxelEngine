@@ -41,7 +41,7 @@ namespace Voxel
 
 		// Add font. Returns integer font ID or -1 if fails to load font.
 		// Id starts from 1. 0 is used by default font
-		int addFont(const std::string& fontName, const int fontSize);
+		int addFont(const std::string& fontName, const int fontSize, int outlineSize = 0);
 
 		// Get font by id
 		Font* getFont(const int id);

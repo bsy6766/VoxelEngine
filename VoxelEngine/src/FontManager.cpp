@@ -34,9 +34,24 @@ void FontManager::initDefaultFont()
 	}
 }
 
-int FontManager::addFont(const std::string& fontName, const int fontSize)
+int FontManager::addFont(const std::string& fontName, const int fontSize, int outline)
 {
-	Font* newFont = Font::create(fontName, fontSize);
+	Font* newFont = nullptr; 
+
+	if (outline < 0)
+	{
+		outline = 0;
+	}
+
+	if (outline == 0)
+	{
+		newFont = Font::create(fontName, fontSize);
+	}
+	else
+	{
+		newFont = Font::createWithOutline(fontName, fontSize, outline);
+	}
+
 	if (newFont)
 	{
 		FontManager::idCounter++;

@@ -65,21 +65,24 @@ namespace Voxel
 		float texAtlasWidth;
 		float texAtlasHeight;
 
+		int outlineSize;
 
 		// Glyph map
 		std::unordered_map<char, Glyph> glyphMap;
 
 		Font();
 
-		bool init(const std::string& fontName, const int fontSize);
+		bool init(const std::string& fontName, const int fontSize, const int outlineSize);
 		void initLibrary();
 	public:
 		static Font* create(const std::string& fontName, const int fontSize);
+		static Font* createWithOutline(const std::string& fontName, const int fontSize, const int outlineSize);
 		~Font();
 
 		Glyph* getCharGlyph(const char c);
 
 		int getLineSpace();
+		int getOutlineSize();
 
 		static void closeFreetype();
 

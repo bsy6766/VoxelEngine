@@ -101,6 +101,28 @@ void Program::setUniformMat4(const std::string & name, const mat4 & mat)
 	return setUniformMat4(location, mat);
 }
 
+void Voxel::Program::setUniformBool(const GLint location, const bool boolean)
+{
+	glUniform1i(location, boolean);
+}
+
+void Voxel::Program::setUniformBool(const std::string & name, const bool boolean)
+{
+	auto location = getUniformLocation(name.c_str());
+	return setUniformBool(location, boolean);
+}
+
+void Voxel::Program::setUniformInt(const GLint location, const int integer)
+{
+	glUniform1i(location, integer);
+}
+
+void Voxel::Program::setUniformInt(const std::string & name, const int integer)
+{
+	auto location = getUniformLocation(name.c_str());
+	return setUniformInt(location, integer);
+}
+
 void Voxel::Program::use(const bool use)
 {
 	if (use)

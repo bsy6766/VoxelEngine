@@ -234,6 +234,7 @@ void World::initPlayer()
 void Voxel::World::initUI()
 {
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
+	FontManager::getInstance().addFont("MunroSmall.ttf", 20, 2);
 
 	if (defaultCanvas)
 	{
@@ -248,7 +249,7 @@ void Voxel::World::initUI()
 	// Add static fps label
 	auto canvasLeftTop = defaultCanvas->getPivot(UI::Canvas::PIVOT::LEFT_TOP);
 	canvasLeftTop += glm::vec2(5.0f, -5.0f);
-	auto FPSLabel = UI::Text::create("FPS:", canvasLeftTop, 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	auto FPSLabel = UI::Text::create("FPS:", canvasLeftTop, 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
 	FPSLabel->setPivot(glm::vec2(-0.5f, 0.5f));
 	defaultCanvas->addText("FPSLabel", FPSLabel, 0);
 
@@ -257,7 +258,7 @@ void Voxel::World::initUI()
 	numberPos.x += (labelSize.x + 3.0f);
 
 	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::create(" ", numberPos, 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
+	fpsNumber = UI::Text::create("9999", numberPos, 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
 	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f)); 
 	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
 }
@@ -871,7 +872,7 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 void Voxel::World::updateMouseClickInput()
 {
 	//auto image = defaultCanvas->getImage("crossHair");
-	auto fpsLabel = defaultCanvas->getText("FPSLabel");
+	auto fpsLabel = defaultCanvas->getText("FPSLabelOutlined");
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
 		//image->setPivot(glm::vec2(0, 0));
