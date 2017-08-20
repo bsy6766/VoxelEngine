@@ -856,8 +856,10 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 
 void Voxel::World::updateMouseClickInput()
 {
+	//auto image = defaultCanvas->getImage("crossHair");
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
+		//image->setPivot(glm::vec2(0, 0));
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -865,6 +867,17 @@ void Voxel::World::updateMouseClickInput()
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 	{
+		//image->setPivot(glm::vec2(0.5f, 0));
+	}
+
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
+	{
+		//image->setPivot(glm::vec2(0, 0.5f));
+	}
+
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_4, true))
+	{
+		//image->setPivot(glm::vec2(0.5f, -0.5f));
 	}
 }
 

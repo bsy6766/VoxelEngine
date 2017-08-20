@@ -21,13 +21,14 @@ Voxel::UI::UINode::UINode()
 	, visible(true)
 	, boxMin(0)
 	, boxMax(0)
+	, size(0)
 {
 }
 
 void Voxel::UI::UINode::updateMatrix()
 {
 	// Move to pos, move by pivot, then scale
-	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot, 0)), glm::vec3(scale, 1));
+	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * size * -1.0f, 0)), glm::vec3(scale, 1));
 }
 
 void Voxel::UI::UINode::setScale(const glm::vec2 & scale)
@@ -57,6 +58,7 @@ void Voxel::UI::UINode::addPosition(const glm::vec2 & position)
 void Voxel::UI::UINode::setPivot(const glm::vec2 & pivot)
 {
 	this->pivot = pivot;
+	updateMatrix();
 }
 
 void Voxel::UI::UINode::setVisibility(const bool visibility)
@@ -67,6 +69,11 @@ void Voxel::UI::UINode::setVisibility(const bool visibility)
 bool Voxel::UI::UINode::isVisible()
 {
 	return visible;
+}
+
+void Voxel::UI::UINode::setSize(const glm::vec2 & size)
+{
+	this->size = size;
 }
 
 glm::mat4 Voxel::UI::UINode::getModelMatrix()
@@ -667,10 +674,12 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 
 	glBindVertexArray(0);
 
-	this->boxMin = glm::vec3(vertices.at(6), vertices.at(7), vertices.at(8));
-	this->boxMax = glm::vec3(vertices.at(3), vertices.at(4), vertices.at(5));
+	this->boxMin = glm::vec2(vertices.at(6), vertices.at(7));
+	this->boxMax = glm::vec2(vertices.at(3), vertices.at(4));
 
 	this->updateMatrix();
+
+	this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
 
 	return true;
 }

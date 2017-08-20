@@ -42,6 +42,9 @@ namespace Voxel
 			glm::vec2 boxMin;
 			glm::vec2 boxMax;
 
+			// Size
+			glm::vec2 size;
+
 			virtual void updateMatrix();
 		public:
 			virtual ~UINode() = default;
@@ -56,6 +59,8 @@ namespace Voxel
 
 			virtual void setVisibility(const bool visibility);
 			virtual bool isVisible();
+
+			virtual void setSize(const glm::vec2& size);
 			
 			glm::mat4 getModelMatrix();
 
