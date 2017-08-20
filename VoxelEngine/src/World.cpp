@@ -243,8 +243,9 @@ void Voxel::World::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
-	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(0, 0), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
 	fpsNumber = UI::Text::create(" ", glm::vec2(150, 0), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
+	fpsNumber->setPivot(glm::vec2(-0.5f, 0)); 
 	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
 }
 

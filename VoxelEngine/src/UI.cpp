@@ -74,6 +74,7 @@ bool Voxel::UI::UINode::isVisible()
 void Voxel::UI::UINode::setSize(const glm::vec2 & size)
 {
 	this->size = size;
+	this->updateMatrix();
 }
 
 glm::mat4 Voxel::UI::UINode::getModelMatrix()
@@ -313,9 +314,10 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 		this->boxMin = min;
 		this->boxMax = max;
 
+		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
+
 		this->updateMatrix();
 
-		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
 
 
 		if (update)
