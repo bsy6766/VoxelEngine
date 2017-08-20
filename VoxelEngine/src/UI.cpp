@@ -55,6 +55,11 @@ void Voxel::UI::UINode::addPosition(const glm::vec2 & position)
 	updateMatrix();
 }
 
+glm::vec2 Voxel::UI::UINode::getPosition()
+{
+	return position;
+}
+
 void Voxel::UI::UINode::setPivot(const glm::vec2 & pivot)
 {
 	this->pivot = pivot;
@@ -75,6 +80,11 @@ void Voxel::UI::UINode::setSize(const glm::vec2 & size)
 {
 	this->size = size;
 	this->updateMatrix();
+}
+
+glm::vec2 Voxel::UI::UINode::getSize()
+{
+	return size;
 }
 
 glm::mat4 Voxel::UI::UINode::getModelMatrix()
@@ -192,21 +202,230 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 
 	// Split text label by line
 	std::vector<std::string> split;
-
 	std::stringstream ss(text); // Turn the string into a stream.
 	std::string tok;
-
 	while (getline(ss, tok, '\n'))
 	{
 		split.push_back(tok);
 	}
 
+	this->font = FontManager::getInstance().getFont(fontID);
+
+	if (font)
+	{
+		struct LineSize
+		{
+			int width;
+			int maxBearingY;
+			int maxBotY;
+		};
+		// This is where we store each line's size so we can properly reposition all character based on align type
+		std::vector<LineSize> lineSizes;
+
+		int maxWidth = 0;
+		int totalHeight = 0;
+
+		// Iterate per line. Find the maximum width and height
+		for (auto& line : split)
+		{
+			lineSizes.push_back(LineSize());
+
+			int totalWidth = 0;
+			int maxBearingY = 0;
+			int maxBotY = 0;
+
+			unsigned int len = line.size();
+			for (unsigned int i = 0; i < len; i++)
+			{
+				const char c = line[i];
+				Glyph* glyph = font->getCharGlyph(c);
+
+				// Advance value is the distance between pen position of each character in horizontal layout
+				totalWidth += glyph->advance;
+
+				// Find max bearing Y. BearingY is the upper height of character from pen position.
+				if (maxBearingY < glyph->bearingY)
+				{
+					maxBearingY = glyph->bearingY;
+				}
+
+				// Find max botY. BotY is my defined value, which is the lower height of character from pen position
+				if (maxBotY < glyph->botY)
+				{
+					maxBotY = glyph->botY;
+				}
+			}
+
+			lineSizes.back().width = totalWidth;
+			lineSizes.back().maxBearingY = maxBearingY;
+			lineSizes.back().maxBotY = maxBotY;
+
+			if (totalWidth > maxWidth)
+			{
+				maxWidth = totalWidth;
+			}
+
+			//totalHeight += (maxBearingY + maxBotY);
+			totalHeight += font->getLineSpace();
+		}
+
+		// Make max width and height even number because this is UI(?)
+		if (maxWidth % 2 == 1)
+		{
+			maxWidth++;
+		}
+
+		if (totalHeight % 2 == 1)
+		{
+			totalHeight++;
+		}
+
+		// Set size of Text object
+		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight) * -0.5f);
+		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight) * 0.5f);
+
+		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
+
+		this->boxMin += position;
+		this->boxMax += position;
+
+		this->updateMatrix();
+
+
+		// Pen position. Also called as origin or base line in y pos.
+		std::vector<glm::vec2> penPositions;
+		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
+		float curY = static_cast<float>(totalHeight) * 0.5f;
+		// Iterate line sizes to find out each line's pen position from origin
+		for (auto lineSize : lineSizes)
+		{
+			glm::vec2 penPos = glm::vec2(0);
+			if (align == ALIGN::LEFT)
+			{
+				// Align text to left. x is always the most left pos of longest line
+				penPos.x = static_cast<float>(maxWidth) * -0.5f;
+			}
+			else if (align == ALIGN::RIGHT)
+			{
+				// Aling text to right.
+				penPos.x = (static_cast<float>(maxWidth) * 0.5f) - static_cast<float>(lineSize.width);
+			}
+			else // center
+			{
+				// Aling text to center.
+				penPos.x = static_cast<float>(lineSize.width) * -0.5f;
+			}
+
+			// Y works same for same
+			penPos.y = curY - lineSize.maxBearingY;
+			// add pen position
+			penPositions.push_back(penPos);
+			// Update y to next line
+			// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
+			//curY -= (lineSize.maxBearingY + lineSize.maxBotY);
+			curY -= font->getLineSpace();
+		}
+
+		// We have pen position for each line. Iterate line and build vertices based on 
+		int penPosIndex = 0;
+		//std::vector<std::vector<float>> lineVertices;
+		std::vector<float> vertices;
+		// colors, indices and uv doesn't have to be tralsated later.
+		std::vector<float> colors;
+		std::vector<unsigned int> indices;
+		std::vector<float> uvVertices;
+		unsigned int indicesIndex = 0;
+
+		for (auto& line : split)
+		{
+			//lineVertices.push_back(std::vector<float>());
+			// start x from pen position x
+			float curX = penPositions.at(penPosIndex).x;
+
+			unsigned int len = line.size();
+			for (unsigned int i = 0; i < len; i++)
+			{
+				// Build quad for each character
+				const char c = line[i];
+				Glyph* glyph = font->getCharGlyph(c);
+				// Empty pos. p1 = left bottom, p2 = right top. z == 0
+				glm::vec2 leftBottom(0);
+				glm::vec2 rightTop(0);
+				float x = curX;
+				// Advance x for bearing x
+				x += static_cast<float>(glyph->bearingX);
+				leftBottom.x = x;
+				// Advance x again for width
+				x += static_cast<float>(glyph->width);
+				rightTop.x = x;
+				// Calculate Y based on pen position
+				leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY);
+				rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY);
+
+				// Advnace pen pos x to next char
+				curX += glyph->advance;
+
+				// Store left bttom and right top vertices pos
+				vertices.push_back(leftBottom.x); vertices.push_back(leftBottom.y); vertices.push_back(0);	// left bottom
+				vertices.push_back(leftBottom.x); vertices.push_back(rightTop.y); vertices.push_back(0);	// left top
+				vertices.push_back(rightTop.x); vertices.push_back(leftBottom.y); vertices.push_back(0);		// right bottom
+				vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
+
+
+				// Add global color for now
+				for (int j = 0; j < 16; j++)
+				{
+					colors.push_back(1.0f);
+				}
+
+				// uv.
+				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvBotRight.y);	// Left bottom
+				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvTopLeft.y);		// Left top
+				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvBotRight.y);	// right bottom
+				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvTopLeft.y);	// right top
+
+				// indices. range of 4 per quad.
+				indices.push_back(indicesIndex * 4);
+				indices.push_back(indicesIndex * 4 + 1);
+				indices.push_back(indicesIndex * 4 + 2);
+				indices.push_back(indicesIndex * 4 + 1);
+				indices.push_back(indicesIndex * 4 + 2);
+				indices.push_back(indicesIndex * 4 + 3);
+
+				// inc index
+				indicesIndex++;
+			}
+
+			penPosIndex++;
+		}
+
+		// load buffer
+		if (update)
+		{
+			updateBuffer(vertices, colors, uvVertices, indices);
+		}
+		else
+		{
+			loadBuffers(vertices, colors, uvVertices, indices);
+		}
+
+		return true;
+	}
+	else
+	{
+		std::cout << "[Text] Error: Failed to build mesh with font id: " << fontID << std::endl;
+		return false;
+	}
+
+	/*
+	// Legacy algorithm back in 2013 inmplemented by myself
+
 	std::vector<float> vertices;
 	std::vector<float> colors;
 	std::vector<unsigned int> indices;
 	std::vector<float> uvVertices;
-	
-	this->font = FontManager::getInstance().getFont(fontID);
+
+
 	if (font)
 	{
 		// List of origin of each character.
@@ -242,13 +461,13 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 				}
 
 				// get data from gylph. 
-				int bearingY = static_cast<int>(glyph->metrics.horiBearingY >> 6);
-				int glyphHeight = static_cast<int>(glyph->metrics.height >> 6);
-				int glyphWidth = static_cast<int>(glyph->metrics.width >> 6);
+				int bearingY = glyph->bearingY;
+				int glyphHeight = glyph->height;
+				int glyphWidth = glyph->width;
 
 				// compute vertex quad at origin
 				// Left bottom
-				glm::vec2 p1 = glm::vec2(glyphWidth / -2, -(glyphHeight - bearingY)/*botY*/);
+				glm::vec2 p1 = glm::vec2(glyphWidth / -2, -(glyphHeight - bearingY));	// botY
 				// right top
 				glm::vec2 p2 = glm::vec2(glyphWidth / 2, bearingY);
 
@@ -336,6 +555,7 @@ bool Voxel::UI::Text::buildMesh(const int fontID, const bool update)
 		std::cout << "[Text] Error: Failed to build mesh with font id: " << fontID << std::endl;
 		return false;
 	}
+	*/
 }
 
 void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
@@ -538,8 +758,8 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 	}
 
 	// get center of height
-	int baseY = totalHeight / 2;
-	int newY = 0 - maxBearingY + baseY;
+	float centerY = totalHeight * 0.5f;
+	float newY = 0 - maxBearingY + centerY;
 
 	int originIndex = 0;
 
@@ -565,11 +785,11 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 		}
 
 		//set the y position of origin
-		originList.at(originIndex).y = static_cast<float>(newY);
+		originList.at(originIndex).y = newY;
 		// move down the y position
 		// Todo: check if offsetY is correct.
 		//newY -= (bearingYList.at(i) + botYList.at(i));
-		newY -= font->getLineSpace();
+		newY -= static_cast<float>(font->getLineSpace());
 
 		// inc index
 		originIndex++;
@@ -851,4 +1071,48 @@ Text * Voxel::UI::Canvas::getText(const std::string & name)
 	{
 		return find_it->second;
 	}
+}
+
+glm::vec2 Voxel::UI::Canvas::getPivot(PIVOT pivot)
+{
+	auto centerPos = this->centerPosition;
+
+	switch (pivot)
+	{
+	case Voxel::UI::Canvas::PIVOT::CENTER:
+		break;
+	case Voxel::UI::Canvas::PIVOT::LEFT:
+		centerPos.x -= (screenSize.x * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::RIGHT:
+		centerPos.x += (screenSize.x * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::TOP:
+		centerPos.y += (screenSize.y * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::BOTTOM:
+		centerPos.y -= (screenSize.y * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::LEFT_TOP:
+		centerPos.x -= (screenSize.x * 0.5f);
+		centerPos.y += (screenSize.y * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::LEFT_BOTTOM:
+		centerPos.x -= (screenSize.x * 0.5f);
+		centerPos.y -= (screenSize.y * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::RIGHT_TOP:
+		centerPos.x += (screenSize.x * 0.5f);
+		centerPos.y += (screenSize.y * 0.5f);
+		break;
+	case Voxel::UI::Canvas::PIVOT::RIGHT_BOTTOM:
+		centerPos.x += (screenSize.x * 0.5f);
+		centerPos.y -= (screenSize.y * 0.5f);
+		break;
+	default:
+		return glm::vec2(0);
+		break;
+	}
+
+	return centerPos;
 }

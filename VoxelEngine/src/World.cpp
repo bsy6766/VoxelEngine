@@ -233,7 +233,7 @@ void World::initPlayer()
 
 void Voxel::World::initUI()
 {
-	FontManager::getInstance().addFont("Crazy Pixel.ttf", 120);
+	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
 
 	if (defaultCanvas)
 	{
@@ -242,10 +242,23 @@ void Voxel::World::initUI()
 
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
+	// Add temporary cross hair
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
-	defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::create(" ", glm::vec2(150, 0), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
-	fpsNumber->setPivot(glm::vec2(-0.5f, 0)); 
+
+	// Add static fps label
+	auto canvasLeftTop = defaultCanvas->getPivot(UI::Canvas::PIVOT::LEFT_TOP);
+	canvasLeftTop += glm::vec2(5.0f, -5.0f);
+	auto FPSLabel = UI::Text::create("FPS:", canvasLeftTop, 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	FPSLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+	defaultCanvas->addText("FPSLabel", FPSLabel, 0);
+
+	auto labelSize = FPSLabel->getSize();
+	auto numberPos = FPSLabel->getPosition();
+	numberPos.x += (labelSize.x + 3.0f);
+
+	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
+	fpsNumber = UI::Text::create(" ", numberPos, 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
+	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f)); 
 	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
 }
 
@@ -863,7 +876,11 @@ void Voxel::World::updateMouseClickInput()
 	{
 		//image->setPivot(glm::vec2(0, 0));
 		auto bb = fpsLabel->getBoundingBox();
+		auto p = fpsLabel->getPosition();
+		auto s = fpsLabel->getSize();
 		std::cout << "bb(" << bb.x << ", " << bb.y << ", " << bb.z << ", " << bb.w << ")" << std::endl;
+		std::cout << "p(" << p.x << ", " << p.y << ")" << std::endl;
+		std::cout << "s(" << s.x << ", " << s.y << ")" << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -931,13 +948,13 @@ void Voxel::World::updateControllerInput(const float delta)
 		auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
 		if (valueRightAxisX != 0.0f)
 		{
-			player->addRotationY(delta * valueRightAxisX * 3.0f);
+			player->addRotationY(delta * valueRightAxisX * 10.0f);
 		}
 
 		auto valueRightAxisY = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_Y);
 		if (valueRightAxisY != 0.0f)
 		{
-			player->addRotationX(delta * -valueRightAxisY * 3.0f);
+			player->addRotationX(delta * valueRightAxisY * 10.0f);
 		}
 	}
 }

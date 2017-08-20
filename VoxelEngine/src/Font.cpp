@@ -65,6 +65,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		throw std::runtime_error("Freetype2 failed to load font at \"" + fontPath + "\"");
 	}
 
+	std::cout << "[Font] Glyph count = " << (face->num_glyphs >> 6) << std::endl;
+
 	// save font size
 	size = fontSize;
 	// If size is else than min, force to Min value
@@ -76,7 +78,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	// Set font size. Larger size = Higher font texture
 	FT_Set_Pixel_Sizes(face, 0, size);
 
-	//linespace = (face->height >> 6);
+	linespace = (face->height >> 6);
 
 	FT_GlyphSlot glyphSlot = face->glyph;
 
@@ -90,6 +92,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 	
 	// whitespace to tilde. Iterate all character to find the size of character map
 	// this loops find the texture size we are going to make for this font.
+	// whitespace doesn't have texture space, so we can ignore, but font always can have different stuffs filled in any char, so we still check for it.
 	for (size_t i = ' '; i < '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -107,10 +110,11 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		}
 	}
 
-	linespace = maxHeight + heightPadding;
+	// Add another padding at the end to prevent bleeding
+	maxHeight += heightPadding;
 
 	int widthDiv = widthSum / 8;
-	int heightDiv = linespace * 16;
+	int heightDiv = maxHeight * 16;
 	
 	if (widthDiv > textureSizeLimit || heightDiv > textureSizeLimit)
 	{
@@ -164,14 +168,20 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize)
 		glyph.valid = true;
 		glyph.c = c;
 		glyph.metrics = glyphSlot->metrics;
+		glyph.height = glyphSlot->metrics.height >> 6;
+		glyph.width = glyphSlot->metrics.width >> 6;
+		glyph.bearingX = glyphSlot->metrics.horiBearingX >> 6;
+		glyph.bearingY = glyphSlot->metrics.horiBearingY >> 6;
+		glyph.botY = glyph.height - glyph.bearingY;
+		glyph.advance = glyphSlot->metrics.horiAdvance >> 6;
 
 		int botRightX = (int)x + glyphSlot->bitmap.width;
 		int xWidthPad = botRightX + widthPadding;
 
 		if (xWidthPad > pow2Width)
 		{
-			// go to next line
-			y += static_cast<float>(linespace);
+			// go to next line. Use max height as y offset instead of linespace
+			y += static_cast<float>(maxHeight);
 
 			if (y > pow2Height)
 			{

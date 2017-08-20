@@ -54,6 +54,7 @@ namespace Voxel
 
 			virtual void setPosition(const glm::vec2& position);
 			virtual void addPosition(const glm::vec2& position);
+			virtual glm::vec2 getPosition();
 
 			virtual void setPivot(const glm::vec2& pivot);
 
@@ -61,6 +62,7 @@ namespace Voxel
 			virtual bool isVisible();
 
 			virtual void setSize(const glm::vec2& size);
+			virtual glm::vec2 getSize();
 			
 			glm::mat4 getModelMatrix();
 
@@ -164,6 +166,19 @@ namespace Voxel
 		*/
 		class Canvas
 		{
+		public:
+			enum class PIVOT
+			{
+				CENTER = 0,
+				LEFT,
+				RIGHT,
+				TOP,
+				BOTTOM,
+				LEFT_TOP,
+				LEFT_BOTTOM,
+				RIGHT_TOP,
+				RIGHT_BOTTOM
+			};
 		private:
 			Canvas();
 
@@ -191,6 +206,8 @@ namespace Voxel
 
 			Image* getImage(const std::string& name);
 			Text* getText(const std::string& name);
+
+			glm::vec2 getPivot(PIVOT pivot);
 		};
 
 	}

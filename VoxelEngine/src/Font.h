@@ -25,6 +25,18 @@ namespace Voxel
 		char c;
 		// metrics (width, height, advance, etc)
 		FT_Glyph_Metrics metrics;
+		// Width of character
+		int width;
+		// Height of character
+		int height;
+		// The upper height of character from pen position. i.e. F's bearingY equals to height while g's bearingY is small than height because character goes under base line
+		int bearingY;
+		// the width of character from pen position.
+		int bearingX;
+		// The lower height of character from pen position
+		int botY;
+		// Horizontal advance of character. Use this to calculate next character's pen position
+		int advance;
 		// Texture coordinates
 		glm::vec2 uvTopLeft;
 		glm::vec2 uvBotRight;
