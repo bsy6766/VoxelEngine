@@ -46,6 +46,8 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 		}
 	}
 
+	std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
+
 	InputHandler::getInstance().updateKeyboard(key, action, mods);
 }
 
@@ -137,6 +139,7 @@ void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 		keyTickMap[key] = -1;
 	}
 	*/
+	this->mods = mods;
 	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
@@ -230,6 +233,11 @@ bool InputHandler::getKeyRepeat(int key, const bool tick)
 	}
 }
 
+int Voxel::InputHandler::getMods()
+{
+	return mods;
+}
+
 bool InputHandler::getMouseDown(int button, const bool tick)
 {
 	if (tick)
@@ -318,6 +326,12 @@ void Voxel::InputHandler::setCursorToCenter()
 {
 	curX = 0;
 	curY = 0;
+}
+
+std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
+{
+	// GLFW key is same as ascii. However, it doesn't support shifted keys.
+	return "";
 }
 
 float Voxel::InputHandler::getAxisValue(IO::XBOX_360::AXIS axis)

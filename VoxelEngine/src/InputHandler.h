@@ -30,6 +30,9 @@ namespace Voxel
 		// Keyboard map that saves input state for only single frame
 		std::unordered_map<int/*GLFW Key*/, int> keyTickMap;
 
+		// glfw modifier bit. 
+		int mods;
+
 		// Controller
 		ControllerManager* controllerManager;
 
@@ -71,6 +74,7 @@ namespace Voxel
 		bool getKeyDown(int key, const bool tick = false);
 		bool getKeyUp(int key, const bool tick = false);
 		bool getKeyRepeat(int key, const bool tick = false);
+		int getMods();
 		bool getMouseDown(int button, const bool tick = false);
 		bool getMouseUp(int button, const bool tick = false);
 		bool getMouseRepeat(int button, const bool tick = false);
@@ -85,6 +89,8 @@ namespace Voxel
 		void postUpdate();
 
 		void setCursorToCenter();
+
+		std::string glfwKeyToString(const int key, const int mod);
 	};
 }
 
