@@ -858,12 +858,13 @@ void Voxel::World::updateMouseClickInput()
 {
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
-		//auto dir = player->getDirection();
-		//std::cout << "dir = " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
-		std::cout << "mouse button 1 up" << std::endl;
+	}
+
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+	{
 	}
 }
 

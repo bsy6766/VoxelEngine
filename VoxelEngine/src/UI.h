@@ -10,22 +10,68 @@ namespace Voxel
 {
 	class Texture2D;
 	class Font;
+	class Program;
 
 	namespace UI
 	{
 		/**
+		*	@class UINode
+		*	@brief Base class of any UI classes that contains model matrix(pos, scale in xy and rotation) with pivot data
+		*/
+		class UINode
+		{
+		protected:
+			UINode();
+
+			// True if visible. Renders object.
+			bool visible;
+
+			// Pivot. -0.5f ~ 0.5f. (0, 0) by default
+			glm::vec2 pivot;
+
+			// Position in screen space
+			glm::vec2 position;
+			// scale in screen sapce
+			glm::vec2 scale;
+			// rotation
+			// glm::vec3 rotation;
+			// Model Matrix
+			glm::mat4 modelMatrix;
+
+			// Bounding box
+			glm::vec2 boxMin;
+			glm::vec2 boxMax;
+
+			virtual void updateMatrix();
+		public:
+			virtual ~UINode() = default;
+			
+			virtual void setScale(const glm::vec2& scale);
+			virtual void addScale(const glm::vec2& scale);
+
+			virtual void setPosition(const glm::vec2& position);
+			virtual void addPosition(const glm::vec2& position);
+
+			virtual void setPivot(const glm::vec2& pivot);
+
+			virtual void setVisibility(const bool visibility);
+			virtual bool isVisible();
+			
+			glm::mat4 getModelMatrix();
+
+			// returns min and max point of box
+			glm::vec4 getBoundingBox();
+		};
+		/**
 		*	@class Image
 		*	@brief Rectangular png ui image that renders on screen space
 		*/
-		class Image
+		class Image : public UINode
 		{
 		private:
 			Image();
 
-			bool visible;
 			Texture2D* texture;
-
-			glm::vec2 position;
 
 			GLuint vao;
 			GLuint vbo;
@@ -36,10 +82,10 @@ namespace Voxel
 			bool init(const std::string& textureName, const glm::vec2& screenPosition);
 		public:
 			~Image();
+
 			static Image* create(const std::string& textureName, const glm::vec2& screenPosition);
 
-			void update(const float delta);
-			void render();
+			void render(const glm::mat4& screenMat, Program* prog);
 		};
 
 		/**
@@ -50,7 +96,7 @@ namespace Voxel
 		*	It doesn't provide any font related function, such as linespace or size modification.
 		*	Use FontManager to get font and modify values from there.
 		*/
-		class Text
+		class Text : public UINode
 		{
 		public:
 			enum class ALIGN
@@ -67,10 +113,6 @@ namespace Voxel
 			};
 		private:
 			Text();
-
-			bool visible;
-
-			glm::vec2 position;
 
 			std::string text;
 
@@ -141,6 +183,8 @@ namespace Voxel
 
 			// Render all UI objects
 			void render();
+
+			Image* getImage(const std::string& name);
 		};
 
 	}

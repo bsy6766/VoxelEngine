@@ -13,10 +13,87 @@
 
 using namespace Voxel::UI;
 
-Voxel::UI::Text::Text()
-	: visible(true)
-	, text("")
+Voxel::UI::UINode::UINode()
+	: pivot(glm::vec2(0))
 	, position(0)
+	, scale(1)
+	, modelMatrix(1.0f)
+	, visible(true)
+	, boxMin(0)
+	, boxMax(0)
+{
+}
+
+void Voxel::UI::UINode::updateMatrix()
+{
+	// Move to pos, move by pivot, then scale
+	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot, 0)), glm::vec3(scale, 1));
+}
+
+void Voxel::UI::UINode::setScale(const glm::vec2 & scale)
+{
+	this->scale = scale;
+	updateMatrix();
+}
+
+void Voxel::UI::UINode::addScale(const glm::vec2 & scale)
+{
+	this->scale += scale;
+	updateMatrix();
+}
+
+void Voxel::UI::UINode::setPosition(const glm::vec2 & position)
+{
+	this->position = position;
+	updateMatrix();
+}
+
+void Voxel::UI::UINode::addPosition(const glm::vec2 & position)
+{
+	this->position += position;
+	updateMatrix();
+}
+
+void Voxel::UI::UINode::setPivot(const glm::vec2 & pivot)
+{
+	this->pivot = pivot;
+}
+
+void Voxel::UI::UINode::setVisibility(const bool visibility)
+{
+	visible = visibility;
+}
+
+bool Voxel::UI::UINode::isVisible()
+{
+	return visible;
+}
+
+glm::mat4 Voxel::UI::UINode::getModelMatrix()
+{
+	return modelMatrix;
+}
+
+glm::vec4 Voxel::UI::UINode::getBoundingBox()
+{
+	auto min = vec4(boxMin, 1.0f, 1.0f);
+	auto max = vec4(boxMax, 1.0f, 1.0f);
+
+	min = modelMatrix * min;
+	max = modelMatrix * max;
+
+	return glm::vec4(min.x, min.y, max.x, max.y);
+}
+
+
+
+
+
+
+
+Voxel::UI::Text::Text()
+	: UINode()
+	, text("")
 	, maxWidth(0)
 	, totalHeight(0)
 	, align(ALIGN::LEFT)
@@ -484,9 +561,8 @@ void Voxel::UI::Text::render()
 
 
 Image::Image()
-	: visible(true)
+	: UINode()
 	, texture(nullptr)
-	, position(0)
 {
 
 }
@@ -522,13 +598,15 @@ Image* Image::create(const std::string& textureName, const glm::vec2& screenPosi
 	}
 }
 
-void Voxel::UI::Image::render()
+void Voxel::UI::Image::render(const glm::mat4& screenMat, Program* prog)
 {
 	if (!visible) return;
 	if (!texture) return;
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
+
+	prog->setUniformMat4("modelMat", screenMat * modelMatrix);
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -588,6 +666,11 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
+
+	this->boxMin = glm::vec3(vertices.at(6), vertices.at(7), vertices.at(8));
+	this->boxMax = glm::vec3(vertices.at(3), vertices.at(4), vertices.at(5));
+
+	this->updateMatrix();
 
 	return true;
 }
@@ -690,11 +773,12 @@ void Voxel::UI::Canvas::render()
 	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	imageShader->use(true);
 	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
-	imageShader->setUniformMat4("modelMat", Camera::mainCamera->getScreenSpaceMatrix());
+
+	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
 
 	for (auto image : images)
 	{
-		(image.second)->render();
+		(image.second)->render(uiMat, imageShader);
 	}
 
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
@@ -706,5 +790,18 @@ void Voxel::UI::Canvas::render()
 	for (auto text : texts)
 	{
 		(text.second)->render();
+	}
+}
+
+Image * Voxel::UI::Canvas::getImage(const std::string & name)
+{
+	auto find_it = images.find(name);
+	if (find_it == images.end())
+	{
+		return nullptr;
+	}
+	else
+	{
+		return find_it->second;
 	}
 }
