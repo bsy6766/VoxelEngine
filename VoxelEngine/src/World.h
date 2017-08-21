@@ -24,6 +24,7 @@ namespace Voxel
 	class ChunkMeshGenerator;
 	class InputHandler;
 	class Player;
+	class DebugConsole;
 	namespace UI
 	{
 		class Canvas;
@@ -115,6 +116,8 @@ namespace Voxel
 
 		InputHandler* input;
 
+		// debug
+		DebugConsole* debugConsole;
 
 		// threads
 		std::vector<std::thread> testThreads;
@@ -128,10 +131,6 @@ namespace Voxel
 		// Updates (tick) the world.
 		void update(const float delta);
 		void render(const float delta);
-
-		// for debug
-		void onFPSCounted(int fps);
-		UI::Text* fpsNumber;
 	};
 }
 

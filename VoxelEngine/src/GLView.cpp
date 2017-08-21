@@ -467,6 +467,11 @@ glm::ivec2 Voxel::GLView::getScreenSize()
 	return glm::ivec2(screenWidth, screenHeight);
 }
 
+bool Voxel::GLView::isVsyncEnabled()
+{
+	return vsync;
+}
+
 void Voxel::GLView::setClearColor(const glm::vec3 & color)
 {
 	clearColor = color;

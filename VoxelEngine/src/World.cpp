@@ -25,6 +25,8 @@
 #include <Application.h>
 #include <GLView.h>
 
+#include <DebugConsole.h>
+
 using namespace Voxel;
 
 World::World()
@@ -42,14 +44,13 @@ World::World()
 	//, debugPlayerCube(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
-	, fpsNumber(nullptr)
+	, debugConsole(nullptr)
 {
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
 	initUI();
 
 	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
-	GLView::onFPSCounted = std::bind(&World::onFPSCounted, this, std::placeholders::_1);
 
 	//initDebugCube();
 	initPlayer();
@@ -87,6 +88,11 @@ World::~World()
 	if (defaultCanvas)
 	{
 		delete defaultCanvas;
+	}
+
+	if (debugConsole)
+	{
+		delete debugConsole;
 	}
 
 	FontManager::getInstance().clear();
@@ -244,23 +250,9 @@ void Voxel::World::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	// Add temporary cross hair
-	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0));
+	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0), glm::vec4(Color::WHITE, 1.0f));
 
-	// Add static fps label
-	auto canvasLeftTop = defaultCanvas->getPivot(UI::Canvas::PIVOT::LEFT_TOP);
-	canvasLeftTop += glm::vec2(5.0f, -5.0f);
-	auto FPSLabel = UI::Text::create("FPS:", canvasLeftTop, 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	FPSLabel->setPivot(glm::vec2(-0.5f, 0.5f));
-	defaultCanvas->addText("FPSLabel", FPSLabel, 0);
-
-	auto labelSize = FPSLabel->getSize();
-	auto numberPos = FPSLabel->getPosition();
-	numberPos.x += (labelSize.x + 3.0f);
-
-	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::create("9999", numberPos, 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 20);
-	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f)); 
-	defaultCanvas->addText("FPSNumber", fpsNumber, 0);
+	debugConsole = new DebugConsole();
 }
 
 /*
@@ -664,6 +656,31 @@ glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::
 
 void Voxel::World::updateKeyboardInput(const float delta)
 {
+	if (input->getKeyDown(GLFW_KEY_F3, true))
+	{
+		debugConsole->toggleDubugOutputs();
+		return;
+	}
+
+	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT, true))
+	{
+		if (debugConsole->isConsoleOpened())
+		{
+			debugConsole->closeConsole();
+		}
+		else
+		{
+			debugConsole->openConsole();
+		}
+		return;
+	}
+
+	if (debugConsole->isConsoleOpened())
+	{
+		// Stop input while opening console
+		return;
+	}
+
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
 		Camera::mainCamera->print();
@@ -672,23 +689,35 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")" << std::endl;
 	}
 
-	if (input->getKeyDown(GLFW_KEY_M, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+	if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == 0)
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(1);
-	}	
-	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
+		defaultCanvas->setSize(glm::vec2(1920, 1080));
+		debugConsole->updateResolution(1920, 1080);
+	}
+	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == GLFW_MOD_CONTROL)
 	{
 		Application::getInstance().getGLView()->setWindowed(1280, 720);
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
+		defaultCanvas->setSize(glm::vec2(1280, 720));
+		debugConsole->updateResolution(1280, 720);
+	}
+	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
+	{
+		Application::getInstance().getGLView()->setWindowedFullScreen(0);
+		defaultCanvas->setSize(glm::vec2(1920, 1080));
+		debugConsole->updateResolution(1920, 1080);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_V, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
 	{
 		Application::getInstance().getGLView()->setVsync(true);
+		debugConsole->updateVsync(true);
 	}
 	else if (input->getKeyDown(GLFW_KEY_V, true) && input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
 	{
 		Application::getInstance().getGLView()->setVsync(false);
+		debugConsole->updateVsync(false);
 	}
 	// Keyboard
 	if (cameraControlMode)
@@ -786,11 +815,6 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		player->setPosition(glm::vec3(0));
 	}
 
-	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT))
-	{
-		player->setPosition(glm::vec3(8.0, 0, 8.0));
-	}
-
 	if (input->getKeyDown(GLFW_KEY_2))
 	{
 		player->setRotation(glm::vec3(0, 0, 0));
@@ -841,6 +865,12 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	mouseX = x;
 	mouseY = y;
 
+	if (debugConsole->isConsoleOpened())
+	{
+		// Stop input while opening console
+		return;
+	}
+
 	if (cameraControlMode)
 	{
 		if (dx != 0)
@@ -871,17 +901,23 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 
 void Voxel::World::updateMouseClickInput()
 {
+	if (debugConsole->isConsoleOpened())
+	{
+		// Stop input while opening console
+		return;
+	}
+
 	//auto image = defaultCanvas->getImage("crossHair");
-	auto fpsLabel = defaultCanvas->getText("FPSLabelOutlined");
+	//auto fpsLabel = defaultCanvas->getText("FPSLabelOutlined");
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
 		//image->setPivot(glm::vec2(0, 0));
-		auto bb = fpsLabel->getBoundingBox();
-		auto p = fpsLabel->getPosition();
-		auto s = fpsLabel->getSize();
-		std::cout << "bb(" << bb.x << ", " << bb.y << ", " << bb.z << ", " << bb.w << ")" << std::endl;
-		std::cout << "p(" << p.x << ", " << p.y << ")" << std::endl;
-		std::cout << "s(" << s.x << ", " << s.y << ")" << std::endl;
+		//auto bb = fpsLabel->getBoundingBox();
+		//auto p = fpsLabel->getPosition();
+		//auto s = fpsLabel->getSize();
+		//std::cout << "bb(" << bb.x << ", " << bb.y << ", " << bb.z << ", " << bb.w << ")" << std::endl;
+		//std::cout << "p(" << p.x << ", " << p.y << ")" << std::endl;
+		//std::cout << "s(" << s.x << ", " << s.y << ")" << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -890,19 +926,19 @@ void Voxel::World::updateMouseClickInput()
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 	{
 		//image->setPivot(glm::vec2(0.5f, 0));
-		fpsLabel->addPosition(glm::vec2(10, 0));
+		//fpsLabel->addPosition(glm::vec2(10, 0));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
 	{
 		//image->setPivot(glm::vec2(0, 0.5f));
-		fpsLabel->addPosition(glm::vec2(10, 10));
+		//fpsLabel->addPosition(glm::vec2(10, 10));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_4, true))
 	{
 		//image->setPivot(glm::vec2(0.5f, -0.5f));
-		fpsLabel->addPosition(glm::vec2(0, 10));
+		//fpsLabel->addPosition(glm::vec2(0, 10));
 	}
 }
 
@@ -1045,7 +1081,7 @@ void World::render(const float delta)
 	//glm::mat4 bMat = mat4(1.0f);
 	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
 	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-	
+
 	/*
 	auto screenSpacePos = (Camera::mainCamera->getScreenSpacePos() * -1.0f);
 	//screenSpacePos = glm::vec3(0);
@@ -1062,13 +1098,9 @@ void World::render(const float delta)
 	glDepthFunc(GL_ALWAYS);
 
 	defaultCanvas->render();
+	debugConsole->render();
 
 	glBindVertexArray(0);
 	glUseProgram(0);
 
-}
-
-void Voxel::World::onFPSCounted(int fps)
-{
-	fpsNumber->setText(std::to_string(fps));
 }

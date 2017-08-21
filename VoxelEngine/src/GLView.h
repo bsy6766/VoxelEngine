@@ -97,6 +97,8 @@ namespace Voxel
 
 		glm::ivec2 getScreenSize();
 
+		bool isVsyncEnabled();
+
 		void setClearColor(const glm::vec3& color);
 
 		void close();

@@ -82,7 +82,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		throw std::runtime_error("Freetype2 failed to load font at \"" + fontPath + "\"");
 	}
 
-	std::cout << "[Font] Glyph count = " << (face->num_glyphs >> 6) << std::endl;
+	//std::cout << "[Font] Glyph count = " << (face->ascender >> 6) << std::endl;
 
 	// save font size
 	size = fontSize;
@@ -171,6 +171,9 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	float x = 0;
 	// y offset.
 	float y = static_cast<float>(heightPadding + outlineSize);
+
+	int whitespaceHeight = 0;
+
 	for (size_t i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -192,8 +195,14 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		glyph.width = glyphSlot->metrics.width >> 6;
 		glyph.bearingX = glyphSlot->metrics.horiBearingX >> 6;
 		glyph.bearingY = glyphSlot->metrics.horiBearingY >> 6;
+		//std::cout << c << " " << glyph.height << ", " << glyph.bearingY << std::endl;
 		glyph.botY = glyph.height - glyph.bearingY;
 		glyph.advance = glyphSlot->metrics.horiAdvance >> 6;
+
+		if (whitespaceHeight < glyph.height)
+		{
+			whitespaceHeight = glyph.height;
+		}
 
 		// get next X.
 		int nextX = (int)x + glyphSlot->bitmap.width + ((widthPadding + outlineSize) * 2);
@@ -238,6 +247,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		// advance by paddings
 		x += static_cast<float>(widthPadding + outlineSize);
 	}
+
+	glyphMap[' '].height = whitespaceHeight;
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 

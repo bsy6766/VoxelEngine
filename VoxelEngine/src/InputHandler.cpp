@@ -1,5 +1,6 @@
 #include <InputHandler.h>
 #include <iostream>
+#include <string>
 
 using namespace Voxel;
 
@@ -46,9 +47,10 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 		}
 	}
 
-	std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
+	//std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
 
 	InputHandler::getInstance().updateKeyboard(key, action, mods);
+	//std::cout << "char = " << InputHandler::getInstance().glfwKeyToString(key, mods) << std::endl;
 }
 
 void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
@@ -331,6 +333,84 @@ void Voxel::InputHandler::setCursorToCenter()
 std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 {
 	// GLFW key is same as ascii. However, it doesn't support shifted keys.
+	// Alphabet
+	if (key >= 65 && key <= 90)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			// upper case
+			return std::string(1, static_cast<char>(key));
+		}
+		else
+		{
+			// lower case
+			return std::string(1, static_cast<char>(key + 32));
+		}
+	}
+	else if (key == 32)
+	{
+		// whitespace
+		return " ";
+	}
+	else if (key >= 48 && key <= 57)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			// shift + number
+			switch (key)
+			{
+			case 49:
+				// 1
+				return "!";
+				break;
+			case 50:
+				// 2
+				return "@";
+				break;
+			case 51:
+				// 3
+				return "#";
+				break;
+			case 52:
+				// 4
+				return "^";
+				break;
+			case 53:
+				// 5
+				return "%";
+				break;
+			case 54:
+				// 6
+				return "^";
+				break;
+			case 55:
+				// 7
+				return "&";
+				break;
+			case 56:
+				// 8
+				return "*";
+				break;
+			case 57:
+				// 9
+				return "(";
+				break;
+			case 48:
+				// 0
+				return ")";
+				break;
+			default:
+				return "";
+				break;
+			}
+		}
+		else
+		{
+			// number
+			return std::string(1, static_cast<char>(key));
+		}
+	}
+
 	return "";
 }
 

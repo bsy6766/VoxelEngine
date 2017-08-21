@@ -51,7 +51,7 @@ const std::vector<float> Quad::uv =
 	1, 1
 };
 
-std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size, const glm::vec2 & position)
+std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
 {
 	if (size.x <= 0 || size.y <= 0)
 	{
@@ -61,8 +61,8 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size, const glm::v
 	{
 		auto vertices = std::vector<float>();
 
-		float widthHalf = size.x * 0.5f + position.x;
-		float heightHalf = size.y * 0.5f + position.y;
+		float widthHalf = size.x * 0.5f;
+		float heightHalf = size.y * 0.5f;
 		//float z = -514.13328242716122077782265459946f;
 
 		// Add vertices from 0 to 4
@@ -88,4 +88,19 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size, const glm::v
 
 		return vertices;
 	}
+}
+
+std::vector<float> Voxel::Quad::getColors(const glm::vec4 & color)
+{
+	auto colors = std::vector<float>();
+
+	for (int i = 0; i < 4; i++)
+	{
+		colors.push_back(color.r);
+		colors.push_back(color.g);
+		colors.push_back(color.b);
+		colors.push_back(color.a);
+	}
+
+	return colors;
 }

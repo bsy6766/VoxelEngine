@@ -21,7 +21,8 @@ namespace Voxel
 		const static std::vector<float> defaultColors;
 		const static std::vector<float> uv;
 
-		static std::vector<float> getVertices(const glm::vec2& size, const glm::vec2& position);
+		static std::vector<float> getVertices(const glm::vec2& size);
+		static std::vector<float> getColors(const glm::vec4& color);
 	};
 
 

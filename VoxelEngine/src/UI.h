@@ -28,6 +28,8 @@ namespace Voxel
 
 			// Pivot. -0.5f ~ 0.5f. (0, 0) by default
 			glm::vec2 pivot;
+			// canvas pivot
+			glm::vec2 canvasPivot;
 
 			// Position in screen space
 			glm::vec2 position;
@@ -63,11 +65,14 @@ namespace Voxel
 
 			virtual void setSize(const glm::vec2& size);
 			virtual glm::vec2 getSize();
-			
+
 			glm::mat4 getModelMatrix();
 
 			// returns min and max point of box
 			glm::vec4 getBoundingBox();
+
+			virtual void setCanvasPivot(const glm::vec2& pivot);
+			virtual glm::vec2 getCanvasPivot();
 		};
 		/**
 		*	@class Image
@@ -86,13 +91,13 @@ namespace Voxel
 			GLuint uvbo;
 			GLuint ibo;
 
-			bool init(const std::string& textureName, const glm::vec2& screenPosition);
+			bool init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 		public:
 			~Image();
 
-			static Image* create(const std::string& textureName, const glm::vec2& screenPosition);
+			static Image* create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 
-			void render(const glm::mat4& screenMat, Program* prog);
+			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};
 
 		/**
@@ -159,7 +164,7 @@ namespace Voxel
 
 			bool isOutlined();
 
-			void render(const glm::mat4& screenMat, Program* prog);
+			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};
 
 		/**
@@ -188,7 +193,9 @@ namespace Voxel
 		private:
 			Canvas();
 
-			glm::vec2 screenSize;
+			bool visible;
+
+			glm::vec2 size;
 			glm::vec2 centerPosition;
 
 			// Each ui components
@@ -197,10 +204,10 @@ namespace Voxel
 		public:
 			~Canvas();
 
-			static Canvas* create(const glm::vec2& screenSize, const glm::vec2& centerPosition);
+			static Canvas* create(const glm::vec2& size, const glm::vec2& centerPosition);
 
 			// add image
-			bool addImage(const std::string& name, const std::string& textureName, const glm::vec2& position);
+			bool addImage(const std::string& name, const std::string& textureName, const glm::vec2& position, const glm::vec4& color);
 			bool addImage(const std::string& name, Image* image, const int z);
 
 			// add test
@@ -214,6 +221,10 @@ namespace Voxel
 			Text* getText(const std::string& name);
 
 			glm::vec2 getPivot(PIVOT pivot);
+
+			void setSize(const glm::vec2& size);
+
+			void setVisibility(const bool visibility);
 		};
 
 	}

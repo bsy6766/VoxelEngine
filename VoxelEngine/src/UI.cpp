@@ -15,6 +15,7 @@ using namespace Voxel::UI;
 
 Voxel::UI::UINode::UINode()
 	: pivot(glm::vec2(0))
+	, canvasPivot(glm::vec2(0))
 	, position(0)
 	, scale(1)
 	, modelMatrix(1.0f)
@@ -29,6 +30,16 @@ void Voxel::UI::UINode::updateMatrix()
 {
 	// Move to pos, move by pivot, then scale
 	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * size * -1.0f, 0)), glm::vec3(scale, 1));
+}
+
+void Voxel::UI::UINode::setCanvasPivot(const glm::vec2 & pivot)
+{
+	canvasPivot = pivot;
+}
+
+glm::vec2 Voxel::UI::UINode::getCanvasPivot()
+{
+	return canvasPivot;
 }
 
 void Voxel::UI::UINode::setScale(const glm::vec2 & scale)
@@ -275,20 +286,37 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 				}
 			}
 
-			lineSizes.back().width = totalWidth;
-			lineSizes.back().maxBearingY = maxBearingY;
-			lineSizes.back().maxBotY = maxBotY;
-
 			if (totalWidth > maxWidth)
 			{
 				maxWidth = totalWidth;
 			}
 
-			// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
-			// I'm going to customize just for MunroSmall. 
-			totalHeight += (maxBearingY + maxBotY);
-			lineGap += lineGapHeight;
-			//totalHeight += font->getLineSpace();
+			if (line.empty())
+			{
+				line = " ";
+				// quick hack here. Add whitespace to emptyline to treat as line
+				lineSizes.back().width = 0;
+				lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
+				lineSizes.back().maxBotY = 0;
+
+				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
+				// I'm going to customize just for MunroSmall. 
+				totalHeight += lineSizes.back().maxBearingY;
+				lineGap += lineGapHeight;
+				//totalHeight += font->getLineSpace();
+			}
+			else
+			{
+				lineSizes.back().width = totalWidth;
+				lineSizes.back().maxBearingY = maxBearingY;
+				lineSizes.back().maxBotY = maxBotY;
+
+				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
+				// I'm going to customize just for MunroSmall. 
+				totalHeight += (maxBearingY + maxBotY);
+				lineGap += lineGapHeight;
+				//totalHeight += font->getLineSpace();
+			}
 		}
 
 		// Make max width and height even number because this is UI(?)
@@ -360,67 +388,70 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		
 		for (auto& line : split)
 		{
-			//lineVertices.push_back(std::vector<float>());
-			// start x from pen position x
-			float curX = penPositions.at(penPosIndex).x;
-
-			unsigned int len = line.size();
-			for (unsigned int i = 0; i < len; i++)
+			if (line != " ")
 			{
-				// Build quad for each character
-				const char c = line[i];
-				Glyph* glyph = font->getCharGlyph(c);
-				// Empty pos. p1 = left bottom, p2 = right top. z == 0
-				glm::vec2 leftBottom(0);
-				glm::vec2 rightTop(0);
-				float x = curX;
+				//lineVertices.push_back(std::vector<float>());
+				// start x from pen position x
+				float curX = penPositions.at(penPosIndex).x;
 
-				// Advance x for bearing x
-				x += static_cast<float>(glyph->bearingX);
-
-				// outline
-				leftBottom.x = (x - outlineSize);
-
-				// Advance x again for width
-				x += static_cast<float>(glyph->width);
-				rightTop.x = (x + outlineSize);
-
-				// Calculate Y based on pen position
-				leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY) - outlineSize;
-				rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY) + outlineSize;
-
-				// Advnace pen pos x to next char
-				curX += glyph->advance;
-
-				// Store left bttom and right top vertices pos
-				vertices.push_back(leftBottom.x); vertices.push_back(leftBottom.y); vertices.push_back(0);	// left bottom
-				vertices.push_back(leftBottom.x); vertices.push_back(rightTop.y); vertices.push_back(0);	// left top
-				vertices.push_back(rightTop.x); vertices.push_back(leftBottom.y); vertices.push_back(0);		// right bottom
-				vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
-
-
-				// Add global color for now
-				for (int j = 0; j < 16; j++)
+				unsigned int len = line.size();
+				for (unsigned int i = 0; i < len; i++)
 				{
-					colors.push_back(1.0f);
+					// Build quad for each character
+					const char c = line[i];
+					Glyph* glyph = font->getCharGlyph(c);
+					// Empty pos. p1 = left bottom, p2 = right top. z == 0
+					glm::vec2 leftBottom(0);
+					glm::vec2 rightTop(0);
+					float x = curX;
+
+					// Advance x for bearing x
+					x += static_cast<float>(glyph->bearingX);
+
+					// outline
+					leftBottom.x = (x - outlineSize);
+
+					// Advance x again for width
+					x += static_cast<float>(glyph->width);
+					rightTop.x = (x + outlineSize);
+
+					// Calculate Y based on pen position
+					leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY) - outlineSize;
+					rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY) + outlineSize;
+
+					// Advnace pen pos x to next char
+					curX += glyph->advance;
+
+					// Store left bttom and right top vertices pos
+					vertices.push_back(leftBottom.x); vertices.push_back(leftBottom.y); vertices.push_back(0);	// left bottom
+					vertices.push_back(leftBottom.x); vertices.push_back(rightTop.y); vertices.push_back(0);	// left top
+					vertices.push_back(rightTop.x); vertices.push_back(leftBottom.y); vertices.push_back(0);		// right bottom
+					vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
+
+
+																												// Add global color for now
+					for (int j = 0; j < 16; j++)
+					{
+						colors.push_back(1.0f);
+					}
+
+					// uv.
+					uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvBotRight.y);	// Left bottom
+					uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvTopLeft.y);		// Left top
+					uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvBotRight.y);	// right bottom
+					uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvTopLeft.y);	// right top
+
+																											// indices. range of 4 per quad.
+					indices.push_back(indicesIndex * 4);
+					indices.push_back(indicesIndex * 4 + 1);
+					indices.push_back(indicesIndex * 4 + 2);
+					indices.push_back(indicesIndex * 4 + 1);
+					indices.push_back(indicesIndex * 4 + 2);
+					indices.push_back(indicesIndex * 4 + 3);
+
+					// inc index
+					indicesIndex++;
 				}
-
-				// uv.
-				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvBotRight.y);	// Left bottom
-				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvTopLeft.y);		// Left top
-				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvBotRight.y);	// right bottom
-				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvTopLeft.y);	// right top
-
-				// indices. range of 4 per quad.
-				indices.push_back(indicesIndex * 4);
-				indices.push_back(indicesIndex * 4 + 1);
-				indices.push_back(indicesIndex * 4 + 2);
-				indices.push_back(indicesIndex * 4 + 1);
-				indices.push_back(indicesIndex * 4 + 2);
-				indices.push_back(indicesIndex * 4 + 3);
-
-				// inc index
-				indicesIndex++;
 			}
 
 			penPosIndex++;
@@ -827,7 +858,7 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 	return originList;
 }
 
-void Voxel::UI::Text::render(const glm::mat4& screenMat, Program* prog)
+void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog)
 {
 	if (!visible) return;
 	if (indicesSize == 0) return;
@@ -836,7 +867,7 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, Program* prog)
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
 
-	prog->setUniformMat4("modelMat", screenMat * modelMatrix);
+	prog->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMatrix);
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
@@ -867,11 +898,11 @@ Image::~Image()
 	glDeleteVertexArrays(1, &vao);
 }
 
-Image* Image::create(const std::string& textureName, const glm::vec2& screenPosition)
+Image* Image::create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
 {
 	auto newImage = new Image();
 
-	if (newImage->init(textureName, screenPosition))
+	if (newImage->init(textureName, screenPosition, color))
 	{
 		return newImage;
 	}
@@ -882,7 +913,7 @@ Image* Image::create(const std::string& textureName, const glm::vec2& screenPosi
 	}
 }
 
-void Voxel::UI::Image::render(const glm::mat4& screenMat, Program* prog)
+void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog)
 {
 	if (!visible) return;
 	if (!texture) return;
@@ -890,14 +921,14 @@ void Voxel::UI::Image::render(const glm::mat4& screenMat, Program* prog)
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
 
-	prog->setUniformMat4("modelMat", screenMat * modelMatrix);
+	prog->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMatrix);
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	//glBindVertexArray(0);
 }
 
-bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& screenPosition)
+bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
 {
 	texture = Texture2D::create(textureName, GL_TEXTURE_2D);
 
@@ -912,9 +943,9 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 
 	auto size = texture->getTextureSize();
 
-	auto vertices = Quad::getVertices(glm::vec2(size), screenPosition);
+	auto vertices = Quad::getVertices(glm::vec2(size));
 	auto indices = Quad::indices;
-	auto colors = Quad::defaultColors;
+	auto colors = Quad::getColors(color);
 	auto uv = Quad::uv;
 
 	glGenVertexArrays(1, &vao);
@@ -964,8 +995,9 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 
 
 Canvas::Canvas()
-	: screenSize(0)
+	: size(0)
 	, centerPosition(0)
+	, visible(true)
 {
 
 }
@@ -984,23 +1016,23 @@ Canvas::~Canvas()
 	images.clear();
 }
 
-Canvas* Canvas::create(const glm::vec2& screenSize, const glm::vec2& centerPosition)
+Canvas* Canvas::create(const glm::vec2& size, const glm::vec2& centerPosition)
 {
 	auto newCanvas = new Canvas();
 	
-	newCanvas->screenSize = screenSize;
+	newCanvas->size = size;
 	newCanvas->centerPosition = centerPosition;
 
 	std::cout << "[Canvas] Creating new canvas" << std::endl;
-	std::cout << "[Canvas] Size (" << screenSize.x << ", " << screenSize.y << ")" << std::endl;
+	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")" << std::endl;
 	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")" << std::endl;
 
 	return newCanvas;
 }
 
-bool Voxel::UI::Canvas::addImage(const std::string & name, const std::string & textureName, const glm::vec2& position)
+bool Voxel::UI::Canvas::addImage(const std::string & name, const std::string & textureName, const glm::vec2& position, const glm::vec4& color)
 {
-	auto newImage = Image::create(textureName, position);
+	auto newImage = Image::create(textureName, position, color);
 	if (newImage)
 	{
 		return addImage(name, newImage, 0);
@@ -1056,6 +1088,8 @@ bool Voxel::UI::Canvas::addText(const std::string & name, Text * text, const int
 
 void Voxel::UI::Canvas::render()
 {
+	if (!visible) return;
+
 	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	imageShader->use(true);
 	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
@@ -1064,7 +1098,13 @@ void Voxel::UI::Canvas::render()
 
 	for (auto image : images)
 	{
-		(image.second)->render(uiMat, imageShader);
+		auto canvasPivot = (image.second)->getCanvasPivot();
+		canvasPivot.x *= size.x;
+		canvasPivot.y *= size.y;
+		glm::mat4 canvasMat = glm::mat4(1.0f);
+		canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
+		canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
+		(image.second)->render(uiMat, canvasMat, imageShader);
 	}
 
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
@@ -1084,7 +1124,14 @@ void Voxel::UI::Canvas::render()
 			textShader->setUniformBool("outlined", outlined);
 			textShader->setUniformInt("outlineSize", 0);
 		}
-		(text.second)->render(uiMat, textShader);
+
+		auto canvasPivot = (text.second)->getCanvasPivot();
+		canvasPivot.x *= size.x;
+		canvasPivot.y *= size.y;
+		glm::mat4 canvasMat = glm::mat4(1.0f);
+		canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
+		canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
+		(text.second)->render(uiMat, canvasMat, textShader);
 	}
 }
 
@@ -1123,32 +1170,32 @@ glm::vec2 Voxel::UI::Canvas::getPivot(PIVOT pivot)
 	case Voxel::UI::Canvas::PIVOT::CENTER:
 		break;
 	case Voxel::UI::Canvas::PIVOT::LEFT:
-		centerPos.x -= (screenSize.x * 0.5f);
+		centerPos.x -= (size.x * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::RIGHT:
-		centerPos.x += (screenSize.x * 0.5f);
+		centerPos.x += (size.x * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::TOP:
-		centerPos.y += (screenSize.y * 0.5f);
+		centerPos.y += (size.y * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::BOTTOM:
-		centerPos.y -= (screenSize.y * 0.5f);
+		centerPos.y -= (size.y * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::LEFT_TOP:
-		centerPos.x -= (screenSize.x * 0.5f);
-		centerPos.y += (screenSize.y * 0.5f);
+		centerPos.x -= (size.x * 0.5f);
+		centerPos.y += (size.y * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::LEFT_BOTTOM:
-		centerPos.x -= (screenSize.x * 0.5f);
-		centerPos.y -= (screenSize.y * 0.5f);
+		centerPos.x -= (size.x * 0.5f);
+		centerPos.y -= (size.y * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::RIGHT_TOP:
-		centerPos.x += (screenSize.x * 0.5f);
-		centerPos.y += (screenSize.y * 0.5f);
+		centerPos.x += (size.x * 0.5f);
+		centerPos.y += (size.y * 0.5f);
 		break;
 	case Voxel::UI::Canvas::PIVOT::RIGHT_BOTTOM:
-		centerPos.x += (screenSize.x * 0.5f);
-		centerPos.y -= (screenSize.y * 0.5f);
+		centerPos.x += (size.x * 0.5f);
+		centerPos.y -= (size.y * 0.5f);
 		break;
 	default:
 		return glm::vec2(0);
@@ -1156,4 +1203,14 @@ glm::vec2 Voxel::UI::Canvas::getPivot(PIVOT pivot)
 	}
 
 	return centerPos;
+}
+
+void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
+{
+	this->size = size;
+}
+
+void Voxel::UI::Canvas::setVisibility(const bool visibility)
+{
+	visible = visibility;
 }
