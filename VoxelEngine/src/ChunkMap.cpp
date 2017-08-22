@@ -403,11 +403,11 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 
 	//std::cout << "start block (" << startBlockPos.x << ", " << startBlockPos.y << ", " << startBlockPos.z << ")" << std::endl;
 
-	while (threshold >= 0 || rayEnd != rayStart)
+	while (threshold >= 0)
 	{
 		curRayPoint += step;
 
-		if (glm::distance(curRayPoint, rayStart) >playerRange)
+		if (glm::distance(curRayPoint, rayStart) > playerRange)
 		{
 			return nullptr;
 		}
@@ -433,10 +433,6 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 						return curBlock;
 					}
 				}
-			}
-			else
-			{
-				return nullptr;
 			}
 		}
 
