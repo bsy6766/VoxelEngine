@@ -69,8 +69,6 @@ namespace Voxel
 		GLuint cbo;
 		void initDebugCamerafrustum();
 
-		GLuint pvao;
-		GLuint pvbo;
 		GLuint rvao;
 		GLuint rvbo;
 
@@ -100,8 +98,26 @@ namespace Voxel
 		double mouseX;
 		double mouseY;
 
+		// Initialize/release instances
+		void init();
+		void release();
+
+		// Create/Load/unload player
+		void createPlayer();
+		//void loadPlayer();
+		//void unload();
+
+		// Create/Load/release chunkMap
+		void createChunkMap();
+
+		// Load chunkMap
+		void loadChunkLoader();
+
+		// Load chunk meshes
+		void loadChunkMesh();
+
+		// Initilaize chunks
 		void initChunk();
-		void initPlayer();
 		void initUI();
 
 		void updateKeyboardInput(const float delta);
@@ -114,6 +130,12 @@ namespace Voxel
 		World();
 		~World();
 
+		// create new. 
+		void createNew(const std::string& worldName);
+		// load from existing save
+		void load(const std::string& worldPath);
+
+		// input handler instance
 		InputHandler* input;
 
 		// debug

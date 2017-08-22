@@ -70,14 +70,22 @@ bool Chunk::init(const int x, const int z)
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
-		auto newChucnkSection = ChunkSection::create(x, i, z, worldPosition);
-		if (newChucnkSection)
+		// Temp. All blocks above chunk section y 3 will be air.
+		if (i > 3)
 		{
-			chunkSections.push_back(newChucnkSection);
+			chunkSections.push_back(nullptr);
 		}
 		else
 		{
-			return false;
+			auto newChucnkSection = ChunkSection::create(x, i, z, worldPosition);
+			if (newChucnkSection)
+			{
+				chunkSections.push_back(newChucnkSection);
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 

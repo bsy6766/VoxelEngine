@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <chrono>		// time
+#include <ctime>
 
 namespace Voxel
 {
@@ -188,6 +189,16 @@ namespace Voxel
 				std::stringstream ss;
 				ss << std::chrono::duration_cast<std::chrono::microseconds>(Time::end - Time::begin).count();
 				return ss.str();
+			}
+
+			static inline const std::string getDate()
+			{
+				auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+				char date[100] = { 0 };
+				struct tm buf;
+				localtime_s(&buf, &now);
+				std::strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &buf);
+				return std::string(date);
 			}
 		};
 

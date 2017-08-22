@@ -12,6 +12,7 @@ ChunkMesh::ChunkMesh()
 	, vbo(0)
 	, cbo(0)
 	, ibo(0)
+	, indicesSize(0)
 {
 }
 
@@ -19,9 +20,9 @@ ChunkMesh::~ChunkMesh()
 {
 	// Todo: Instead of deleting vertices, freeze chunk and save mesh for future?
 	// clear vector
-	vertices.clear();
-	colors.clear();
-	indices.clear();
+	//vertices.clear();
+	//colors.clear();
+	//indices.clear();
 
 	// Delte buffers
 	glDeleteBuffers(1, &vbo);
@@ -34,13 +35,10 @@ ChunkMesh::~ChunkMesh()
 void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices)
 {
 	// Copy vertices
-	this->vertices = vertices;
-	this->colors = colors;
-	this->indices = indices;
-}
+	//this->vertices = vertices;
+	//this->colors = colors;
+	//this->indices = indices;
 
-void Voxel::ChunkMesh::initOpenGLObjects()
-{
 	// 1. VAO
 	// Generate vertex array object
 	glGenVertexArrays(1, &vao);
@@ -53,7 +51,7 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->vertices.size(), &this->vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 
 	// Get program
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
@@ -73,7 +71,7 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 	// load color data
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->colors.size(), &this->colors.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
 
 	// color
 	glEnableVertexAttribArray(colorLoc);
@@ -88,10 +86,19 @@ void Voxel::ChunkMesh::initOpenGLObjects()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	// Load indices
 	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices[0], GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
+
+	this->indicesSize = indices.size();
 }
+
+/*
+void Voxel::ChunkMesh::initOpenGLObjects()
+{
+	
+}
+*/
 
 /*
 void Voxel::ChunkMesh::initTest(const std::vector<float>& vertices, const std::vector<unsigned int>& indices)
@@ -145,7 +152,7 @@ void ChunkMesh::bind()
 
 void ChunkMesh::render()
 {
-	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 	//glDrawElements(GL_TRIANGLES, 3 + offset, GL_UNSIGNED_INT, 0);
 }
 
@@ -154,7 +161,9 @@ void ChunkMesh::unbind()
 	glBindVertexArray(0);
 }
 
+/*
 int Voxel::ChunkMesh::getVerticesSize()
 {
 	return vertices.size();
 }
+*/

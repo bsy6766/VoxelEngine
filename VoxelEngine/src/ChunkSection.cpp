@@ -74,6 +74,9 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 		}
 	}
 
+	//auto size = sizeof(Block);
+	//std::cout << "size = " << std::endl;
+
 	return true;
 }
 

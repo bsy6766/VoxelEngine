@@ -18,7 +18,7 @@ namespace Voxel
 		friend class ChunkMeshGenerator;
 	public:
 		// block id
-		enum class BLOCK_ID
+		enum class BLOCK_ID : unsigned char
 		{
 			AIR = 0,		// Default block. Transparent.
 			GRASS,
@@ -29,17 +29,19 @@ namespace Voxel
 		Block();
 
 		// Local position of block in the chunk section
-		glm::ivec3 localCoordinate;
+		//glm::ivec3 localCoordinate;
 		// Position of block in the world.
 		glm::ivec3 worldCoordinate;
 
 		// World position of block in the chunk section 
-		glm::vec3 localPosition;
+		//glm::vec3 localPosition;
 		// World Position of block
-		glm::vec3 worldPosition;
+		//glm::vec3 worldPosition;
 
-		// Color
-		glm::vec3 color;
+		// Color. Instead of vec3(12 bytes), we store value in 0~255 scale, which only needs 3bytes total
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
 
 		// ID
 		BLOCK_ID id;
@@ -55,6 +57,8 @@ namespace Voxel
 		bool isEmpty();
 
 		void setColor(const glm::vec3& color);
+		void setColor(const unsigned char r, const unsigned char g, const unsigned char b);
+		glm::vec3 getColor();
 
 		glm::vec3 getWorldPosition();
 	};

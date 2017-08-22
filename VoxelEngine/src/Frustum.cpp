@@ -127,6 +127,10 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		auto chunkSection = chunk->getChunkSectionByY(i);
+		if (chunkSection == nullptr)
+		{
+			continue;
+		}
 		//std::cout << "checking chunk section at y: " << i << std::endl;
 
 		auto chunkSectionWorldPos = chunkSection->getWorldPosition();

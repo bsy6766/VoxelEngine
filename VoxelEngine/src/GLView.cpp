@@ -262,6 +262,11 @@ void Voxel::GLView::updateFPS()
 	}
 }
 
+void Voxel::GLView::updateMousePosition(double& x, double& y)
+{
+	glfwGetCursorPos(window, &x, &y);
+}
+
 void Voxel::GLView::setCursorPos(double x, double y)
 {
 	glfwSetCursorPos(window, x, y);

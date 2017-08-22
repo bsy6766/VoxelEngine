@@ -27,6 +27,13 @@ namespace Voxel
 							Utility::Random::randomReal(0.5f, 1.0f), 
 							Utility::Random::randomReal(0.5f, 1.0f));
 		}
+
+		static glm::ivec3 getRandomColor255()
+		{
+			return glm::ivec3(Utility::Random::randomInt(127, 255),
+				Utility::Random::randomInt(127, 255),
+				Utility::Random::randomInt(127, 255));
+		}
 	}
 }
 

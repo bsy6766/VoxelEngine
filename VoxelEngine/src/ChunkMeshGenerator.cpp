@@ -28,6 +28,11 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	int indicesOffsetPerBlock = 0;
 	for (auto chunkSection : chunk->chunkSections)
 	{
+		if (chunkSection == nullptr)
+		{
+			// There is no block in this chunksection
+			continue;
+		}
 		//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
 
 		// Iterate all blocks. O(4096)
@@ -36,7 +41,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 		{
 			//std::cout << "[ChunkMeshGenerator] -> Generating for block at (" << block->worldCoordinate.x << ", " << block->worldCoordinate.y << ", " << block->worldCoordinate.z << ")" << std::endl;
 			// Check block id
-			if (block->isEmpty())
+			if (block == nullptr)
 			{
 				// Skip air.
 				continue;
@@ -47,7 +52,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				unsigned int face = Cube::Face::NONE;
 				// Block's world position
 				auto worldPos = block->worldCoordinate;
-				auto localPos = block->localCoordinate;
+				//auto localPos = block->localCoordinate;
 
 				// Get adjacent block and check if it's transparent or not
 				// Up
@@ -144,7 +149,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), block->worldPosition);
+					auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), block->getWorldPosition());
 					for (auto vertex : blockVertices)
 					{
 						vertices.push_back(vertex);
@@ -152,7 +157,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 
 					// temporary function for fake lighting. 
 					//auto blockColors = Cube::getColors3(static_cast<Cube::Face>(face), block->color);
-					auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(block->color, 1.0f));
+					auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(block->getColor(), 1.0f));
+					//auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(0, 1, 0, 1));
 					for (auto color : blockColors)
 					{
 						colors.push_back(color);
@@ -189,7 +195,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	// init chunkMesh
 	auto newChunkMesh = new ChunkMesh();
 	newChunkMesh->initBuffer(vertices, colors, indices);
-	newChunkMesh->initOpenGLObjects();
+	//newChunkMesh->initOpenGLObjects();
 	chunk->chunkMesh = newChunkMesh;
 
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;
@@ -209,7 +215,7 @@ void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, C
 
 	//std::cout << "[ChunkMeshGenerator] Generating mesh..." << std::endl;
 
-	int toalVertices = 0;
+	//int toalVertices = 0;
 
 	// Iterate active chunk in X Axis O(Render distance)
 	for (auto chunkListX : chunkLoader->activeChunks)
@@ -221,7 +227,7 @@ void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, C
 			{
 				generateSingleChunkMesh(chunk, chunkMap);
 
-				toalVertices += chunk->chunkMesh->getVerticesSize();
+				//toalVertices += chunk->chunkMesh->getVerticesSize();
 			}
 		}
 	}

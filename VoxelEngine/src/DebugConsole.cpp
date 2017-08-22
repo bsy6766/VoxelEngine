@@ -1,6 +1,8 @@
 #include "DebugConsole.h"
 #include <UI.h>
 #include <Application.h>
+#include <sstream>
+#include <iomanip>
 
 using namespace Voxel;
 
@@ -15,6 +17,7 @@ DebugConsole::DebugConsole()
 	, mousePosition(nullptr)
 	, cameraPosition(nullptr)
 	, cameraRotation(nullptr)
+	, playerPosition(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
@@ -42,7 +45,7 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addImage("cmdInputField", commandInputField, 0);
 
 	//staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nmouse position:\n\ncamera position:\ncamera rotation:\n\nfovy:\nfovx:\n\nplayer position:\nplayer rotation:\n\nchunk:map, loader\nchunk section:total, visible", glm::vec2(5.0f, -5.0f), 2);
-	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:", glm::vec2(5.0f, -5.0f), 2);
+	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nplayer position:", glm::vec2(5.0f, -5.0f), 2);
 	staticLabels->setVisibility(false);
 	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
@@ -69,6 +72,12 @@ void Voxel::DebugConsole::init()
 	vsyncMode->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
 	debugCanvas->addText("vsyncMode", vsyncMode, 0);
+
+	playerPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(141.0f, -57.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
+	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerPosition->setVisibility(false);
+	debugCanvas->addText("playerPosition", playerPosition, 0);
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -101,6 +110,7 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	fpsNumber->setVisibility(debugOutputVisibility);
 	resolutionNumber->setVisibility(debugOutputVisibility);
 	vsyncMode->setVisibility(debugOutputVisibility);
+	playerPosition->setVisibility(debugOutputVisibility);
 }
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
@@ -125,4 +135,14 @@ void Voxel::DebugConsole::updateVsync(bool vsync)
 	{
 		vsyncMode->setText("False");
 	}
+}
+
+void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
+{
+	std::stringstream x, y, z;
+	x << std::fixed << std::showpoint << std::setprecision(2) << position.x;
+	y << std::fixed << std::showpoint << std::setprecision(2) << position.y;
+	z << std::fixed << std::showpoint << std::setprecision(2) << position.z;
+
+	playerPosition->setText(x.str() + ", " + y.str() + ", " + z.str());
 }

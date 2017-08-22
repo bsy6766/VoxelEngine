@@ -4,6 +4,7 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <string>
+#include <glm\glm.hpp>
 
 namespace Voxel
 {
@@ -31,6 +32,8 @@ namespace Voxel
 		UI::Text* cameraPosition;
 		UI::Text* cameraRotation;
 
+		UI::Text* playerPosition;
+
 		UI::Image* commandInputField;
 	public:
 		DebugConsole();
@@ -53,6 +56,7 @@ namespace Voxel
 		
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);
+		void updatePlayerPosition(const glm::vec3& position);
 		void updateMousePosition();
 	};
 }

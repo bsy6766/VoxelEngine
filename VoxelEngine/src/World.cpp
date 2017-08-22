@@ -27,6 +27,8 @@
 
 #include <DebugConsole.h>
 
+#include <FileSystem.h>
+
 using namespace Voxel;
 
 World::World()
@@ -46,18 +48,13 @@ World::World()
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
 {
-	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-
-	initUI();
-
+	// Set clear color
 	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
 
-	//initDebugCube();
-	initPlayer();
-	initChunk();
-
+	// init instances
+	init();
+	// After creation, set cursor to center
 	input->setCursorToCenter();
-	
 	/*
 	threadRunning = true;
 
@@ -75,26 +72,9 @@ World::World()
 
 World::~World()
 {
-	// delete everything
-	delete chunkMap;
-	delete chunkLoader;
-	delete chunkMeshGenerator;
-
-	//delete chunkMesh;
-
-	if (player)
-		delete player;
-
-	if (defaultCanvas)
-	{
-		delete defaultCanvas;
-	}
-
-	if (debugConsole)
-	{
-		delete debugConsole;
-	}
-
+	// Release all instances
+	release();
+	// Release fonts
 	FontManager::getInstance().clear();
 
 	/*
@@ -129,231 +109,48 @@ World::~World()
 	*/
 }
 
-void World::testThreadFunc()
+void Voxel::World::init()
 {
-	while (threadRunning)
-	{
-		{
-			std::unique_lock<std::mutex> lock(chunkQueueMutex);
-			while (chunkQueue.empty() && threadRunning)
-			{
-				cv.wait(lock);
-			}
+	// Initialize default program
+	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
-			if (threadRunning == false)
-			{
-				break;
-			}
+	// Init chunks
+	chunkMap = new ChunkMap();
+	chunkLoader = new ChunkLoader();
+	chunkMeshGenerator = new ChunkMeshGenerator();
 
-			std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		/*
+	// player
+	player = new Player();
 
-		//chunkQueueMutex.lock();
-		if (chunkQueue.empty() == false)
-		{
-			//std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		//chunkQueueMutex.unlock();
-		*/
-	}
+	// UI & font
+	initUI();
 
-	std::cout << "Thread #" << std::this_thread::get_id() << " joining" << std::endl;
+	// Debug. This creates all the debug UI components
+	debugConsole = new DebugConsole();
 }
 
-void World::initPlayer()
+void Voxel::World::release()
 {
-	player = new Player();
-	player->init(glm::vec3(0));
-	//player->setRotation(glm::vec3(0, 180.0f, 0));
-	player->setFly(true);
-	player->updateViewMatrix();
+	// delete everything
+	if(chunkMap) delete chunkMap;
+	if(chunkLoader) delete chunkLoader;
+	if(chunkMeshGenerator) delete chunkMeshGenerator;
 
-	//initDebugPlayerCube();
-	initDebugCamerafrustum();
+	if (player)	delete player;
 
-	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+	if (defaultCanvas) delete defaultCanvas;
 
-
-	// Generate vertex array object
-	glGenVertexArrays(1, &pvao);
-	// Bind it
-	glBindVertexArray(pvao);
-
-	// Generate buffer object
-	glGenBuffers(1, &pvbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, pvbo);
-
-	auto playerPos = player->getPosition();
-	auto playerRayEnd = player->getRayEnd();
-
-	GLfloat lines[] = {
-		playerPos.x, -100.0f, playerPos.z, 1, 0, 0,
-		playerPos.x, 300.0f, playerPos.z, 1, 0, 0,
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
-	// Enable vertices attrib
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-	glBindVertexArray(0);
-
-
-
-	// Generate vertex array object
-	glGenVertexArrays(1, &rvao);
-	// Bind it
-	glBindVertexArray(rvao);
-
-	// Generate buffer object
-	glGenBuffers(1, &rvbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, rvbo);
-
-	GLfloat ray[] = {
-		playerPos.x, playerPos.y, playerPos.z, 1, 0, 0,
-		playerRayEnd.x, playerRayEnd.y, playerRayEnd.z, 1, 0, 0
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
-	// Enable vertices attrib
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-	glBindVertexArray(0);
+	if (debugConsole) delete debugConsole;
 }
 
 void Voxel::World::initUI()
 {
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20, 2);
-
-	if (defaultCanvas)
-	{
-		delete defaultCanvas;
-	}
-
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	// Add temporary cross hair
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0), glm::vec4(Color::WHITE, 1.0f));
-
-	debugConsole = new DebugConsole();
-}
-
-/*
-void Voxel::World::initDebugCube()
-{
-
-	// Generate vertex array object
-	glGenVertexArrays(1, &vao);
-	// Bind it
-	glBindVertexArray(vao);
-
-	// Generate buffer object
-	glGenBuffers(1, &vbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	// Get cube vertices and indices
-	std::vector<float> cubeVertices = Cube::getVertices(Cube::Face::ALL, 1.0f, 0.0f, 0.0f);
-	std::vector<unsigned int> cubeIndices = Cube::getIndices(Cube::Face::ALL, 0);
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices) * cubeVertices.size(), &cubeVertices[0], GL_STATIC_DRAW);
-	// Enable vertices attrib
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-	// unbind buffer
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// Generate indices object
-	glGenBuffers(1, &ibo);
-	// Bind indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// Load indices
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices) * cubeIndices.size(), &cubeIndices[0], GL_STATIC_DRAW);
-	// unbind buffer
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-
-	auto flag = Cube::Face::BACK | Cube::Face::FRONT | Cube::Face::RIGHT | Cube::Face::LEFT | Cube::Face::TOP | Cube::Face::BOTTOM;
-	std::vector<float> vert = Cube::getVertices(static_cast<Cube::Face>(flag));
-	std::vector<float> color = std::vector<float>();
-	for (int i = 0; i < vert.size(); i++)
-	{
-		color.push_back(1.0f);
-	}
-	std::vector<unsigned int> indices = Cube::getIndices(static_cast<Cube::Face>(flag), 0);
-
-	chunkMesh = new ChunkMesh();
-	chunkMesh->initBuffer(vert, color, indices);
-	chunkMesh->initOpenGLObjects();
-	//chunkMesh->initTest(cubeVertices, cubeIndices);
-
-}
-*/
-
-void Voxel::World::initChunk()
-{
-	glm::vec3 playerPosition = glm::vec3(0);
-	std::cout << "[World] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
-
-	// Only need player x and z to find which chunk that player is in. This is world position
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
-
-	std::cout << "[World] Player is in chunk (" << chunkX << ", " << chunkZ << ")" << std::endl;
-
-	int renderDistnace = 4;
-
-	auto start = Utility::Time::now();
-	// init chunk map
-	auto mapStart = Utility::Time::now();
-	chunkMap = new ChunkMap();
-	chunkMap->initSpawnChunk();
-	chunkMap->initChunkNearPlayer(player->getPosition(), renderDistnace);
-	auto mapEnd = Utility::Time::now();
-	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(mapStart, mapEnd) << std::endl;
-
-
-	// init loader
-	auto loaderStart = Utility::Time::now();
-	chunkLoader = new ChunkLoader();
-	chunkLoader->init(glm::vec3(0), chunkMap, renderDistnace);
-	auto loaderEnd = Utility::Time::now();
-	std::cout << "[ChunkLoader] ElapsedTime: " << Utility::Time::toMilliSecondString(loaderStart, loaderEnd) << std::endl;
-
-	// init mesh generator
-	auto genStart = Utility::Time::now();
-	chunkMeshGenerator = new ChunkMeshGenerator();
-	chunkMeshGenerator->generateAllChunkMesh(chunkLoader, chunkMap);
-	auto getEnd = Utility::Time::now();
-	std::cout << "[ChunkMeshGenerator] ElapsedTime: " << Utility::Time::toMilliSecondString(genStart, getEnd) << std::endl;
-
-	auto end = Utility::Time::now();
-	std::cout << "Total ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 
 	// Create debug chunk box
 	// Generate vertex array object
@@ -432,6 +229,140 @@ void Voxel::World::initChunk()
 	glBindVertexArray(0);
 }
 
+void Voxel::World::createNew(const std::string & worldName)
+{
+	auto start = Utility::Time::now();
+	// Create folder
+	FileSystem& fs = FileSystem::getInstance();
+	fs.init();
+	fs.createNewWorldSave("New World");
+
+	// Creates new world. 
+	// First, create player.
+	// Todo: Load player from menu screen. 
+	createPlayer();
+
+	// Then based init chunks
+	createChunkMap();
+	// initialize chunk loader.
+	loadChunkLoader();
+	// Then generate mesh for loaded chunks
+	loadChunkMesh();
+
+	auto end = Utility::Time::now();
+	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void World::testThreadFunc()
+{
+	while (threadRunning)
+	{
+		{
+			std::unique_lock<std::mutex> lock(chunkQueueMutex);
+			while (chunkQueue.empty() && threadRunning)
+			{
+				cv.wait(lock);
+			}
+
+			if (threadRunning == false)
+			{
+				break;
+			}
+
+			std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
+			chunkQueue.pop_front();
+		}
+		/*
+
+		//chunkQueueMutex.lock();
+		if (chunkQueue.empty() == false)
+		{
+			//std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
+			chunkQueue.pop_front();
+		}
+		//chunkQueueMutex.unlock();
+		*/
+	}
+
+	std::cout << "Thread #" << std::this_thread::get_id() << " joining" << std::endl;
+}
+
+void World::createPlayer()
+{
+	// Initialize player. Pick random spot in region (0, 0). 
+	// Range is 150 ~ 300, we don't want player to spawn in edge of region. 
+	float randX = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
+	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
+	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
+	player->init(glm::vec3(randX, 0.0f, randZ));
+	player->setPosition(glm::vec3(8, 0, 8));
+	// Todo: load player's last direction
+	
+	// Todo: set this to false. For now, set ture for debug
+	player->setFly(true);
+	// Update matrix
+	player->updateViewMatrix();
+	// Based on player's matrix, update frustum
+	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+
+	// for debug
+	//player->initYLine();
+	//player->initRayLine();
+}
+
+void World::createChunkMap()
+{
+	auto playerPosition = player->getPosition();
+	std::cout << "[ChunkMap] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
+
+	// Only need player x and z to find which chunk that player is in. This is world position
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+
+	std::cout << "[ChunkMap] Player is in chunk (" << chunkX << ", " << chunkZ << ")" << std::endl;
+	
+	auto start = Utility::Time::now();
+
+	// create chunks for region -1 ~ 1.
+	// For now, test with 0, 0
+	chunkMap->generateRegion(glm::ivec2(0, 0));
+
+	auto end = Utility::Time::now();
+	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void World::loadChunkLoader()
+{
+	auto start = Utility::Time::now();
+
+	// Load visible chunk based on player's render distance
+	// Todo: load render distance from player settings
+	const int renderDistance = 1;
+
+	chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
+
+	auto end = Utility::Time::now();
+	std::cout << "[ChunkLoader] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void World::loadChunkMesh()
+{
+	auto start = Utility::Time::now();
+
+	// Load visible chunk based on player's render distance
+	// Todo: load render distance from player settings	
+	chunkMeshGenerator->generateAllChunkMesh(chunkLoader, chunkMap);
+
+	auto end = Utility::Time::now();
+	std::cout << "[ChunkMeshGenerator] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::World::initChunk()
+{
+	//chunkMap->initSpawnChunk();
+	//chunkMap->initChunkNearPlayer(player->getPosition(), renderDistnace);
+}
+
 void World::update(const float delta)
 {
 	updateKeyboardInput(delta);
@@ -464,6 +395,7 @@ void World::update(const float delta)
 	{
 		// if player moved, update chunk
 		updateChunks();
+		debugConsole->updatePlayerPosition(player->getPosition());
 	}
 	
 	/*
@@ -857,13 +789,28 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
-	//std::cout << "prev pos (" << mouseX << ", " << mouseY << ")" << std::endl;
-	//std::cout << "Cursor pos (" << x << ", " << y << ")" << std::endl;
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1))
+	{
+		std::cout << "prev pos (" << mouseX << ", " << mouseY << ")" << std::endl;
+		std::cout << "Cursor pos (" << x << ", " << y << ")" << std::endl;
+	}
 
 	double dx = x - mouseX;
 	double dy = y - mouseY;
 	mouseX = x;
 	mouseY = y;
+
+	// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
+	// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
+	// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
+	// 60 fps. So if if delta is bigger than 1/60, force 1/60
+
+	float newDelta = delta;
+
+	if (delta < 0.0166666667f)
+	{
+		newDelta = 0.01666666666667f;
+	}
 
 	if (debugConsole->isConsoleOpened())
 	{
@@ -875,26 +822,24 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	{
 		if (dx != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(0, dx * delta * 15.0f, 0));
+			Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
 		}
 
 		if (dy != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(dy * delta * 15.0f, 0, 0));
+			Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
 		}
 	}
 	else
 	{
 		if (dx != 0.0)
 		{
-			//std::cout << "dx = " << dx << std::endl;
-			player->addRotationY(delta * static_cast<float>(dx));
+			player->addRotationY(newDelta * static_cast<float>(dx));
 		}
 
 		if (dy != 0.0)
 		{
-			//std::cout << "dy = " << dx << std::endl;
-			player->addRotationX(delta * static_cast<float>(-dy));
+			player->addRotationX(newDelta * static_cast<float>(-dy));
 		}
 	}
 }
@@ -985,6 +930,8 @@ void Voxel::World::updateControllerInput(const float delta)
 		auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
 		if (valueRightAxisX != 0.0f)
 		{
+			//std::cout << "V = " << valueRightAxisX << std::endl;
+			//std::cout << "d = " << delta << std::endl;
 			player->addRotationY(delta * valueRightAxisX * 10.0f);
 		}
 
@@ -1028,37 +975,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	chunkLoader->render();
-	/*
-	{
-		glBindVertexArray(pvao);
-
-		glm::mat4 lineMat = mat4(1.0f);
-		lineMat = glm::translate(lineMat, player->getPosition());
-		lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-		//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
-		//lineMat = glm::rotate(lineMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
-
-		defaultProgram->setUniformMat4("modelMat", lineMat);
-		glDrawArrays(GL_LINES, 0, 2);
-	}
-	*/
-
-	/*
-	{
-		glBindVertexArray(rvao);
-
-
-		glm::mat4 rayMat = mat4(1.0f);
-		rayMat = glm::translate(rayMat, player->getPosition());
-		rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(player->getRotation().x), glm::vec3(1, 0, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(-player->getRotation().z), glm::vec3(0, 0, 1));
-
-		defaultProgram->setUniformMat4("modelMat", rayMat);
-		glDrawArrays(GL_LINES, 0, 2);
-	}
-
-	*/
+	player->render(defaultProgram);
 
 	/*
 	glBindVertexArray(vao);

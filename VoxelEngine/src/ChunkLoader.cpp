@@ -24,25 +24,6 @@ Voxel::ChunkLoader::~ChunkLoader()
 
 void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, const int renderDistance)
 {
-	/*
-	// Temp. testing multiple chunks
-	activeChunks.push_back(std::list<Chunk*>());
-	auto chunk00 = map->getChunkAtXZ(0, 0);
-	chunk00->setActive(true);
-	activeChunks.back().push_back(chunk00);
-	
-	auto chunk01 = map->getChunkAtXZ(0, 1);
-	chunk01->setActive(true);
-	activeChunks.back().push_back(chunk01);
-
-	activeChunks.push_back(std::list<Chunk*>());
-
-	auto chunk10 = map->getChunkAtXZ(1, 0);
-	chunk10->setActive(true);
-	activeChunks.back().push_back(chunk10);
-	//activeChunks.back().push_back(map->getChunkAtXZ(1, 1));
-
-	*/
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
@@ -73,7 +54,7 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 			}
 			else
 			{
-				// For now, assume chunk loader loads same chunk as chunk map initailized
+				// For now, assume chunk loader loads chunks that has already generated
 				clear();
 				throw std::runtime_error("ChunkLoader tried to iniailize chunk that's hasn't initialized by ChunkMap");
 			}

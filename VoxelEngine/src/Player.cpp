@@ -1,5 +1,7 @@
 #include "Player.h"
 #include <Camera.h>
+#include <ProgramManager.h>
+#include <Program.h>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
@@ -19,6 +21,11 @@ Player::Player()
 	, direction(0)
 	, rayRange(0)
 	, lookingBlock(nullptr)
+	// Debug
+	, yLineVao(0)
+	, yLineVbo(0)
+	, rayVao(0)
+	, rayVbo(0)
 {
 
 }
@@ -26,6 +33,84 @@ Player::Player()
 Player::~Player()
 {
 
+}
+
+void Voxel::Player::init(const glm::vec3 & position)
+{
+	// Todo: load player info from save file
+	this->position = position;
+	this->direction = glm::vec3(0, 0, -1);
+	// can reach up to 5 blocks from position
+	this->rayRange = 5.0f;
+}
+
+void Voxel::Player::initYLine()
+{
+	// Generate vertex array object
+	glGenVertexArrays(1, &yLineVao);
+	// Bind it
+	glBindVertexArray(yLineVbo);
+
+	// Generate buffer object
+	glGenBuffers(1, &yLineVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
+
+	GLfloat lines[] = {
+		position.x, -100.0f, position.z, 1, 0, 0,
+		position.x, 300.0f, position.z, 1, 0, 0,
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+}
+
+void Voxel::Player::initRayLine()
+{
+	auto playerRayEnd = getRayEnd();
+	// Generate vertex array object
+	glGenVertexArrays(1, &rayVao);
+	// Bind it
+	glBindVertexArray(rayVao);
+
+	// Generate buffer object
+	glGenBuffers(1, &rayVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
+
+	GLfloat ray[] = {
+		position.x, position.y, position.z, 1, 0, 0,
+		playerRayEnd.x, playerRayEnd.y, playerRayEnd.z, 1, 0, 0
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
 }
 
 void Player::moveFoward(const float delta)
@@ -208,19 +293,41 @@ void Voxel::Player::updateDirection()
 	//std::cout << "Updating player view direction (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
 }
 
-void Voxel::Player::init(const glm::vec3 & position)
-{
-	// Todo: load player info from save file
-	this->position = position;
-	this->direction = glm::vec3(0, 0, -1);
-	// can reach up to 5 blocks from position
-	this->rayRange = 5.0f;
-}
-
 void Voxel::Player::update()
 {
 	moved = false;
 	rotated = false;
+}
+
+void Voxel::Player::render(Program* defaultProgram)
+{
+	if (yLineVao)
+	{
+		glBindVertexArray(yLineVao);
+
+		glm::mat4 lineMat = mat4(1.0f);
+		lineMat = glm::translate(lineMat, position);
+		lineMat = glm::rotate(lineMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.x), glm::vec3(1, 0, 0));
+		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+
+		defaultProgram->setUniformMat4("modelMat", lineMat);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	if (rayVao)
+	{
+		glBindVertexArray(rayVao);
+
+		glm::mat4 rayMat = mat4(1.0f);
+		rayMat = glm::translate(rayMat, position);
+		rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+
+		defaultProgram->setUniformMat4("modelMat", rayMat);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
 }
 
 glm::vec3 Player::getPosition()
@@ -266,6 +373,7 @@ void Voxel::Player::addRotationX(const float x)
 
 void Voxel::Player::addRotationY(const float y)
 {
+	//std::cout << "y = " << y << std::endl;
 	rotation.y += y * rotationSpeed;
 
 	wrapAngle(rotation.y);

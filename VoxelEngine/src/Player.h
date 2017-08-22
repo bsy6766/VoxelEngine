@@ -2,12 +2,14 @@
 #define PLAYER_H
 
 #include <glm\glm.hpp>
+#include <GL\glew.h>
 
 namespace Voxel
 {
 	// forward
 	class Camera;
 	class Block;
+	class Program;
 
 	/**
 	*	@class Player
@@ -49,6 +51,12 @@ namespace Voxel
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
 		void wrapAngle(float& axis);
+
+		// temp
+		GLuint yLineVao;
+		GLuint yLineVbo;
+		GLuint rayVao;
+		GLuint rayVbo;
 	public:
 		Player();
 		~Player();
@@ -58,6 +66,10 @@ namespace Voxel
 		// Initialize player. 
 		// Todo: read from save data
 		void init(const glm::vec3& position);
+
+		// Debug
+		void initYLine();
+		void initRayLine();
 
 		glm::vec3 getPosition();
 		void setPosition(const glm::vec3& newPosition);
@@ -84,6 +96,7 @@ namespace Voxel
 		void updateDirection();
 
 		void update();
+		void render(Program* defaultProgram);
 
 		glm::mat4 getVP(const glm::mat4& projection);
 		glm::mat4 getDirVP(const glm::mat4& projection);

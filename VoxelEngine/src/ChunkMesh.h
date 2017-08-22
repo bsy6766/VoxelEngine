@@ -14,10 +14,11 @@ namespace Voxel
 	class ChunkMesh
 	{
 	private:
-		std::vector<float> vertices;
-		std::vector<float> colors;
-		std::vector<glm::vec3> positions;
-		std::vector<unsigned int> indices;
+		//std::vector<float> vertices;
+		//std::vector<float> colors;
+		//std::vector<glm::vec3> positions;
+		//std::vector<unsigned int> indices;
+		int indicesSize;
 
 		// Opengl objects
 		GLuint vao;	// vertex array object
@@ -29,7 +30,7 @@ namespace Voxel
 		~ChunkMesh();
 
 		void initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices);
-		void initOpenGLObjects();
+		//void initOpenGLObjects();
 		//void initTest(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
 
 		void bind();
@@ -39,7 +40,7 @@ namespace Voxel
 		unsigned int offset = 0;
 		bool down = false;
 
-		int getVerticesSize();
+		//int getVerticesSize();
 	};
 }
 

@@ -8,11 +8,14 @@
 using namespace Voxel;
 
 Block::Block()
-	: worldPosition(0)
+	:  worldCoordinate(0)
+	//, worldPosition(0)
 	//, localPosition(0)
-	, localCoordinate(0)
-	, worldCoordinate(0)
-	, color(Color::WHITE)
+	//, localCoordinate(0)
+	//, color(Color::WHITE)
+	, r(0)
+	, g(0)
+	, b(0)
 {}
 
 Block::~Block()
@@ -35,23 +38,28 @@ Block * Voxel::Block::create(const glm::ivec3& position, const glm::ivec3& chunk
 bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition)
 {
 	// Local coordinate
-	localCoordinate = position;
+	//localCoordinate = position;
 	// World coordinate
-	worldCoordinate = localCoordinate;
+	//worldCoordinate = localCoordinate;
+	worldCoordinate = position;
 	worldCoordinate.x += Constant::CHUNK_SECTION_WIDTH * chunkSectionPosition.x;
 	worldCoordinate.y += Constant::CHUNK_SECTION_HEIGHT * chunkSectionPosition.y;
 	worldCoordinate.z += Constant::CHUNK_SECTION_LENGTH * chunkSectionPosition.z;
 
 	// Not sure if I would need local position. TODO: add local position if needed
-	this->localPosition = glm::vec3(localCoordinate) + 0.5f;
+	//this->localPosition = glm::vec3(localCoordinate) + 0.5f;
 
 	// Calculate world position of block in the world
-	this->worldPosition = localPosition;
-	this->worldPosition.x += (static_cast<float>(chunkSectionPosition.x) * Constant::CHUNK_SECTION_WIDTH);
-	this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
-	this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
+	//this->worldPosition = localPosition;
+	//this->worldPosition = glm::vec3(position) + 0.5f;
+	//this->worldPosition.x += (static_cast<float>(chunkSectionPosition.x) * Constant::CHUNK_SECTION_WIDTH);
+	//this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
+	//this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
 
-	color = Color::getRandomColor();
+	auto randColor = Color::getRandomColor255();
+	r = static_cast<unsigned char>(randColor.r);
+	g = static_cast<unsigned char>(randColor.g);
+	b = static_cast<unsigned char>(randColor.b);
 
 	/*
 	if (worldCoordinate.y == 0)
@@ -76,7 +84,10 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	}
 	*/
 
-	if (worldCoordinate.y < 32.0f)
+	id = BLOCK_ID::GRASS;
+
+	/*
+	if (worldCoordinate.y < 1.0f)
 	{
 		id = BLOCK_ID::GRASS;
 	}
@@ -84,6 +95,7 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	{
 		id = BLOCK_ID::AIR;
 	}
+	*/
 
 	return true;
 }
@@ -114,10 +126,24 @@ bool Voxel::Block::isEmpty()
 
 void Voxel::Block::setColor(const glm::vec3 & color)
 {
-	this->color = color;
+	r = static_cast<unsigned char>(color.r / 255.0f);
+	g = static_cast<unsigned char>(color.g / 255.0f);
+	b = static_cast<unsigned char>(color.b / 255.0f);
+}
+
+void Voxel::Block::setColor(const unsigned char r, const unsigned char g, const unsigned char b)
+{
+	this->r = r;
+	this->g = g;
+	this->b = b;
+}
+
+glm::vec3 Voxel::Block::getColor()
+{
+	return glm::vec3(static_cast<float>(r) / 255.0f, static_cast<float>(g) / 255.0f, static_cast<float>(b) / 255.0f);
 }
 
 glm::vec3 Voxel::Block::getWorldPosition()
 {
-	return worldPosition;
+	return glm::vec3(worldCoordinate) + 0.5f;
 }

@@ -67,6 +67,7 @@ namespace Voxel
 
 		void updateTime();
 		void updateFPS();
+		void updateMousePosition(double& x, double& y);
 	public:
 		void setCursorPos(double x, double y);
 		void resetTime();

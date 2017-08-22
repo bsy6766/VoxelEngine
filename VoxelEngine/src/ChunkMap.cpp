@@ -23,19 +23,6 @@ void Voxel::ChunkMap::initSpawnChunk()
 	//glm::ivec2 spawnChunkMinPos = glm::ivec2(-SPAWN_CHUNK_DISTANCE);
 	//glm::ivec2 spawnChunkMaxPos = glm::ivec2(SPAWN_CHUNK_DISTANCE);
 
-	/*
-	Chunk* newChunk = Chunk::create(0, 0);
-	map.emplace(glm::ivec2(0, 0), newChunk);
-	Chunk* newChunk1 = Chunk::create(0, 1);
-	map.emplace(glm::ivec2(0, 1), newChunk1);
-	Chunk* newChunk2 = Chunk::create(1, 0);
-	map.emplace(glm::ivec2(1, 0), newChunk2);
-	Chunk* newChunk3 = Chunk::create(1, 1);
-	map.emplace(glm::ivec2(1, 1), newChunk3);
-
-	return;
-	*/
-
 	int spawnX = -(Constant::SPAWN_CHUNK_DISTANCE - 1);
 	int spawnMaxX = (Constant::SPAWN_CHUNK_DISTANCE * 2) - 1 + spawnX;
 	int spawnMaxZ = spawnMaxX;
@@ -140,6 +127,23 @@ Chunk * Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 	}
 }
 
+void Voxel::ChunkMap::generateRegion(const glm::ivec2& regionCoordinate)
+{
+	int chunkX = regionCoordinate.x * Constant::REGION_WIDTH;
+	int chunkZ = regionCoordinate.y * Constant::REGION_LENGTH;
+
+	int chunkXLen = chunkX + Constant::REGION_WIDTH;
+	int chunkZLen = chunkZ + Constant::REGION_LENGTH;
+
+	for (int x = chunkX; x < chunkXLen; x++)
+	{
+		for (int z = chunkZ; z < chunkZLen; z++)
+		{
+			generateChunk(x, z);
+		}
+	}
+}
+
 void Voxel::ChunkMap::generateChunk(const int x, const int z)
 {
 	// for sake, just check one more time
@@ -240,6 +244,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 			}
 			else
 			{
+				// There is no block in this chunk section = nullptr
 				return nullptr;
 			}
 		}

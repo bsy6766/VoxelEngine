@@ -34,6 +34,8 @@ namespace Voxel
 	*	Chunk map stores all the chuncks that are ever generated.
 	*	It keep tracks if chunk has been explored and generated or not.
 	*	Chunk map doesn't update chunk. It only keeps the data.
+	*
+	*	Chunk map always loads region (0, 0), which means 32 x 32 chunks
 	*/
 	class ChunkMap
 	{
@@ -62,6 +64,7 @@ namespace Voxel
 		bool hasChunkAtXZ(int x, int z);
 		Chunk* getChunkAtXZ(int x, int z);
 
+		void generateRegion(const glm::ivec2& regionCoordinate);
 		void generateChunk(const int x, const int z);
 		unsigned int getSize();
 

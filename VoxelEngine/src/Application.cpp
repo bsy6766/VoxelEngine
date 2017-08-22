@@ -13,6 +13,7 @@
 #include <InputHandler.h>
 
 #include <DataTree.h>
+#include <FileSystem.h>
 
 using std::cout;
 using std::endl;
@@ -39,6 +40,9 @@ Application::Application()
 	}
 
 	cout << "Working Directory is: " << workingDirectory << endl;
+
+	// initialize singleton instance
+	FileSystem::getInstance();
 }
 
 Application::~Application()
@@ -83,6 +87,7 @@ void Voxel::Application::initMainCamera()
 void Voxel::Application::initWorld()
 {
 	world = new World();
+	world->createNew("New World");
 }
 
 void Voxel::Application::initConfig()
@@ -100,6 +105,10 @@ void Voxel::Application::initConfig()
 		build++;
 		configData->setInt("build.number", build);
 		configData->save("config/config");
+	}
+	else
+	{
+		std::cout << "[Application] Failed to load config" << std::endl;
 	}
 }
 
@@ -120,7 +129,7 @@ void Application::run()
 		glView->updateFPS();
 		
 		float delta = static_cast<float>(glView->getElaspedTime());
-
+		
 		input.update();
 
 		world->update(delta);
