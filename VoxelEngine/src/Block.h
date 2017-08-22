@@ -61,6 +61,8 @@ namespace Voxel
 		glm::vec3 getColor();
 
 		glm::vec3 getWorldPosition();
+
+		BLOCK_ID getBlockID();
 	};
 }
 

@@ -41,6 +41,8 @@ namespace Voxel
 
 
 		glm::vec3 getWorldPosition();
+
+		std::vector<Block*>& getBlocksRef();
 	};
 }
 

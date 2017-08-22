@@ -5,6 +5,7 @@
 #include <boost\filesystem.hpp>
 #include <unordered_set>
 #include <Utility.h>
+#include <Block.h>
 
 using namespace Voxel;
 
@@ -159,12 +160,122 @@ void Voxel::FileSystem::createRegionFile(const int x, const int z)
 				return;
 			}
 		}
+
 		std::ofstream regionFile(folderPath + "/" + fileName, std::ofstream::out | std::ofstream::binary | std::ofstream::app);
 		if (regionFile)
 		{
+			unsigned char byte = static_cast<unsigned char>(x);
+			regionFile.write((char *)&byte, 1);
+			byte = static_cast<unsigned char>(z);
+			regionFile.write((char *)&byte, 1);
+
 			regionFile.flush();
 			regionFile.close();
 		}
+	}
+}
+
+void Voxel::FileSystem::saveToRegionFile(const glm::ivec2& regionCoordinate, const glm::ivec2 & chunkCoordinate, const std::vector<Block*>& blocks)
+{
+	std::string fileName = std::to_string(regionCoordinate.x) + "." + std::to_string(regionCoordinate.y) + ".r";
+
+	std::string folderPath = wd + "/saves/" + curWorldFolder;
+
+	if (boost::filesystem::is_directory(boost::filesystem::path(folderPath)))
+	{
+		std::ofstream wFile(folderPath + "/" + fileName, std::ofstream::out | std::ofstream::binary);
+
+		if (wFile)
+		{
+			wFile.seekp(wFile.end);
+			auto pos = wFile.tellp();
+			std::cout << "pos = " << pos << std::endl;
+
+			char data[4096 * 4] = { 0 };
+
+			int index = 0;
+
+			for (auto block : blocks)
+			{
+				char id = static_cast<unsigned char>(block->getBlockID());
+				auto color = block->getColor();
+				char r = static_cast<char>(color.r * 255.0f);
+				char g = static_cast<char>(color.g * 255.0f);
+				char b = static_cast<char>(color.b * 255.0f);
+
+				data[index * 4] = id;
+				data[index * 4 + 1] = r;
+				data[index * 4 + 2] = g;
+				data[index * 4 + 3] = b;
+
+				index++;
+			}
+
+			wFile.write(data, sizeof(data));
+			wFile.flush();
+			wFile.close();
+
+			/*
+			wFile.flush();
+			wFile.seekp(wFile.beg);
+			pos = wFile.tellp();
+			std::cout << "pos = " << pos << std::endl;
+			wFile.seekp(1, wFile.beg);
+			pos = wFile.tellp();
+
+			std::cout << "pos = " << pos << std::endl;
+
+			char temp = static_cast<char>(10);
+
+			wFile.write(&temp, 1);
+			wFile.flush();
+
+
+			*/
+			wFile.close();
+		}
+	}
+
+}
+
+void Voxel::FileSystem::readFromRegionFile(const glm::ivec2& regionCoordinate, const glm::ivec2 & chunkCoordinate, std::vector<Block*>& blocks)
+{
+	std::string fileName = std::to_string(regionCoordinate.x) + "." + std::to_string(regionCoordinate.y) + ".r";
+
+	std::string folderPath = wd + "/saves/" + curWorldFolder;
+
+	if (boost::filesystem::is_directory(boost::filesystem::path(folderPath)))
+	{
+		std::ifstream rFile(folderPath + "/" + fileName, std::ofstream::out | std::ofstream::binary);
+
+		if (rFile)
+		{
+			rFile.seekg(rFile.beg);
+
+			char regionX;
+			rFile.read(&regionX, 1);
+			char regionZ;
+			rFile.read(&regionZ, 1);
+
+			std::cout << "Reading region file " << static_cast<int>(regionX) << "." << static_cast<int>(regionZ) << ".r" << std::endl;
+
+			char data[4096 * 4] = { 0 };
+
+			int index = 0;
+
+			rFile.read(data, sizeof(data));
+
+			for (int i = 0; i < 1024; i++)
+			{
+				int blockId = static_cast<int>(data[i * 4]);
+				float r = static_cast<unsigned char>(data[i * 4 + 1]);
+				float g = static_cast<unsigned char>(data[i * 4 + 2]);
+				float b = static_cast<unsigned char>(data[i * 4 + 3]);
+
+				auto block = blocks.at(i);
+			}
+		}
+
 	}
 }
 

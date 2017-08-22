@@ -147,3 +147,8 @@ glm::vec3 Voxel::Block::getWorldPosition()
 {
 	return glm::vec3(worldCoordinate) + 0.5f;
 }
+
+Block::BLOCK_ID Voxel::Block::getBlockID()
+{
+	return this->id;
+}

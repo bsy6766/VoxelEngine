@@ -71,7 +71,7 @@ bool Chunk::init(const int x, const int z)
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > 3)
+		if (i > 4)
 		{
 			chunkSections.push_back(nullptr);
 		}

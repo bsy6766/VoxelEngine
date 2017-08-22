@@ -3,6 +3,8 @@
 #include <ChunkMap.h>
 #include <ChunkLoader.h>
 #include <ChunkMeshGenerator.h>
+#include <ChunkSection.h>
+#include <Chunk.h>
 #include <ChunkUtil.h>
 #include <Block.h>
 
@@ -295,7 +297,7 @@ void World::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 0.0f, randZ));
-	player->setPosition(glm::vec3(8, 0, 8));
+	player->setPosition(glm::vec3(0));
 	// Todo: load player's last direction
 	
 	// Todo: set this to false. For now, set ture for debug
@@ -326,6 +328,7 @@ void World::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	chunkMap->generateRegion(glm::ivec2(0, 0));
+	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -611,6 +614,23 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	{
 		// Stop input while opening console
 		return;
+	}
+		
+	if (input->getKeyDown(GLFW_KEY_K, true))
+	{
+		auto playerPosition = player->getPosition();
+		int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+		int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+
+		FileSystem::getInstance().saveToRegionFile(glm::ivec2(0, 0), glm::ivec2(chunkX, chunkZ), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef() );
+	}
+	if (input->getKeyDown(GLFW_KEY_L, true))
+	{
+		std::vector<Block*> blocks;
+		auto playerPosition = player->getPosition();
+		int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+		int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+		FileSystem::getInstance().readFromRegionFile(glm::ivec2(0, 0), glm::ivec2(0, 0), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef());
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))

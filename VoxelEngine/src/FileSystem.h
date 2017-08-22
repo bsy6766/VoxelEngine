@@ -4,16 +4,12 @@
 #include <string>
 #include <fstream>
 #include <unordered_map>
+#include <glm/glm.hpp>
 
 namespace Voxel
 {
-	struct Meta
-	{
-		int versionMajor;
-		int versionMinor;
-		std::string worldDisplayName;
-		std::string timeAndDtate;
-	};
+	class Block;
+
 	/**
 	*	@class FileSystem
 	*	@brief Singleton class that reads and writes file
@@ -61,18 +57,10 @@ namespace Voxel
 		// Creates region file.
 		void createRegionFile(const int x, const int z);
 
-		// Creates world name. This is different from worlds folder. worlds folder contains each world's save in each folder.
-		void createWorldFolder(const std::string& worldName);
-
-		void createFile(const std::string& filePath);
-		bool readFile(const std::string& filePath);
-		bool writeFile(const std::string& filePath);
-
-		void writeByte(const char byte);
-		char readByte();
-
-		void closeRead();
-		void closeWrite();
+		// Save all block data to file
+		void saveToRegionFile(const glm::ivec2& regionCoordinate, const glm::ivec2& chunkCoordinate, const std::vector<Block*>& blocks);
+		// Read all black data from file
+		void readFromRegionFile(const glm::ivec2& regionCoordinate, const glm::ivec2& chunkCoordinate, std::vector<Block*>& blocks);
 	};
 }
 
