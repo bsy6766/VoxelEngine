@@ -20,7 +20,7 @@ namespace Voxel
 		friend class ChunkMeshGenerator;
 	private:
 		// A chunk position currently player is standing
-		glm::ivec2 currentChunkPos;
+		glm::ivec3 currentChunkPos;
 		
 		// Chunks that are manually added to be active.
 		ChunkMap* manualChunks;
@@ -35,8 +35,8 @@ namespace Voxel
 
 		// Check if player moved to another chunk. If so, return true.
 		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);
-		// find visible chunk
-		void findVisibleChunk();
+		// find visible chunk. Returns total chunk sections that are visible.
+		int findVisibleChunk();
 
 		// Render active chunks
 		void render();

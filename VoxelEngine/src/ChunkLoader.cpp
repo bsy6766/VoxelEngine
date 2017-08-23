@@ -1,6 +1,7 @@
 #include "ChunkLoader.h"
 #include "ChunkMap.h"
 #include "Chunk.h"
+#include <ChunkSection.h>
 #include <ChunkUtil.h>
 #include <iostream>
 #include <Camera.h>
@@ -24,11 +25,30 @@ Voxel::ChunkLoader::~ChunkLoader()
 
 void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, const int renderDistance)
 {
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+	glm::ivec3 pos = glm::ivec3(playerPosition);
+
+	int chunkX = pos.x / Constant::CHUNK_SECTION_WIDTH;
+	int chunkY = pos.y / Constant::CHUNK_SECTION_HEIGHT;
+	int chunkZ = pos.z / Constant::CHUNK_SECTION_LENGTH;
+
+	if (pos.x < 0)
+	{
+		chunkX -= 1;
+	}
+
+	if (pos.y < 0)
+	{
+		chunkY -= 1;
+	}
+
+	if (pos.z < 0)
+	{
+		chunkZ -= 1;
+	}
 
 	currentChunkPos.x = chunkX;
-	currentChunkPos.y = chunkZ;
+	currentChunkPos.y = chunkY;
+	currentChunkPos.z = chunkZ;
 	
 	auto rdFromCenter = renderDistance - 1;
 
@@ -49,7 +69,12 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 			if (map->hasChunkAtXZ(x, z))
 			{
 				//std::cout << "[ChunkLoader] Loading chunk at (" << x << ", " << z << ")" << std::endl;
+				// Get chunk
 				activeChunks.back().push_back(map->getChunkAtXZ(x, z));
+
+				// Because we are initializing, set all chunk's chunk section visible to generate mesh.
+				activeChunks.back().back()->setAllVisibility(true);
+				// And make active
 				activeChunks.back().back()->setActive(true);
 			}
 			else
@@ -64,12 +89,39 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 
 bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map, glm::ivec2& mod)
 {
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+	// This function updates chunk when player move to new chunk. 
+	// This function doesn't check in y Axis because moving up and down doen't need any new chunk to update
+	glm::ivec3 pos = glm::ivec3(playerPosition);
 
+	int chunkX = pos.x / Constant::CHUNK_SECTION_WIDTH;
+	int chunkY = pos.y / Constant::CHUNK_SECTION_HEIGHT;
+	int chunkZ = pos.z / Constant::CHUNK_SECTION_LENGTH;
+
+	if (pos.x < 0)
+	{
+		chunkX -= 1;
+	}
+
+	if (pos.y < 0)
+	{
+		chunkY -= 1;
+	}
+
+	if (pos.z < 0)
+	{
+		chunkZ -= 1;
+	}
+	
 	auto newChunkXZ = glm::ivec2(chunkX, chunkZ);
+	auto curChunkPos = glm::ivec2(currentChunkPos.x, currentChunkPos.z);
 
-	if (newChunkXZ != currentChunkPos)
+	if (chunkY != currentChunkPos.y)
+	{
+		currentChunkPos.y = chunkY;
+		std::cout << "[ChunkLoader] Player moved to new y (" << chunkY << ") in chunk at (" << chunkX << ", " << chunkZ << ")" << std::endl;
+	}
+
+	if (newChunkXZ != curChunkPos)
 	{
 		// reset mod
 		mod = glm::ivec2(0);
@@ -82,9 +134,10 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 		// Anyway, first we get how far player moved. In chunk distance.
 		// Then find which row and col need to be added based on direction player moved.
 		// also find which row and col to pop aswell.
-		auto d = newChunkXZ - currentChunkPos;
-		std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")" << std::endl;
-		currentChunkPos = newChunkXZ;
+		auto d = newChunkXZ - curChunkPos;
+		std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << curChunkPos.x << ", " << curChunkPos.y << ")" << std::endl;
+		currentChunkPos.x = newChunkXZ.x;
+		currentChunkPos.z = newChunkXZ.y;
 
 		// save mod
 		mod.x = d.x;
@@ -122,7 +175,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 					// deactivate front list
 					//std::cout << "[ChunkLoader] Unloading chunk at (" << chunk->position.x << ", " << chunk->position.z << ")" << std::endl;
 					chunk->setActive(false);
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 
 				// Pop from list. Don't need to worry about chunk instance. ChunkMap will take care.
@@ -130,7 +183,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				// Now because list on back is gone, the chunks that were connected to that list needs new mesh
 				for (auto chunk : activeChunks.back())
 				{
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 
 				// Get x from first list and -1 for new list to west (negative x)
@@ -141,7 +194,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				// Before we add new list on front, release mesh for new mesh
 				for (auto chunk : activeChunks.front())
 				{
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 				//Them, add new list at the front of the list
 				activeChunks.push_front(std::list<Chunk*>());
@@ -174,7 +227,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 					// deactivate front list
 					//std::cout << "[ChunkLoader] Unloading chunk at (" << chunk->position.x << ", " << chunk->position.z << ")" << std::endl;
 					chunk->setActive(false);
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 
 				// Pop from list. Don't need to worry about chunk instance. ChunkMap will take care.
@@ -182,7 +235,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				// Because we pop the front chunks, new front chunks needs new mesh
 				for (auto chunk : activeChunks.front())
 				{
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 
 				// Get x from last list and +1 for new list to east (positive x)
@@ -193,7 +246,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				// Before we add new list of chunk on back, make current list on back to have new mesh
 				for (auto chunk : activeChunks.back())
 				{
-					chunk->releaseMesh();
+					chunk->releaseAllMeshes();
 				}
 				// New list at the end of list
 				activeChunks.push_back(std::list<Chunk*>());
@@ -235,11 +288,11 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				{
 					//std::cout << "[ChunkLoader] Unloading chunk at (" << chunksZ.back()->position.x << ", " << chunksZ.back()->position.z << ")" << std::endl;
 					chunksZ.back()->setActive(false);
-					chunksZ.back()->releaseMesh();
+					chunksZ.back()->releaseAllMeshes();
 					chunksZ.pop_back();
-					chunksZ.back()->releaseMesh();
+					chunksZ.back()->releaseAllMeshes();
 					// front also
-					chunksZ.front()->releaseMesh();
+					chunksZ.front()->releaseAllMeshes();
 				}
 
 				// Separating loop just to separate debug output
@@ -275,11 +328,11 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				{
 					//std::cout << "[ChunkLoader] Unloading chunk at (" << chunksZ.front()->position.x << ", " << chunksZ.front()->position.z << ")" << std::endl;
 					chunksZ.front()->setActive(false);
-					chunksZ.front()->releaseMesh();
+					chunksZ.front()->releaseAllMeshes();
 					chunksZ.pop_front();
-					chunksZ.front()->releaseMesh();
+					chunksZ.front()->releaseAllMeshes();
 					// front also
-					chunksZ.back()->releaseMesh();
+					chunksZ.back()->releaseAllMeshes();
 				}
 
 				// Separating loop just to separate debug output
@@ -310,27 +363,34 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 	return false;
 }
 
-void Voxel::ChunkLoader::findVisibleChunk()
+int Voxel::ChunkLoader::findVisibleChunk()
 {
+	auto curChunkPos = glm::ivec2(currentChunkPos.x, currentChunkPos.z);
+	int totalVisibleChunk = 0;
+
 	for (auto x : activeChunks)
 	{
 		for (auto chunk : x)
 		{
 			if (chunk != nullptr)
 			{
-				if (glm::ivec2(chunk->position.x, chunk->position.z) == currentChunkPos)
+				if (glm::ivec2(chunk->position.x, chunk->position.z) == curChunkPos)
 				{
-					// make current chunk always visible
-					chunk->setVisibility(true);
+					// if we are checking the chunk that player is standing, make chunk section to be always visible
+					ChunkSection* cs = chunk->getChunkSectionByY(currentChunkPos.y);
+					if (cs != nullptr)
+					{
+						cs->setVisibility(true);
+					}
 				}
-				else
-				{
-					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
-					chunk->setVisibility(visible);
-				}
+				// But also other chunk sections might be visible. add.
+				// Check all chunk sections in chunk and mark as visible if so.
+				totalVisibleChunk += Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
 			}
 		}
 	}
+
+	return totalVisibleChunk;
 }
 /*
 void Voxel::ChunkLoader::raycast(const glm::vec3 & rayStart, const glm::vec3 & rayEnd)
@@ -436,10 +496,7 @@ void Voxel::ChunkLoader::render()
 		{
 			if (chunk != nullptr)
 			{
-				if (chunk->isVisible())
-				{
-					chunk->render();
-				}
+				chunk->render();
 			}
 		}
 	}

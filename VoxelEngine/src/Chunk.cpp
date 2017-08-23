@@ -1,7 +1,6 @@
 #include "Chunk.h"
 #include <ChunkSection.h>
 #include <iostream>
-#include <ChunkMesh.h>
 #include <ChunkUtil.h>
 
 using namespace Voxel;
@@ -9,7 +8,6 @@ using namespace Voxel;
 Chunk::Chunk()
 	: position(0)
 	, worldPosition(0.0f)
-	, chunkMesh(nullptr)
 	, active(false)
 {}
 
@@ -24,11 +22,6 @@ Chunk::~Chunk()
 	}
 
 	chunkSections.clear();
-
-	if (chunkMesh)
-	{
-		delete chunkMesh;
-	}
 }
 
 Chunk* Chunk::create(const int x, const int z)
@@ -44,15 +37,6 @@ Chunk* Chunk::create(const int x, const int z)
 	{
 		delete newChunk;
 		return nullptr;
-	}
-}
-
-void Voxel::Chunk::unload()
-{
-	if (chunkMesh)
-	{
-		delete chunkMesh;
-		chunkMesh = nullptr;
 	}
 }
 
@@ -135,11 +119,12 @@ ChunkSection * Voxel::Chunk::getChunkSectionByY(int y)
 
 void Voxel::Chunk::render()
 {
-	if (chunkMesh)
+	for (auto chunkSection : chunkSections)
 	{
-		chunkMesh->bind();
-		chunkMesh->render();
-		//chunkMesh->unbind();
+		if (chunkSection)
+		{
+			chunkSection->render();
+		}
 	}
 }
 
@@ -153,21 +138,48 @@ bool Voxel::Chunk::isActive()
 	return active;
 }
 
-void Voxel::Chunk::setVisibility(const bool visibility)
+void Voxel::Chunk::setAllVisibility(const bool visibility)
 {
-	visible = visibility;
-}
-
-bool Voxel::Chunk::isVisible()
-{
-	return visible;
-}
-
-void Voxel::Chunk::releaseMesh()
-{
-	if (chunkMesh)
+	for (auto chunkSection : chunkSections)
 	{
-		delete chunkMesh;
-		chunkMesh = nullptr;
+		if (chunkSection)
+		{
+			chunkSection->setVisibility(visibility);
+		}
 	}
+}
+
+void Voxel::Chunk::releaseAllMeshes()
+{
+	for (auto cs : chunkSections)
+	{
+		if (cs)
+		{
+			cs->releaseMesh();
+		}
+	}
+}
+
+bool Voxel::Chunk::hasChunkSectionNeedMesh()
+{
+	for (auto chunkSection : chunkSections)
+	{
+		if (chunkSection)
+		{
+			if (chunkSection->hasMesh())
+			{
+				continue;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return false;
 }

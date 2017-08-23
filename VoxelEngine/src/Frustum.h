@@ -52,7 +52,9 @@ namespace Voxel
 		void initDebugLines(const float fovy, const float fovx, const float near, const float far);
 
 		void update(const glm::mat4& MVP);
-		bool isChunkBorderInFrustum(Chunk* chunk);
+
+		// Check if chunk sections in chunk are visible. Returns the number of chunk sections that are visible.
+		int isChunkBorderInFrustum(Chunk* chunk);
 
 		void render(const glm::mat4& modelMat, Program* prog);
 	};

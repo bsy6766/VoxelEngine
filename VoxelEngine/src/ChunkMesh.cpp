@@ -23,11 +23,6 @@ ChunkMesh::~ChunkMesh()
 	//vertices.clear();
 	//colors.clear();
 	//indices.clear();
-
-	// Delte buffers
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &ibo);
 	// Delte array
 	glDeleteVertexArrays(1, &vao);
 }
@@ -59,7 +54,6 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
-	//GLint transformLoc = program->getAttribLocation("modelTransform");
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
@@ -75,9 +69,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 
 	// color
 	glEnableVertexAttribArray(colorLoc);
-	//glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-	//glVertexAttribDivisor(colorLoc, 1);
 
 	// 4. IBO
 	// Generate indices object
@@ -85,10 +77,18 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	// Bind indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	// Load indices
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices[0], GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
+
+	// Delte buffers
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &ibo);
+
+	vbo = 0;
+	cbo = 0;
+	ibo = 0;
 
 	this->indicesSize = indices.size();
 }

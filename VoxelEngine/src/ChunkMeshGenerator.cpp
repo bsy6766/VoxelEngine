@@ -15,10 +15,6 @@ using namespace Voxel;
 
 void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap * chunkMap)
 {
-	std::vector<float> vertices;
-	std::vector<float> colors;
-	std::vector<unsigned int> indices;
-
 	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
 	//std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
@@ -35,8 +31,12 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 		}
 		//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
 
+		std::vector<float> vertices;
+		std::vector<float> colors;
+		std::vector<unsigned int> indices;
+
 		// Iterate all blocks. O(4096)
-		auto chunkSectionStart = Utility::Time::now();
+		//auto chunkSectionStart = Utility::Time::now();
 		for (auto block : chunkSection->blocks)
 		{
 			//std::cout << "[ChunkMeshGenerator] -> Generating for block at (" << block->worldCoordinate.x << ", " << block->worldCoordinate.y << ", " << block->worldCoordinate.z << ")" << std::endl;
@@ -182,7 +182,26 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 			}
 		}
-		auto chunkSectionEnd = Utility::Time::now();
+
+		indicesOffsetPerBlock = 0;
+
+		if (vertices.size() == 0 || colors.size() == 0 || indices.size() == 0)
+		{
+			chunkSection->setMesh(nullptr);
+			chunkSection->setVisibility(false);
+		}
+		else
+		{
+			// init chunkMesh
+			auto newChunkMesh = new ChunkMesh();
+			newChunkMesh->initBuffer(vertices, colors, indices);
+			//newChunkMesh->initOpenGLObjects();
+			chunkSection->setMesh(newChunkMesh);
+
+		}
+
+
+		//auto chunkSectionEnd = Utility::Time::now();
 
 		//std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
 
@@ -192,11 +211,6 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	//auto chunkEnd = Utility::Time::now();
 	//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
 
-	// init chunkMesh
-	auto newChunkMesh = new ChunkMesh();
-	newChunkMesh->initBuffer(vertices, colors, indices);
-	//newChunkMesh->initOpenGLObjects();
-	chunk->chunkMesh = newChunkMesh;
 
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;
 }
@@ -235,8 +249,9 @@ void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, C
 	//std::cout << "[ChunkMeshGenerator] Done. " << std::endl;
 }
 
-void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, ChunkMap * chunkMap, const glm::ivec2 & mod)
+void Voxel::ChunkMeshGenerator::updateMesh(ChunkLoader * chunkLoader, ChunkMap * chunkMap, const glm::ivec2 & mod)
 {
+	// This function updates mesh for any chunk section that need to rebuild the mesh.
 	if (chunkLoader == nullptr) return;
 	if (chunkMap == nullptr) return;
 
@@ -247,7 +262,7 @@ void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, 
 		{
 			if (chunk != nullptr)
 			{
-				if (chunk->chunkMesh == nullptr)
+				if (chunk->hasChunkSectionNeedMesh())
 				{
 					//std::cout << "[ChunkMeshGenerator] Generate mesh for new active chunk (" << chunk->position.x << ", " << chunk->position.z << ")" << std::endl;
 					generateSingleChunkMesh(chunk, chunkMap);

@@ -3,12 +3,15 @@
 #include <iostream>
 #include <ChunkUtil.h>
 #include <Color.h>
+#include <ChunkMesh.h>
 
 using namespace Voxel;
 
 ChunkSection::ChunkSection()
 	: position(0)
 	, worldPosition(0.0f)
+	, mesh(nullptr)
+	, visible(false)
 {}
 
 ChunkSection::~ChunkSection()
@@ -22,6 +25,11 @@ ChunkSection::~ChunkSection()
 	}
 
 	blocks.clear();
+
+	if (mesh)
+	{
+		delete mesh;
+	}
 }
 
 ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition)
@@ -107,4 +115,42 @@ std::vector<Block*>& Voxel::ChunkSection::getBlocksRef()
 {
 	// TODO: insert return statement here
 	return blocks;
+}
+
+void Voxel::ChunkSection::render()
+{
+	if (mesh && visible)
+	{
+		mesh->bind();
+		mesh->render();
+	}
+}
+
+void Voxel::ChunkSection::releaseMesh()
+{
+	if (mesh)
+	{
+		delete mesh;
+		mesh = nullptr;
+	}
+}
+
+void Voxel::ChunkSection::setVisibility(const bool visibility)
+{
+	visible = visibility;
+}
+
+void ChunkSection::setMesh(ChunkMesh* mesh)
+{
+	this->mesh = mesh;
+}
+
+bool Voxel::ChunkSection::hasMesh()
+{
+	return mesh != nullptr;
+}
+
+glm::ivec3 Voxel::ChunkSection::getPosition()
+{
+	return position;
 }

@@ -37,9 +37,6 @@ namespace Voxel
 		void render();
 		void unbind();
 
-		unsigned int offset = 0;
-		bool down = false;
-
 		//int getVerticesSize();
 	};
 }

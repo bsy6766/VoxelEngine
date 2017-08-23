@@ -7,7 +7,6 @@
 namespace Voxel
 {
 	class ChunkSection;
-	class ChunkMesh;
 
 	struct ChunkBorder
 	{
@@ -37,16 +36,11 @@ namespace Voxel
 		// ChunkSections
 		std::vector<ChunkSection*> chunkSections;
 
-		// Mesh. Contains mesh data and OpenGL objects
-		ChunkMesh* chunkMesh;
-
 		// Border
 		ChunkBorder border;
 
-		// active state. Only active chunk can be queried
+		// True if chunk is loaded on chunk loader. Active state tells you that this chunk is in the player's render distance.
 		bool active;
-		// visible state. True if chunk is visible to player
-		bool visible;
 
 		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
 		double timestamp;
@@ -57,10 +51,7 @@ namespace Voxel
 		~Chunk();
 
 		static Chunk* create(const int x, const int z);
-
-		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
-		void unload();
-
+		
 		// Checks if other chunk is next to it including diagonal
 		//bool isAdjacent(Chunk* other);
 
@@ -71,14 +62,20 @@ namespace Voxel
 
 		// Get chunkSection by Y (chunk section's y level not world pos)
 		ChunkSection* getChunkSectionByY(int y);
-
+		
 		void render();
 
 		void setActive(const bool state);
 		bool isActive();
-		void setVisibility(const bool visibility);
-		bool isVisible();
-		void releaseMesh();
+
+		// Set visibility to all chunk sections
+		void setAllVisibility(const bool visibility);
+
+		// Release all chunk section's mesh
+		void releaseAllMeshes();
+
+		// Check if there is chunk section needs new mesh
+		bool hasChunkSectionNeedMesh();
 	};
 
 }
