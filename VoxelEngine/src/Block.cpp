@@ -126,9 +126,9 @@ bool Voxel::Block::isEmpty()
 
 void Voxel::Block::setColor(const glm::vec3 & color)
 {
-	r = static_cast<unsigned char>(color.r / 255.0f);
-	g = static_cast<unsigned char>(color.g / 255.0f);
-	b = static_cast<unsigned char>(color.b / 255.0f);
+	r = static_cast<unsigned char>(color.r * 255.0f);
+	g = static_cast<unsigned char>(color.g * 255.0f);
+	b = static_cast<unsigned char>(color.b * 255.0f);
 }
 
 void Voxel::Block::setColor(const unsigned char r, const unsigned char g, const unsigned char b)

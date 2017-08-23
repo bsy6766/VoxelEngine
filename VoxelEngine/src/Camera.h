@@ -59,6 +59,8 @@ namespace Voxel
 		
 		static Camera* mainCamera;
 
+		void initDebugFrustumLines();
+
 		// Get projection matrix. This is based on camera setting (fovy, near, far, aspect)
 		mat4 getProjection();
 		// Get matrix (projection * view). 

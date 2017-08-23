@@ -3,10 +3,12 @@
 
 #include <vector>
 #include <glm\glm.hpp>
+#include <GL\glew.h>
 
 namespace Voxel
 {
 	class Chunk;
+	class Program;
 
 	struct FrustumPlane
 	{
@@ -40,12 +42,19 @@ namespace Voxel
 	private:
 		// All 6 planes. 
 		std::vector<FrustumPlane> planes;
+
+		GLuint vao;
+		
 	public:
 		Frustum();
-		~Frustum() = default;
+		~Frustum();
+
+		void initDebugLines(const float fovy, const float fovx, const float near, const float far);
 
 		void update(const glm::mat4& MVP);
 		bool isChunkBorderInFrustum(Chunk* chunk);
+
+		void render(const glm::mat4& modelMat, Program* prog);
 	};
 }
 

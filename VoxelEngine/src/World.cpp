@@ -10,6 +10,7 @@
 
 #include <InputHandler.h>
 #include <Camera.h>
+#include <Frustum.h>
 
 #include <UI.h>
 #include <FontManager.h>
@@ -70,6 +71,8 @@ World::World()
 		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
 	*/
+
+	Camera::mainCamera->initDebugFrustumLines();
 }
 
 World::~World()
@@ -327,7 +330,8 @@ void World::createChunkMap()
 
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
-	chunkMap->generateRegion(glm::ivec2(0, 0));
+	//chunkMap->generateRegion(glm::ivec2(0, 0));
+	chunkMap->initChunkNearPlayer(playerPosition, 4);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -340,7 +344,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 1;
+	const int renderDistance = 2;
 
 	chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
 
@@ -995,7 +999,17 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	chunkLoader->render();
-	player->render(defaultProgram);
+	player->render(defaultProgram); 
+	
+	glm::mat4 rayMat = mat4(1.0f);
+	rayMat = glm::translate(rayMat, player->getPosition());
+	auto playerRotation = player->getRotation();
+	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
+
+	defaultProgram->setUniformMat4("modelMat", rayMat);
+	Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
 
 	/*
 	glBindVertexArray(vao);

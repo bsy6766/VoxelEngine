@@ -4,6 +4,8 @@
 #include <ChunkSection.h>
 #include <iostream>
 #include <Utility.h>
+#include <ProgramManager.h>
+#include <Program.h>
 
 using namespace Voxel;
 
@@ -14,6 +16,7 @@ float FrustumPlane::distanceToPoint(const glm::vec3& point)
 
 
 Frustum::Frustum()
+	: vao(0)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -21,6 +24,122 @@ Frustum::Frustum()
 		planes.back().normal = glm::vec3(0);
 		planes.back().distanceToOrigin = 0;
 	}
+}
+
+Frustum::~Frustum()
+{
+	if (vao)
+	{
+		glDeleteVertexArrays(1, &vao);
+	}
+}
+
+void Voxel::Frustum::initDebugLines(const float fovy, const float fovx, const float near, const float far)
+{
+	std::vector<float> vertices;
+
+	float nearY = tan(glm::radians(fovy*0.5f)) * near;
+	float nearX = tan(glm::radians(fovx*0.5f)) * near;
+
+	glm::vec2 minNear = glm::vec2(-nearX, -nearY);
+	glm::vec2 maxNear = glm::vec2(nearX, nearY);
+
+	float farY = tan(glm::radians(fovx*0.5f)) * far;
+	float farX = tan(glm::radians(fovx*0.5f)) * far;
+
+	glm::vec2 minFar = glm::vec2(-farX, -farY);
+	glm::vec2 maxFar = glm::vec2(farX, farY);
+
+	// Near left bot > left top > right top > right bottom (clock wise)
+	vertices.push_back(minNear.x);
+	vertices.push_back(minNear.y);
+	vertices.push_back(-near);
+
+	vertices.push_back(minNear.x);
+	vertices.push_back(maxNear.y);
+	vertices.push_back(-near);
+
+	vertices.push_back(maxNear.x);
+	vertices.push_back(maxNear.y);
+	vertices.push_back(-near);
+
+	vertices.push_back(maxNear.x);
+	vertices.push_back(minNear.y);
+	vertices.push_back(-near);
+
+	// same for far
+	vertices.push_back(minFar.x);
+	vertices.push_back(minFar.y);
+	vertices.push_back(-far);
+
+	vertices.push_back(minFar.x);
+	vertices.push_back(maxFar.y);
+	vertices.push_back(-far);
+
+	vertices.push_back(maxFar.x);
+	vertices.push_back(maxFar.y);
+	vertices.push_back(-far);
+
+	vertices.push_back(maxFar.x);
+	vertices.push_back(minFar.y);
+	vertices.push_back(-far);
+
+	std::vector<float> color;
+
+	for (int i = 0; i < 8; i++)
+	{
+		color.push_back(0);
+		color.push_back(0);
+		color.push_back(1);
+		color.push_back(1);
+	}
+
+	std::vector<unsigned int> indices = { 0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7 };
+
+	// Generate vertex array object
+	glGenVertexArrays(1, &vao);
+	// Bind it
+	glBindVertexArray(vao);
+
+	GLuint vbo;
+	// Generate buffer object
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+
+	auto colorShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+
+	GLint vertLoc = colorShader->getAttribLocation("vert");
+	GLint colorLoc = colorShader->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint cbo;
+	// Generate buffer object
+	glGenBuffers(1, &cbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * color.size(), &color.front(), GL_STATIC_DRAW);
+
+	// vert
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	// Bind indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	// Load indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+	// Delte buffers
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &ibo);
 }
 
 void Frustum::update(const glm::mat4& MVP)
@@ -205,4 +324,12 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 	{
 		return true;
 	}
+}
+
+void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
+{
+	prog->setUniformMat4("modelMat", modelMat);
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 }

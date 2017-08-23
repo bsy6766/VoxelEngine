@@ -233,6 +233,11 @@ glm::mat4 Voxel::Camera::getScreenSpaceMatrix()
 	return glm::translate(glm::mat4(1.0f), -screenSpacePos);
 }
 
+void Voxel::Camera::initDebugFrustumLines()
+{
+	this->frustum->initDebugLines(fovy, fovx, nears, 4.0f * 16.0f);
+}
+
 mat4 Camera::getProjection()
 {
 	auto mat = perspective(glm::radians(fovy), aspect, nears, fars);
