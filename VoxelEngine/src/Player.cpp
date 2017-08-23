@@ -49,7 +49,7 @@ void Voxel::Player::initYLine()
 	// Generate vertex array object
 	glGenVertexArrays(1, &yLineVao);
 	// Bind it
-	glBindVertexArray(yLineVbo);
+	glBindVertexArray(yLineVao);
 
 	// Generate buffer object
 	glGenBuffers(1, &yLineVbo);
@@ -57,8 +57,8 @@ void Voxel::Player::initYLine()
 	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
 
 	GLfloat lines[] = {
-		position.x, -100.0f, position.z, 1, 0, 0,
-		position.x, 300.0f, position.z, 1, 0, 0,
+		position.x, -100.0f, position.z, 1, 0, 0, 1,
+		position.x, 300.0f, position.z, 1, 0, 0, 1,
 	};
 
 	// Load cube vertices
@@ -70,11 +70,11 @@ void Voxel::Player::initYLine()
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
 
 	// color
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
 }
