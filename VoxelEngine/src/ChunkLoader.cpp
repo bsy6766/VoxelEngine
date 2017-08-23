@@ -6,6 +6,7 @@
 #include <Camera.h>
 #include <Frustum.h>
 #include <Utility.h>
+#include <algorithm>
 
 using namespace Voxel;
 
@@ -22,7 +23,7 @@ Voxel::ChunkLoader::~ChunkLoader()
 	}
 }
 
-void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, const int renderDistance)
+std::vector<glm::vec2> Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, const int renderDistance)
 {
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
@@ -39,6 +40,11 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 
 	clear();
 
+	// chunk coodinates that need mesh
+	std::vector<glm::vec2> chunkCoordinates;
+	// Add chunk where player is standing first
+	chunkCoordinates.push_back(glm::vec2(chunkX, chunkZ));
+
 	for (int x = minX; x <= maxX; x++)
 	{
 		activeChunks.push_back(std::list<Chunk*>());
@@ -49,8 +55,16 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 			if (map->hasChunkAtXZ(x, z))
 			{
 				//std::cout << "[ChunkLoader] Loading chunk at (" << x << ", " << z << ")" << std::endl;
-				activeChunks.back().push_back(map->getChunkAtXZ(x, z));
-				activeChunks.back().back()->setActive(true);
+				auto chunk = map->getChunkAtXZ(x, z);
+				activeChunks.back().push_back(chunk);
+				chunk->setActive(true);
+				// this is initialization. All chunks' mesh need to get generated.
+				if (x == chunkX && z == chunkZ)
+				{
+					continue;
+				}
+
+				chunkCoordinates.push_back(glm::vec2(chunk->getCoordinate()));
 			}
 			else
 			{
@@ -60,6 +74,11 @@ void Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, c
 			}
 		}
 	}
+
+	glm::vec2 p = chunkCoordinates.front();
+	std::sort(chunkCoordinates.begin(), chunkCoordinates.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
+
+	return chunkCoordinates;
 }
 
 bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map, glm::ivec2& mod)

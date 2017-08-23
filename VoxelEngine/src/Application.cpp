@@ -170,8 +170,6 @@ void Voxel::Application::cleanUp()
 
 	if (world)
 	{
-		world->threadRunning = false;
-		world->cv.notify_all();
 		delete world;
 	}
 

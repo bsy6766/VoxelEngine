@@ -36,6 +36,8 @@ namespace Voxel
 	*/
 	class ChunkMeshGenerator
 	{
+	private:
+		void generateVertices(std::vector<float>& vertices, std::vector<float> colors, std::vector<unsigned int>& indices);
 	public:
 		ChunkMeshGenerator() = default;
 		~ChunkMeshGenerator() = default;

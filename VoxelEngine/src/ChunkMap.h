@@ -74,7 +74,7 @@ namespace Voxel
 		bool attempChunkLoad(int x, int z);
 
 		// From rayStart to rayEnd, visit all blocks
-		void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
+		//void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
 	};
 }

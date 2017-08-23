@@ -95,6 +95,8 @@ bool Chunk::init(const int x, const int z)
 	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
 	border.max = glm::vec3(worldPosition.x + borderDistance, 0, worldPosition.z + borderDistance);
 
+	chunkMesh = new ChunkMesh();
+
 	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
 
 	return true;
@@ -114,6 +116,11 @@ bool Voxel::Chunk::isAdjacent(Chunk * other)
 glm::ivec3 Chunk::getPosition()
 {
 	return position;
+}
+
+glm::ivec2 Voxel::Chunk::getCoordinate()
+{
+	return glm::ivec2(position.x, position.z);
 }
 
 glm::vec3 Chunk::getWorldPosition()
@@ -137,9 +144,19 @@ void Voxel::Chunk::render()
 {
 	if (chunkMesh)
 	{
-		chunkMesh->bind();
-		chunkMesh->render();
-		//chunkMesh->unbind();
+		if (chunkMesh->hasBufferToLoad())
+		{
+			// Mesh has buffer to load
+			if (!chunkMesh->hasLoaded())
+			{
+				chunkMesh->loadBuffer();
+			}
+
+			// Mesh already loaded buffer to gpu. render.
+			chunkMesh->bind();
+			chunkMesh->render();
+		}
+		// Else, mesh is not loaded. Don't render
 	}
 }
 
@@ -167,7 +184,12 @@ void Voxel::Chunk::releaseMesh()
 {
 	if (chunkMesh)
 	{
-		delete chunkMesh;
-		chunkMesh = nullptr;
+		// delete mesh
+		chunkMesh->release();
 	}
+}
+
+ChunkMesh * Voxel::Chunk::getMesh()
+{
+	return chunkMesh;
 }

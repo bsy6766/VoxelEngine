@@ -226,7 +226,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 			if (text.length() >= this->maxTextLength)
 			{
 				// Todo: automatically reallocate buffer with new size
-				std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+				std::cout << "[Text] Can't not rebuild text over initial maximum size. Text size: " << text.length() << " / Give max: " << maxTextLength << std::endl;
 				return false;
 			}
 		}

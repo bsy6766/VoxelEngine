@@ -18,6 +18,7 @@ DebugConsole::DebugConsole()
 	, cameraPosition(nullptr)
 	, cameraRotation(nullptr)
 	, playerPosition(nullptr)
+	, playerLookingAt(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
@@ -45,7 +46,7 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addImage("cmdInputField", commandInputField, 0);
 
 	//staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nmouse position:\n\ncamera position:\ncamera rotation:\n\nfovy:\nfovx:\n\nplayer position:\nplayer rotation:\n\nchunk:map, loader\nchunk section:total, visible", glm::vec2(5.0f, -5.0f), 2);
-	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nplayer position:", glm::vec2(5.0f, -5.0f), 2);
+	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nplayer position:\nplayer looking at:", glm::vec2(5.0f, -5.0f), 2);
 	staticLabels->setVisibility(false);
 	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
@@ -78,6 +79,12 @@ void Voxel::DebugConsole::init()
 	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
+
+	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(163.0f, -69.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
+	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
+	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerLookingAt->setVisibility(false);
+	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -111,6 +118,7 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	resolutionNumber->setVisibility(debugOutputVisibility);
 	vsyncMode->setVisibility(debugOutputVisibility);
 	playerPosition->setVisibility(debugOutputVisibility);
+	playerLookingAt->setVisibility(debugOutputVisibility);
 }
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
@@ -145,4 +153,9 @@ void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
 	z << std::fixed << std::showpoint << std::setprecision(2) << position.z;
 
 	playerPosition->setText(x.str() + ", " + y.str() + ", " + z.str());
+}
+
+void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt)
+{
+	playerLookingAt->setText(std::to_string(lookingAt.x) + ", " + std::to_string(lookingAt.y) + ", " + std::to_string(lookingAt.z));
 }

@@ -6,6 +6,7 @@
 #include <ChunkSection.h>
 #include <Chunk.h>
 #include <ChunkUtil.h>
+#include <ChunkMeshManager.h>
 #include <Block.h>
 
 #include <InputHandler.h>
@@ -22,8 +23,6 @@
 #include <Utility.h>
 #include <Color.h>
 #include <Player.h>
-
-#include <GLFW\glfw3.h>
 
 #include <Application.h>
 #include <GLView.h>
@@ -46,7 +45,7 @@ World::World()
 	, keyCDown(false)
 	, cameraControlMode(false)
 	, keyXDown(false)
-	//, debugPlayerCube(nullptr)
+	, chunkMeshManager(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
@@ -58,12 +57,13 @@ World::World()
 	init();
 	// After creation, set cursor to center
 	input->setCursorToCenter();
+
+	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
+	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
 	/*
 	threadRunning = true;
 
-	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
 
-	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
 	chunkElapsedTime = 0;
 	for (int i = 0; i < concurentThreadsSupported - 1; i++)
 	{
@@ -72,57 +72,34 @@ World::World()
 	}
 	*/
 
-	Camera::mainCamera->initDebugFrustumLines();
+	//Camera::mainCamera->initDebugFrustumLines();
 }
 
 World::~World()
 {
+	// Stop running mesh building before releasing
+	chunkMeshManager->stop();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	chunkMeshManager->joinThread();
+
 	// Release all instances
 	release();
+
 	// Release fonts
 	FontManager::getInstance().clear();
-
-	/*
-	int threadCount = testThreads.size();
-
-	while (threadCount > 0)
-	{
-		for (auto& thread : testThreads)
-		{
-			if (thread.joinable())
-			{
-				thread.join();
-				std::cout << "joining test thread #" << thread.get_id() << std::endl;
-			}
-		}
-	}
-	*/
-
-	/*
-	{
-		// wait unilt lock is free
-		std::unique_lock<std::mutex> lock(chunkQueueMutex);
-		for (auto& thread : testThreads)
-		{
-			if (thread.joinable())
-			{
-				thread.join();
-				std::cout << "joining test thread #" << thread.get_id() << std::endl;
-			}
-		}
-	}
-	*/
 }
 
 void Voxel::World::init()
 {
 	// Initialize default program
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	
 
 	// Init chunks
 	chunkMap = new ChunkMap();
 	chunkLoader = new ChunkLoader();
 	chunkMeshGenerator = new ChunkMeshGenerator();
+	chunkMeshManager = new ChunkMeshManager();
 
 	// player
 	player = new Player();
@@ -132,14 +109,21 @@ void Voxel::World::init()
 
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
+
+	Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
+	Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
+	//cameraMode = true;
+	//cameraControlMode = true;
 }
 
 void Voxel::World::release()
 {
+	std::cout << "[World] Releasing all instances" << std::endl;
 	// delete everything
-	if(chunkMap) delete chunkMap;
-	if(chunkLoader) delete chunkLoader;
-	if(chunkMeshGenerator) delete chunkMeshGenerator;
+	if (chunkMap) delete chunkMap;
+	if (chunkLoader) delete chunkLoader;
+	if (chunkMeshGenerator) delete chunkMeshGenerator;
+	if (chunkMeshManager) delete chunkMeshManager;
 
 	if (player)	delete player;
 
@@ -234,6 +218,13 @@ void Voxel::World::initUI()
 	glBindVertexArray(0);
 }
 
+void Voxel::World::initMeshBuilderThread()
+{
+	// run first, create thread later
+	chunkMeshManager->run();
+	chunkMeshManager->createThread(chunkMap, chunkMeshGenerator);
+}
+
 void Voxel::World::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
@@ -249,47 +240,17 @@ void Voxel::World::createNew(const std::string & worldName)
 
 	// Then based init chunks
 	createChunkMap();
+
+	// Threads
+	initMeshBuilderThread();
+
 	// initialize chunk loader.
 	loadChunkLoader();
 	// Then generate mesh for loaded chunks
-	loadChunkMesh();
+	//loadChunkMesh();
 
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
-}
-
-void World::testThreadFunc()
-{
-	while (threadRunning)
-	{
-		{
-			std::unique_lock<std::mutex> lock(chunkQueueMutex);
-			while (chunkQueue.empty() && threadRunning)
-			{
-				cv.wait(lock);
-			}
-
-			if (threadRunning == false)
-			{
-				break;
-			}
-
-			std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		/*
-
-		//chunkQueueMutex.lock();
-		if (chunkQueue.empty() == false)
-		{
-			//std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		//chunkQueueMutex.unlock();
-		*/
-	}
-
-	std::cout << "Thread #" << std::this_thread::get_id() << " joining" << std::endl;
 }
 
 void World::createPlayer()
@@ -299,7 +260,7 @@ void World::createPlayer()
 	float randX = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
-	player->init(glm::vec3(randX, 0.0f, randZ));
+	player->init(glm::vec3(randX, 80.0f, randZ));
 	//player->setPosition(glm::vec3(0));
 	// Todo: load player's last direction
 	
@@ -346,7 +307,12 @@ void World::loadChunkLoader()
 	// Todo: load render distance from player settings
 	const int renderDistance = 8;
 
-	chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
+	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
+		
+	for (auto xz : chunkCoordinates)
+	{
+		chunkMeshManager->addChunkCoordinate(glm::ivec2(xz.x, xz.y));
+	}
 
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkLoader] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -391,6 +357,7 @@ void World::update(const float delta)
 		if (hit)
 		{
 			player->setLookingBlock(hit);
+			debugConsole->updatePlayerLookingAt(glm::ivec3(hit->getWorldPosition()));
 		}
 		else
 		{
@@ -620,6 +587,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		return;
 	}
 		
+	/*
 	if (input->getKeyDown(GLFW_KEY_K, true))
 	{
 		auto playerPosition = player->getPosition();
@@ -635,6 +603,15 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 		int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 		FileSystem::getInstance().readFromRegionFile(glm::ivec2(0, 0), glm::ivec2(0, 0), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef());
+	}
+	*/
+
+	if (input->getKeyDown(GLFW_KEY_T, true))
+	{
+		int randX = Utility::Random::randomInt(-100, 100);
+		int randZ = Utility::Random::randomInt(-100, 100);
+		auto randPos = glm::ivec2(randX, randZ);
+		chunkMeshManager->addChunkCoordinate(randPos);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -987,6 +964,16 @@ void World::render(const float delta)
 	if (cameraMode)
 	{
 		mat = Camera::mainCamera->getMatrix();
+
+		glm::mat4 rayMat = mat4(1.0f);
+		rayMat = glm::translate(rayMat, player->getPosition());
+		auto playerRotation = player->getRotation();
+		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
+
+		defaultProgram->setUniformMat4("modelMat", rayMat);
+		Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
 	}
 	else
 	{
@@ -1000,23 +987,6 @@ void World::render(const float delta)
 
 	chunkLoader->render();
 	player->render(defaultProgram); 
-	
-	glm::mat4 rayMat = mat4(1.0f);
-	rayMat = glm::translate(rayMat, player->getPosition());
-	auto playerRotation = player->getRotation();
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
-
-	defaultProgram->setUniformMat4("modelMat", rayMat);
-	Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
-
-	/*
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//glDrawArrays(GL_LINES, 0, 2);
-	glBindVertexArray(0);
-	*/
 
 	if (player->isLookingAtBlock())
 	{
@@ -1027,23 +997,6 @@ void World::render(const float delta)
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
-
-	// Render UI
-	//glm::mat4 bMat = mat4(1.0f);
-	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
-	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-
-	/*
-	auto screenSpacePos = (Camera::mainCamera->getScreenSpacePos() * -1.0f);
-	//screenSpacePos = glm::vec3(0);
-	auto UIModelMat = glm::translate(player->getDirMatrix(), screenSpacePos);
-
-	auto testMat = glm::translate(glm::mat4(1.0f), screenSpacePos);
-
-	//defaultProgram->setUniformMat4("cameraMat", glm::mat4(1.0f));
-	defaultProgram->setUniformMat4("modelMat", UIModelMat);
-	*/
-
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
