@@ -252,8 +252,10 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		int maxWidth = 0;
 		int totalHeight = 0;
 
+		const float outlineSize = static_cast<float>(font->getOutlineSize());
+
 		int lineGap = 0;
-		int lineGapHeight = 2;
+		int lineGapHeight = 2 + static_cast<int>(outlineSize);
 
 		// Iterate per line. Find the maximum width and height
 		for (auto& line : split)
@@ -383,8 +385,6 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		std::vector<unsigned int> indices;
 		std::vector<float> uvVertices;
 		unsigned int indicesIndex = 0;
-
-		const float outlineSize = static_cast<float>(font->getOutlineSize());
 		
 		for (auto& line : split)
 		{
