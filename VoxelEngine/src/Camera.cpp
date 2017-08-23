@@ -235,7 +235,7 @@ glm::mat4 Voxel::Camera::getScreenSpaceMatrix()
 
 void Voxel::Camera::initDebugFrustumLines()
 {
-	this->frustum->initDebugLines(fovy, fovx, nears, 4.0f * 16.0f);
+	this->frustum->initDebugLines(fovy, fovx, nears, 8.0f * 16.0f);
 }
 
 mat4 Camera::getProjection()

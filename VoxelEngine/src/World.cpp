@@ -300,7 +300,7 @@ void World::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 0.0f, randZ));
-	player->setPosition(glm::vec3(0));
+	//player->setPosition(glm::vec3(0));
 	// Todo: load player's last direction
 	
 	// Todo: set this to false. For now, set ture for debug
@@ -330,8 +330,8 @@ void World::createChunkMap()
 
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
-	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	chunkMap->initChunkNearPlayer(playerPosition, 4);
+	chunkMap->generateRegion(glm::ivec2(0, 0));
+	//chunkMap->initChunkNearPlayer(playerPosition, 4);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -344,7 +344,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 2;
+	const int renderDistance = 8;
 
 	chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
 
