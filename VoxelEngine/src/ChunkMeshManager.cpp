@@ -6,6 +6,7 @@
 #include <ChunkSection.h>
 #include <ChunkMeshGenerator.h>
 #include <ChunkMesh.h>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -53,6 +54,7 @@ void Voxel::ChunkMeshManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunk
 			glm::ivec2 coordinate = chunkQueue.front();
 			chunkQueue.pop_front();
 
+			auto start = Utility::Time::now();
 			// For now, assume chunk is all loaded.
 			if (map)
 			{
@@ -76,6 +78,8 @@ void Voxel::ChunkMeshManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunk
 					}
 				}
 			}
+			auto end = Utility::Time::now();
+			std::cout << "Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 		}
 	}
 }

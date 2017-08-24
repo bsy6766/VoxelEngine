@@ -4,6 +4,7 @@
 #include <Program.h>
 #include <InputHandler.h>
 #include <glm/gtx/transform.hpp>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -50,6 +51,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 
 void Voxel::ChunkMesh::loadBuffer()
 {
+	auto start = Utility::Time::now();
 	// 1. VAO
 	// Generate vertex array object
 	glGenVertexArrays(1, &vao);
@@ -107,6 +109,8 @@ void Voxel::ChunkMesh::loadBuffer()
 	this->indices.clear();
 
 	bufferLoaded.store(true);
+	auto end = Utility::Time::now();
+	std::cout << "Loading buffer Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
 void ChunkMesh::bind()
