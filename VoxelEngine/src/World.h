@@ -16,7 +16,7 @@ namespace Voxel
 	class InputHandler;
 	class Player;
 	class DebugConsole;
-	class ChunkMeshManager;
+	class ChunkWorkManager;
 
 	namespace UI
 	{
@@ -59,7 +59,7 @@ namespace Voxel
 		ChunkMap* chunkMap;
 		ChunkLoader* chunkLoader;
 		ChunkMeshGenerator* chunkMeshGenerator;
-		ChunkMeshManager* chunkMeshManager;
+		ChunkWorkManager* chunkWorkManager;
 
 		// Player
 		Player* player;

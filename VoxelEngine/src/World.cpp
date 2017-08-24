@@ -6,7 +6,7 @@
 #include <ChunkSection.h>
 #include <Chunk.h>
 #include <ChunkUtil.h>
-#include <ChunkMeshManager.h>
+#include <ChunkWorkManager.h>
 #include <Block.h>
 
 #include <InputHandler.h>
@@ -46,7 +46,7 @@ World::World()
 	, keyCDown(false)
 	, cameraControlMode(false)
 	, keyXDown(false)
-	, chunkMeshManager(nullptr)
+	, chunkWorkManager(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
@@ -79,9 +79,9 @@ World::World()
 World::~World()
 {
 	// Stop running mesh building before releasing
-	chunkMeshManager->stop();
+	chunkWorkManager->stop();
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	chunkMeshManager->joinThread();
+	chunkWorkManager->joinThread();
 
 	// Release all instances
 	release();
@@ -100,7 +100,7 @@ void Voxel::World::init()
 	chunkMap = new ChunkMap();
 	chunkLoader = new ChunkLoader();
 	chunkMeshGenerator = new ChunkMeshGenerator();
-	chunkMeshManager = new ChunkMeshManager();
+	chunkWorkManager = new ChunkWorkManager();
 
 	// player
 	player = new Player();
@@ -115,6 +115,9 @@ void Voxel::World::init()
 	Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
 	//cameraMode = true;
 	//cameraControlMode = true;
+
+	Application::getInstance().getGLView()->setWindowedFullScreen(1);
+	debugConsole->updateResolution(1920, 1080);
 }
 
 void Voxel::World::release()
@@ -124,7 +127,7 @@ void Voxel::World::release()
 	if (chunkMap) delete chunkMap;
 	if (chunkLoader) delete chunkLoader;
 	if (chunkMeshGenerator) delete chunkMeshGenerator;
-	if (chunkMeshManager) delete chunkMeshManager;
+	if (chunkWorkManager) delete chunkWorkManager;
 
 	if (player)	delete player;
 
@@ -222,8 +225,8 @@ void Voxel::World::initUI()
 void Voxel::World::initMeshBuilderThread()
 {
 	// run first, create thread later
-	chunkMeshManager->run();
-	chunkMeshManager->createThread(chunkMap, chunkMeshGenerator);
+	chunkWorkManager->run();
+	chunkWorkManager->createThread(chunkMap, chunkMeshGenerator);
 }
 
 void Voxel::World::createNew(const std::string & worldName)
@@ -317,7 +320,7 @@ void World::loadChunkLoader()
 
 	for (auto xz : chunkCoordinates)
 	{
-		chunkMeshManager->addChunkCoordinate(glm::ivec2(xz.x, xz.y));
+		chunkWorkManager->addChunkCoordinate(glm::ivec2(xz.x, xz.y));
 	}
 
 	auto end = Utility::Time::now();
@@ -617,7 +620,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		int randX = Utility::Random::randomInt(-100, 100);
 		int randZ = Utility::Random::randomInt(-100, 100);
 		auto randPos = glm::ivec2(randX, randZ);
-		chunkMeshManager->addChunkCoordinate(randPos);
+		chunkWorkManager->addChunkCoordinate(randPos);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
