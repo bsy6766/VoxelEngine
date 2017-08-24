@@ -23,7 +23,7 @@ namespace Voxel
 	*	and generate mesh.
 	*	When it's finish, thread will mark chunk as loaded. 
 	*/
-	class ChunkMeshManager
+	class ChunkWorkManager
 	{
 	private:
 		std::list<glm::ivec2> chunkQueue;
@@ -38,8 +38,8 @@ namespace Voxel
 		// For mesh build thread
 		void buildMesh(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator);
 	public:
-		ChunkMeshManager();
-		~ChunkMeshManager();
+		ChunkWorkManager();
+		~ChunkWorkManager();
 
 		// Main thread adds coordinate
 		void addChunkCoordinate(const glm::ivec2& coordinate);

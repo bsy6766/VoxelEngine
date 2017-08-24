@@ -10,15 +10,15 @@
 
 using namespace Voxel;
 
-ChunkMeshManager::ChunkMeshManager()
+ChunkWorkManager::ChunkWorkManager()
 {
 }
 
-ChunkMeshManager::~ChunkMeshManager()
+ChunkWorkManager::~ChunkWorkManager()
 {
 }
 
-void Voxel::ChunkMeshManager::addChunkCoordinate(const glm::ivec2 & coordinate)
+void Voxel::ChunkWorkManager::addChunkCoordinate(const glm::ivec2 & coordinate)
 {
 	{
 		// Scope lock
@@ -29,7 +29,7 @@ void Voxel::ChunkMeshManager::addChunkCoordinate(const glm::ivec2 & coordinate)
 	}
 }
 
-void Voxel::ChunkMeshManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
+void Voxel::ChunkWorkManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
 {
 	// loop while it's running
 	std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
@@ -84,26 +84,26 @@ void Voxel::ChunkMeshManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunk
 	}
 }
 
-void Voxel::ChunkMeshManager::createThread(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
+void Voxel::ChunkWorkManager::createThread(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
 {
 	if (running)
 	{
-		meshBuilderThread = std::thread(&ChunkMeshManager::buildMesh, this, map, chunkMeshGenerator);
+		meshBuilderThread = std::thread(&ChunkWorkManager::buildMesh, this, map, chunkMeshGenerator);
 	}
 }
 
-void Voxel::ChunkMeshManager::run()
+void Voxel::ChunkWorkManager::run()
 {
 	running.store(true);
 }
 
-void Voxel::ChunkMeshManager::stop()
+void Voxel::ChunkWorkManager::stop()
 {
 	running.store(false);
 	cv.notify_all();
 }
 
-void Voxel::ChunkMeshManager::joinThread()
+void Voxel::ChunkWorkManager::joinThread()
 {
 	{
 		//std::cout << "Waiting to thread join..." << std::endl;
