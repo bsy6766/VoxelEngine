@@ -76,6 +76,7 @@ namespace Voxel
 
 		// Get cube vertices without any color
 		static std::vector<float> getVertices();
+		static std::vector<float> getVertices(const float size);
 		// Get cube vertices on specific face
 		static std::vector<float> getVertices(Face face, const glm::vec3& translation);
 		// Get color

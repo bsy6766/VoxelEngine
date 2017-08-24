@@ -156,6 +156,21 @@ std::vector<float> Voxel::Cube::getVertices()
 	return vertecies;
 }
 
+std::vector<float> Voxel::Cube::getVertices(const float size)
+{
+	std::vector<float> vertecies;
+
+	for (auto vertex : allVertices)
+	{
+		for (auto point : vertex)
+		{
+			vertecies.push_back(point * size);
+		}
+	}
+
+	return vertecies;
+}
+
 std::vector<float> Voxel::Cube::getVertices(Face face, const glm::vec3& translation)
 {
 	if (face == Cube::Face::NONE)

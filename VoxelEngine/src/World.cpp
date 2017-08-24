@@ -11,6 +11,7 @@
 #include <InputHandler.h>
 #include <Camera.h>
 #include <Frustum.h>
+#include <Skybox.h>
 
 #include <UI.h>
 #include <FontManager.h>
@@ -50,6 +51,7 @@ World::World()
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
+	, skybox(skybox)
 {
 	// Set clear color
 	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
@@ -129,6 +131,10 @@ void Voxel::World::init()
 
 	// UI & font
 	initUI();
+
+	// skybox
+	skybox = new Skybox();
+	skybox->init(glm::vec4(Color::SKYBOX, 1.0f), 40);
 
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
@@ -1028,6 +1034,11 @@ void World::render(const float delta)
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
+
+	auto playerPosMat = glm::translate(glm::mat4(1.0f), player->getPosition());
+	defaultProgram->setUniformMat4("modelMat", playerPosMat);
+
+	skybox->render();
 
 	// Render UI
 	//glm::mat4 bMat = mat4(1.0f);

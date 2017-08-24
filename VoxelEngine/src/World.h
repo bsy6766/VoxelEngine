@@ -25,6 +25,7 @@ namespace Voxel
 	class InputHandler;
 	class Player;
 	class DebugConsole;
+	class Skybox;
 	namespace UI
 	{
 		class Canvas;
@@ -87,6 +88,9 @@ namespace Voxel
 		ChunkMap* chunkMap;
 		ChunkLoader* chunkLoader;
 		ChunkMeshGenerator* chunkMeshGenerator;
+
+		// skybox
+		Skybox* skybox;
 
 		// Player
 		Player* player;
