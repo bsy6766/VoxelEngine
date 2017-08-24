@@ -30,8 +30,9 @@ namespace Voxel
 		ChunkLoader();
 		~ChunkLoader();
 
-		// Initialize and generate active chunk list based on player position and render distance
-		void init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
+		// Initialize and generate active chunk list based on player position and render distance.
+		// Returns chunk coordinates that need mesh to generate.
+		std::vector<glm::vec2> init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
 
 		// Check if player moved to another chunk. If so, return true.
 		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);

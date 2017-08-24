@@ -4,16 +4,7 @@
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
-
-// Multithreading
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <list>
-#include <condition_variable>
-
-//temp
-#include <ChunkMesh.h>
+#include <string>
 
 namespace Voxel
 {
@@ -25,7 +16,8 @@ namespace Voxel
 	class InputHandler;
 	class Player;
 	class DebugConsole;
-	class Skybox;
+	class ChunkMeshManager;
+
 	namespace UI
 	{
 		class Canvas;
@@ -46,32 +38,11 @@ namespace Voxel
 		// Store default program
 		Program* defaultProgram;
 
-		/*
-		GLuint vao;
-		GLuint vbo;
-		GLuint ibo;
-		glm::vec3 angle = glm::vec3(0);
-		glm::mat4 tempRotation = glm::mat4(1.0f);
-		glm::mat4 tempTralsnate = glm::mat4(1.0f);
-		void initDebugCube();
-		ChunkMesh* chunkMesh;
-		*/
-		/*
-		ChunkMesh* debugPlayerCube;
-		void initDebugPlayerCube();
-		GLuint vao;
-		GLuint vbo;
-		GLuint cbo;
-		*/
-
 		// For camera frustum
 		GLuint vao;
 		GLuint vbo;
 		GLuint cbo;
 		void initDebugCamerafrustum();
-
-		GLuint rvao;
-		GLuint rvbo;
 
 		GLuint cvao;
 		GLuint cvbo;
@@ -88,9 +59,7 @@ namespace Voxel
 		ChunkMap* chunkMap;
 		ChunkLoader* chunkLoader;
 		ChunkMeshGenerator* chunkMeshGenerator;
-
-		// skybox
-		Skybox* skybox;
+		ChunkMeshManager* chunkMeshManager;
 
 		// Player
 		Player* player;
@@ -105,6 +74,9 @@ namespace Voxel
 		// Initialize/release instances
 		void init();
 		void release();
+
+		// Mesh builder thread
+		void initMeshBuilderThread();
 
 		// Create/Load/unload player
 		void createPlayer();
@@ -144,15 +116,6 @@ namespace Voxel
 
 		// debug
 		DebugConsole* debugConsole;
-
-		// threads
-		std::vector<std::thread> testThreads;
-		void testThreadFunc();
-		std::atomic<bool> threadRunning;
-		std::list<int> chunkQueue;
-		float chunkElapsedTime;
-		std::mutex chunkQueueMutex;
-		std::condition_variable cv;
 
 		// Updates (tick) the world.
 		void update(const float delta);

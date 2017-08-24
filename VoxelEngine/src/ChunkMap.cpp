@@ -261,6 +261,7 @@ bool Voxel::ChunkMap::attempChunkLoad(int x, int z)
 	return false;
 }
 
+/*
 void Voxel::ChunkMap::raycast(const glm::vec3 & rayStart, const glm::vec3 & rayEnd)
 {
 	std::cout << "RayCasting" << std::endl;
@@ -373,6 +374,7 @@ void Voxel::ChunkMap::raycast(const glm::vec3 & rayStart, const glm::vec3 & rayE
 
 	} while (stepLimit-- > 0);
 }
+*/
 
 Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
 {

@@ -6,12 +6,12 @@
 #include <ChunkSection.h>
 #include <Chunk.h>
 #include <ChunkUtil.h>
+#include <ChunkMeshManager.h>
 #include <Block.h>
 
 #include <InputHandler.h>
 #include <Camera.h>
 #include <Frustum.h>
-#include <Skybox.h>
 
 #include <UI.h>
 #include <FontManager.h>
@@ -23,8 +23,6 @@
 #include <Utility.h>
 #include <Color.h>
 #include <Player.h>
-
-#include <GLFW\glfw3.h>
 
 #include <Application.h>
 #include <GLView.h>
@@ -47,11 +45,10 @@ World::World()
 	, keyCDown(false)
 	, cameraControlMode(false)
 	, keyXDown(false)
-	//, debugPlayerCube(nullptr)
+	, chunkMeshManager(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
-	, skybox(skybox)
 {
 	// Set clear color
 	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
@@ -60,60 +57,36 @@ World::World()
 	init();
 	// After creation, set cursor to center
 	input->setCursorToCenter();
+
+	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
+	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
 	/*
 	threadRunning = true;
 
-	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
 
-	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
 	chunkElapsedTime = 0;
 	for (int i = 0; i < concurentThreadsSupported - 1; i++)
 	{
-		testThreads.push_back(std::thread(&World::testThreadFunc, this));
-		std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
+	testThreads.push_back(std::thread(&World::testThreadFunc, this));
+	std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
 	}
 	*/
 
-	Camera::mainCamera->initDebugFrustumLines();
+	//Camera::mainCamera->initDebugFrustumLines();
 }
 
 World::~World()
 {
+	// Stop running mesh building before releasing
+	chunkMeshManager->stop();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	chunkMeshManager->joinThread();
+
 	// Release all instances
 	release();
+
 	// Release fonts
 	FontManager::getInstance().clear();
-
-	/*
-	int threadCount = testThreads.size();
-
-	while (threadCount > 0)
-	{
-		for (auto& thread : testThreads)
-		{
-			if (thread.joinable())
-			{
-				thread.join();
-				std::cout << "joining test thread #" << thread.get_id() << std::endl;
-			}
-		}
-	}
-	*/
-
-	/*
-	{
-		// wait unilt lock is free
-		std::unique_lock<std::mutex> lock(chunkQueueMutex);
-		for (auto& thread : testThreads)
-		{
-			if (thread.joinable())
-			{
-				thread.join();
-				std::cout << "joining test thread #" << thread.get_id() << std::endl;
-			}
-		}
-	}
-	*/
 }
 
 void Voxel::World::init()
@@ -121,10 +94,12 @@ void Voxel::World::init()
 	// Initialize default program
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
+
 	// Init chunks
 	chunkMap = new ChunkMap();
 	chunkLoader = new ChunkLoader();
 	chunkMeshGenerator = new ChunkMeshGenerator();
+	chunkMeshManager = new ChunkMeshManager();
 
 	// player
 	player = new Player();
@@ -132,20 +107,23 @@ void Voxel::World::init()
 	// UI & font
 	initUI();
 
-	// skybox
-	skybox = new Skybox();
-	skybox->init(glm::vec4(Color::SKYBOX, 1.0f), 40);
-
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
+
+	Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
+	Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
+	//cameraMode = true;
+	//cameraControlMode = true;
 }
 
 void Voxel::World::release()
 {
+	std::cout << "[World] Releasing all instances" << std::endl;
 	// delete everything
-	if(chunkMap) delete chunkMap;
-	if(chunkLoader) delete chunkLoader;
-	if(chunkMeshGenerator) delete chunkMeshGenerator;
+	if (chunkMap) delete chunkMap;
+	if (chunkLoader) delete chunkLoader;
+	if (chunkMeshGenerator) delete chunkMeshGenerator;
+	if (chunkMeshManager) delete chunkMeshManager;
 
 	if (player)	delete player;
 
@@ -240,6 +218,13 @@ void Voxel::World::initUI()
 	glBindVertexArray(0);
 }
 
+void Voxel::World::initMeshBuilderThread()
+{
+	// run first, create thread later
+	chunkMeshManager->run();
+	chunkMeshManager->createThread(chunkMap, chunkMeshGenerator);
+}
+
 void Voxel::World::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
@@ -255,47 +240,17 @@ void Voxel::World::createNew(const std::string & worldName)
 
 	// Then based init chunks
 	createChunkMap();
+
+	// Threads
+	initMeshBuilderThread();
+
 	// initialize chunk loader.
 	loadChunkLoader();
 	// Then generate mesh for loaded chunks
-	loadChunkMesh();
+	//loadChunkMesh();
 
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
-}
-
-void World::testThreadFunc()
-{
-	while (threadRunning)
-	{
-		{
-			std::unique_lock<std::mutex> lock(chunkQueueMutex);
-			while (chunkQueue.empty() && threadRunning)
-			{
-				cv.wait(lock);
-			}
-
-			if (threadRunning == false)
-			{
-				break;
-			}
-
-			std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		/*
-
-		//chunkQueueMutex.lock();
-		if (chunkQueue.empty() == false)
-		{
-			//std::cout << "Thread #" << std::this_thread::get_id() << " has " << chunkQueue.front() << std::endl;
-			chunkQueue.pop_front();
-		}
-		//chunkQueueMutex.unlock();
-		*/
-	}
-
-	std::cout << "Thread #" << std::this_thread::get_id() << " joining" << std::endl;
 }
 
 void World::createPlayer()
@@ -305,10 +260,10 @@ void World::createPlayer()
 	float randX = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
-	player->init(glm::vec3(randX, 0.0f, randZ));
+	player->init(glm::vec3(randX, 90.0f, randZ));
 	//player->setPosition(glm::vec3(0));
 	// Todo: load player's last direction
-	
+
 	// Todo: set this to false. For now, set ture for debug
 	player->setFly(true);
 	// Update matrix
@@ -331,7 +286,7 @@ void World::createChunkMap()
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
 	std::cout << "[ChunkMap] Player is in chunk (" << chunkX << ", " << chunkZ << ")" << std::endl;
-	
+
 	auto start = Utility::Time::now();
 
 	// create chunks for region -1 ~ 1.
@@ -352,7 +307,12 @@ void World::loadChunkLoader()
 	// Todo: load render distance from player settings
 	const int renderDistance = 8;
 
-	chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
+	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
+
+	for (auto xz : chunkCoordinates)
+	{
+		chunkMeshManager->addChunkCoordinate(glm::ivec2(xz.x, xz.y));
+	}
 
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkLoader] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -411,13 +371,13 @@ void World::update(const float delta)
 		updateChunks();
 		debugConsole->updatePlayerPosition(player->getPosition());
 	}
-	
+
 	/*
 	if (input->getKeyDown(GLFW_KEY_R))
 	{
-		std::cout << "raycasting = origin(" << rayOrigin.x << ", " << rayOrigin.y << ", " << rayOrigin.z << ")" << std::endl;
-		std::cout << "raycasting = direction(" << rayDirection.x << ", " << rayDirection.y << ", " << rayDirection.z << ")" << std::endl;
-		std::cout << "raycasting = end(" << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;
+	std::cout << "raycasting = origin(" << rayOrigin.x << ", " << rayOrigin.y << ", " << rayOrigin.z << ")" << std::endl;
+	std::cout << "raycasting = direction(" << rayDirection.x << ", " << rayDirection.y << ", " << rayDirection.z << ")" << std::endl;
+	std::cout << "raycasting = end(" << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;
 	}
 	*/
 
@@ -425,17 +385,17 @@ void World::update(const float delta)
 	chunkElapsedTime += delta;
 	if (chunkElapsedTime > 0.5f)
 	{
-		// Add number to queue every 0.5f seconds
-		//chunkQueueMutex.lock();
-		{
-			std::unique_lock<std::mutex> lock(chunkQueueMutex);
-			chunkQueue.push_back(Utility::Random::randomInt(0, 10));
-			std::cout << "Main thread added " << chunkQueue.back() << std::endl;
-		}
+	// Add number to queue every 0.5f seconds
+	//chunkQueueMutex.lock();
+	{
+	std::unique_lock<std::mutex> lock(chunkQueueMutex);
+	chunkQueue.push_back(Utility::Random::randomInt(0, 10));
+	std::cout << "Main thread added " << chunkQueue.back() << std::endl;
+	}
 
-		cv.notify_one();
-		//chunkQueueMutex.unlock();
-		chunkElapsedTime -= 0.5f;
+	cv.notify_one();
+	//chunkQueueMutex.unlock();
+	chunkElapsedTime -= 0.5f;
 	}
 	*/
 	/*
@@ -449,12 +409,12 @@ void World::update(const float delta)
 	auto mainCamera = Camera::mainCamera;
 
 	GLfloat frustumVertex[] = {
-		mainCamera->nearPlane.x, playerY, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
-		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
-		mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
-		mainCamera->farPlane.z, playerY, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
+	mainCamera->nearPlane.x, playerY, mainCamera->nearPlane.y, 1, 0, 0, 0.5f,
+	mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w,  1, 0, 0, 0.5f,
+	mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+	mainCamera->nearPlane.z, playerY, mainCamera->nearPlane.w, 1, 0, 0, 0.5f,
+	mainCamera->farPlane.x, playerY, mainCamera->farPlane.y, 1, 0, 0, 0.5f,
+	mainCamera->farPlane.z, playerY, mainCamera->farPlane.w, 1, 0, 0, 0.5f,
 	};
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(frustumVertex), frustumVertex);
@@ -472,73 +432,73 @@ void World::update(const float delta)
 /*
 void Voxel::World::initDebugPlayerCube()
 {
-	//debugPlayerCube = new ChunkMesh();
-	
-	//debugPlayerCube->initBuffer();
-	
-	// Generate vertex array object
-	glGenVertexArrays(1, &vao);
-	// Bind it
-	glBindVertexArray(vao);
+//debugPlayerCube = new ChunkMesh();
 
-	// Generate buffer object
-	glGenBuffers(1, &vbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//debugPlayerCube->initBuffer();
 
-	// Get cube vertices and indices
-	float line[] = {
-		-100, 100, 0,
-		100, 100, 0
-	};
+// Generate vertex array object
+glGenVertexArrays(1, &vao);
+// Bind it
+glBindVertexArray(vao);
 
-	float lineWithColor[] = {
-		-100, 100, 0,  1, 0, 0,
-		100, 100, 0,  1, 0, 0,
-	};
-	
-	GLfloat triangle[] = {
-		//  X     Y     Z
-		0.0f, 100.0f, 0.0f,
-		-100.0f,-100.0f, 0.0f,
-		100.0f,-100.0f, 0.0f,
-	};
+// Generate buffer object
+glGenBuffers(1, &vbo);
+// Bind it
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	GLfloat triangleWithColor[] = {
-		//  X     Y     Z
-		0.0f, 30.0f, 0.0f,      1, 0, 0,
-		-30.0f,-30.0f, 0.0f,   1, 0, 0,
-		30.0f,-30.0f, 0.0f,    1, 0, 0
-	};
+// Get cube vertices and indices
+float line[] = {
+-100, 100, 0,
+100, 100, 0
+};
 
-	// Load cube vertices
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lineWithColor), lineWithColor, GL_STATIC_DRAW);
+float lineWithColor[] = {
+-100, 100, 0,  1, 0, 0,
+100, 100, 0,  1, 0, 0,
+};
 
-	float color[] = {
-		1, 0, 0,
-		1, 0, 0
-	};
+GLfloat triangle[] = {
+//  X     Y     Z
+0.0f, 100.0f, 0.0f,
+-100.0f,-100.0f, 0.0f,
+100.0f,-100.0f, 0.0f,
+};
+
+GLfloat triangleWithColor[] = {
+//  X     Y     Z
+0.0f, 30.0f, 0.0f,      1, 0, 0,
+-30.0f,-30.0f, 0.0f,   1, 0, 0,
+30.0f,-30.0f, 0.0f,    1, 0, 0
+};
+
+// Load cube vertices
+//glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
+glBufferData(GL_ARRAY_BUFFER, sizeof(lineWithColor), lineWithColor, GL_STATIC_DRAW);
+
+float color[] = {
+1, 0, 0,
+1, 0, 0
+};
 
 
-	float color2[] = {
-		1, 0, 0,
-		1, 0, 0,
-		1, 0, 0
-	};
+float color2[] = {
+1, 0, 0,
+1, 0, 0,
+1, 0, 0
+};
 
-	// Enable vertices attrib
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
+// Enable vertices attrib
+GLint vertLoc = defaultProgram->getAttribLocation("vert");
+GLint colorLoc = defaultProgram->getAttribLocation("color");
 
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+// vert
+glEnableVertexAttribArray(vertLoc);
+glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+// color
+glEnableVertexAttribArray(colorLoc);
+glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
-	glBindVertexArray(0);
+glBindVertexArray(0);
 }
 */
 
@@ -626,22 +586,32 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		// Stop input while opening console
 		return;
 	}
-		
+
+	/*
 	if (input->getKeyDown(GLFW_KEY_K, true))
 	{
-		auto playerPosition = player->getPosition();
-		int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-		int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+	auto playerPosition = player->getPosition();
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
-		FileSystem::getInstance().saveToRegionFile(glm::ivec2(0, 0), glm::ivec2(chunkX, chunkZ), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef() );
+	FileSystem::getInstance().saveToRegionFile(glm::ivec2(0, 0), glm::ivec2(chunkX, chunkZ), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef() );
 	}
 	if (input->getKeyDown(GLFW_KEY_L, true))
 	{
-		std::vector<Block*> blocks;
-		auto playerPosition = player->getPosition();
-		int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-		int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
-		FileSystem::getInstance().readFromRegionFile(glm::ivec2(0, 0), glm::ivec2(0, 0), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef());
+	std::vector<Block*> blocks;
+	auto playerPosition = player->getPosition();
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+	FileSystem::getInstance().readFromRegionFile(glm::ivec2(0, 0), glm::ivec2(0, 0), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef());
+	}
+	*/
+
+	if (input->getKeyDown(GLFW_KEY_T, true))
+	{
+		int randX = Utility::Random::randomInt(-100, 100);
+		int randZ = Utility::Random::randomInt(-100, 100);
+		auto randPos = glm::ivec2(randX, randZ);
+		chunkMeshManager->addChunkCoordinate(randPos);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -994,6 +964,16 @@ void World::render(const float delta)
 	if (cameraMode)
 	{
 		mat = Camera::mainCamera->getMatrix();
+
+		glm::mat4 rayMat = mat4(1.0f);
+		rayMat = glm::translate(rayMat, player->getPosition());
+		auto playerRotation = player->getRotation();
+		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
+
+		defaultProgram->setUniformMat4("modelMat", rayMat);
+		Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
 	}
 	else
 	{
@@ -1006,24 +986,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	chunkLoader->render();
-	player->render(defaultProgram); 
-	
-	glm::mat4 rayMat = mat4(1.0f);
-	rayMat = glm::translate(rayMat, player->getPosition());
-	auto playerRotation = player->getRotation();
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
-
-	defaultProgram->setUniformMat4("modelMat", rayMat);
-	Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
-
-	/*
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//glDrawArrays(GL_LINES, 0, 2);
-	glBindVertexArray(0);
-	*/
+	player->render(defaultProgram);
 
 	if (player->isLookingAtBlock())
 	{
@@ -1034,28 +997,6 @@ void World::render(const float delta)
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
-
-	auto playerPosMat = glm::translate(glm::mat4(1.0f), player->getPosition());
-	defaultProgram->setUniformMat4("modelMat", playerPosMat);
-
-	skybox->render();
-
-	// Render UI
-	//glm::mat4 bMat = mat4(1.0f);
-	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().x), glm::vec3(1, 0, 0));
-	//bMat = glm::rotate(bMat, glm::radians(-player->getRotation().y), glm::vec3(0, 1, 0));
-
-	/*
-	auto screenSpacePos = (Camera::mainCamera->getScreenSpacePos() * -1.0f);
-	//screenSpacePos = glm::vec3(0);
-	auto UIModelMat = glm::translate(player->getDirMatrix(), screenSpacePos);
-
-	auto testMat = glm::translate(glm::mat4(1.0f), screenSpacePos);
-
-	//defaultProgram->setUniformMat4("cameraMat", glm::mat4(1.0f));
-	defaultProgram->setUniformMat4("modelMat", UIModelMat);
-	*/
-
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);

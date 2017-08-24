@@ -66,6 +66,7 @@ namespace Voxel
 
 		// Get position of chunk in coordinate
 		glm::ivec3 getPosition();
+		glm::ivec2 getCoordinate();
 		// Get chunk position in world (center of chunk)
 		glm::vec3 getWorldPosition();
 
@@ -76,9 +77,12 @@ namespace Voxel
 
 		void setActive(const bool state);
 		bool isActive();
+
 		void setVisibility(const bool visibility);
 		bool isVisible();
+
 		void releaseMesh();
+		ChunkMesh* getMesh();
 	};
 
 }
