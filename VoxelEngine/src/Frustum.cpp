@@ -328,8 +328,11 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 
 void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
 {
-	prog->setUniformMat4("modelMat", modelMat);
+	if (vao)
+	{
+		prog->setUniformMat4("modelMat", modelMat);
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(vao);
+		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	}
 }

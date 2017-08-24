@@ -66,6 +66,7 @@ namespace Voxel
 
 		void generateRegion(const glm::ivec2& regionCoordinate);
 		void generateChunk(const int x, const int z);
+		void generateEmptyChunk(const int x, const int z);
 		unsigned int getSize();
 
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
@@ -76,6 +77,8 @@ namespace Voxel
 		// From rayStart to rayEnd, visit all blocks
 		//void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
+
+		void releaseChunk(const glm::ivec2& coordinate);
 	};
 }
 

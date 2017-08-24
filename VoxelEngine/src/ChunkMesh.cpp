@@ -129,7 +129,7 @@ void ChunkMesh::unbind()
 	glBindVertexArray(0);
 }
 
-void Voxel::ChunkMesh::release()
+void Voxel::ChunkMesh::releaseVAO()
 {
 	if (vao)
 	{
@@ -141,13 +141,17 @@ void Voxel::ChunkMesh::release()
 	cbo = 0;
 	ibo = 0;
 
+	bufferLoaded.store(false);
+}
+
+void Voxel::ChunkMesh::clearBuffers()
+{
 	vertices.clear();
 	colors.clear();
 	indices.clear();
 	indicesSize = 0;
 
 	bufferReady.store(false);
-	bufferLoaded.store(false);
 }
 
 bool Voxel::ChunkMesh::hasBufferToLoad()

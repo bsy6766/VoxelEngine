@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <glm\glm.hpp>
+#include <atomic>
 
 namespace Voxel
 {
@@ -47,6 +48,8 @@ namespace Voxel
 		bool active;
 		// visible state. True if chunk is visible to player
 		bool visible;
+		// Loaded state. True if chunk is loaded(generated). Else, false. If false, worker thread will generate chunk
+		std::atomic<bool> generated;
 
 		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
 		double timestamp;
@@ -57,6 +60,7 @@ namespace Voxel
 		~Chunk();
 
 		static Chunk* create(const int x, const int z);
+		static Chunk* createEmpty(const int x, const int z);
 
 		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
 		void unload();
@@ -83,6 +87,8 @@ namespace Voxel
 
 		void releaseMesh();
 		ChunkMesh* getMesh();
+
+		bool isGenerated();
 	};
 
 }

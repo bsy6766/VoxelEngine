@@ -13,6 +13,26 @@ namespace Voxel
 	class ChunkMap;
 	class ChunkMeshGenerator;
 
+	/*
+	struct WorkTicket
+	{
+	public:
+		enum class TYPE : unsigned int
+		{
+			LOAD = 0,
+			UNLOAD
+		};
+
+		TYPE type;
+		glm::ivec2 chunkCoordinate;
+
+		WorkTicket(const glm::ivec2 chunkCoordinate, const TYPE type)
+			: chunkCoordinate(chunkCoordinate)
+			, type(type)
+		{}
+	};
+	*/
+
 	/**
 	*	@class Chunk Mesh Manager.
 	*	@brief Manages chunk mesh generation. 
@@ -26,9 +46,13 @@ namespace Voxel
 	class ChunkWorkManager
 	{
 	private:
-		std::list<glm::ivec2> chunkQueue;
+		//std::list<WorkTicket> loadWorkQueue;
+		std::list<glm::ivec2> loadQueue;
+		std::list<glm::ivec2> unloadQueue;
+		std::list<glm::ivec2> unloadFinishedQueue;
 
 		std::mutex queueMutex;
+		std::mutex finishedQueueMutex;
 
 		std::thread meshBuilderThread;
 
@@ -42,7 +66,12 @@ namespace Voxel
 		~ChunkWorkManager();
 
 		// Main thread adds coordinate
-		void addChunkCoordinate(const glm::ivec2& coordinate);
+		//void addWorkTicket(const glm::ivec2& coordinate, const WorkTicket::TYPE type);
+		void addLoad(const glm::ivec2& coordinate);
+		void addUnload(const glm::ivec2& coordinate);
+
+		void addFinishedQueue(const glm::ivec2& coordinate);
+		bool popFinishedQueue(glm::ivec2& coordinate);
 
 		// Creates the thread. Make sure you call once after run.
 		void createThread(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator);

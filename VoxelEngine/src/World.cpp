@@ -110,6 +110,7 @@ void Voxel::World::init()
 
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
+	debugConsole->toggleDubugOutputs();
 
 	Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
 	Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
@@ -233,9 +234,9 @@ void Voxel::World::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
 	// Create folder
-	FileSystem& fs = FileSystem::getInstance();
-	fs.init();
-	fs.createNewWorldSave("New World");
+	//FileSystem& fs = FileSystem::getInstance();
+	//fs.init();
+	//fs.createNewWorldSave("New World");
 
 	// Creates new world. 
 	// First, create player.
@@ -250,8 +251,11 @@ void Voxel::World::createNew(const std::string & worldName)
 
 	// initialize chunk loader.
 	loadChunkLoader();
+
 	// Then generate mesh for loaded chunks
 	//loadChunkMesh();
+
+	//chunkLoader->findVisibleChunk();
 
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -265,7 +269,7 @@ void World::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
-	//player->setPosition(glm::vec3(0));
+	player->setPosition(glm::vec3(8, 90, 8));
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug
@@ -276,7 +280,7 @@ void World::createPlayer()
 	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
 
 	// for debug
-	//player->initYLine();
+	player->initYLine();
 	//player->initRayLine();
 }
 
@@ -295,8 +299,8 @@ void World::createChunkMap()
 
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
-	chunkMap->generateRegion(glm::ivec2(0, 0));
-	//chunkMap->initChunkNearPlayer(playerPosition, 4);
+	//chunkMap->generateRegion(glm::ivec2(0, 0));
+	chunkMap->initChunkNearPlayer(playerPosition, 2);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -309,7 +313,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 8;
+	const int renderDistance = 2;
 
 	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
 
@@ -320,7 +324,7 @@ void World::loadChunkLoader()
 
 	for (auto xz : chunkCoordinates)
 	{
-		chunkWorkManager->addChunkCoordinate(glm::ivec2(xz.x, xz.y));
+		chunkWorkManager->addLoad(xz);
 	}
 
 	auto end = Utility::Time::now();
@@ -360,7 +364,7 @@ void World::update(const float delta)
 		// If player either move or rotated, update frustum
 		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
 		// After updating frustum, run frustum culling to find visible chunk
-		chunkLoader->findVisibleChunk();
+		//chunkLoader->findVisibleChunk();
 		// Also update raycast
 		Block* hit = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
 		if (hit)
@@ -380,6 +384,8 @@ void World::update(const float delta)
 		updateChunks();
 		debugConsole->updatePlayerPosition(player->getPosition());
 	}
+
+	checkUnloadedChunks();
 
 	/*
 	if (input->getKeyDown(GLFW_KEY_R))
@@ -615,13 +621,16 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	}
 	*/
 
-	if (input->getKeyDown(GLFW_KEY_T, true))
-	{
-		int randX = Utility::Random::randomInt(-100, 100);
-		int randZ = Utility::Random::randomInt(-100, 100);
-		auto randPos = glm::ivec2(randX, randZ);
-		chunkWorkManager->addChunkCoordinate(randPos);
+	/*
+	if(input->getKeyDown(GLFW_KEY_T, true))
+	{ 
+		auto start = Utility::Time::now();
+		auto c = Chunk::createEmpty(0, 0);
+		auto end = Utility::Time::now();
+		delete c;
+		std::cout << "Empty chunk creation time: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 	}
+	*/
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
@@ -957,15 +966,31 @@ void Voxel::World::updateControllerInput(const float delta)
 
 void Voxel::World::updateChunks()
 {
-	glm::ivec2 mod = glm::ivec2(0);
-
-	bool updated = chunkLoader->update(player->getPosition(), chunkMap, mod);
+	// Update chunk.
+	// Based on player position, check if player moved to new chunk
+	// If so, we need to load new chunks. 
+	// Else, player reamains on same chunk as now.
+	bool updated = chunkLoader->update(player->getPosition(), chunkMap, chunkWorkManager);
+	/*
 	if (updated)
 	{
-		int totalChunks = chunkMap->getSize();
-		std::cout << "[World] Total chunks in map = " << totalChunks << std::endl;
+		// Player moved to new chunk
+		//int totalChunks = chunkMap->getSize();
+		//std::cout << "[World] Total chunks in map = " << totalChunks << std::endl;
 		// Generate new mesh
-		chunkMeshGenerator->generateNewChunkMesh(chunkLoader, chunkMap, mod);
+		chunkMeshGenerator->generateNewChunkMesh(chunkLoader, chunkMap);
+	}
+	*/
+}
+
+void Voxel::World::checkUnloadedChunks()
+{
+	// Check if there is any chunk to unload
+	glm::ivec2 chunkXZ;
+	bool result  = chunkWorkManager->popFinishedQueue(chunkXZ);
+	if (result)
+	{
+		chunkMap->releaseChunk(chunkXZ);
 	}
 }
 

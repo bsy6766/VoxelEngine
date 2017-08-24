@@ -102,6 +102,8 @@ namespace Voxel
 		void updateControllerInput(const float delta);
 		// Check if chunk loader needs to be updated
 		void updateChunks();
+
+		void checkUnloadedChunks();
 	public:
 		World();
 		~World();

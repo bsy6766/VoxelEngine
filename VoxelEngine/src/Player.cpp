@@ -57,8 +57,8 @@ void Voxel::Player::initYLine()
 	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
 
 	GLfloat lines[] = {
-		position.x, -100.0f, position.z, 1, 0, 0, 1,
-		position.x, 300.0f, position.z, 1, 0, 0, 1,
+		0, -100.0f, 0, 1, 0, 0, 1,
+		0, 300.0f, 0, 1, 0, 0, 1,
 	};
 
 	// Load cube vertices
@@ -307,10 +307,11 @@ void Voxel::Player::render(Program* defaultProgram)
 
 		glm::mat4 lineMat = mat4(1.0f);
 		lineMat = glm::translate(lineMat, position);
-		lineMat = glm::rotate(lineMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
 		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.x), glm::vec3(1, 0, 0));
 		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
 
+		//defaultProgram->setUniformMat4("cameraMat", getVP(Camera::mainCamera->getProjection()));
 		defaultProgram->setUniformMat4("modelMat", lineMat);
 		glDrawArrays(GL_LINES, 0, 2);
 	}

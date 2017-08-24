@@ -47,7 +47,7 @@ namespace Voxel
 		// Generates mesh for all chunk that is only new.
 		// This functions needs to be called only chunk loader is updated.
 		// The reason why we use this function is because i
-		void generateNewChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap, const glm::ivec2& mod);
+		void generateNewChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap);
 	};
 }
 

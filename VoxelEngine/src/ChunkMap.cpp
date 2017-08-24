@@ -56,15 +56,18 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
+	if (playerPosition.x < 0) chunkX -= 1;
+	if (playerPosition.z < 0) chunkZ -= 1;
+
 	//std::cout << "[ChunkMap] Initializing chunk near player at (" << chunkX << ", " << chunkZ << ")" << std::endl;
 
 	// excluding the chunk where player stands
-	auto rdFromCenter = renderDistance - 1;
+	//auto rdFromCenter = renderDistance - 1;
 
-	int minX = chunkX - rdFromCenter;
-	int maxX = chunkX + rdFromCenter;
-	int minZ = chunkZ - rdFromCenter;
-	int maxZ = chunkZ + rdFromCenter;
+	int minX = chunkX - renderDistance;
+	int maxX = chunkX + renderDistance;
+	int minZ = chunkZ - renderDistance;
+	int maxZ = chunkZ + renderDistance;
 
 	for (int x = minX; x <= maxX; x++)
 	{
@@ -140,6 +143,7 @@ void Voxel::ChunkMap::generateRegion(const glm::ivec2& regionCoordinate)
 		for (int z = chunkZ; z < chunkZLen; z++)
 		{
 			generateChunk(x, z);
+			//generateEmptyChunk(x, z);
 		}
 	}
 }
@@ -150,6 +154,18 @@ void Voxel::ChunkMap::generateChunk(const int x, const int z)
 	if (!hasChunkAtXZ(x, z))
 	{
 		Chunk* newChunk = Chunk::create(x, z);
+		map.emplace(glm::ivec2(x, z), newChunk);
+
+		// Add to LUt
+		chunkLUT.emplace(glm::ivec2(x, z));
+	}
+}
+
+void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
+{	// for sake, just check one more time
+	if (!hasChunkAtXZ(x, z))
+	{
+		Chunk* newChunk = Chunk::createEmpty(x, z);
 		map.emplace(glm::ivec2(x, z), newChunk);
 
 		// Add to LUt
@@ -443,4 +459,20 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 	}
 
 	return nullptr;
+}
+
+void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
+{
+	if (hasChunkAtXZ(coordinate.x, coordinate.y))
+	{
+		auto chunk = getChunkAtXZ(coordinate.x, coordinate.y);
+		if (chunk)
+		{
+			chunk->releaseMesh();
+			delete chunk;
+
+			map.erase(coordinate);
+			chunkLUT.erase(coordinate);
+		}
+	}
 }

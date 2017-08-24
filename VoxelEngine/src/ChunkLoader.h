@@ -10,6 +10,7 @@ namespace Voxel
 	// Forward everything!
 	class Chunk;
 	class ChunkMap;
+	class ChunkWorkManager;
 
 	/**
 	*	@class ChunkLoader
@@ -35,7 +36,7 @@ namespace Voxel
 		std::vector<glm::vec2> init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
 
 		// Check if player moved to another chunk. If so, return true.
-		bool update(const glm::vec3& playerPosition, ChunkMap* map, glm::ivec2& mod);
+		bool update(const glm::vec3& playerPosition, ChunkMap* map, ChunkWorkManager* workManager);
 		// find visible chunk
 		void findVisibleChunk();
 

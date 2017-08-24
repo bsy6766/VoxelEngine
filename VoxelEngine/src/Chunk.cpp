@@ -12,7 +12,12 @@ Chunk::Chunk()
 	, worldPosition(0.0f)
 	, chunkMesh(nullptr)
 	, active(false)
-{}
+	, visible(false)
+	, timestamp(0)
+{
+	chunkMesh = new ChunkMesh();
+	generated.store(false);
+}
 
 Chunk::~Chunk()
 {
@@ -48,6 +53,11 @@ Chunk* Chunk::create(const int x, const int z)
 	}
 }
 
+Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
+{
+	return new Chunk();
+}
+
 void Voxel::Chunk::unload()
 {
 	if (chunkMesh)
@@ -59,7 +69,7 @@ void Voxel::Chunk::unload()
 
 bool Chunk::init(const int x, const int z)
 {
-	auto start = Utility::Time::now();
+	//auto start = Utility::Time::now();
 	position = glm::ivec3(x, 0, z);
 
 	// calculate position. Size of each block is 1.0f. There are total 16 x 16 (256) blocks in XZ space.
@@ -97,12 +107,10 @@ bool Chunk::init(const int x, const int z)
 	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
 	border.max = glm::vec3(worldPosition.x + borderDistance, 0, worldPosition.z + borderDistance);
 
-	chunkMesh = new ChunkMesh();
-
 	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
 
-	auto end = Utility::Time::now();
-	std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+	//auto end = Utility::Time::now();
+	//std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 	return true;
 }
 
@@ -189,11 +197,16 @@ void Voxel::Chunk::releaseMesh()
 	if (chunkMesh)
 	{
 		// delete mesh
-		chunkMesh->release();
+		chunkMesh->releaseVAO();
 	}
 }
 
 ChunkMesh * Voxel::Chunk::getMesh()
 {
 	return chunkMesh;
+}
+
+bool Voxel::Chunk::isGenerated()
+{
+	return generated.load();
 }

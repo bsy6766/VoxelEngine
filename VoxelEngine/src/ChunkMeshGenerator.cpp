@@ -237,7 +237,7 @@ void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, C
 	//std::cout << "[ChunkMeshGenerator] Done. " << std::endl;
 }
 
-void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, ChunkMap * chunkMap, const glm::ivec2 & mod)
+void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, ChunkMap * chunkMap)
 {
 	if (chunkLoader == nullptr) return;
 	if (chunkMap == nullptr) return;
