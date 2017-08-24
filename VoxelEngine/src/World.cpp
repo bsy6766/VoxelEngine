@@ -51,7 +51,7 @@ World::World()
 	, debugConsole(nullptr)
 {
 	// Set clear color
-	Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
+	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
 
 	// init instances
 	init();
