@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ChunkMesh.h>
 #include <ChunkUtil.h>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -58,6 +59,7 @@ void Voxel::Chunk::unload()
 
 bool Chunk::init(const int x, const int z)
 {
+	auto start = Utility::Time::now();
 	position = glm::ivec3(x, 0, z);
 
 	// calculate position. Size of each block is 1.0f. There are total 16 x 16 (256) blocks in XZ space.
@@ -99,6 +101,8 @@ bool Chunk::init(const int x, const int z)
 
 	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
 
+	auto end = Utility::Time::now();
+	std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 	return true;
 }
 

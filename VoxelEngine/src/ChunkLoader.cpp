@@ -6,7 +6,6 @@
 #include <Camera.h>
 #include <Frustum.h>
 #include <Utility.h>
-#include <algorithm>
 
 using namespace Voxel;
 
@@ -74,9 +73,6 @@ std::vector<glm::vec2> Voxel::ChunkLoader::init(const glm::vec3 & playerPosition
 			}
 		}
 	}
-
-	glm::vec2 p = chunkCoordinates.front();
-	std::sort(chunkCoordinates.begin(), chunkCoordinates.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
 	return chunkCoordinates;
 }
