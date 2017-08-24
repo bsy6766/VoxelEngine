@@ -260,7 +260,7 @@ void World::createPlayer()
 	float randX = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
-	player->init(glm::vec3(randX, 80.0f, randZ));
+	player->init(glm::vec3(randX, 81.0f, randZ));
 	//player->setPosition(glm::vec3(0));
 	// Todo: load player's last direction
 	

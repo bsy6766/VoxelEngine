@@ -34,6 +34,8 @@ ChunkMesh::~ChunkMesh()
 
 void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices)
 {
+	std::unique_lock<std::mutex> lock(meshMutex);
+
 	// clear vectors
 	this->vertices.clear();
 	this->colors.clear();
@@ -137,10 +139,14 @@ void Voxel::ChunkMesh::release()
 	cbo = 0;
 	ibo = 0;
 
-	vertices.clear();
-	colors.clear();
-	indices.clear();
-	indicesSize = 0;
+	{
+		std::unique_lock<std::mutex> lock(meshMutex);
+
+		vertices.clear();
+		colors.clear();
+		indices.clear();
+		indicesSize = 0;
+	}
 
 	bufferReady.store(false);
 	bufferLoaded.store(false);

@@ -5,6 +5,7 @@
 #include <GL\glew.h>
 #include <glm\glm.hpp>
 #include <atomic>
+#include <mutex>
 
 namespace Voxel
 {
@@ -21,6 +22,9 @@ namespace Voxel
 		std::vector<unsigned int> indices;
 
 		int indicesSize;
+
+		// Mutex for accessing chunk mesh's vertices
+		std::mutex meshMutex;
 
 		// Atomic bool. True if buffers are loaded
 		std::atomic<bool> bufferReady;
