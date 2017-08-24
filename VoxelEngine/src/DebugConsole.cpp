@@ -52,7 +52,7 @@ void Voxel::DebugConsole::init()
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 
 	debugCanvas->addText("staticLabels", staticLabels, 0);
-	
+
 	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
 	fpsNumber = UI::Text::create("9999", glm::vec2(41.0f, -5.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 6);
 	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f));
@@ -61,26 +61,26 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addText("fpsNumber", fpsNumber, 0);
 
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
-	resolutionNumber = UI::Text::create(std::to_string(resolution.x) + ", " + std::to_string(resolution.y),  glm::vec2(101.0f, -17.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 13);
+	resolutionNumber = UI::Text::create(std::to_string(resolution.x) + ", " + std::to_string(resolution.y), glm::vec2(101.0f, -19.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 13);
 	resolutionNumber->setPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setVisibility(false);
 	debugCanvas->addText("resolutionNumber", resolutionNumber, 0);
 
 	auto vsync = Application::getInstance().getGLView()->isVsyncEnabled();
-	vsyncMode = UI::Text::create("False", glm::vec2(65.0f, -29.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 6);
+	vsyncMode = UI::Text::create("False", glm::vec2(65.0f, -33.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 6);
 	vsyncMode->setPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
 	debugCanvas->addText("vsyncMode", vsyncMode, 0);
 
-	playerPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(141.0f, -57.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	playerPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(141.0f, -65.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
 	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
 
-	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(163.0f, -69.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
+	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(163.0f, -79.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
