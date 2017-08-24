@@ -391,6 +391,7 @@ void World::update(const float delta)
 		if (hit)
 		{
 			player->setLookingBlock(hit);
+			debugConsole->updatePlayerLookingAt(glm::ivec3(hit->getWorldPosition()));
 		}
 		else
 		{

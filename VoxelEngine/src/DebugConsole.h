@@ -33,6 +33,7 @@ namespace Voxel
 		UI::Text* cameraRotation;
 
 		UI::Text* playerPosition;
+		UI::Text* playerLookingAt;
 
 		UI::Image* commandInputField;
 	public:
@@ -57,6 +58,7 @@ namespace Voxel
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);
 		void updatePlayerPosition(const glm::vec3& position);
+		void updatePlayerLookingAt(const glm::ivec3& lookingAt);
 		void updateMousePosition();
 	};
 }
