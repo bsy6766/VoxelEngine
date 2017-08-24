@@ -11,7 +11,7 @@ namespace Voxel
 		const static int CHUNK_SECTION_WIDTH = 16;
 		const static int CHUNK_SECTION_LENGTH = 16;
 		const static unsigned int TOTAL_BLOCKS = 4096;
-		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 4;
+		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 16;
 		const static float CHUNK_BORDER_SIZE = 16.0f;
 		const static int SPAWN_CHUNK_DISTANCE = 2;
 		const static int REGION_WIDTH = 4;

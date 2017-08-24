@@ -55,7 +55,7 @@ bool Voxel::ChunkWorkManager::popFinishedQueue(glm::ivec2& coordinate)
 	{
 		coordinate = unloadFinishedQueue.front();
 		unloadFinishedQueue.pop_front();
-		std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload" << std::endl;
+		//std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload" << std::endl;
 		return true;
 	}
 
@@ -107,7 +107,7 @@ void Voxel::ChunkWorkManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunk
 					auto chunkXZ = unloadQueue.front();
 					unloadQueue.pop_front();
 
-					std::cout << "Thraed #" << std::this_thread::get_id() << " has (" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
+					//std::cout << "Thraed #" << std::this_thread::get_id() << " has (" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
 
 					bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
 					if (hasChunk)
@@ -137,7 +137,7 @@ void Voxel::ChunkWorkManager::buildMesh(ChunkMap* map, ChunkMeshGenerator* chunk
 						// There is chunk to load
 						auto chunkXZ = loadQueue.front();
 						loadQueue.pop_front();
-						std::cout << "Thraed #" << std::this_thread::get_id() << " has (" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
+						//std::cout << "Thraed #" << std::this_thread::get_id() << " has (" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
 
 						// There must be a chunk. Chunk loader creates empty chunk.
 						bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);

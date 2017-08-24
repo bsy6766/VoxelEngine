@@ -250,7 +250,46 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 				// Get z
 				int z = activeChunks.front().front()->position.z - 1;
+				//std::cout << "new z = " << z << std::endl;
 
+				// Iterate through active chunks and unload all the chunks in front of sub list
+				for (auto& chunksZ : activeChunks)
+				{
+					chunksZ.back()->setActive(false);
+					chunksZ.back()->setVisibility(false);
+					auto pos = chunksZ.back()->getPosition();
+					//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+					workManager->addUnload(glm::ivec2(pos.x, pos.z));
+					chunksZ.pop_back();
+				}
+
+				// Iterate through active chunks and add generate new chunk
+				for (auto& chunksZ : activeChunks)
+				{
+					int curX = chunksZ.front()->position.x;
+					if (!map->hasChunkAtXZ(curX, z))
+					{
+						// map doesn't have chunk. create empty
+						map->generateChunk(curX, z);
+					}
+					// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
+				}
+
+				for (auto& chunksZ : activeChunks)
+				{
+					int curX = chunksZ.front()->position.x;
+
+					// get chunk
+					auto newChunk = map->getChunkAtXZ(curX, z);
+					newChunk->setActive(true);
+					newChunk->setVisibility(true);
+					chunksZ.push_front(newChunk);
+					auto pos = chunksZ.front()->getPosition();
+					//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+					workManager->addLoad(glm::ivec2(pos.x, pos.z));
+				}
+
+				/*
 				// iterate through list and pop all last chunks. then again, release mesh the new last chunks to update. Also release mesh on front here
 				for (auto& chunksZ : activeChunks)
 				{
@@ -282,6 +321,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 					chunksZ.push_front(map->getChunkAtXZ(x, z));
 					chunksZ.front()->setActive(true);
 				}
+				*/
 			}
 			else
 			{
@@ -290,7 +330,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 				// Get z. This is the new z coordinate that we will add to active chunk list
 				int z = activeChunks.front().back()->position.z + 1;
-				std::cout << "new z = " << z << std::endl;
+				//std::cout << "new z = " << z << std::endl;
 
 				// Iterate through active chunks and unload all the chunks in front of sub list
 				for (auto& chunksZ : activeChunks)
@@ -298,12 +338,12 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 					chunksZ.front()->setActive(false);
 					chunksZ.front()->setVisibility(false);
 					auto pos = chunksZ.front()->getPosition();
-					std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+					//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
 					workManager->addUnload(glm::ivec2(pos.x, pos.z));
 					chunksZ.pop_front();
 				}
 
-				// Iterate through active chunks and add new chunks back of the sub list
+				// Iterate through active chunks and add generate new chunk.
 				for (auto& chunksZ : activeChunks)
 				{
 					int curX = chunksZ.front()->position.x;
@@ -323,9 +363,9 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 					auto newChunk = map->getChunkAtXZ(curX, z);
 					newChunk->setActive(true);
 					newChunk->setVisibility(true);
-					chunksZ.push_back(map->getChunkAtXZ(curX, z));
+					chunksZ.push_back(newChunk);
 					auto pos = chunksZ.back()->getPosition();
-					std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+					//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
 					workManager->addLoad(glm::ivec2(pos.x, pos.z));
 				}
 

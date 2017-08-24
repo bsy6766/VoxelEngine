@@ -51,6 +51,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 
 void Voxel::ChunkMesh::loadBuffer()
 {
+	assert(vao == 0);
 	auto start = Utility::Time::now();
 	// 1. VAO
 	// Generate vertex array object
@@ -110,7 +111,7 @@ void Voxel::ChunkMesh::loadBuffer()
 
 	bufferLoaded.store(true);
 	auto end = Utility::Time::now();
-	std::cout << "Loading buffer Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+	//std::cout << "Loading buffer Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
 void ChunkMesh::bind()

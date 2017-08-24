@@ -300,7 +300,7 @@ void World::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	chunkMap->initChunkNearPlayer(playerPosition, 2);
+	chunkMap->initChunkNearPlayer(playerPosition, 8);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -313,7 +313,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 2;
+	const int renderDistance = 8;
 
 	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance);
 
@@ -364,7 +364,7 @@ void World::update(const float delta)
 		// If player either move or rotated, update frustum
 		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
 		// After updating frustum, run frustum culling to find visible chunk
-		//chunkLoader->findVisibleChunk();
+		chunkLoader->findVisibleChunk();
 		// Also update raycast
 		Block* hit = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
 		if (hit)
