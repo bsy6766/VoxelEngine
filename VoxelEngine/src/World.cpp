@@ -820,11 +820,13 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
+	/*
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1))
 	{
 		std::cout << "prev pos (" << mouseX << ", " << mouseY << ")" << std::endl;
 		std::cout << "Cursor pos (" << x << ", " << y << ")" << std::endl;
 	}
+	*/
 
 	double dx = x - mouseX;
 	double dy = y - mouseY;
