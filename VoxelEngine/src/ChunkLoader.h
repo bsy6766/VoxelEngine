@@ -33,12 +33,14 @@ namespace Voxel
 
 		// Initialize and generate active chunk list based on player position and render distance.
 		// Returns chunk coordinates that need mesh to generate.
-		std::vector<glm::vec2> init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance);
+		std::vector<glm::vec2> init(const glm::vec3& playerPosition, ChunkMap* map, const int renderDistance, const double curTime);
 
 		// Check if player moved to another chunk. If so, return true.
-		bool update(const glm::vec3& playerPosition, ChunkMap* map, ChunkWorkManager* workManager);
-		// find visible chunk
-		void findVisibleChunk();
+		bool update(const glm::vec3& playerPosition, ChunkMap* map, ChunkWorkManager* workManager, const double curTime);
+		// find visible chunk. Returns the number of chunk that is visible
+		int findVisibleChunk();
+		// Get size
+		int getActiveChunksCount();
 
 		// Render active chunks
 		void render();

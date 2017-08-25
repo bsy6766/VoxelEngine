@@ -2,7 +2,6 @@
 #include <Chunk.h>
 #include <Block.h>
 #include <ChunkSection.h>
-#include <ChunkUtil.h>
 #include <iostream>
 #include <Utility.h>
 
@@ -162,7 +161,8 @@ void Voxel::ChunkMap::generateChunk(const int x, const int z)
 }
 
 void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
-{	// for sake, just check one more time
+{	
+	// for sake, just check one more time
 	if (!hasChunkAtXZ(x, z))
 	{
 		Chunk* newChunk = Chunk::createEmpty(x, z);
@@ -461,6 +461,15 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 	return nullptr;
 }
 
+void Voxel::ChunkMap::moveChunkToUnloadMap(const glm::ivec2 & coordinate)
+{
+	auto chunk = getChunkAtXZ(coordinate.x, coordinate.y);
+	map.erase(coordinate);
+	chunkLUT.erase(coordinate);
+
+	unloadList.push_back(chunk);
+}
+
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
 {
 	if (hasChunkAtXZ(coordinate.x, coordinate.y))
@@ -473,6 +482,8 @@ void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
 
 			map.erase(coordinate);
 			chunkLUT.erase(coordinate);
+
+			//std::cout << "Removing chunk (" << coordinate.x << ", " << coordinate.y << ")" << std::endl;
 		}
 	}
 }

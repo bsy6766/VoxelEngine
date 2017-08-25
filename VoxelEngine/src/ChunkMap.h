@@ -4,26 +4,14 @@
 #include <glm\glm.hpp>
 #include <unordered_map>
 #include <unordered_set>
+#include <ChunkUtil.h>
+#include <mutex>
 
 namespace Voxel
 {
 	// forward
 	class Chunk;
 	class Block;
-
-	// Hash for glm ivec2
-	struct KeyFuncs
-	{
-		size_t operator()(const glm::ivec2& k)const
-		{
-			return std::hash<int>()(k.x) ^ std::hash<int>()(k.y);
-		}
-
-		bool operator()(const glm::ivec2& a, const glm::ivec2& b)const
-		{
-			return a.x == b.x && a.y == b.y;
-		}
-	};
 
 	typedef std::unordered_map<glm::ivec2, Chunk*, KeyFuncs, KeyFuncs> ChunkUnorderedMap;
 
@@ -40,7 +28,14 @@ namespace Voxel
 	class ChunkMap
 	{
 	private:
+		// chunk map
 		ChunkUnorderedMap map;
+		// mutex for modifying map;
+		std::mutex mapMutex;
+		// Chunks that are ready to get unloaded.
+		std::list<Chunk*> unloadList;
+		// mutex for unload list
+		std::mutex listMutex;
 
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
@@ -78,6 +73,7 @@ namespace Voxel
 		//void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
 
+		void moveChunkToUnloadMap(const glm::ivec2& coordinate);
 		void releaseChunk(const glm::ivec2& coordinate);
 	};
 }

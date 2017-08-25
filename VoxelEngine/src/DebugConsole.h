@@ -35,6 +35,8 @@ namespace Voxel
 		UI::Text* playerPosition;
 		UI::Text* playerLookingAt;
 
+		UI::Text* chunkNumbers;
+
 		UI::Image* commandInputField;
 	public:
 		DebugConsole();
@@ -59,6 +61,7 @@ namespace Voxel
 		void updateVsync(bool vsync);
 		void updatePlayerPosition(const glm::vec3& position);
 		void updatePlayerLookingAt(const glm::ivec3& lookingAt);
+		void updateChunkNumbers(const int visible, const int active, const int total);
 		void updateMousePosition();
 	};
 }

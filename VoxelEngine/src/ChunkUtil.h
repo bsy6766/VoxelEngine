@@ -37,6 +37,20 @@ namespace Voxel
 			return glm::ivec3(position / 16.0f);
 		}
 	}
+
+	// Hash for glm ivec2
+	struct KeyFuncs
+	{
+		size_t operator()(const glm::ivec2& k)const
+		{
+			return std::hash<int>()(k.x) ^ std::hash<int>()(k.y);
+		}
+
+		bool operator()(const glm::ivec2& a, const glm::ivec2& b)const
+		{
+			return a.x == b.x && a.y == b.y;
+		}
+	};
 }
 
 #endif

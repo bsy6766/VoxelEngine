@@ -43,19 +43,30 @@ Chunk* Chunk::create(const int x, const int z)
 	//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
 	if (newChunk->init(x, z))
 	{
-		//std::cout << "[Chunk] Done.\n" << std::endl;
-		return newChunk;
+		if (newChunk->generate())
+		{
+			//std::cout << "[Chunk] Done.\n" << std::endl;
+			return newChunk;
+		}
 	}
-	else
-	{
-		delete newChunk;
-		return nullptr;
-	}
+	
+	// Failed
+	delete newChunk;
+	return nullptr;
 }
 
 Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 {
-	return new Chunk();
+	Chunk* newChunk = new Chunk();
+	if (newChunk->init(x, z))
+	{
+		//std::cout << "[Chunk] Done.\n" << std::endl;
+		return newChunk;
+	}
+
+	// Failed
+	delete newChunk;
+	return nullptr;
 }
 
 void Voxel::Chunk::unload()
@@ -78,8 +89,23 @@ bool Chunk::init(const int x, const int z)
 	worldPosition.z = 16.0f * (static_cast<float>(z) + 0.5f);
 
 	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
-	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 
+	// init border. worldPosition works as center position of border
+	float borderDistance = (Constant::CHUNK_BORDER_SIZE * 0.5f) - 0.5f;
+	
+	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
+	border.max = glm::vec3(worldPosition.x + borderDistance, Constant::TOTAL_CHUNK_SECTION_PER_CHUNK * Constant::CHUNK_SECTION_HEIGHT, worldPosition.z + borderDistance);
+
+	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
+
+	//auto end = Utility::Time::now();
+	//std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+	return true;
+}
+
+bool Voxel::Chunk::generate()
+{	
+	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
@@ -89,28 +115,20 @@ bool Chunk::init(const int x, const int z)
 		}
 		else
 		{
-			auto newChucnkSection = ChunkSection::create(x, i, z, worldPosition);
+			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);
 			}
 			else
 			{
-				return false;
+				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
 			}
 		}
 	}
 
-	// init border. worldPosition works as center position of border
-	float borderDistance = (Constant::CHUNK_BORDER_SIZE * 0.5f) - 0.05f;
-	
-	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
-	border.max = glm::vec3(worldPosition.x + borderDistance, 0, worldPosition.z + borderDistance);
+	generated.store(true);
 
-	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
-
-	//auto end = Utility::Time::now();
-	//std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 	return true;
 }
 
@@ -209,4 +227,15 @@ ChunkMesh * Voxel::Chunk::getMesh()
 bool Voxel::Chunk::isGenerated()
 {
 	return generated.load();
+}
+
+bool Voxel::Chunk::isPointInBorder(const glm::vec3 & point)
+{
+	// For now, only check x, z
+	return (border.min.x < point.x && point.x < border.max.x) && (border.min.z < point.z && point.z < border.max.z);
+}
+
+void Voxel::Chunk::updateTimestamp(const double timestamp)
+{
+	this->timestamp = timestamp;
 }

@@ -183,11 +183,12 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 			}
 		}
 		auto chunkSectionEnd = Utility::Time::now();
-
 		//std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
 
 		//std::cout << "[ChunkMeshGenerator] -> Done." << std::endl;
 	}
+
+	std::cout << "[ChunkMeshGenerator] finished building mesh (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")" << std::endl;
 
 	//auto chunkEnd = Utility::Time::now();
 	//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;

@@ -37,13 +37,8 @@ namespace Voxel
 	private:
 		// Store default program
 		Program* defaultProgram;
-
-		// For camera frustum
-		GLuint vao;
-		GLuint vbo;
-		GLuint cbo;
-		void initDebugCamerafrustum();
-
+		
+		// For looking at chube
 		GLuint cvao;
 		GLuint cvbo;
 		GLuint ccbo;

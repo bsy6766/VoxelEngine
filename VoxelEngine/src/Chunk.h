@@ -62,6 +62,9 @@ namespace Voxel
 		static Chunk* create(const int x, const int z);
 		static Chunk* createEmpty(const int x, const int z);
 
+		// generate terrains
+		bool generate();
+
 		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
 		void unload();
 
@@ -89,6 +92,9 @@ namespace Voxel
 		ChunkMesh* getMesh();
 
 		bool isGenerated();
+
+		bool isPointInBorder(const glm::vec3& point);
+		void updateTimestamp(const double timestamp);
 	};
 
 }
