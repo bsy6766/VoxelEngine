@@ -3,6 +3,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <iostream>
 #include <Frustum.h>
+#include <ChunkUtil.h>
 
 using namespace Voxel;
 using namespace glm;
@@ -48,7 +49,7 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 	// Refernce: http://wiki.panotools.org/Field_of_View
 	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * newCamera->aspect));
 
-	newCamera->initFrustumPlanes();
+	//newCamera->initFrustumPlanes();
 
 	newCamera->curMatrix = newCamera->getMatrix();
 
@@ -65,20 +66,23 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 	return newCamera;
 }
 
+// use fovx to calculate points.
+/*
+		        *
+		       /|\
+		      / | \
+		    a/__|__\b
+		    /   |   \
+		   /	|    \
+		  / 	|     \
+		c/______|______\d
+				|e
+*/
+
+/*
 void Voxel::Camera::initFrustumPlanes()
 {
-	// use fovx to calculate points.
-	/*
-								*
-							   /|\
-							  / | \
-							a/__|__\b
-							/   |   \
-						   /	|    \
-						  / 	|     \
-						c/______|______\d
-								|e
-	*/
+
 
 	auto tanValue = tan(glm::radians(fovx * 0.5f));
 	glm::vec2 b = glm::vec2(tanValue * nears, nears);
@@ -118,13 +122,15 @@ void Voxel::Camera::initFrustumPlanes()
 	std::cout << "[Camera] Left normal: (" << leftNormal.x << ", " << leftNormal.y << ")" << std::endl;
 	std::cout << "[Camera] Right normal: (" << rightNormal.x << ", " << rightNormal.y << ")" << std::endl;
 }
+*/
 
-void Voxel::Camera::updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation)
+void Voxel::Camera::updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation, const int renderDistance)
 {
-	auto MVP = glm::translate(perspective(glm::radians(fovy), aspect, nears, 256.0f) * playerOrientation, -playerPosition);
+	auto MVP = glm::translate(perspective(glm::radians(fovy), aspect, nears, static_cast<float>(renderDistance) * Constant::CHUNK_BORDER_SIZE) * playerOrientation, -playerPosition);
 	frustum->update(MVP);
 }
 
+/*
 void Voxel::Camera::updateFrustumPlane(const vec3 & playerPosition, const vec3 & playerRotation)
 {
 	auto yAngleShift = playerRotation.y - 180.0f;
@@ -135,12 +141,6 @@ void Voxel::Camera::updateFrustumPlane(const vec3 & playerPosition, const vec3 &
 	//auto eOrigin = glm::vec3(0, 0, fars);
 
 	auto radian = glm::radians(-yAngleShift);
-
-	/*
-	glm::vec3 e = glm::rotateY(eOrigin, radian);
-	e.x += playerPosition.x;
-	e.y += playerPosition.y;
-	*/
 
 	auto tanValue = tan(glm::radians(fovx * 0.5f));
 	glm::vec3 b = glm::vec3(tanValue * nears, 0, nears);
@@ -186,19 +186,18 @@ void Voxel::Camera::updateFrustumPlane(const vec3 & playerPosition, const vec3 &
 	glm::vec3 rightN3 = glm::rotateY(glm::vec3(rightNormal.x, 0, rightNormal.y), radian);
 	rightNormal = glm::vec2(rightN3.x, rightN3.z);
 
-	/*
-	std::cout << "[Camera] Frustum info" << std::endl;
-	std::cout << "[Camera] Near plane: (" << nearPlane.x << ", " << nearPlane.y << "), (" << nearPlane.z << ", " << nearPlane.w << ")" << std::endl;
-	std::cout << "[Camera] Far plane: (" << farPlane.x << ", " << farPlane.y << "), (" << farPlane.z << ", " << farPlane.w << ")" << std::endl;
-	std::cout << "[Camera] Left plane: (" << leftPlane.x << ", " << leftPlane.y << "), (" << leftPlane.z << ", " << leftPlane.w << ")" << std::endl;
-	std::cout << "[Camera] Right plane: (" << rightPlane.x << ", " << rightPlane.y << "), (" << rightPlane.z << ", " << rightPlane.w << ")" << std::endl;
-	std::cout << "[Camera] Near normal: (" << nearNormal.x << ", " << nearNormal.y << ")" << std::endl;
-	std::cout << "[Camera] Far normal: (" << farNormal.x << ", " << farNormal.y << ")" << std::endl;
-	std::cout << "[Camera] Left normal: (" << leftNormal.x << ", " << leftNormal.y << ")" << std::endl;
-	std::cout << "[Camera] Right normal: (" << rightNormal.x << ", " << rightNormal.y << ")" << std::endl;
-	*/
+	//std::cout << "[Camera] Frustum info" << std::endl;
+	//std::cout << "[Camera] Near plane: (" << nearPlane.x << ", " << nearPlane.y << "), (" << nearPlane.z << ", " << nearPlane.w << ")" << std::endl;
+	//std::cout << "[Camera] Far plane: (" << farPlane.x << ", " << farPlane.y << "), (" << farPlane.z << ", " << farPlane.w << ")" << std::endl;
+	//std::cout << "[Camera] Left plane: (" << leftPlane.x << ", " << leftPlane.y << "), (" << leftPlane.z << ", " << leftPlane.w << ")" << std::endl;
+	//std::cout << "[Camera] Right plane: (" << rightPlane.x << ", " << rightPlane.y << "), (" << rightPlane.z << ", " << rightPlane.w << ")" << std::endl;
+	//std::cout << "[Camera] Near normal: (" << nearNormal.x << ", " << nearNormal.y << ")" << std::endl;
+	//std::cout << "[Camera] Far normal: (" << farNormal.x << ", " << farNormal.y << ")" << std::endl;
+	//std::cout << "[Camera] Left normal: (" << leftNormal.x << ", " << leftNormal.y << ")" << std::endl;
+	//std::cout << "[Camera] Right normal: (" << rightNormal.x << ", " << rightNormal.y << ")" << std::endl;
 
 }
+*/
 
 Frustum * Voxel::Camera::getFrustum()
 {

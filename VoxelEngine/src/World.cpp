@@ -278,7 +278,7 @@ void World::createPlayer()
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
-	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
 
 	// for debug
 	player->initYLine();
@@ -301,7 +301,7 @@ void World::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	chunkMap->initChunkNearPlayer(playerPosition, 8);
+	chunkMap->initChunkNearPlayer(playerPosition, 16);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -314,7 +314,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 8;
+	const int renderDistance = 16;
 
 	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance, glfwGetTime());
 
@@ -368,7 +368,7 @@ void World::update(const float delta)
 	if (playerMoved || playerRotated)
 	{
 		// If player either move or rotated, update frustum
-		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation());
+		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
 		// Also update raycast
 		Block* hit = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
 		if (hit)

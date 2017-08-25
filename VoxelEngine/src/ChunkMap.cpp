@@ -105,19 +105,16 @@ void ChunkMap::clear()
 	map.clear();
 }
 
-ChunkUnorderedMap & Voxel::ChunkMap::getMapRef()
-{
-	return map;
-}
-
 bool Voxel::ChunkMap::hasChunkAtXZ(int x, int z)
 {
+	//std::unique_lock<std::mutex> lock(mapMutex);
 	auto v2 = glm::ivec2(x, z);
 	return chunkLUT.find(v2) != chunkLUT.end();
 }
 
 Chunk * Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 {
+	//std::unique_lock<std::mutex> lock(mapMutex);
 	auto find_it = map.find(glm::ivec2(x, z));
 	if (find_it == map.end())
 	{
@@ -165,6 +162,7 @@ void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
 	// for sake, just check one more time
 	if (!hasChunkAtXZ(x, z))
 	{
+		//std::unique_lock<std::mutex> lock(mapMutex);
 		Chunk* newChunk = Chunk::createEmpty(x, z);
 		map.emplace(glm::ivec2(x, z), newChunk);
 
@@ -241,8 +239,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 	auto find_it = map.find(glm::ivec2(chunkX, chunkZ));
 	if (find_it == map.end())
 	{
-		// Chunk hasn't generated yet. 
-		// Todo: generate new chunk? for block query that is out of render distance?
+		// There is no chunk generated. 
 		return nullptr;
 	}
 	else
@@ -270,11 +267,6 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 			return nullptr;
 		}
 	}
-}
-
-bool Voxel::ChunkMap::attempChunkLoad(int x, int z)
-{
-	return false;
 }
 
 Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
@@ -344,15 +336,6 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 	}
 
 	return nullptr;
-}
-
-void Voxel::ChunkMap::moveChunkToUnloadMap(const glm::ivec2 & coordinate)
-{
-	auto chunk = getChunkAtXZ(coordinate.x, coordinate.y);
-	map.erase(coordinate);
-	chunkLUT.erase(coordinate);
-
-	unloadList.push_back(chunk);
 }
 
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)

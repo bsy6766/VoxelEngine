@@ -48,7 +48,7 @@ namespace Voxel
 		mat4 curMatrix;
 
 		Frustum* frustum;
-		void initFrustumPlanes();
+		//void initFrustumPlanes();
 
 		void wrapAngle();
 		void wrapAngle(float& axis);
@@ -93,9 +93,9 @@ namespace Voxel
 		vec2 leftNormal;
 		vec2 rightNormal;
 
-		void updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation);
+		void updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation, const int renderDistance);
 
-		void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
+		//void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
 		Frustum* getFrustum();
 
 		glm::vec3 getScreenSpacePos();

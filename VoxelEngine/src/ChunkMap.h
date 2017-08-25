@@ -50,8 +50,6 @@ namespace Voxel
 		// Clears all the chunk in the map
 		void clear();
 
-		ChunkUnorderedMap& getMapRef();
-
 		bool hasChunkAtXZ(int x, int z);
 		Chunk* getChunkAtXZ(int x, int z);
 
@@ -61,15 +59,11 @@ namespace Voxel
 		unsigned int getSize();
 
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
-
-		// Attemp to laod chunk in map. If map already has chunk, 
-		bool attempChunkLoad(int x, int z);
-
+		
 		// From rayStart to rayEnd, visit all blocks
 		//void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
 
-		void moveChunkToUnloadMap(const glm::ivec2& coordinate);
 		void releaseChunk(const glm::ivec2& coordinate);
 	};
 }

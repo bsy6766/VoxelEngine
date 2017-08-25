@@ -117,7 +117,11 @@ void Voxel::ChunkWorkManager::popFinishedAndNotify()
 	// Scope lock
 	std::unique_lock<std::mutex> lock(finishedQueueMutex);
 
-	unloadFinishedQueue.pop_front();
+	if (!unloadFinishedQueue.empty())
+	{
+		unloadFinishedQueue.pop_front();
+	}
+
 	if (unloadFinishedQueue.empty())
 	{
 		cv.notify_one();
@@ -130,6 +134,17 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
 	while (running)
 	{
+		{
+			// Scope lock
+			std::unique_lock<std::mutex> fLock(finishedQueueMutex);
+			while (!unloadFinishedQueue.empty())
+			{
+				cv.wait(fLock);
+			}
+
+			//std::cout << "No need to wait!" << std::endl;
+		}
+
 		glm::ivec2 chunkXZ;
 		int flag = 0;
 
@@ -149,17 +164,6 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 			{
 				// quit
 				break;
-			}
-
-			{
-				// Scope lock
-				std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-				while (!unloadFinishedQueue.empty())
-				{
-					cv.wait(fLock);
-				}
-
-				//std::cout << "No need to wait!" << std::endl;
 			}
 
 
@@ -196,7 +200,6 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 						{
 							// Clear buffer. 
 							mesh->clearBuffers();
-							//map->moveChunkToUnloadMap(chunkXZ);
 
 							// Let main thread to relase it
 							addFinishedQueue(chunkXZ);
@@ -287,10 +290,22 @@ void Voxel::ChunkWorkManager::joinThread()
 		//std::cout << "Waiting to thread join..." << std::endl;
 		// Scope lock
 		std::unique_lock<std::mutex> lock(queueMutex);
-		if (meshBuilderThread.joinable())
-		{
-			std::cout << "joining thread #" << meshBuilderThread.get_id() << std::endl;
-			meshBuilderThread.join();
-		}
+		loadQueue.clear();
+		unloadQueue.clear();
+	}
+
+	cv.notify_one();
+
+	{
+		std::unique_lock<std::mutex> lock(finishedQueueMutex);
+		unloadFinishedQueue.clear();
+	}
+
+	cv.notify_one();
+
+	if (meshBuilderThread.joinable())
+	{
+		std::cout << "joining thread #" << meshBuilderThread.get_id() << std::endl;
+		meshBuilderThread.join();
 	}
 }
