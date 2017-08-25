@@ -30,7 +30,7 @@ void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate)
 
 void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates)
 {
-	auto start = Utility::Time::now();
+	//auto start = Utility::Time::now();
 	// Scope lock
 	std::unique_lock<std::mutex> lock(queueMutex);
 
@@ -39,8 +39,8 @@ void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates
 		loadQueue.push_back(xz);
 	}
 
-	auto end = Utility::Time::now();
-	std::cout << "addLoad() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+	//auto end = Utility::Time::now();
+	//std::cout << "addLoad() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 
 	//cv.notify_one();
 }
@@ -58,7 +58,7 @@ void Voxel::ChunkWorkManager::addUnload(const glm::ivec2 & coordinate)
 
 void Voxel::ChunkWorkManager::addUnload(const std::vector<glm::ivec2>& coordinates)
 {
-	auto start = Utility::Time::now();
+	//auto start = Utility::Time::now();
 	// Scope lock
 	std::unique_lock<std::mutex> lock(queueMutex);
 
@@ -83,8 +83,8 @@ void Voxel::ChunkWorkManager::addUnload(const std::vector<glm::ivec2>& coordinat
 		}
 	}
 
-	auto end = Utility::Time::now();
-	std::cout << "addUnload() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+	//auto end = Utility::Time::now();
+	//std::cout << "addUnload() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 
 	//cv.notify_one();
 }
@@ -105,7 +105,7 @@ bool Voxel::ChunkWorkManager::getFinishedFront(glm::ivec2& coordinate)
 	if (!unloadFinishedQueue.empty())
 	{
 		coordinate = unloadFinishedQueue.front();
-		std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload" << std::endl;
+		//std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload" << std::endl;
 		return true;
 	}
 
@@ -143,7 +143,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 				cv.wait(lock);
 			}
 
-			std::cout << "There is job to do!" << std::endl;
+			//std::cout << "There is job to do!" << std::endl;
 
 			if (running == false)
 			{
@@ -159,7 +159,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 					cv.wait(fLock);
 				}
 
-				std::cout << "No need to wait!" << std::endl;
+				//std::cout << "No need to wait!" << std::endl;
 			}
 
 
@@ -183,7 +183,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 			if (flag == 1)
 			{
 
-				std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
+				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
 
 				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (hasChunk)
@@ -210,7 +210,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 			else if (flag == 2)
 			{
 
-				std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
+				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
 
 				// There must be a chunk. Chunk loader creates empty chunk.
 				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);

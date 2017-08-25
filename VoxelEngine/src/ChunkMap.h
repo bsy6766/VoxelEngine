@@ -32,10 +32,6 @@ namespace Voxel
 		ChunkUnorderedMap map;
 		// mutex for modifying map;
 		std::mutex mapMutex;
-		// Chunks that are ready to get unloaded.
-		std::list<Chunk*> unloadList;
-		// mutex for unload list
-		std::mutex listMutex;
 
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
