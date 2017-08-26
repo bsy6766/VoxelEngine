@@ -14,8 +14,6 @@ void main()
 {
 	if(fogEnabled)
 	{
-		
-		
 		float dist = abs(distance(playerPosition, worldCoord.xyz));
 
 		if(dist > fogDistance)

@@ -187,14 +187,14 @@ void Voxel::World::initCubeOutline()
 
 	GLfloat color[] = {
 		// x, y, z
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 
 	unsigned int indices[] = {
@@ -219,7 +219,7 @@ void Voxel::World::initCubeOutline()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
 	// color
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 	// unbind buffer
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -242,9 +242,7 @@ void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 
 	defaultProgram->setUniformVec3("playerPosition", player->getPosition());
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
-	//defaultProgram->setUniformFloat("fogDistance", 64.0f);
 	defaultProgram->setUniformVec4("fogColor", skybox->getColor());
-	//defaultProgram->setUniformMat4("posMat", glm::mat4(1.0f));
 }
 
 void Voxel::World::initMeshBuilderThread()
@@ -863,16 +861,15 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("projMat", projMat);
 	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+
 	defaultProgram->setUniformBool("fogEnabled", true);
+	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 
 	chunkLoader->render();
-	player->render(defaultProgram);
 
 	defaultProgram->setUniformBool("fogEnabled", false);
-	defaultProgram->setUniformMat4("modelMat", player->getTranslationMat());
 
-	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
-	skybox->render();
+	player->render(defaultProgram);
 
 	if (player->isLookingAtBlock())
 	{
@@ -883,6 +880,9 @@ void World::render(const float delta)
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
+
+	defaultProgram->setUniformMat4("modelMat", player->getTranslationMat());
+	skybox->render();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);

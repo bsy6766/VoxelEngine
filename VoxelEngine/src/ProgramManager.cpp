@@ -34,20 +34,24 @@ Program * ProgramManager::createProgram(const std::string& name, Shader * vertex
 
 void Voxel::ProgramManager::initDefaultPrograms()
 {
-	auto voxelShaderColorVert = ShaderManager::getInstance().createShader("voxelShaderColor", "shaders/voxelShaderColor.vert", GL_VERTEX_SHADER);
-	auto voxelShaderColorFrag = ShaderManager::getInstance().createShader("voxelShaderColor", "shaders/voxelShaderColor.frag", GL_FRAGMENT_SHADER);
+	auto& shaderManager = ShaderManager::getInstance();
+
+	auto voxelShaderColorVert = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.vert", GL_VERTEX_SHADER);
+	auto voxelShaderColorFrag = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderColorProgram = Program::create(voxelShaderColorVert, voxelShaderColorFrag);
 	defaultPrograms.emplace(SHADER_COLOR, voxelShaderColorProgram);
 
-	auto voxelShaderTextureColorVert = ShaderManager::getInstance().createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.vert", GL_VERTEX_SHADER);
-	auto voxelShaderTextureColorFrag = ShaderManager::getInstance().createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderTextureColorVert = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.vert", GL_VERTEX_SHADER);
+	auto voxelShaderTextureColorFrag = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextureColorProgram = Program::create(voxelShaderTextureColorVert, voxelShaderTextureColorFrag);
 	defaultPrograms.emplace(SHADER_TEXTURE_COLOR, voxelShaderTextureColorProgram);
 
-	auto voxelShaderTextVert = ShaderManager::getInstance().createShader("voxelShaderText", "shaders/voxelShaderText.vert", GL_VERTEX_SHADER);
-	auto voxelShaderTextFrag = ShaderManager::getInstance().createShader("voxelShaderText", "shaders/voxelShaderText.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderTextVert = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.vert", GL_VERTEX_SHADER);
+	auto voxelShaderTextFrag = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextProgram = Program::create(voxelShaderTextVert, voxelShaderTextFrag);
 	defaultPrograms.emplace(SHADER_TEXT, voxelShaderTextProgram);
+
+	shaderManager.releaseAll();
 
 }
 
