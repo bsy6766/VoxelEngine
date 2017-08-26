@@ -52,7 +52,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 void Voxel::ChunkMesh::loadBuffer()
 {
 	assert(vao == 0);
-	auto start = Utility::Time::now();
+	//auto start = Utility::Time::now();
 	// 1. VAO
 	// Generate vertex array object
 	glGenVertexArrays(1, &vao);
@@ -105,12 +105,16 @@ void Voxel::ChunkMesh::loadBuffer()
 	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &ibo);
 
+	vbo = 0;
+	cbo = 0;
+	ibo = 0;
+
 	this->vertices.clear();
 	this->colors.clear();
 	this->indices.clear();
 
 	bufferLoaded.store(true);
-	auto end = Utility::Time::now();
+	//auto end = Utility::Time::now();
 	//std::cout << "Loading buffer Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 

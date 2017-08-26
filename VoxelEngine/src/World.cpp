@@ -117,7 +117,7 @@ void Voxel::World::init()
 	//cameraMode = true;
 	//cameraControlMode = true;
 
-	Application::getInstance().getGLView()->setWindowedFullScreen(1);
+	Application::getInstance().getGLView()->setWindowedFullScreen(0);
 	debugConsole->updateResolution(1920, 1080);
 }
 
@@ -301,7 +301,7 @@ void World::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	chunkMap->initChunkNearPlayer(playerPosition, 16);
+	chunkMap->initChunkNearPlayer(playerPosition, 8);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -314,7 +314,7 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 16;
+	const int renderDistance = 8;
 
 	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance, glfwGetTime());
 

@@ -107,14 +107,14 @@ void ChunkMap::clear()
 
 bool Voxel::ChunkMap::hasChunkAtXZ(int x, int z)
 {
-	//std::unique_lock<std::mutex> lock(mapMutex);
+	std::unique_lock<std::mutex> lock(mapMutex);
 	auto v2 = glm::ivec2(x, z);
 	return chunkLUT.find(v2) != chunkLUT.end();
 }
 
 Chunk * Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 {
-	//std::unique_lock<std::mutex> lock(mapMutex);
+	std::unique_lock<std::mutex> lock(mapMutex);
 	auto find_it = map.find(glm::ivec2(x, z));
 	if (find_it == map.end())
 	{
@@ -149,6 +149,7 @@ void Voxel::ChunkMap::generateChunk(const int x, const int z)
 	// for sake, just check one more time
 	if (!hasChunkAtXZ(x, z))
 	{
+		std::unique_lock<std::mutex> lock(mapMutex);
 		Chunk* newChunk = Chunk::create(x, z);
 		map.emplace(glm::ivec2(x, z), newChunk);
 
@@ -158,11 +159,11 @@ void Voxel::ChunkMap::generateChunk(const int x, const int z)
 }
 
 void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
-{	
+{
 	// for sake, just check one more time
 	if (!hasChunkAtXZ(x, z))
 	{
-		//std::unique_lock<std::mutex> lock(mapMutex);
+		std::unique_lock<std::mutex> lock(mapMutex);
 		Chunk* newChunk = Chunk::createEmpty(x, z);
 		map.emplace(glm::ivec2(x, z), newChunk);
 
@@ -236,8 +237,9 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 		chunkZ += 1;
 	}
 
-	auto find_it = map.find(glm::ivec2(chunkX, chunkZ));
-	if (find_it == map.end())
+	bool hasChunk = this->hasChunkAtXZ(chunkX, chunkZ);
+
+	if (!hasChunk)
 	{
 		// There is no chunk generated. 
 		return nullptr;
@@ -245,28 +247,25 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 	else
 	{
 		// target chunk
-		auto chunk = find_it->second;
-		if (chunk->isActive())
+		auto chunk = this->getChunkAtXZ(chunkX, chunkZ);
+		if (chunk)
 		{
-			// target chunk section
-			auto chunkSection = chunk->getChunkSectionByY(chunkY);
-			if (chunkSection)
+			if (chunk->isActive())
 			{
-				// return block
-				return chunkSection->getBlockAt(localX, localY, localZ);
-			}
-			else
-			{
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionByY(chunkY);
+				if (chunkSection)
+				{
+					// return block
+					return chunkSection->getBlockAt(localX, localY, localZ);
+				}
 				// There is no block in this chunk section = nullptr
-				return nullptr;
 			}
-		}
-		else
-		{
 			// Can't access block that is in inactive chunk
-			return nullptr;
 		}
 	}
+
+	return nullptr;
 }
 
 Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
@@ -345,6 +344,7 @@ void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
 		auto chunk = getChunkAtXZ(coordinate.x, coordinate.y);
 		if (chunk)
 		{
+			std::unique_lock<std::mutex> lock(mapMutex);
 			chunk->releaseMesh();
 			delete chunk;
 

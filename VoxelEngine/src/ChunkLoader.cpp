@@ -104,11 +104,17 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 		// means player is cheating or in god mode or whatever. 
 
 		// Check if it's in boundary
-		auto newChunk = map->getChunkAtXZ(chunkX, chunkZ);
-		assert(newChunk != nullptr);
+		//auto newChunk = map->getChunkAtXZ(chunkX, chunkZ);
+		//assert(newChunk != nullptr);
+		auto curChunkWorldPos = Voxel::Math::chunkXZToWorldPosition(currentChunkPos);
 
-		bool inBorder = newChunk->isPointInBorder(playerPosition);
-		if (!inBorder)
+		// check if player is out of range. If so, proceed.
+		float dist = glm::distance(curChunkWorldPos, glm::vec3(playerPosition.x, 0, playerPosition.z));
+		std::cout << "d = " << dist << std::endl;
+		bool isNearby = glm::abs(dist) <= Constant::CHUNK_RANGE;
+
+		//bool inBorder = newChunk->isPointInBorder(playerPosition);
+		if (isNearby)
 		{
 			return false;
 		}

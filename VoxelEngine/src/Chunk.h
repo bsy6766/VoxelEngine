@@ -15,6 +15,11 @@ namespace Voxel
 		// In world position
 		glm::vec3 min;
 		glm::vec3 max;
+
+		ChunkBorder()
+			: min(0)
+			, max(0)
+		{}
 	};
 
 	/**
@@ -41,7 +46,7 @@ namespace Voxel
 		// Mesh. Contains mesh data and OpenGL objects
 		ChunkMesh* chunkMesh;
 
-		// Border
+		// Border & range
 		ChunkBorder border;
 
 		// active state. Only active chunk can be queried

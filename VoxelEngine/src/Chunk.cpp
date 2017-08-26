@@ -91,7 +91,7 @@ bool Chunk::init(const int x, const int z)
 	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
 
 	// init border. worldPosition works as center position of border
-	float borderDistance = (Constant::CHUNK_BORDER_SIZE * 0.5f) - 0.5f;
+	float borderDistance = (Constant::CHUNK_BORDER_SIZE * 0.5f);
 	
 	border.min = glm::vec3(worldPosition.x - borderDistance, 0, worldPosition.z - borderDistance);
 	border.max = glm::vec3(worldPosition.x + borderDistance, Constant::TOTAL_CHUNK_SECTION_PER_CHUNK * Constant::CHUNK_SECTION_HEIGHT, worldPosition.z + borderDistance);
@@ -106,10 +106,11 @@ bool Chunk::init(const int x, const int z)
 bool Voxel::Chunk::generate()
 {	
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
+	int randY = Utility::Random::randomInt(2, 5);
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > 4)
+		if (i > randY)
 		{
 			chunkSections.push_back(nullptr);
 		}
