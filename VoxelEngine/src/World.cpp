@@ -641,14 +641,6 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
-	/*
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1))
-	{
-		std::cout << "prev pos (" << mouseX << ", " << mouseY << ")" << std::endl;
-		std::cout << "Cursor pos (" << x << ", " << y << ")" << std::endl;
-	}
-	*/
-
 	double dx = x - mouseX;
 	double dy = y - mouseY;
 	mouseX = x;
@@ -706,17 +698,8 @@ void Voxel::World::updateMouseClickInput()
 		return;
 	}
 
-	//auto image = defaultCanvas->getImage("crossHair");
-	//auto fpsLabel = defaultCanvas->getText("FPSLabelOutlined");
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
-		//image->setPivot(glm::vec2(0, 0));
-		//auto bb = fpsLabel->getBoundingBox();
-		//auto p = fpsLabel->getPosition();
-		//auto s = fpsLabel->getSize();
-		//std::cout << "bb(" << bb.x << ", " << bb.y << ", " << bb.z << ", " << bb.w << ")" << std::endl;
-		//std::cout << "p(" << p.x << ", " << p.y << ")" << std::endl;
-		//std::cout << "s(" << s.x << ", " << s.y << ")" << std::endl;
 	}
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -724,20 +707,14 @@ void Voxel::World::updateMouseClickInput()
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 	{
-		//image->setPivot(glm::vec2(0.5f, 0));
-		//fpsLabel->addPosition(glm::vec2(10, 0));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
 	{
-		//image->setPivot(glm::vec2(0, 0.5f));
-		//fpsLabel->addPosition(glm::vec2(10, 10));
 	}
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_4, true))
 	{
-		//image->setPivot(glm::vec2(0.5f, -0.5f));
-		//fpsLabel->addPosition(glm::vec2(0, 10));
 	}
 }
 
@@ -804,16 +781,6 @@ void Voxel::World::updateChunks()
 	// If so, we need to load new chunks. 
 	// Else, player reamains on same chunk as now.
 	bool updated = chunkLoader->update(player->getPosition(), chunkMap, chunkWorkManager, glfwGetTime());
-	/*
-	if (updated)
-	{
-		// Player moved to new chunk
-		//int totalChunks = chunkMap->getSize();
-		//std::cout << "[World] Total chunks in map = " << totalChunks << std::endl;
-		// Generate new mesh
-		chunkMeshGenerator->generateNewChunkMesh(chunkLoader, chunkMap);
-	}
-	*/
 }
 
 void Voxel::World::checkUnloadedChunks()
