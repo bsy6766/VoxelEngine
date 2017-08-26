@@ -1,5 +1,6 @@
 #include "Program.h"
 #include "Shader.h"
+#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace Voxel;
@@ -98,6 +99,7 @@ void Program::setUniformMat4(const GLint location, const mat4 & mat)
 void Program::setUniformMat4(const std::string & name, const mat4 & mat)
 {
 	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
 	return setUniformMat4(location, mat);
 }
 
@@ -109,6 +111,7 @@ void Voxel::Program::setUniformBool(const GLint location, const bool boolean)
 void Voxel::Program::setUniformBool(const std::string & name, const bool boolean)
 {
 	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
 	return setUniformBool(location, boolean);
 }
 
@@ -120,7 +123,44 @@ void Voxel::Program::setUniformInt(const GLint location, const int integer)
 void Voxel::Program::setUniformInt(const std::string & name, const int integer)
 {
 	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
 	return setUniformInt(location, integer);
+}
+
+void Voxel::Program::setUniformFloat(const GLint location, const float val)
+{
+	glUniform1f(location, val);
+}
+
+void Voxel::Program::setUniformFloat(const std::string & name, const float val)
+{
+	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
+	return setUniformFloat(location, val);
+}
+
+void Voxel::Program::setUniformVec3(const GLint location, const glm::vec3 & val)
+{
+	glUniform3f(location, val.x, val.y, val.z);
+}
+
+void Voxel::Program::setUniformVec3(const std::string & name, const glm::vec3 & val)
+{
+	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
+	return setUniformVec3(location, val);
+}
+
+void Voxel::Program::setUniformVec4(const GLint location, const glm::vec4 & val)
+{
+	glUniform4f(location, val.x, val.y, val.z, val.w);
+}
+
+void Voxel::Program::setUniformVec4(const std::string & name, const glm::vec4 & val)
+{
+	auto location = getUniformLocation(name.c_str());
+	//std::cout << name << " loc: " << location << std::endl;
+	return setUniformVec4(location, val);
 }
 
 void Voxel::Program::use(const bool use)

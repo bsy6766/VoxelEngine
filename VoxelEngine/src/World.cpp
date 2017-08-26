@@ -96,7 +96,7 @@ void Voxel::World::init()
 {
 	// Initialize default program
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-
+	defaultProgram->use(true);
 
 	// Init chunks
 	chunkMap = new ChunkMap();
@@ -107,17 +107,19 @@ void Voxel::World::init()
 	// player
 	player = new Player();
 
-	// UI & font
-	initUI();
+	// cube outline
+	initCubeOutline();
 	// Skybox
 	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
 
+	// UI & font
+	initUI();
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
 	debugConsole->toggleDubugOutputs();
 
-	Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
-	Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
+	//Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
+	//Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
 	//cameraMode = true;
 	//cameraControlMode = true;
 
@@ -151,6 +153,10 @@ void Voxel::World::initUI()
 
 	// Add temporary cross hair
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0), glm::vec4(Color::WHITE, 1.0f));
+}
+
+void Voxel::World::initCubeOutline()
+{
 
 	// Create debug chunk box
 	// Generate vertex array object
@@ -233,6 +239,12 @@ void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 {
 	skybox = new Skybox();
 	skybox->init(skyColor, 8);
+
+	defaultProgram->setUniformVec3("playerPosition", player->getPosition());
+	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
+	//defaultProgram->setUniformFloat("fogDistance", 64.0f);
+	defaultProgram->setUniformVec4("fogColor", skybox->getColor());
+	//defaultProgram->setUniformMat4("posMat", glm::mat4(1.0f));
 }
 
 void Voxel::World::initMeshBuilderThread()
@@ -281,7 +293,7 @@ void World::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
-	player->setPosition(glm::vec3(8, 300, 8));
+	//player->setPosition(glm::vec3(8, 300, 8));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 
@@ -293,7 +305,7 @@ void World::createPlayer()
 	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
 
 	// for debug
-	player->initYLine();
+	//player->initYLine();
 	//player->initRayLine();
 }
 
@@ -393,13 +405,14 @@ void World::update(const float delta)
 		// if player moved, update chunk
 		updateChunks();
 		debugConsole->updatePlayerPosition(player->getPosition());
+
+		defaultProgram->use(true);
+		defaultProgram->setUniformVec3("playerPosition", player->getPosition());
 	}
 	debugConsole->updateChunkNumbers(totalVisible, chunkLoader->getActiveChunksCount(), chunkMap->getSize());
 
 	player->update();
-
-	// Wipe input data for current frame
-	input->postUpdate();
+	skybox->update(delta);
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -448,35 +461,10 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		return;
 	}
 
-	/*
-	if (input->getKeyDown(GLFW_KEY_K, true))
-	{
-	auto playerPosition = player->getPosition();
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
-
-	FileSystem::getInstance().saveToRegionFile(glm::ivec2(0, 0), glm::ivec2(chunkX, chunkZ), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef() );
-	}
-	if (input->getKeyDown(GLFW_KEY_L, true))
-	{
-	std::vector<Block*> blocks;
-	auto playerPosition = player->getPosition();
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
-	FileSystem::getInstance().readFromRegionFile(glm::ivec2(0, 0), glm::ivec2(0, 0), (chunkMap->getMapRef().find(glm::ivec2(chunkX, chunkZ))->second)->getChunkSectionByY(0)->getBlocksRef());
-	}
-	*/
-
-	/*
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{ 
-		auto start = Utility::Time::now();
-		auto c = Chunk::createEmpty(0, 0);
-		auto end = Utility::Time::now();
-		delete c;
-		std::cout << "Empty chunk creation time: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
+
 	}
-	*/
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
@@ -516,6 +504,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		Application::getInstance().getGLView()->setVsync(false);
 		debugConsole->updateVsync(false);
 	}
+
 	// Keyboard
 	if (cameraControlMode)
 	{
@@ -634,7 +623,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if (input->getKeyDown(GLFW_KEY_6))
 	{
-		player->setRotation(glm::vec3(90, 180, 0));
+		Camera::mainCamera->setPosition(player->getPosition());
 	}
 
 	if (input->getKeyDown(GLFW_KEY_KP_1, true))
@@ -844,11 +833,16 @@ void Voxel::World::checkUnloadedChunks()
 
 void World::render(const float delta)
 {
-	glm::mat4 mat = glm::mat4(1.0f);
+	glm::mat4 projMat = Camera::mainCamera->getProjection();
+	glm::mat4 worldMat = glm::mat4(1.0f);
+
+	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+
 	if (cameraMode)
 	{
-		mat = Camera::mainCamera->getMatrix();
+		worldMat = Camera::mainCamera->getView();
 
+		/*
 		glm::mat4 rayMat = mat4(1.0f);
 		rayMat = glm::translate(rayMat, player->getPosition());
 		auto playerRotation = player->getRotation();
@@ -858,19 +852,26 @@ void World::render(const float delta)
 
 		defaultProgram->setUniformMat4("modelMat", rayMat);
 		Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
+		*/
 	}
 	else
 	{
-		mat = player->getVP(Camera::mainCamera->getProjection());
+		//worldMat = player->getVP(Camera::mainCamera->getProjection());
+		worldMat = player->getViewMatrix();
 	}
 
-	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-
-	defaultProgram->setUniformMat4("cameraMat", mat);
+	defaultProgram->setUniformMat4("projMat", projMat);
+	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+	defaultProgram->setUniformBool("fogEnabled", true);
 
 	chunkLoader->render();
 	player->render(defaultProgram);
+
+	defaultProgram->setUniformBool("fogEnabled", false);
+	defaultProgram->setUniformMat4("modelMat", player->getTranslationMat());
+
+	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 	skybox->render();
 
 	if (player->isLookingAtBlock())

@@ -383,8 +383,8 @@ void Voxel::GLView::setWindowed(int width, int height)
 
 		int xpos = 0, ypos = 0;
 		glfwGetMonitorPos(monitor, &xpos, &ypos);
-		xpos += (videoMode->width - width) * 0.5;
-		ypos += (videoMode->height - height) * 0.5;
+		xpos += (videoMode->width - width) / 2;
+		ypos += (videoMode->height - height) / 2;
 
 		monitor = nullptr;
 

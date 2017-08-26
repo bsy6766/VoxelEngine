@@ -134,6 +134,9 @@ void Application::run()
 
 		world->update(delta);
 
+		// Wipe input data for current frame
+		input.postUpdate();
+
 		world->render(delta);
 
 		glView->render();

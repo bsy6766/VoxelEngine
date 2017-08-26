@@ -3,12 +3,19 @@
 #include <vector>
 #include <ProgramManager.h>
 #include <Program.h>
+#include <ChunkUtil.h>
+#include <Utility.h>
+#include <iostream>
 
 using namespace Voxel;
 
 Skybox::Skybox()
 	: vao(0)
 	, indicesSize(0)
+	, fogState(FOG_STATE::FOG_IDLE)
+	, fogDistance(0)
+	, curFogDistance(0)
+	, fogAnimationSpeed(0.25f)
 {
 }
 
@@ -35,6 +42,12 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 		colors.push_back(skyColor.b);
 		colors.push_back(skyColor.a);
 	}
+
+	this->skyColor = skyColor;
+	setFogDistanceByRenderDistance(renderDistance, false);
+
+	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
+	std::cout << "[Skybox] Sky color = " << this->skyColor.r << ", " << this->skyColor.g << ", " << this->skyColor.b << std::endl;
 
 	std::vector<unsigned int> indices = Cube::getIndices(Cube::Face::ALL, 0);
 
@@ -95,8 +108,58 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 	glDeleteBuffers(1, &ibo);
 }
 
+void Voxel::Skybox::update(const float delta)
+{
+	if (fogState == FOG_STATE::FOG_ANIMATING)
+	{
+		curFogDistance = Utility::Math::lerp(curFogDistance, fogDistance, delta * fogAnimationSpeed);
+		if (abs(curFogDistance - fogDistance) < 2.0f)
+		{
+			fogState = FOG_STATE::FOG_IDLE;
+			fogDistance = curFogDistance;
+		}
+	}
+}
+
 void Voxel::Skybox::render()
 {
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+}
+
+glm::vec4 Voxel::Skybox::getColor()
+{
+	return skyColor;
+}
+
+float Voxel::Skybox::getFogDistance()
+{
+	if (fogState == FOG_STATE::FOG_IDLE)
+	{
+		return fogDistance;
+	}
+	else
+	{
+		return curFogDistance;
+	}
+}
+
+void Voxel::Skybox::setFogDistanceByRenderDistance(const int renderDistance, const bool animate)
+{
+	setFogDistance(static_cast<float>(renderDistance - 1) * Constant::CHUNK_BORDER_SIZE, animate);
+}
+
+void Voxel::Skybox::setFogDistance(const float distance, const bool animate)
+{
+	this->curFogDistance = this->fogDistance;
+	this->fogDistance = distance;
+
+	if (animate)
+	{
+		fogState = FOG_STATE::FOG_ANIMATING;
+	}
+	else
+	{
+		fogState = FOG_STATE::FOG_IDLE;
+	}
 }

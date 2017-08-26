@@ -106,11 +106,11 @@ bool Chunk::init(const int x, const int z)
 bool Voxel::Chunk::generate()
 {	
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
-	int randY = Utility::Random::randomInt(2, 5);
+	//int randY = Utility::Random::randomInt(2, 5);
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > randY)
+		if (i > 3)
 		{
 			chunkSections.push_back(nullptr);
 		}

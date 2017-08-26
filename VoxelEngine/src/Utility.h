@@ -220,6 +220,14 @@ namespace Voxel
 				num++;
 				return num;
 			}
+
+			static float lerp(const float a, const float b, float t)
+			{
+				if (t > 1.0f) t = 1.0f;
+				if (t < 0) t = 0;
+
+				return (1.0f - t) * a + t * b;
+			}
 		}
 	}
 }

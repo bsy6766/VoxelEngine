@@ -92,6 +92,7 @@ namespace Voxel
 		void loadChunkMesh();
 
 		void initUI();
+		void initCubeOutline();
 		void initSkyBox(const glm::vec4& skyColor);
 
 		void updateKeyboardInput(const float delta);

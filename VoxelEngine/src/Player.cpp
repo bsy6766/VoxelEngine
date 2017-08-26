@@ -182,6 +182,12 @@ void Voxel::Player::setFly(const bool mode)
 	fly = mode;
 }
 
+glm::mat4 Voxel::Player::getViewMatrix()
+{
+	return glm::translate(viewMatrix, -position);
+}
+
+/*
 glm::mat4 Voxel::Player::getVP(const glm::mat4& projection)
 {
 	return glm::translate(projection * viewMatrix, -position);
@@ -191,10 +197,16 @@ glm::mat4 Voxel::Player::getDirVP(const glm::mat4 & projection)
 {
 	return glm::translate(projection * dirMatrix, -position);
 }
+*/
 
 glm::mat4 Voxel::Player::getOrientation()
 {
 	return viewMatrix;
+}
+
+glm::mat4 Voxel::Player::getTranslationMat()
+{
+	return glm::translate(glm::mat4(1.0f), position);
 }
 
 glm::mat4 Voxel::Player::getDirMatrix()
@@ -305,14 +317,7 @@ void Voxel::Player::render(Program* defaultProgram)
 	{
 		glBindVertexArray(yLineVao);
 
-		glm::mat4 lineMat = mat4(1.0f);
-		lineMat = glm::translate(lineMat, position);
-		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
-		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.x), glm::vec3(1, 0, 0));
-		//lineMat = glm::rotate(lineMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
-
-		//defaultProgram->setUniformMat4("cameraMat", getVP(Camera::mainCamera->getProjection()));
-		defaultProgram->setUniformMat4("modelMat", lineMat);
+		defaultProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 

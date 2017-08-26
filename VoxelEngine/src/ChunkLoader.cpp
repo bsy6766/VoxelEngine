@@ -110,7 +110,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 		// check if player is out of range. If so, proceed.
 		float dist = glm::distance(curChunkWorldPos, glm::vec3(playerPosition.x, 0, playerPosition.z));
-		std::cout << "d = " << dist << std::endl;
+		//std::cout << "d = " << dist << std::endl;
 		bool isNearby = glm::abs(dist) <= Constant::CHUNK_RANGE;
 
 		//bool inBorder = newChunk->isPointInBorder(playerPosition);
