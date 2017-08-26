@@ -35,8 +35,6 @@ namespace Voxel
 
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
-		// Active Chunk LUT. This stores chunk position that is currently loaded in game
-		//std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> activeChunkLUT;
 
 	public:
 		ChunkMap() = default;
@@ -44,26 +42,39 @@ namespace Voxel
 
 		// Initialize spawn chunk
 		void initSpawnChunk();
+
 		// Initialize map data near by player based on player's last position and render distance
 		void initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
 
 		// Clears all the chunk in the map
 		void clear();
 
+		// Check if has chunk in x and z coordinate
 		bool hasChunkAtXZ(int x, int z);
+
+		// Get chunk in x and z coordinate
 		Chunk* getChunkAtXZ(int x, int z);
 
+		// Generate region based on coordinate and size.
 		void generateRegion(const glm::ivec2& regionCoordinate);
+
+		// Generate chunk with specific coordinate
 		void generateChunk(const int x, const int z);
+
+		// Generate empty chunk. 
 		void generateEmptyChunk(const int x, const int z);
+
+		// Get size of map
 		unsigned int getSize();
 
+		// Get block in world position. Returns nullptr if chunk, chunksection or block doesn't exsits.
+		// Todo: Make this function to know what are missing among chunk, chunksection or block.
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
 		
 		// From rayStart to rayEnd, visit all blocks
-		//void raycast(const glm::vec3& rayStart, const glm::vec3& rayEnd);
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
 
+		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);
 	};
 }

@@ -27,29 +27,36 @@ namespace Voxel
 	private:
 		Camera();
 
+		// Data
 		vec3 position;
+
+		// Rotation angle
+		vec3 angle;
+
+		// fov
 		float fovy;
 		float fovx;
+
+		// resolution
 		float screenWidth;
 		float screenHeight;
+
+		// width / height
 		float aspect;
+
+		// near clipping pane
 		float nears;
+		// far clipping pane
 		float fars;
 
 		// This is screen space position in camera's point of view. 
 		// All the UI objects will follow this position
 		vec3 screenSpacePos;
-		mat4 screenSpaceMatrix;
-
-		vec3 angle;
-
-		bool needUpdate;
-
-		mat4 curMatrix;
-
+		
+		// Frustum
 		Frustum* frustum;
-		//void initFrustumPlanes();
 
+		// Wrap angle if it goes below 0 or over 360
 		void wrapAngle();
 		void wrapAngle(float& axis);
 	public:
@@ -63,48 +70,43 @@ namespace Voxel
 
 		// Get projection matrix. This is based on camera setting (fovy, near, far, aspect)
 		mat4 getProjection();
-		// Get matrix (projection * view). 
-		mat4 getMatrix();
 		// Get view matrix. This is 'world to view' matrix. 
 		// Camera doesn't move but world is. This moves world to view.
 		mat4 getView();
 		// Get orientation. Basically rotation. 
 		// This doesn't mean that camera is rotated. It's where camera want to look. 
 		mat4 getOrientation();
+		// Get position of camera
 		vec3 getPosition();
-
+		// Set position of camera
 		void setPosition(const vec3& position);
+		// add distance to current camera position
 		void addPosition(const vec3& distance);
+		// Set rotation angle
 		void setAngle(const vec3& angle);
+		// Add angle to current angle
 		void addAngle(const vec3& angle);
+		// Get angle in y axis
 		float getAngleY();
 
+		// Print camera info
 		void print();
 
-		// Frustum plane
-		vec4 nearPlane;
-		vec4 farPlane;
-		vec4 leftPlane;
-		vec4 rightPlane;
-
-		// Frustum normal
-		vec2 nearNormal;
-		vec2 farNormal;
-		vec2 leftNormal;
-		vec2 rightNormal;
-
+		// Update frustum
 		void updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation, const int renderDistance);
 
-		//void updateFrustumPlane(const vec3& playerPosition, const vec3& playerRotation);
+		// Get frustum instance
 		Frustum* getFrustum();
 
-		glm::vec3 getScreenSpacePos();
-
+		// Update screen size and aspect. Call this whenever resolution changes
 		void updateScreenSizeAndAspect(const float screenWidth, const float screenHeight);
 
+		// Set vertical fov
 		void setFovy(const float fovy);
+		// Get fovy
 		float getFovy();
 
+		// Get screen space matrix
 		glm::mat4 getScreenSpaceMatrix();
 	};
 }

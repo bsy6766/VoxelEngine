@@ -4,6 +4,7 @@
 #include <GL\glew.h>
 #include <glm\glm.hpp>
 #include <string>
+#include <unordered_map>
 
 using namespace glm;
 
@@ -22,6 +23,7 @@ namespace Voxel
 	private:
 		GLuint programObject;
 
+		// Initialize program
 		bool init(Shader* vertexShader, Shader* fragmentShader);
 
 		void checkLinkError();

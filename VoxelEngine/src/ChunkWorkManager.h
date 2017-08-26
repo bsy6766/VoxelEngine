@@ -27,17 +27,25 @@ namespace Voxel
 	class ChunkWorkManager
 	{
 	private:
-		//std::list<WorkTicket> loadWorkQueue;
+		// Queue with chunk coordinate that needs to either generate or build mesh. Can be both
 		std::list<glm::ivec2> loadQueue;
+		// Queue with chunk coordinate that needs to get unloaded.
 		std::list<glm::ivec2> unloadQueue;
+		// Queue with chunk coordinate that needs to get unloaded by main thread.
 		std::list<glm::ivec2> unloadFinishedQueue;
 
+		// Mutex for loadQueue and unloadQueue.
 		std::mutex queueMutex;
+		// Mutex for unloadFinishedQueue.
 		std::mutex finishedQueueMutex;
 
+		// Worker thread.
 		std::thread meshBuilderThread;
 
+		// True if work manager is running. Else, false. 
 		std::atomic<bool> running;
+		
+		// Condition variable that makes thread to wait if main thread is busy or there is no work to do
 		std::condition_variable cv;
 
 		// For mesh build thread
@@ -46,12 +54,11 @@ namespace Voxel
 		ChunkWorkManager();
 		~ChunkWorkManager();
 
-		// Main thread adds coordinate
+		// Add or remove work
 		void addLoad(const glm::ivec2& coordinate);
 		void addLoad(const std::vector<glm::ivec2>& coordinates);
 		void addUnload(const glm::ivec2& coordinate);
 		void addUnload(const std::vector<glm::ivec2>& coordinates);
-
 		void addFinishedQueue(const glm::ivec2& coordinate);
 		bool getFinishedFront(glm::ivec2& coordinate);
 		void popFinishedAndNotify();

@@ -102,9 +102,3 @@ glm::vec3 Voxel::ChunkSection::getWorldPosition()
 {
 	return worldPosition;
 }
-
-std::vector<Block*>& Voxel::ChunkSection::getBlocksRef()
-{
-	// TODO: insert return statement here
-	return blocks;
-}

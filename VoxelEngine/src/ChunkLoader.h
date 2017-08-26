@@ -25,6 +25,7 @@ namespace Voxel
 		
 		// Chunks that are manually added to be active.
 		ChunkMap* manualChunks;
+
 		// Chunks that are currently active
 		std::list<std::list<Chunk*>> activeChunks;
 	public:
@@ -37,8 +38,10 @@ namespace Voxel
 
 		// Check if player moved to another chunk. If so, return true.
 		bool update(const glm::vec3& playerPosition, ChunkMap* map, ChunkWorkManager* workManager, const double curTime);
+
 		// find visible chunk. Returns the number of chunk that is visible
 		int findVisibleChunk();
+
 		// Get size
 		int getActiveChunksCount();
 

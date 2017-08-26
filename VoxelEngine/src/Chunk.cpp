@@ -133,17 +133,6 @@ bool Voxel::Chunk::generate()
 	return true;
 }
 
-/*
-bool Voxel::Chunk::isAdjacent(Chunk * other)
-{
-	auto otherPos = other->position;
-
-	auto diff = otherPos - position;
-
-	return true;
-}
-*/
-
 glm::ivec3 Chunk::getPosition()
 {
 	return position;
@@ -228,12 +217,6 @@ ChunkMesh * Voxel::Chunk::getMesh()
 bool Voxel::Chunk::isGenerated()
 {
 	return generated.load();
-}
-
-bool Voxel::Chunk::isPointInBorder(const glm::vec3 & point)
-{
-	// For now, only check x, z
-	return (border.min.x < point.x && point.x < border.max.x) && (border.min.z < point.z && point.z < border.max.z);
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)
