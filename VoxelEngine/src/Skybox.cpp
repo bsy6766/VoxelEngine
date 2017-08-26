@@ -12,7 +12,8 @@ using namespace Voxel;
 Skybox::Skybox()
 	: vao(0)
 	, indicesSize(0)
-	, fogState(FOG_STATE::FOG_IDLE)
+	, fogState(FOG_STATE::IDLE)
+	, skycolorState(SKYCOLOR_STATE::IDLE)
 	, fogDistance(0)
 	, curFogDistance(0)
 	, fogAnimationSpeed(0.25f)
@@ -43,7 +44,7 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 		colors.push_back(skyColor.a);
 	}
 
-	this->skyColor = skyColor;
+	this->skyColor = this->curSkyColor = skyColor;
 	setFogDistanceByRenderDistance(renderDistance, false);
 
 	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
@@ -110,14 +111,19 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 
 void Voxel::Skybox::update(const float delta)
 {
-	if (fogState == FOG_STATE::FOG_ANIMATING)
+	if (fogState == FOG_STATE::ANIMATING)
 	{
 		curFogDistance = Utility::Math::lerp(curFogDistance, fogDistance, delta * fogAnimationSpeed);
 		if (abs(curFogDistance - fogDistance) < 2.0f)
 		{
-			fogState = FOG_STATE::FOG_IDLE;
+			fogState = FOG_STATE::IDLE;
 			fogDistance = curFogDistance;
 		}
+	}
+
+	if (skycolorState == SKYCOLOR_STATE::ANIMATING)
+	{
+
 	}
 }
 
@@ -134,7 +140,7 @@ glm::vec4 Voxel::Skybox::getColor()
 
 float Voxel::Skybox::getFogDistance()
 {
-	if (fogState == FOG_STATE::FOG_IDLE)
+	if (fogState == FOG_STATE::IDLE)
 	{
 		return fogDistance;
 	}
@@ -156,10 +162,10 @@ void Voxel::Skybox::setFogDistance(const float distance, const bool animate)
 
 	if (animate)
 	{
-		fogState = FOG_STATE::FOG_ANIMATING;
+		fogState = FOG_STATE::ANIMATING;
 	}
 	else
 	{
-		fogState = FOG_STATE::FOG_IDLE;
+		fogState = FOG_STATE::IDLE;
 	}
 }

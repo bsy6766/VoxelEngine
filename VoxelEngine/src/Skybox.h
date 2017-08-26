@@ -11,13 +11,21 @@ namespace Voxel
 	private:
 		enum class FOG_STATE
 		{
-			FOG_IDLE = 0,
-			FOG_ANIMATING,
+			IDLE = 0,
+			ANIMATING,
+		};
+
+		enum class SKYCOLOR_STATE
+		{
+			IDLE = 0,
+			ANIMATING,
 		};
 
 		FOG_STATE fogState;
+		SKYCOLOR_STATE skycolorState;
 	private:
 		glm::vec4 skyColor;
+		glm::vec4 curSkyColor;
 
 		GLuint vao;
 		int indicesSize;
