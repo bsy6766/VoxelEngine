@@ -17,6 +17,7 @@ namespace Voxel
 	class Player;
 	class DebugConsole;
 	class ChunkWorkManager;
+	class Skybox;
 
 	namespace UI
 	{
@@ -59,6 +60,9 @@ namespace Voxel
 		// Player
 		Player* player;
 
+		// skybox
+		Skybox* skybox;
+
 		// Default UI canvas
 		UI::Canvas* defaultCanvas;
 
@@ -87,9 +91,8 @@ namespace Voxel
 		// Load chunk meshes
 		void loadChunkMesh();
 
-		// Initilaize chunks
-		void initChunk();
 		void initUI();
+		void initSkyBox(const glm::vec4& skyColor);
 
 		void updateKeyboardInput(const float delta);
 		void updateMouseMoveInput(const float delta);

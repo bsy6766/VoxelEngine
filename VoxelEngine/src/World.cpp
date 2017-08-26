@@ -23,6 +23,7 @@
 #include <Utility.h>
 #include <Color.h>
 #include <Player.h>
+#include <Skybox.h>
 
 #include <Application.h>
 #include <GLView.h>
@@ -50,6 +51,7 @@ World::World()
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
+	, skybox(nullptr)
 {
 	// Set clear color
 	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
@@ -107,6 +109,8 @@ void Voxel::World::init()
 
 	// UI & font
 	initUI();
+	// Skybox
+	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
 
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
@@ -131,6 +135,8 @@ void Voxel::World::release()
 	if (chunkWorkManager) delete chunkWorkManager;
 
 	if (player)	delete player;
+
+	if (skybox) delete skybox;
 
 	if (defaultCanvas) delete defaultCanvas;
 
@@ -221,6 +227,12 @@ void Voxel::World::initUI()
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+}
+
+void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
+{
+	skybox = new Skybox();
+	skybox->init(skyColor, 8);
 }
 
 void Voxel::World::initMeshBuilderThread()
@@ -342,12 +354,6 @@ void World::loadChunkMesh()
 
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMeshGenerator] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
-}
-
-void Voxel::World::initChunk()
-{
-	//chunkMap->initSpawnChunk();
-	//chunkMap->initChunkNearPlayer(player->getPosition(), renderDistnace);
 }
 
 void World::update(const float delta)
@@ -865,6 +871,7 @@ void World::render(const float delta)
 
 	chunkLoader->render();
 	player->render(defaultProgram);
+	skybox->render();
 
 	if (player->isLookingAtBlock())
 	{
