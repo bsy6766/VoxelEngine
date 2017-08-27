@@ -1,0 +1,9 @@
+videoSetting
+	window
+		mode 0
+		resolution
+			width 1280
+			height 720
+	vsync false
+	renderDistance 8
+	fieldOfView 70

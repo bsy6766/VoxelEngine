@@ -13,6 +13,7 @@
 #include <InputHandler.h>
 
 #include <DataTree.h>
+#include <Setting.h>
 #include <FileSystem.h>
 
 using std::cout;
@@ -22,7 +23,7 @@ using namespace Voxel;
 Application::Application()
 	: world(nullptr)
 	, glView(nullptr)
-	, configData(nullptr)
+	, internalSetting(nullptr)
 {
 	cout << "Creating Application" << endl;
 
@@ -43,6 +44,9 @@ Application::Application()
 
 	// initialize singleton instance
 	FileSystem::getInstance();
+
+	// Read game settings
+	Setting::getInstance();
 }
 
 Application::~Application()
@@ -55,7 +59,7 @@ void Application::init()
 {
 	Utility::Random::setSeed("ENGINE");
 
-	initConfig();
+	initInternalSettings();
 
 	initGLView();
 
@@ -67,21 +71,23 @@ void Voxel::Application::initGLView()
 {
 	glView = new GLView();
 
-	auto title = configData->getString("system.window.title") + " / version: 0 / build: " + configData->getString("build.number");
+	auto title = "Voxel Engine / version: 0 / build: " + internalSetting->getString("buildNumber");
 
-	glView->init(configData->getInt("system.window.resolution.width"),
-		configData->getInt("system.window.resolution.height"), 
-		title,
-		configData->getInt("system.window.mode"),
-		configData->getBool("system.window.vsync"));
+	auto& setting = Setting::getInstance();
+	auto resolution = setting.getResolution();
+
+	glView->init(resolution.x, resolution.y, title, setting.getWindowMode(), setting.getVsync());
 }
 
 void Voxel::Application::initMainCamera()
 {
-	auto sWidth = configData->getFloat("system.window.resolution.width");
-	auto sHeight = configData->getFloat("system.window.resolution.height");
-	Camera::mainCamera = Camera::create(vec3(0, 0, 0), 70.0f, 0.05f, 1000.0f, sWidth, sHeight);
-	//Camera::mainCamera->addAngle(glm::vec3(0, 180, 0));
+	auto& setting = Setting::getInstance();
+	auto resolution = glm::vec2(setting.getResolution());
+	auto fov = setting.getFieldOfView();
+	float near = internalSetting->getFloat("Camera.near");
+	float far = internalSetting->getFloat("Camera.far");
+
+	Camera::mainCamera = Camera::create(vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
 }
 
 void Voxel::Application::initWorld()
@@ -90,25 +96,25 @@ void Voxel::Application::initWorld()
 	world->createNew("New World");
 }
 
-void Voxel::Application::initConfig()
+void Voxel::Application::initInternalSettings()
 {
-	if (configData) 
+	if (internalSetting) 
 	{
-		delete configData;
+		delete internalSetting;
 	}
 
-	configData = DataTree::create("config/config");
+	internalSetting = DataTree::create("data/internal");
 
-	if (configData)
+	if (internalSetting)
 	{
-		int build = configData->getInt("build.number");
+		int build = internalSetting->getInt("buildNumber");
 		build++;
-		configData->setInt("build.number", build);
-		configData->save("config/config");
+		internalSetting->setInt("buildNumber", build);
+		internalSetting->save("data/internal");
 	}
 	else
 	{
-		std::cout << "[Application] Failed to load config" << std::endl;
+		std::cout << "[Application] Failed to load internal setting" << std::endl;
 	}
 }
 
@@ -181,8 +187,8 @@ void Voxel::Application::cleanUp()
 		delete glView;
 	}
 
-	if (configData)
+	if (internalSetting)
 	{
-		delete configData;
+		delete internalSetting;
 	}
 }

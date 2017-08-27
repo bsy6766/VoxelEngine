@@ -993,6 +993,7 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 }
 
 
+const float Canvas::fixedFovy = 70.0f;
 
 Canvas::Canvas()
 	: size(0)
@@ -1092,7 +1093,7 @@ void Voxel::UI::Canvas::render()
 
 	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	imageShader->use(true);
-	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
+	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection(Canvas::fixedFovy));
 
 	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
 
@@ -1109,7 +1110,7 @@ void Voxel::UI::Canvas::render()
 
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 	textShader->use(true);
-	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection());
+	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection(Canvas::fixedFovy));
 
 	for (auto text : texts)
 	{

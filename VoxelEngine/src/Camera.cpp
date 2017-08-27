@@ -101,10 +101,12 @@ void Voxel::Camera::initDebugFrustumLines()
 
 mat4 Camera::getProjection()
 {
-	auto mat = perspective(glm::radians(fovy), aspect, nears, fars);
-	//mat[2] = { 0, 0, 0, nears };
-	//mat[3] = { 0, 0, -1.0f, 0 };
-	return mat;
+	return perspective(glm::radians(fovy), aspect, nears, fars);
+}
+
+mat4 Voxel::Camera::getProjection(const float fovy)
+{
+	return perspective(glm::radians(fovy), aspect, nears, fars);
 }
 
 mat4 Camera::getView()

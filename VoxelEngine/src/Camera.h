@@ -70,6 +70,8 @@ namespace Voxel
 
 		// Get projection matrix. This is based on camera setting (fovy, near, far, aspect)
 		mat4 getProjection();
+		// Get projection matrix with specific fovy value.
+		mat4 getProjection(const float fovy);
 		// Get view matrix. This is 'world to view' matrix. 
 		// Camera doesn't move but world is. This moves world to view.
 		mat4 getView();
