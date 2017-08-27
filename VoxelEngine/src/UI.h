@@ -195,6 +195,8 @@ namespace Voxel
 
 			bool visible;
 
+			static const float fixedFovy;
+
 			glm::vec2 size;
 			glm::vec2 centerPosition;
 
