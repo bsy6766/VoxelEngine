@@ -33,7 +33,7 @@ namespace Voxel
 		void initGLView();
 		void initMainCamera();
 		void initWorld();
-		void initConfig();
+		void initInternalSettings();
 
 		// Path to working directory
 		std::string workingDirectory;
@@ -41,8 +41,8 @@ namespace Voxel
 		// world
 		World* world;
 
-		// Config
-		DataTree* configData;
+		// internal setting
+		DataTree* internalSetting;
 
 		// Clean up
 		void cleanUp();

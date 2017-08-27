@@ -1,0 +1,5 @@
+buildNumber 982
+windowTitle Voxel Engine
+Camera 
+	near 0.05f
+	far 1000.0f
