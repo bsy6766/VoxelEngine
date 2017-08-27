@@ -5,13 +5,13 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <ChunkUtil.h>
+#include <Block.h>
 #include <mutex>
 
 namespace Voxel
 {
 	// forward
 	class Chunk;
-	class Block;
 
 	typedef std::unordered_map<glm::ivec2, Chunk*, KeyFuncs, KeyFuncs> ChunkUnorderedMap;
 
@@ -35,6 +35,9 @@ namespace Voxel
 
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
+
+		// Convert block world Position to local position and chunk position
+		void blockWorldCoordinateToLocalAndChunkSectionCoordinate(const glm::ivec3& blockWorldCoordinate, glm::ivec3& blockLocalCoordinate, glm::ivec3& chunkSectionCoordinate);
 
 	public:
 		ChunkMap() = default;
@@ -69,7 +72,14 @@ namespace Voxel
 
 		// Get block in world position. Returns nullptr if chunk, chunksection or block doesn't exsits.
 		// boo valid tells wether block exists or not. It will be true if block exists. However, return value can still be nullptr if it's air block. False if chunk or chunk section doesn't exists = no block.
-		Block* getBlockAtWorldXYZ(int x, int y, int z, bool& valid);
+		Block* getBlockAtWorldXYZ(int x, int y, int z);
+		
+		// Check if block is opaque.
+		// Retruns 0 if block exists and transparent. 
+		// Returns 1 if block exists and opaque
+		// Retruns 2 if chunk section doesn't exists
+		// Retruns 3 if chunk doesn't exsits.
+		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 		
 		// From rayStart to rayEnd, visit all blocks
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);

@@ -1,6 +1,5 @@
 #include "ChunkMap.h"
 #include <Chunk.h>
-#include <Block.h>
 #include <ChunkSection.h>
 #include <iostream>
 #include <Utility.h>
@@ -177,8 +176,12 @@ unsigned int Voxel::ChunkMap::getSize()
 	return map.size();
 }
 
-Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z, bool& valid)
+void Voxel::ChunkMap::blockWorldCoordinateToLocalAndChunkSectionCoordinate(const glm::ivec3& blockWorldCoordinate, glm::ivec3& blockLocalCoordinate, glm::ivec3& chunkSectionCoordinate)
 {
+	int x = blockWorldCoordinate.x;
+	int y = blockWorldCoordinate.y;
+	int z = blockWorldCoordinate.z;
+
 	int chunkX = x / Constant::CHUNK_SECTION_WIDTH;
 	int localX = x % Constant::CHUNK_SECTION_WIDTH;
 
@@ -201,7 +204,6 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z, bool& valid)
 		if (localY < 0)
 		{
 			// There is no chunk lower thak 0 
-			return nullptr;
 		}
 		else if (localY >= Constant::CHUNK_SECTION_HEIGHT)
 		{
@@ -237,29 +239,43 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z, bool& valid)
 		chunkZ += 1;
 	}
 
-	bool hasChunk = this->hasChunkAtXZ(chunkX, chunkZ);
+	blockLocalCoordinate.x = localX;
+	blockLocalCoordinate.y = localY;
+	blockLocalCoordinate.z = localZ;
+
+	chunkSectionCoordinate.x = chunkX;
+	chunkSectionCoordinate.y = chunkY;
+	chunkSectionCoordinate.z = chunkZ;
+}
+
+Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(x, y, z), blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 
 	if (!hasChunk)
 	{
 		// There is no chunk generated. 
-		valid = false;
 		return nullptr;
 	}
 	else
 	{
 		// target chunk
-		auto chunk = this->getChunkAtXZ(chunkX, chunkZ);
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 		if (chunk)
 		{
 			if (chunk->isActive())
 			{
 				// target chunk section
-				auto chunkSection = chunk->getChunkSectionByY(chunkY);
+				auto chunkSection = chunk->getChunkSectionByY(chunkSectionPos.y);
 				if (chunkSection)
 				{
 					// return block
-					valid = true;
-					return chunkSection->getBlockAt(localX, localY, localZ);
+					return chunkSection->getBlockAt(blockLocalPos.x, blockLocalPos.y, blockLocalPos.z);
 				}
 				// There is no block in this chunk section = nullptr
 			}
@@ -267,8 +283,55 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z, bool& valid)
 		}
 	}
 
-	valid = false;
 	return nullptr;
+}
+
+int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int z)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(x, y, z), blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+
+	if (!hasChunk)
+	{
+		// There is no chunk generated. 
+		return 3;
+	}
+	else
+	{
+		// target chunk
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+		if (chunk)
+		{
+			if (chunk->isActive())
+			{
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionByY(chunkSectionPos.y);
+				if (chunkSection)
+				{
+					// chunk section exists. return block
+					Block* block = chunkSection->getBlockAt(blockLocalPos.x, blockLocalPos.y, blockLocalPos.z);
+					if (block->isTransparent())
+					{
+						return 0;
+					}
+					else
+					{
+						return 1;
+					}
+				}
+				// There is no block in this chunk section = nullptr
+				else
+				{
+					return 2;
+				}
+			}
+			// Can't access block that is in inactive chunk
+		}
+	}
 }
 
 Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
@@ -317,28 +380,19 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 			curBlockPos = visitingBlockPos;
 
 			//std::cout << "cur block (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
-			bool valid = false;
-			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z, valid);
+			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z);
 
-			if (valid)
+			if (curBlock)
 			{
-				if (curBlock)
+				if (curBlock->isEmpty() == false)
 				{
-					if (curBlock->isEmpty() == false)
+					// raycasted block not empty. 
+					if (curBlockPos != startBlockPos)
 					{
-						// raycasted block not empty. 
-						if (curBlockPos != startBlockPos)
-						{
-							//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
-							return curBlock;
-						}
+						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
+						return curBlock;
 					}
 				}
-			}
-			else
-			{
-				// Ray reached chunk that is not laoded.
-				return nullptr;
 			}
 		}
 

@@ -24,6 +24,7 @@ namespace Voxel
 			GRASS,
 			STONE,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
+			INVALID = 255
 		};
 	private:
 		Block();

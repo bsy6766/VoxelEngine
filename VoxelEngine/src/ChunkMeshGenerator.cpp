@@ -54,109 +54,55 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				auto worldPos = block->worldCoordinate;
 				//auto localPos = block->localCoordinate;
 
-				bool valid = false;
-
 				// Get adjacent block and check if it's transparent or not
-				// Up
-				auto blockUp = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y + 1, worldPos.z, valid);
-				if (blockUp)
+				// Up. Up face is different compared to sides. Add only if above block is transparent or chunk section doesn't exists
+				int blockUp = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y + 1, worldPos.z);
+				if (blockUp == 0 || blockUp == 2)
 				{
-					if (blockUp->isTransparent())
-					{
-						face |= Cube::Face::TOP;
-					}
-					// Else, other block is not transparent, can ignore top face
-				}
-				else
-				{
-					// there is no block exists above. 
+					// Block exists and transparent. Add face
 					face |= Cube::Face::TOP;
 				}
 
 				// Down. If current block is the most bottom block, doesn't have to add face
 				if (worldPos.y > 0)
 				{
-					auto blockDown = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y - 1, worldPos.z, valid);
-					if (blockDown)
+					int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
+					if (blockDown == 0 || blockDown == 2)
 					{
-						if (blockDown->isTransparent())
-						{
-							face |= Cube::Face::BOTTOM;
-						}
-					}
-					else
-					{
+						// Block exists and transparent. Add face
 						face |= Cube::Face::BOTTOM;
 					}
 				}
 
-				// Sides. Check validation of block. If it's not valid, don't add face.
+				// Sides. Side faces (Left, right, front, back) is different compared to up and down. 
+				// Only add faces if side block is transparent or chunk section is nullptr. 
+				// If chunk doesn't exist, don't add.
 				// Left
-				auto blockLeft = chunkMap->getBlockAtWorldXYZ(worldPos.x - 1, worldPos.y, worldPos.z, valid);
-				if (blockLeft)
+				auto blockLeft = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, worldPos.y, worldPos.z);
+				if (blockLeft == 0 || blockLeft == 2)
 				{
-					if (blockLeft->isTransparent())
-					{
-						face |= Cube::Face::LEFT;
-					}
-				}
-				else
-				{
-					if (valid)
-					{
-						face |= Cube::Face::LEFT;
-					}
+					face |= Cube::Face::LEFT;
 				}
 
-				// Left
-				auto blockRight = chunkMap->getBlockAtWorldXYZ(worldPos.x + 1, worldPos.y, worldPos.z, valid);
-				if (blockRight)
+				// Right
+				auto blockRight = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, worldPos.y, worldPos.z);
+				if (blockRight == 0 || blockRight == 2)
 				{
-					if (blockRight->isTransparent())
-					{
-						face |= Cube::Face::RIGHT;
-					}
-				}
-				else
-				{
-					if (valid)
-					{
-						face |= Cube::Face::RIGHT;
-					}
+					face |= Cube::Face::RIGHT;
 				}
 
 				// Front
-				auto blockFront = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z - 1, valid);
-				if (blockFront)
+				auto blockFront = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z - 1);
+				if (blockFront == 0 || blockFront == 2)
 				{
-					if (blockFront->isTransparent())
-					{
-						face |= Cube::Face::FRONT;
-					}
-				}
-				else
-				{
-					if (valid)
-					{
-						face |= Cube::Face::FRONT;
-					}
+					face |= Cube::Face::FRONT;
 				}
 
 				// Back
-				auto blockBack = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z + 1, valid);
-				if (blockBack)
+				auto blockBack = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z + 1);
+				if (blockBack == 0 || blockBack == 2)
 				{
-					if (blockBack->isTransparent())
-					{
-						face |= Cube::Face::BACK;
-					}
-				}
-				else
-				{
-					if (valid)
-					{
-						face |= Cube::Face::BACK;
-					}
+					face |= Cube::Face::BACK;
 				}
 
 				// Check face

@@ -82,7 +82,7 @@ void Voxel::Program::findAllUniforms()
 
 				GLint location = glGetUniformLocation(programObject, uniformName);
 
-				std::cout << "Uniform: " << uniformName << ", location: " << location << std::endl;
+				//std::cout << "Uniform: " << uniformName << ", location: " << location << std::endl;
 
 				UniformValue uv;
 				uv.type = type;

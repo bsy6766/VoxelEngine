@@ -106,11 +106,41 @@ bool Chunk::init(const int x, const int z)
 bool Voxel::Chunk::generate()
 {	
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
+	std::vector<std::vector<int>> heightMap;
+	int maxY = 0;
+
+	int xStart = static_cast<int>(position.x) * 16;
+	int zStart = static_cast<int>(position.z) * 16;
+	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
+	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
+
+	for (int x = xStart; x < xEnd; x++)
+	{
+		heightMap.push_back(std::vector<int>());
+		for (int z = zStart; z < zEnd; z++)
+		{
+			float val = Utility::SimplexNoise::noise(glm::vec2(static_cast<float>(x) + 0.5f, static_cast<float>(z) + 0.5f));
+			int y = static_cast<int>((val + 1.0f) * 50.0f);
+			heightMap.back().push_back(y);
+
+			if (y > maxY)
+			{
+				maxY = y;
+			}
+		}
+	}
+
+	int heighestChunkSection = (maxY / Constant::CHUNK_SECTION_HEIGHT) + 1;
+
+	std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
+	std::cout << "heighestY = " << maxY << std::endl;
+	std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
+
 	//int randY = Utility::Random::randomInt(2, 5);
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > 3)
+		if (i > heighestChunkSection)
 		{
 			chunkSections.push_back(nullptr);
 		}

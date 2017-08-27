@@ -37,7 +37,7 @@ namespace Voxel
 	private:
 		Chunk();
 
-		// Chunk position in the world
+		// Chunk position in the world. Ignore y. Y is handled in ChunkSection
 		glm::ivec3 position;
 
 		// World position of chunk. Ignore y. Y is handled in ChunkSection

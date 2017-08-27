@@ -7,6 +7,7 @@
 #include <sstream>
 #include <chrono>		// time
 #include <ctime>
+#include <array>
 #include <glm\glm.hpp>
 #include <glm\gtx\string_cast.hpp>
 
@@ -218,6 +219,11 @@ namespace Voxel
 			{
 				return glm::to_string(val);
 			}
+
+			static inline std::string vec3ToStr(const glm::vec3& val)
+			{
+				return glm::to_string(val);
+			}
 		}
 
 		class SimplexNoise
@@ -231,7 +237,7 @@ namespace Voxel
 									// All Simplex Noise implementation uses same table.
 									// Originally the size of table is 255, but doubled the size by repeating
 									// sequence of numbers to avoid wrapping index at 255 for each look up
-			static int perm[512];
+			static std::array<int, 512> perm;
 
 			// Gradient direction
 			static const int grad3[12][3];
@@ -342,7 +348,7 @@ namespace Voxel
 			// Reset perm table to default
 			static void reset()
 			{
-				int defaultPerm[512] = { 151,160,137,91,90,15,
+				std::array<int, 512> defaultPerm = { 151,160,137,91,90,15,
 					131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
 					190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
 					88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
@@ -369,7 +375,8 @@ namespace Voxel
 					49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
 					138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180 };
 
-				std::copy(std::begin(defaultPerm), std::end(defaultPerm), std::begin(perm));
+				//std::copy(std::begin(defaultPerm), std::end(defaultPerm), std::begin(SimplexNoise::perm));
+				SimplexNoise::perm = defaultPerm;
 			}
 
 			// Randomize the perm table with Random class's random function
