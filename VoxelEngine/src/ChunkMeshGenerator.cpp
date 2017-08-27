@@ -54,9 +54,11 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				auto worldPos = block->worldCoordinate;
 				//auto localPos = block->localCoordinate;
 
+				bool valid = false;
+
 				// Get adjacent block and check if it's transparent or not
 				// Up
-				auto blockUp = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y + 1, worldPos.z);
+				auto blockUp = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y + 1, worldPos.z, valid);
 				if (blockUp)
 				{
 					if (blockUp->isTransparent())
@@ -71,22 +73,26 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 					face |= Cube::Face::TOP;
 				}
 
-				// Down
-				auto blockDown = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y - 1, worldPos.z);
-				if (blockDown)
+				// Down. If current block is the most bottom block, doesn't have to add face
+				if (worldPos.y > 0)
 				{
-					if (blockDown->isTransparent())
+					auto blockDown = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y - 1, worldPos.z, valid);
+					if (blockDown)
+					{
+						if (blockDown->isTransparent())
+						{
+							face |= Cube::Face::BOTTOM;
+						}
+					}
+					else
 					{
 						face |= Cube::Face::BOTTOM;
 					}
 				}
-				else
-				{
-					face |= Cube::Face::BOTTOM;
-				}
 
+				// Sides. Check validation of block. If it's not valid, don't add face.
 				// Left
-				auto blockLeft = chunkMap->getBlockAtWorldXYZ(worldPos.x - 1, worldPos.y, worldPos.z);
+				auto blockLeft = chunkMap->getBlockAtWorldXYZ(worldPos.x - 1, worldPos.y, worldPos.z, valid);
 				if (blockLeft)
 				{
 					if (blockLeft->isTransparent())
@@ -96,11 +102,14 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					face |= Cube::Face::LEFT;
+					if (valid)
+					{
+						face |= Cube::Face::LEFT;
+					}
 				}
 
 				// Left
-				auto blockRight = chunkMap->getBlockAtWorldXYZ(worldPos.x + 1, worldPos.y, worldPos.z);
+				auto blockRight = chunkMap->getBlockAtWorldXYZ(worldPos.x + 1, worldPos.y, worldPos.z, valid);
 				if (blockRight)
 				{
 					if (blockRight->isTransparent())
@@ -110,11 +119,14 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					face |= Cube::Face::RIGHT;
+					if (valid)
+					{
+						face |= Cube::Face::RIGHT;
+					}
 				}
 
 				// Front
-				auto blockFront = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z - 1);
+				auto blockFront = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z - 1, valid);
 				if (blockFront)
 				{
 					if (blockFront->isTransparent())
@@ -124,11 +136,14 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					face |= Cube::Face::FRONT;
+					if (valid)
+					{
+						face |= Cube::Face::FRONT;
+					}
 				}
 
 				// Back
-				auto blockBack = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z + 1);
+				auto blockBack = chunkMap->getBlockAtWorldXYZ(worldPos.x, worldPos.y, worldPos.z + 1, valid);
 				if (blockBack)
 				{
 					if (blockBack->isTransparent())
@@ -138,7 +153,10 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					face |= Cube::Face::BACK;
+					if (valid)
+					{
+						face |= Cube::Face::BACK;
+					}
 				}
 
 				// Check face
@@ -163,15 +181,6 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 					{
 						colors.push_back(color);
 					}
-					/*
-					int triangleCount = blockVertices.size() / 3;
-					for (int i = 0; i < triangleCount; i++)
-					{
-						colors.push_back(block->color.x);
-						colors.push_back(block->color.y);
-						colors.push_back(block->color.z);
-					}
-					*/
 
 					auto blockIndices = Cube::getIndices(static_cast<Cube::Face>(face), indicesOffsetPerBlock);
 					indicesOffsetPerBlock += (blockVertices.size() / 3);

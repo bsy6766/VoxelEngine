@@ -35,6 +35,10 @@
 
 using namespace Voxel;
 
+// Temporary. 
+// Todo: Move this to game settings
+int renderDistance = 4;
+
 World::World()
 	: chunkMap(nullptr)
 	, chunkLoader(nullptr)
@@ -76,6 +80,8 @@ World::World()
 	*/
 
 	//Camera::mainCamera->initDebugFrustumLines();
+
+	Utility::SimplexNoise::randomize();
 }
 
 World::~World()
@@ -238,7 +244,7 @@ void Voxel::World::initCubeOutline()
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 {
 	skybox = new Skybox();
-	skybox->init(skyColor, 8);
+	skybox->init(skyColor, renderDistance);
 
 	defaultProgram->setUniformVec3("playerPosition", player->getPosition());
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
@@ -323,7 +329,7 @@ void World::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	chunkMap->initChunkNearPlayer(playerPosition, 8);
+	chunkMap->initChunkNearPlayer(playerPosition, renderDistance);
 	FileSystem::getInstance().createRegionFile(0, 0);
 
 	auto end = Utility::Time::now();
@@ -336,7 +342,6 @@ void World::loadChunkLoader()
 
 	// Load visible chunk based on player's render distance
 	// Todo: load render distance from player settings
-	const int renderDistance = 8;
 
 	auto chunkCoordinates = chunkLoader->init(player->getPosition(), chunkMap, renderDistance, glfwGetTime());
 
@@ -460,8 +465,17 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	}
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
-	{ 
+	{
+		for (int x = 0; x < 10; x++)
+		{
+			for (int z = 0; z < 10; z++)
+			{
+				std::cout << Utility::SimplexNoise::noise(glm::vec2(x, z));
+				std::cout << ", ";
+			}
 
+			std::cout << std::endl;
+		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))

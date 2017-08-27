@@ -68,8 +68,8 @@ namespace Voxel
 		unsigned int getSize();
 
 		// Get block in world position. Returns nullptr if chunk, chunksection or block doesn't exsits.
-		// Todo: Make this function to know what are missing among chunk, chunksection or block.
-		Block* getBlockAtWorldXYZ(int x, int y, int z);
+		// boo valid tells wether block exists or not. It will be true if block exists. However, return value can still be nullptr if it's air block. False if chunk or chunk section doesn't exists = no block.
+		Block* getBlockAtWorldXYZ(int x, int y, int z, bool& valid);
 		
 		// From rayStart to rayEnd, visit all blocks
 		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);

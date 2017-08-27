@@ -177,7 +177,7 @@ unsigned int Voxel::ChunkMap::getSize()
 	return map.size();
 }
 
-Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
+Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z, bool& valid)
 {
 	int chunkX = x / Constant::CHUNK_SECTION_WIDTH;
 	int localX = x % Constant::CHUNK_SECTION_WIDTH;
@@ -242,6 +242,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 	if (!hasChunk)
 	{
 		// There is no chunk generated. 
+		valid = false;
 		return nullptr;
 	}
 	else
@@ -257,6 +258,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 				if (chunkSection)
 				{
 					// return block
+					valid = true;
 					return chunkSection->getBlockAt(localX, localY, localZ);
 				}
 				// There is no block in this chunk section = nullptr
@@ -265,6 +267,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 		}
 	}
 
+	valid = false;
 	return nullptr;
 }
 
@@ -314,19 +317,28 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 			curBlockPos = visitingBlockPos;
 
 			//std::cout << "cur block (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
-			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z);
+			bool valid = false;
+			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z, valid);
 
-			if (curBlock)
+			if (valid)
 			{
-				if (curBlock->isEmpty() == false)
+				if (curBlock)
 				{
-					// raycasted block not empty. 
-					if (curBlockPos != startBlockPos)
+					if (curBlock->isEmpty() == false)
 					{
-						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
-						return curBlock;
+						// raycasted block not empty. 
+						if (curBlockPos != startBlockPos)
+						{
+							//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
+							return curBlock;
+						}
 					}
 				}
+			}
+			else
+			{
+				// Ray reached chunk that is not laoded.
+				return nullptr;
 			}
 		}
 
