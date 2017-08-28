@@ -288,6 +288,11 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 
 int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int z)
 {
+	// Retruns 0 if block exists and transparent. 
+	// Returns 1 if block exists and opaque
+	// Retruns 2 if chunk section doesn't exists
+	// Retruns 3 if chunk doesn't exsits.
+
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
 
@@ -314,13 +319,21 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 				{
 					// chunk section exists. return block
 					Block* block = chunkSection->getBlockAt(blockLocalPos.x, blockLocalPos.y, blockLocalPos.z);
-					if (block->isTransparent())
+					if (block)
 					{
-						return 0;
+						if (block->isTransparent())
+						{
+							return 0;
+						}
+						else
+						{
+							return 1;
+						}
 					}
 					else
 					{
-						return 1;
+						// block is air == nullptr
+						return 0;
 					}
 				}
 				// There is no block in this chunk section = nullptr

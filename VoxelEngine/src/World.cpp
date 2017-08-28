@@ -244,6 +244,7 @@ void Voxel::World::initCubeOutline()
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 {
 	skybox = new Skybox();
+	// Always set skybox with max render distance
 	skybox->init(skyColor, Setting::getInstance().getRenderDistance());
 
 	defaultProgram->setUniformVec3("playerPosition", player->getPosition());
@@ -466,19 +467,6 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
-		std::cout << Utility::SimplexNoise::noise(glm::vec2(1, 0)) << std::endl;
-		/*
-		for (int x = 0; x < 10; x++)
-		{
-			for (int z = 0; z < 10; z++)
-			{
-				std::cout << Utility::SimplexNoise::noise(glm::vec2(x, z));
-				std::cout << ", ";
-			}
-
-			std::cout << std::endl;
-		}
-		*/
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -846,7 +834,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
-	//defaultProgram->setUniformBool("fogEnabled", true);
+	defaultProgram->setUniformBool("fogEnabled", true);
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 
 	chunkLoader->render();

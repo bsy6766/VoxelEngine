@@ -152,7 +152,7 @@ float Voxel::Skybox::getFogDistance()
 
 void Voxel::Skybox::setFogDistanceByRenderDistance(const int renderDistance, const bool animate)
 {
-	setFogDistance(static_cast<float>(renderDistance - 1) * Constant::CHUNK_BORDER_SIZE, animate);
+	setFogDistance((static_cast<float>(renderDistance - 1) - 0.5f) * Constant::CHUNK_BORDER_SIZE, animate);
 }
 
 void Voxel::Skybox::setFogDistance(const float distance, const bool animate)

@@ -41,6 +41,7 @@ namespace Voxel
 
 		// Worker thread.
 		std::thread meshBuilderThread;
+		std::thread meshBuilderThread2;
 
 		// True if work manager is running. Else, false. 
 		std::atomic<bool> running;

@@ -32,9 +32,11 @@ namespace Voxel
 		std::vector<Block*> blocks;
 
 		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
 	public:
 		~ChunkSection();
 		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);

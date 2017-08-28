@@ -108,33 +108,95 @@ bool Voxel::Chunk::generate()
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 	std::vector<std::vector<int>> heightMap;
 	int maxY = 0;
+	int minY = 10000;
 
-	int xStart = static_cast<int>(position.x) * 16;
-	int zStart = static_cast<int>(position.z) * 16;
+	int xStart = position.x;
+	int zStart = position.z;
 	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
 	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
+
+	// Frequency. Zoom factor of height map. Higher the value, compact heightmap.
+	float freq = 0.01f;
+
+	float nx = static_cast<float>(position.x);
+	float nz = static_cast<float>(position.z);
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
+	float octave1 = 1.0f;
+	float octave2 = 1.0f;
+	float octave3 = 1.0f;
+	float octave4 = 0.7f;
+	float octave5 = 0.3f;
+	float octave6 = 0.0f;
+
+	float octave1Mul = 1.0f;
+	float octave2Mul = 2.0f;
+	float octave3Mul = 4.0f;
+	float octave4Mul = 8.0f;
+	float octave5Mul = 16.0f;
+	float octave6Mul = 32.0f;
+
+	float redistribution = 2.0f;
 
 	for (int x = xStart; x < xEnd; x++)
 	{
 		heightMap.push_back(std::vector<int>());
 		for (int z = zStart; z < zEnd; z++)
 		{
-			float val = Utility::SimplexNoise::noise(glm::vec2(static_cast<float>(x) + 0.5f, static_cast<float>(z) + 0.5f));
-			int y = static_cast<int>((val + 1.0f) * 50.0f);
+			// Noise returns value -1 to 1.
+			// Summing 6 noise will result in range of -6 to 6, but because of octave, it varies.
+			float val = octave1 * Utility::SimplexNoise::noise(glm::vec2(((octave1Mul * nx) + 0.5f) * freq, ((octave1Mul * nz) + 0.5f) * freq))
+					+ octave2 * Utility::SimplexNoise::noise(glm::vec2(((octave2Mul * nx) + 0.5f) * freq, ((octave2Mul * nz) + 0.5f) * freq))
+					+ octave3 * Utility::SimplexNoise::noise(glm::vec2(((octave3Mul * nx) + 0.5f) * freq, ((octave3Mul * nz) + 0.5f) * freq))
+					+ octave4 * Utility::SimplexNoise::noise(glm::vec2(((octave4Mul * nx) + 0.5f) * freq, ((octave4Mul * nz) + 0.5f) * freq))
+					+ octave5 * Utility::SimplexNoise::noise(glm::vec2(((octave5Mul * nx) + 0.5f) * freq, ((octave5Mul * nz) + 0.5f) * freq))
+					+ octave6 * Utility::SimplexNoise::noise(glm::vec2(((octave6Mul * nx) + 0.5f) * freq, ((octave6Mul * nz) + 0.5f) * freq));
+
+			// So we devide by sum of octaves
+			val /= (octave1 + octave2 + octave3 + octave4 + octave5 + octave6);
+
+			// Now val should be in range of -1 ~ 1. Add 1 to make it in range of 0 ~ 2
+			val += 1.0f;
+			
+			// Just in case if val is still 0, make it 0
+			if (val < 0)
+			{
+				std::cout << "Val = " << val << std::endl;
+				val = 0;
+			}
+
+			val = powf(val, redistribution);
+			//std::cout << "val = " << val << std::endl;
+			
+			// Noise returns in range of -1 ~ 1. Make it 0~1
+			//val = (val + 1.0f) * 0.5f;
+
+			// boost it
+			int y = (static_cast<int>(val * 20.0f) + 60);
+
 			heightMap.back().push_back(y);
 
 			if (y > maxY)
 			{
 				maxY = y;
 			}
+			else if (y < minY)
+			{
+				minY = y;
+			}
+
+			nz += step;
 		}
+		nx += step;
+		nz = static_cast<float>(position.z);
 	}
 
 	int heighestChunkSection = (maxY / Constant::CHUNK_SECTION_HEIGHT) + 1;
 
-	std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
-	std::cout << "heighestY = " << maxY << std::endl;
-	std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
+	//std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
+	//std::cout << "maxY = " << maxY << std::endl;
+	//std::cout << "minY = " << minY << std::endl;
+	//std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
 
 	//int randY = Utility::Random::randomInt(2, 5);
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
@@ -146,7 +208,8 @@ bool Voxel::Chunk::generate()
 		}
 		else
 		{
-			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			auto newChucnkSection = ChunkSection::createWithHeightMap(position.x, i, position.z, worldPosition, heightMap);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);

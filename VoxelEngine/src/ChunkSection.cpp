@@ -40,6 +40,22 @@ ChunkSection* ChunkSection::create(const int x, const int y, const int z, const 
 	}
 }
 
+ChunkSection * Voxel::ChunkSection::createWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<int>>& heightMap)
+{
+	ChunkSection* newChunkSection = new ChunkSection();
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	if (newChunkSection->initWithHeightMap(x, y, z, chunkPosition, heightMap))
+	{
+		//std::cout << "[ChunkSection] Done." << std::endl;
+		return newChunkSection;
+	}
+	else
+	{
+		delete newChunkSection;
+		return nullptr;
+	}
+}
+
 bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& chunkPosition)
 {
 	position = glm::ivec3(x, y, z);
@@ -77,6 +93,53 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	//auto size = sizeof(Block);
 	//std::cout << "size = " << std::endl;
 
+	return true;
+}
+
+bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<int>>& heightMap)
+{
+	position = glm::ivec3(x, y, z);
+
+	// calculate world position. Only need to calculate Y.
+	worldPosition = chunkPosition;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
+
+	blocks.clear();
+	blocks.resize(4096, nullptr);
+
+	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
+	auto color = Color::getRandomColor();
+
+	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
+	{
+		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
+		{
+			int localY = 0;
+			int heightY = heightMap.at(blockX).at(blockZ);
+
+			if (yStart <= heightY)
+			{
+				int yEnd = yStart + Constant::CHUNK_SECTION_HEIGHT - 1;
+				if (yEnd > heightY)
+				{
+					yEnd = heightY;
+				}
+
+				for (int blockY = yStart; blockY <= yEnd; blockY++)
+				{
+					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
+					newBlock->setColor(color);
+					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
+
+					localY++;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
 	return true;
 }
 

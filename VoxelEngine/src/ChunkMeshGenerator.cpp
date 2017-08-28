@@ -66,12 +66,12 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				// Down. If current block is the most bottom block, doesn't have to add face
 				if (worldPos.y > 0)
 				{
-					int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
-					if (blockDown == 0 || blockDown == 2)
-					{
-						// Block exists and transparent. Add face
-						face |= Cube::Face::BOTTOM;
-					}
+				}
+				int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
+				if (blockDown == 0 || blockDown == 2)
+				{
+					// Block exists and transparent. Add face
+					face |= Cube::Face::BOTTOM;
 				}
 
 				// Sides. Side faces (Left, right, front, back) is different compared to up and down. 
