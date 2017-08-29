@@ -25,6 +25,7 @@
 #include <Color.h>
 #include <Player.h>
 #include <Skybox.h>
+#include <Calendar.h>
 
 #include <Application.h>
 #include <GLView.h>
@@ -56,6 +57,7 @@ World::World()
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
 	, skybox(nullptr)
+	, calendar(nullptr)
 {
 	// Set clear color
 	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
@@ -118,6 +120,10 @@ void Voxel::World::init()
 	// Skybox
 	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
 
+	// Calendar
+	calendar = new Calendar();
+	calendar->init();
+
 	defaultProgram->setUniformVec4("ambientColor", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
 	defaultProgram->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
 	defaultProgram->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
@@ -134,6 +140,7 @@ void Voxel::World::init()
 	//cameraControlMode = true;
 
 	Application::getInstance().getGLView()->setWindowedFullScreen(0);
+	defaultCanvas->setSize(glm::vec2(1920, 1080));
 	debugConsole->updateResolution(1920, 1080);
 }
 
@@ -149,6 +156,7 @@ void Voxel::World::release()
 	if (player)	delete player;
 
 	if (skybox) delete skybox;
+	if (calendar) delete calendar;
 
 	if (defaultCanvas) delete defaultCanvas;
 
@@ -163,6 +171,12 @@ void Voxel::World::initUI()
 
 	// Add temporary cross hair
 	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0), glm::vec4(Color::WHITE, 1.0f));
+	// Add time label
+	UI::Text* timeLabel = UI::Text::create(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	//UI::Text* timeLabel = UI::Text::create(calendar->getTimeInStr(false), glm::vec2(0), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
+	defaultCanvas->addText("timeLabel", timeLabel, 0);
 }
 
 void Voxel::World::initCubeOutline()
@@ -421,6 +435,9 @@ void World::update(const float delta)
 
 	player->update();
 	skybox->update(delta);
+
+	calendar->update(delta);
+	defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)

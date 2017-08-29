@@ -222,7 +222,7 @@ namespace Voxel
 			Image* getImage(const std::string& name);
 			Text* getText(const std::string& name);
 
-			glm::vec2 getPivot(PIVOT pivot);
+			glm::vec2 getPivotCanvasPos(PIVOT pivot);
 
 			void setSize(const glm::vec2& size);
 
