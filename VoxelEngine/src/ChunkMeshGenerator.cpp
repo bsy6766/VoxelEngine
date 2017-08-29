@@ -17,6 +17,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 {
 	std::vector<float> vertices;
 	std::vector<float> colors;
+	std::vector<float> normals;
 	std::vector<unsigned int> indices;
 
 	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
@@ -113,27 +114,21 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				}
 				else
 				{
-					auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), block->getWorldPosition());
-					for (auto vertex : blockVertices)
-					{
-						vertices.push_back(vertex);
-					}
+					auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), worldPos);
+					vertices.insert(vertices.end(), blockVertices.begin(), blockVertices.end());
+
+					auto blockNormals = Cube::getNormals(static_cast<Cube::Face>(face), worldPos);
+					normals.insert(normals.end(), blockNormals.begin(), blockNormals.end());
 
 					// temporary function for fake lighting. 
 					//auto blockColors = Cube::getColors3(static_cast<Cube::Face>(face), block->color);
 					auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(block->getColor(), 1.0f));
 					//auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(0, 1, 0, 1));
-					for (auto color : blockColors)
-					{
-						colors.push_back(color);
-					}
+					colors.insert(colors.end(), blockColors.begin(), blockColors.end());
 
 					auto blockIndices = Cube::getIndices(static_cast<Cube::Face>(face), indicesOffsetPerBlock);
 					indicesOffsetPerBlock += (blockVertices.size() / 3);
-					for (auto index : blockIndices)
-					{
-						indices.push_back(index);
-					}
+					indices.insert(indices.end(), blockIndices.begin(), blockIndices.end());
 				}
 			}
 		}
@@ -154,7 +149,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	//newChunkMesh->initOpenGLObjects();
 	//chunk->chunkMesh = newChunkMesh;
 
-	chunk->chunkMesh->initBuffer(vertices, colors, indices);
+	chunk->chunkMesh->initBuffer(vertices, colors, normals, indices);
 
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;
 }

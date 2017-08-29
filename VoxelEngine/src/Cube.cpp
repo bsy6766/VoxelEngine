@@ -33,20 +33,6 @@ using namespace Voxel;
 			z-  y- x-
 */
 
-/*
-const std::vector<std::vector<float>> Cube::vertices = {
-	// x, y, z
-	{ 0.0f, -1.0f, 0.0f, },
-	{ 0.0, 0.0, 0.0f, },
-	{ 1.0f, -1.0f, 0.0f, },
-	{ 1.0f, 0.0f, 0.0f, },
-	{ 1.0f, -1.0f, 1.0f, },
-	{ 1.0f, 0.0f, 1.0f, },
-	{ 0.0f, -1.0f, 1.0f, },
-	{ 0.0f, 0.0f, 1.0f },
-};
-*/
-
 const std::vector<std::vector<float>> Cube::allVertices = {
 	// x, y, z
 	{ -0.5f, -0.5f, -0.5f, },
@@ -105,6 +91,54 @@ const std::vector<float> Cube::BottomVertices = {
 	-0.5f, -0.5f, 0.5f,
 	0.5f, -0.5f, -0.5f,
 	0.5f, -0.5f, 0.5f,
+};
+
+const std::vector<float>  Cube::FrontNormals = {
+	// x, y, z
+	-0.5f, -0.5f, -1.5f,
+	-0.5f, 0.5f, -1.5f,
+	0.5f, -0.5f, -1.5f,
+	0.5f, 0.5f, -1.5f,
+};
+
+const std::vector<float> Cube::BackNormals = {
+	// x, y, z
+	0.5f, -0.5f, 1.5f,
+	0.5f, 0.5f, 1.5f,
+	-0.5f, -0.5f, 1.5f,
+	-0.5f, 0.5f, 1.5f
+};
+
+const std::vector<float> Cube::LeftNormals = {
+	// x, y, z
+	-1.5f, -0.5f, -0.5f,
+	-1.5f, 0.5f, -0.5f,
+	-1.5f, -0.5f, 0.5f,
+	-1.5f, 0.5f, 0.5f
+};
+
+const std::vector<float> Cube::RightNormals = {
+	// x, y, z
+	1.5f, -0.5f, -0.5f,
+	1.5f, 0.5f, -0.5f,
+	1.5f, -0.5f, 0.5f,
+	1.5f, 0.5f, 0.5f,
+};
+
+const std::vector<float> Cube::TopNormals = {
+	// x, y, z
+	-0.5f, 1.5f, -0.5f,
+	-0.5f, 1.5f, 0.5f,
+	0.5f, 1.5f, -0.5f,
+	0.5f, 1.5f, 0.5f
+};
+
+const std::vector<float> Cube::BottomNormals = {
+	// x, y, z
+	-0.5f, -1.5f, -0.5f,
+	-0.5f, -1.5f, 0.5f,
+	0.5f, -1.5f, -0.5f,
+	0.5f, -1.5f, 0.5f,
 };
 
 const std::vector<unsigned int> Cube::faceIndices = {
@@ -249,7 +283,85 @@ std::vector<float> Voxel::Cube::getVertices(Face face, const glm::vec3& translat
 	}
 }
 
-std::vector<float> Voxel::Cube::getColors3(const Face face, glm::vec3 color)
+std::vector<float> Voxel::Cube::getNormals(Face face, const glm::vec3 & translation)
+{
+	if (face == Cube::Face::NONE)
+	{
+		return std::vector<float>();
+	}
+	else if (face == Face::ALL)
+	{
+		return getVertices();
+	}
+	else
+	{
+		std::vector<float> normals;
+
+		if (face & Cube::Face::FRONT)
+		{
+			for (unsigned int i = 0; i < FrontNormals.size(); i += 3)
+			{
+				normals.push_back(FrontNormals.at(i) + translation.x);
+				normals.push_back(FrontNormals.at(i + 1) + translation.y);
+				normals.push_back(FrontNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		if (face & Cube::Face::LEFT)
+		{
+			for (unsigned int i = 0; i < LeftNormals.size(); i += 3)
+			{
+				normals.push_back(LeftNormals.at(i) + translation.x);
+				normals.push_back(LeftNormals.at(i + 1) + translation.y);
+				normals.push_back(LeftNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		if (face & Cube::Face::BACK)
+		{
+			for (unsigned int i = 0; i < BackNormals.size(); i += 3)
+			{
+				normals.push_back(BackNormals.at(i) + translation.x);
+				normals.push_back(BackNormals.at(i + 1) + translation.y);
+				normals.push_back(BackNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		if (face & Cube::Face::RIGHT)
+		{
+			for (unsigned int i = 0; i<RightNormals.size(); i += 3)
+			{
+				normals.push_back(RightNormals.at(i) + translation.x);
+				normals.push_back(RightNormals.at(i + 1) + translation.y);
+				normals.push_back(RightNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		if (face & Cube::Face::TOP)
+		{
+			for (unsigned int i = 0; i<TopNormals.size(); i += 3)
+			{
+				normals.push_back(TopNormals.at(i) + translation.x);
+				normals.push_back(TopNormals.at(i + 1) + translation.y);
+				normals.push_back(TopNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		if (face & Cube::Face::BOTTOM)
+		{
+			for (unsigned int i = 0; i<BottomNormals.size(); i += 3)
+			{
+				normals.push_back(BottomNormals.at(i) + translation.x);
+				normals.push_back(BottomNormals.at(i + 1) + translation.y);
+				normals.push_back(BottomNormals.at(i + 2) + translation.z);
+			}
+		}
+
+		return normals;
+	}
+}
+
+std::vector<float> Voxel::Cube::getColors3(const Face face, const glm::vec3& color)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -328,7 +440,34 @@ std::vector<float> Voxel::Cube::getColors3(const Face face, glm::vec3 color)
 	}
 }
 
-std::vector<float> Voxel::Cube::getColors4(const Face face, glm::vec4 color)
+std::vector<float> Voxel::Cube::getColors4(const Face face, const glm::vec4 & color)
+{
+	if (face == Cube::Face::NONE)
+	{
+		return std::vector<float>();
+	}
+	else
+	{
+		std::vector<float> colors;
+
+		int totalFaces = countFaceBit(face);
+
+		for (int i = 0; i < totalFaces; i++)
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				colors.push_back(color.r);
+				colors.push_back(color.g);
+				colors.push_back(color.b);
+				colors.push_back(color.a);
+			}
+		}
+
+		return colors;
+	}
+}
+
+std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const glm::vec4& color)
 {
 	if (face == Cube::Face::NONE)
 	{

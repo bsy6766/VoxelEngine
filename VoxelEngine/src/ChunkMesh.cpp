@@ -12,6 +12,7 @@ ChunkMesh::ChunkMesh()
 	: vao(0)
 	, vbo(0)
 	, cbo(0)
+	, nbo(0)
 	, ibo(0)
 	, indicesSize(0)
 {
@@ -24,6 +25,7 @@ ChunkMesh::~ChunkMesh()
 	// clear vectors
 	vertices.clear();
 	colors.clear();
+	normals.clear();
 	indices.clear();
 
 	// Delte vao
@@ -33,7 +35,7 @@ ChunkMesh::~ChunkMesh()
 	}
 }
 
-void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices)
+void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& normals, const std::vector<unsigned int>& indices)
 {
 	// clear vectors
 	this->vertices.clear();
@@ -44,6 +46,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	this->vertices = vertices;
 	this->colors = colors;
 	this->indices = indices;
+	this->normals = normals;
 	this->indicesSize = indices.size();
 
 	this->bufferReady.store(true);
@@ -73,6 +76,7 @@ void Voxel::ChunkMesh::loadBuffer()
 	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
+	GLint normalLoc = program->getAttribLocation("normal");
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
@@ -90,7 +94,19 @@ void Voxel::ChunkMesh::loadBuffer()
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	// 4. IBO
+	// 4. NBO
+	// Generate buffer boejct
+	glGenBuffers(1, &nbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, nbo);
+	// load normal vector data
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * normals.size(), &normals.front(), GL_STATIC_DRAW);
+
+	// normal
+	glEnableVertexAttribArray(normalLoc);
+	glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	// 5. IBO
 	// Generate indices object
 	glGenBuffers(1, &ibo);
 	// Bind indices
@@ -103,14 +119,17 @@ void Voxel::ChunkMesh::loadBuffer()
 	// Delte buffers
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &nbo);
 	glDeleteBuffers(1, &ibo);
 
 	vbo = 0;
 	cbo = 0;
+	nbo = 0;
 	ibo = 0;
 
 	this->vertices.clear();
 	this->colors.clear();
+	this->normals.clear();
 	this->indices.clear();
 
 	bufferLoaded.store(true);
@@ -144,6 +163,7 @@ void Voxel::ChunkMesh::releaseVAO()
 	vao = 0;
 	vbo = 0;
 	cbo = 0;
+	nbo = 0;
 	ibo = 0;
 
 	bufferLoaded.store(false);
@@ -153,6 +173,7 @@ void Voxel::ChunkMesh::clearBuffers()
 {
 	vertices.clear();
 	colors.clear();
+	normals.clear();
 	indices.clear();
 	indicesSize = 0;
 

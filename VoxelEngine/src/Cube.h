@@ -66,6 +66,14 @@ namespace Voxel
 		const static std::vector<float> RightVertices;
 		const static std::vector<float> TopVertices;
 		const static std::vector<float> BottomVertices;
+		
+		// Normals
+		const static std::vector<float> FrontNormals;
+		const static std::vector<float> BackNormals;
+		const static std::vector<float> LeftNormals;
+		const static std::vector<float> RightNormals;
+		const static std::vector<float> TopNormals;
+		const static std::vector<float> BottomNormals;
 
 		// Indices
 		const static std::vector<unsigned int> faceIndices;
@@ -77,11 +85,14 @@ namespace Voxel
 		// Get cube vertices without any color
 		static std::vector<float> getVertices();
 		static std::vector<float> getVertices(const float size);
-		// Get cube vertices on specific face
+		// Get cube vertices on specific face and position
 		static std::vector<float> getVertices(Face face, const glm::vec3& translation);
+		// Get cube normals on specific face and position
+		static std::vector<float> getNormals(Face face, const glm::vec3& translation);
 		// Get color
-		static std::vector<float> getColors3(const Face face, glm::vec3 color);
-		static std::vector<float> getColors4(const Face face, glm::vec4 color);
+		static std::vector<float> getColors3(const Face face, const glm::vec3& color);
+		static std::vector<float> getColors4(const Face face, const glm::vec4& color);
+		static std::vector<float> getColors4WithFakeShade(const Face face, const glm::vec4& color);
 		// Get cube indices
 		static std::vector<unsigned int> getIndices(Face face, const int cubeOffset);
 	};

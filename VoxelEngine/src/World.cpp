@@ -118,6 +118,9 @@ void Voxel::World::init()
 	// Skybox
 	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
 
+	defaultProgram->setUniformVec4("ambientColor", glm::vec4(0.05f, 0.05f, 0.15f, 1.0f));
+	defaultProgram->setUniformFloat("lightIntensity", 10.0f);
+
 	// UI & font
 	initUI();
 	// Debug. This creates all the debug UI components
@@ -298,7 +301,7 @@ void World::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
-	//player->setPosition(glm::vec3(8, 300, 8));
+	player->setPosition(glm::vec3(8, 100, 8));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 
@@ -836,6 +839,8 @@ void World::render(const float delta)
 
 	defaultProgram->setUniformBool("fogEnabled", true);
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
+
+	defaultProgram->setUniformVec3("lightPosition", player->getPosition());
 
 	chunkLoader->render();
 

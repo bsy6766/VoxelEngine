@@ -18,6 +18,7 @@ namespace Voxel
 		// temporary vertices vectors. This gets cleared once data is loaded
 		std::vector<float> vertices;
 		std::vector<float> colors;
+		std::vector<float> normals;
 		std::vector<unsigned int> indices;
 
 		int indicesSize;
@@ -31,12 +32,13 @@ namespace Voxel
 		GLuint vao;	// vertex array object
 		GLuint vbo;	// vertex buffer object (cube)
 		GLuint cbo;	// color buffer object
+		GLuint nbo;
 		GLuint ibo;	// index buffer object 
 	public:
 		ChunkMesh();
 		~ChunkMesh();
 
-		void initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<unsigned int>& indices);
+		void initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& normals, const std::vector<unsigned int>& indices);
 		void loadBuffer();
 
 		void bind();
