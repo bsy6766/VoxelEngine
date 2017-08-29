@@ -198,7 +198,7 @@ void Voxel::FileSystem::saveToRegionFile(const glm::ivec2& regionCoordinate, con
 			for (auto block : blocks)
 			{
 				char id = static_cast<unsigned char>(block->getBlockID());
-				auto color = block->getColor();
+				auto color = block->getColor3();
 				char r = static_cast<char>(color.r * 255.0f);
 				char g = static_cast<char>(color.g * 255.0f);
 				char b = static_cast<char>(color.b * 255.0f);

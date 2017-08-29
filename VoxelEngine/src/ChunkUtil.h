@@ -12,6 +12,7 @@ namespace Voxel
 		const static int CHUNK_SECTION_LENGTH = 16;
 		const static unsigned int TOTAL_BLOCKS = 4096;
 		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 16;
+		const static int HEIGHEST_BLOCK_Y = TOTAL_CHUNK_SECTION_PER_CHUNK * CHUNK_SECTION_HEIGHT;
 		const static float CHUNK_BORDER_SIZE = 16.0f;
 		const static float CHUNK_BORDER_SIZE_HALF = CHUNK_BORDER_SIZE * 0.5f;
 		const static int SPAWN_CHUNK_DISTANCE = 2;
@@ -61,6 +62,11 @@ namespace Voxel
 				z -= Constant::CHUNK_BORDER_SIZE_HALF;
 
 			return glm::vec3(x, 0, z);
+		}
+
+		static unsigned int XYZToBlockIndex(const unsigned int x, const unsigned int y, const unsigned int z)
+		{
+			return x + (Constant::CHUNK_SECTION_WIDTH * z) + (y * Constant::CHUNK_SECTION_LENGTH * Constant::CHUNK_SECTION_WIDTH);
 		}
 	}
 

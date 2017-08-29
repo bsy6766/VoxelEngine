@@ -10,12 +10,12 @@ using namespace Voxel;
 			   7---------5
 			  /|        /|
 			 / |       / |
-			1--|------3  |
+			3--|------1  |
 	Right	|  |      |  |  Left
 			|  |      |  |
 			|  6------|--4
 			| /       | /
-			0---------2
+			2---------0
 		Front
 			    Bottom
 */
@@ -47,50 +47,50 @@ const std::vector<std::vector<float>> Cube::allVertices = {
 
 const std::vector<float>  Cube::FrontVertices = {
 	// x, y, z
-	-0.5f, -0.5f, -0.5f,
-	-0.5f, 0.5f, -0.5f,
-	0.5f, -0.5f, -0.5f,
-	0.5f, 0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,	// 0
+	-0.5f, 0.5f, -0.5f,		// 1
+	0.5f, -0.5f, -0.5f,		// 2
+	0.5f, 0.5f, -0.5f,		// 3
 };
 
 const std::vector<float> Cube::BackVertices = {
 	// x, y, z
-	0.5f, -0.5f, 0.5f,
-	0.5f, 0.5f, 0.5f,
-	-0.5f, -0.5f, 0.5f,
-	-0.5f, 0.5f, 0.5f
+	0.5f, -0.5f, 0.5f,		// 6
+	0.5f, 0.5f, 0.5f,		// 7
+	-0.5f, -0.5f, 0.5f,		// 4
+	-0.5f, 0.5f, 0.5f		// 5
 };
 
 const std::vector<float> Cube::LeftVertices = {
 	// x, y, z
-	-0.5f, -0.5f, -0.5f,
-	-0.5f, 0.5f, -0.5f,
-	-0.5f, -0.5f, 0.5f,
-	-0.5f, 0.5f, 0.5f
+	-0.5f, -0.5f, 0.5f,		// 4
+	-0.5f, 0.5f, 0.5f,		// 5
+	-0.5f, -0.5f, -0.5f,	// 0 
+	-0.5f, 0.5f, -0.5f,		// 1
 };
 
 const std::vector<float> Cube::RightVertices = {
 	// x, y, z
-	0.5f, -0.5f, -0.5f,
-	0.5f, 0.5f, -0.5f,
-	0.5f, -0.5f, 0.5f,
-	0.5f, 0.5f, 0.5f,
+	0.5f, -0.5f, -0.5f,		// 2
+	0.5f, 0.5f, -0.5f,		// 3
+	0.5f, -0.5f, 0.5f,		// 6
+	0.5f, 0.5f, 0.5f,		// 7
 };
 
 const std::vector<float> Cube::TopVertices = {
 	// x, y, z
-	-0.5f, 0.5f, -0.5f,
-	-0.5f, 0.5f, 0.5f,
-	0.5f, 0.5f, -0.5f,
-	0.5f, 0.5f, 0.5f
+	-0.5f, 0.5f, -0.5f,		// 1
+	-0.5f, 0.5f, 0.5f,		// 5
+	0.5f, 0.5f, -0.5f,		// 3
+	0.5f, 0.5f, 0.5f		// 7
 };
 
 const std::vector<float> Cube::BottomVertices = {
 	// x, y, z
-	-0.5f, -0.5f, -0.5f,
-	-0.5f, -0.5f, 0.5f,
-	0.5f, -0.5f, -0.5f,
-	0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, -0.5f,	// 0
+	-0.5f, -0.5f, 0.5f,		// 4
+	0.5f, -0.5f, -0.5f,		// 2
+	0.5f, -0.5f, 0.5f,		// 6
 };
 
 const std::vector<float>  Cube::FrontNormals = {
@@ -111,10 +111,10 @@ const std::vector<float> Cube::BackNormals = {
 
 const std::vector<float> Cube::LeftNormals = {
 	// x, y, z
+	-1.5f, -0.5f, 0.5f,
+	-1.5f, 0.5f, 0.5f,
 	-1.5f, -0.5f, -0.5f,
 	-1.5f, 0.5f, -0.5f,
-	-1.5f, -0.5f, 0.5f,
-	-1.5f, 0.5f, 0.5f
 };
 
 const std::vector<float> Cube::RightNormals = {
@@ -159,6 +159,17 @@ const std::vector<unsigned int> Cube::indices = {
 	// Bot
 	0, 6, 2, 6, 2, 4
 };
+
+const float Cube::TopShadeRatio = 1.0f;
+const float Cube::FrontAndBackShadeRatio = 0.7f;
+const float Cube::LeftAndRightShadeRatio = 0.55f;
+const float Cube::BottomShadeRatio = 0.4f;
+const float Cube::ShadePower = 0.05f;
+
+
+
+
+
 
 int Voxel::Cube::countFaceBit(Face face)
 {
@@ -440,7 +451,7 @@ std::vector<float> Voxel::Cube::getColors3(const Face face, const glm::vec3& col
 	}
 }
 
-std::vector<float> Voxel::Cube::getColors4(const Face face, const glm::vec4 & color)
+std::vector<float> Voxel::Cube::getColors4WithoutShade(const Face face, const glm::vec4 & color)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -467,7 +478,7 @@ std::vector<float> Voxel::Cube::getColors4(const Face face, const glm::vec4 & co
 	}
 }
 
-std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const glm::vec4& color)
+std::vector<float> Voxel::Cube::getColors4WithDefaultShade(const Face & face, const glm::vec4 & color)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -479,7 +490,7 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 
 		if (face & Cube::Face::FRONT)
 		{
-			glm::vec3 sideColor = color * 0.8f;
+			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
 			for (int i = 0; i < 4; i++)
 			{
 				colors.push_back(sideColor.r);
@@ -491,7 +502,7 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 
 		if (face & Cube::Face::LEFT)
 		{
-			glm::vec3 sideColor = color * 0.8f;
+			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
 			for (int i = 0; i < 4; i++)
 			{
 				colors.push_back(sideColor.r);
@@ -503,7 +514,7 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 
 		if (face & Cube::Face::BACK)
 		{
-			glm::vec3 sideColor = color * 0.8f;
+			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
 			for (int i = 0; i < 4; i++)
 			{
 				colors.push_back(sideColor.r);
@@ -515,7 +526,7 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 
 		if (face & Cube::Face::RIGHT)
 		{
-			glm::vec3 sideColor = color * 0.8f;
+			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
 			for (int i = 0; i < 4; i++)
 			{
 				colors.push_back(sideColor.r);
@@ -538,7 +549,7 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 
 		if (face & Cube::Face::BOTTOM)
 		{
-			glm::vec3 bottomColor = color * 0.4f;
+			glm::vec3 bottomColor = color * BottomShadeRatio;
 			for (int i = 0; i < 4; i++)
 			{
 				colors.push_back(bottomColor.r);
@@ -546,6 +557,275 @@ std::vector<float> Voxel::Cube::getColors4WithFakeShade(const Face face, const g
 				colors.push_back(bottomColor.b);
 				colors.push_back(color.a);
 			}
+		}
+
+		return colors;
+	}
+}
+
+std::vector<float> Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4& color, const std::vector<unsigned int>& shadowWeight)
+{
+	if (face == Cube::Face::NONE)
+	{
+		return std::vector<float>();
+	}
+	else
+	{
+		std::vector<float> colors;
+
+		// Generate coloer vertices based on 
+
+		if (face & Cube::Face::FRONT)
+		{
+			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
+
+			// 0, 1, 2, 3
+			// index 0 (3, 4, 5)
+			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+			float colorMod0 = count0 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod0);
+			colors.push_back(sideColor.g - colorMod0);
+			colors.push_back(sideColor.b - colorMod0);
+			colors.push_back(color.a);
+
+			// index 1 (11, 12, 13)
+			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			float colorMod1 = count1 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod1);
+			colors.push_back(sideColor.g - colorMod1);
+			colors.push_back(sideColor.b - colorMod1);
+			colors.push_back(color.a);
+
+			// index 2 (1, 2, 3)
+			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+			float colorMod2 = count2 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod2);
+			colors.push_back(sideColor.g - colorMod2);
+			colors.push_back(sideColor.b - colorMod2);
+			colors.push_back(color.a);
+
+			// index 3 (9, 10, 11)
+			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			float colorMod3 = count3 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod3);
+			colors.push_back(sideColor.g - colorMod3);
+			colors.push_back(sideColor.b - colorMod3);
+			colors.push_back(color.a);
+		}
+
+		if (face & Cube::Face::LEFT)
+		{
+			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
+
+			// 4, 5, 0, 1
+			// index 4 (5, 6, 7)
+			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+			float colorMod4 = count4 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod4);
+			colors.push_back(sideColor.g - colorMod4);
+			colors.push_back(sideColor.b - colorMod4);
+			colors.push_back(color.a);
+
+			// index 5 (13, 14, 15)
+			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			float colorMod5 = count5 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod5);
+			colors.push_back(sideColor.g - colorMod5);
+			colors.push_back(sideColor.b - colorMod5);
+			colors.push_back(color.a);
+
+			// index 0 (3, 4, 5)
+			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+			float colorMod0 = count0 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod0);
+			colors.push_back(sideColor.g - colorMod0);
+			colors.push_back(sideColor.b - colorMod0);
+			colors.push_back(color.a);
+
+			// index 1 (11, 12, 13)
+			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			float colorMod1 = count1 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod1);
+			colors.push_back(sideColor.g - colorMod1);
+			colors.push_back(sideColor.b - colorMod1);
+			colors.push_back(color.a);
+		}
+
+		if (face & Cube::Face::BACK)
+		{
+			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
+
+			// 6, 7, 4, 5
+			// index 6 (1, 0, 7)
+			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+			float colorMod6 = count6 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod6);
+			colors.push_back(sideColor.g - colorMod6);
+			colors.push_back(sideColor.b - colorMod6);
+			colors.push_back(color.a);
+
+			// index 7 (9, 8, 15)
+			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			float colorMod7 = count7 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod7);
+			colors.push_back(sideColor.g - colorMod7);
+			colors.push_back(sideColor.b - colorMod7);
+			colors.push_back(color.a);
+
+			// index 4 (5, 6, 7)
+			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+			float colorMod4 = count4 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod4);
+			colors.push_back(sideColor.g - colorMod4);
+			colors.push_back(sideColor.b - colorMod4);
+			colors.push_back(color.a);
+
+			// index 5 (13, 14, 15)
+			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			float colorMod5 = count5 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod5);
+			colors.push_back(sideColor.g - colorMod5);
+			colors.push_back(sideColor.b - colorMod5);
+			colors.push_back(color.a);
+		}
+
+		if (face & Cube::Face::RIGHT)
+		{
+			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
+
+			//2, 3, 6, 7
+			// index 2 (1, 2, 3)
+			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+			float colorMod2 = count2 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod2);
+			colors.push_back(sideColor.g - colorMod2);
+			colors.push_back(sideColor.b - colorMod2);
+			colors.push_back(color.a);
+
+			// index 3 (9, 10, 11)
+			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			float colorMod3 = count3 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod3);
+			colors.push_back(sideColor.g - colorMod3);
+			colors.push_back(sideColor.b - colorMod3);
+			colors.push_back(color.a);
+
+			// index 6 (1, 0, 7)
+			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+			float colorMod6 = count6 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod6);
+			colors.push_back(sideColor.g - colorMod6);
+			colors.push_back(sideColor.b - colorMod6);
+			colors.push_back(color.a);
+
+			// index 7 (9, 8, 15)
+			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			float colorMod7 = count7 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod7);
+			colors.push_back(sideColor.g - colorMod7);
+			colors.push_back(sideColor.b - colorMod7);
+			colors.push_back(color.a);
+		}
+
+		if (face & Cube::Face::TOP)
+		{
+			glm::vec3 sideColor = color * TopShadeRatio;
+
+			// 1, 5, 3, 7
+
+			// index 1 (11, 12, 13)
+			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			float colorMod1 = count1 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod1);
+			colors.push_back(sideColor.g - colorMod1);
+			colors.push_back(sideColor.b - colorMod1);
+			colors.push_back(color.a);
+
+			// index 5 (13, 14, 15)
+			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			float colorMod5 = count5 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod5);
+			colors.push_back(sideColor.g - colorMod5);
+			colors.push_back(sideColor.b - colorMod5);
+			colors.push_back(color.a);
+
+			// index 3 (9, 10, 11)
+			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			float colorMod3 = count3 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod3);
+			colors.push_back(sideColor.g - colorMod3);
+			colors.push_back(sideColor.b - colorMod3);
+			colors.push_back(color.a);
+
+			// index 7 (9, 8, 15)
+			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			float colorMod7 = count7 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod7);
+			colors.push_back(sideColor.g - colorMod7);
+			colors.push_back(sideColor.b - colorMod7);
+			colors.push_back(color.a);
+		}
+
+		if (face & Cube::Face::BOTTOM)
+		{
+			glm::vec3 sideColor = color * BottomShadeRatio;
+
+			// 0, 4, 2, 6
+			// index 0 (3, 4, 5)
+			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+			float colorMod0 = count0 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod0);
+			colors.push_back(sideColor.g - colorMod0);
+			colors.push_back(sideColor.b - colorMod0);
+			colors.push_back(color.a);
+
+			// index 4 (5, 6, 7)
+			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+			float colorMod4 = count4 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod4);
+			colors.push_back(sideColor.g - colorMod4);
+			colors.push_back(sideColor.b - colorMod4);
+			colors.push_back(color.a);
+
+			// index 2 (1, 2, 3)
+			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+			float colorMod2 = count2 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod2);
+			colors.push_back(sideColor.g - colorMod2);
+			colors.push_back(sideColor.b - colorMod2);
+			colors.push_back(color.a);
+
+			// index 6 (1, 0, 7)
+			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+			float colorMod6 = count6 * ShadePower;
+
+			colors.push_back(sideColor.r - colorMod6);
+			colors.push_back(sideColor.g - colorMod6);
+			colors.push_back(sideColor.b - colorMod6);
+			colors.push_back(color.a);
 		}
 
 		return colors;

@@ -138,9 +138,14 @@ void Voxel::Block::setColor(const unsigned char r, const unsigned char g, const 
 	this->b = b;
 }
 
-glm::vec3 Voxel::Block::getColor()
+glm::vec3 Voxel::Block::getColor3()
 {
 	return glm::vec3(static_cast<float>(r) / 255.0f, static_cast<float>(g) / 255.0f, static_cast<float>(b) / 255.0f);
+}
+
+glm::vec4 Voxel::Block::getColor4()
+{
+	return glm::vec4(getColor3(), 1.0f);
 }
 
 glm::vec3 Voxel::Block::getWorldPosition()

@@ -116,7 +116,7 @@ bool Voxel::Chunk::generate()
 	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
 
 	// Frequency. Zoom factor of height map. Higher the value, compact heightmap.
-	float freq = 0.01f;
+	float freq = 0.03f;
 
 	float nx = static_cast<float>(position.x);
 	float nz = static_cast<float>(position.z);
@@ -136,7 +136,7 @@ bool Voxel::Chunk::generate()
 	float octave5Mul = 16.0f;
 	float octave6Mul = 32.0f;
 
-	float redistribution = 2.0f;
+	float redistribution = 3.0f;
 
 	for (int x = xStart; x < xEnd; x++)
 	{
@@ -191,23 +191,31 @@ bool Voxel::Chunk::generate()
 		nz = static_cast<float>(position.z);
 	}
 
-	int heighestChunkSection = (maxY / Constant::CHUNK_SECTION_HEIGHT) + 1;
+	int heighestChunkSection = (maxY / Constant::CHUNK_SECTION_HEIGHT);
+	int lowestChunkSection = ((minY - 5) / Constant::CHUNK_SECTION_HEIGHT);
+	if (lowestChunkSection < 0)
+	{
+		lowestChunkSection = 0;
+	}
 
 	//std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
 	//std::cout << "maxY = " << maxY << std::endl;
 	//std::cout << "minY = " << minY << std::endl;
 	//std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
+	//std::cout << "lowestChunkSection = " << lowestChunkSection << std::endl;
 
 	//int randY = Utility::Random::randomInt(2, 5);
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > heighestChunkSection)
+		if (i > heighestChunkSection || i < lowestChunkSection)
 		{
+			//std::cout << "+ chunksection: " << i << std::endl;
 			chunkSections.push_back(nullptr);
 		}
 		else
 		{
+			//std::cout << "++ chunksection: " << i << std::endl;
 			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
 			auto newChucnkSection = ChunkSection::createWithHeightMap(position.x, i, position.z, worldPosition, heightMap);
 			if (newChucnkSection)

@@ -7,3 +7,4 @@ videoSetting
 	vsync false
 	renderDistance 16
 	fieldOfView 70
+	blockShade true

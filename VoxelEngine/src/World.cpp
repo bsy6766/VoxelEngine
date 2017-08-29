@@ -118,8 +118,9 @@ void Voxel::World::init()
 	// Skybox
 	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
 
-	defaultProgram->setUniformVec4("ambientColor", glm::vec4(0.05f, 0.05f, 0.15f, 1.0f));
-	defaultProgram->setUniformFloat("lightIntensity", 10.0f);
+	defaultProgram->setUniformVec4("ambientColor", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+	defaultProgram->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
+	defaultProgram->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
 	// UI & font
 	initUI();
@@ -470,6 +471,8 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
+		player->setPosition(glm::vec3(70.6504f, 100.47f, 177.847f));
+		player->setRotation(glm::vec3(339, 37.1524, 0));
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -840,7 +843,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformBool("fogEnabled", true);
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 
-	defaultProgram->setUniformVec3("lightPosition", player->getPosition());
+	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
 	chunkLoader->render();
 

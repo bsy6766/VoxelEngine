@@ -60,7 +60,8 @@ namespace Voxel
 		void setColor(const unsigned char r, const unsigned char g, const unsigned char b);
 
 		// Get block color
-		glm::vec3 getColor();
+		glm::vec3 getColor3();
+		glm::vec4 getColor4();
 
 		// Get world position
 		glm::vec3 getWorldPosition();

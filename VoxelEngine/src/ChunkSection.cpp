@@ -107,8 +107,73 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 	blocks.clear();
 	blocks.resize(4096, nullptr);
 
+	/*
+	// Log: Day 19. Attempted to create only 5 blocks below the hieght map.
+	//		Turns out to terrible decision. Image where mountain has edge longer than 5 blocks high. There will be empty holes.
+	//		Mybe I can iterate all 4096 blocks and check if it's visible. Else, delete the block.
+	//		Or, check height map nearby and see if near block is higher than me. It so, delete.
+
+	int chunkYStart = y * Constant::CHUNK_SECTION_HEIGHT;
+	//auto color = Color::getRandomColor();
+	auto color = Color::GRASS;
+
+	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
+	{
+		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
+		{
+			int heightY = heightMap.at(blockX).at(blockZ);
+			int heightChunkY = heightY / Constant::CHUNK_SECTION_HEIGHT;
+			bool heighest = (heightChunkY == y);
+
+			int localY = 0;
+
+			int localHeight = heightY % Constant::CHUNK_SECTION_HEIGHT;
+
+			int yEnd = 0;
+
+			if (heighest)
+			{
+				localY = localHeight - 4;
+				if (localY < 0) localY = 0;
+				yEnd = localHeight;
+			}
+			else
+			{
+				bool below = ((heightChunkY - 1) == y);
+				if (below)
+				{
+					if (localHeight < 4)
+					{
+						localY = localHeight - 4;
+						if (localY < 0) localY += Constant::CHUNK_SECTION_HEIGHT;
+						yEnd = Constant::CHUNK_SECTION_HEIGHT - 1;
+					}
+					else
+					{
+						continue;
+					}
+				}
+				// else, Don't have to fill
+				else
+				{
+					continue;
+				}
+			}
+
+			for (int blockY = localY; blockY <= yEnd; blockY++)
+			{
+				auto newBlock = Block::create(glm::ivec3(blockX, blockY, blockZ), position);
+				newBlock->setColor(color);
+				blocks.at(XYZToIndex(blockX, blockY, blockZ)) = newBlock;
+			}
+		}
+	}
+
+	*/
+
 	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
-	auto color = Color::getRandomColor();
+	//auto color = Color::getRandomColor();
+	auto color = Color::GRASS;
 
 	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 	{
@@ -140,6 +205,7 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 			}
 		}
 	}
+
 	return true;
 }
 
