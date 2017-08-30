@@ -93,8 +93,8 @@ void Voxel::Player::initRayLine()
 	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
 
 	GLfloat ray[] = {
-		position.x, position.y, position.z, 1, 0, 0,
-		playerRayEnd.x, playerRayEnd.y, playerRayEnd.z, 1, 0, 0
+		0, 0, 0, 1, 0, 0,
+		0, 0, -1 * rayRange, 1, 0, 0
 	};
 
 	// Load cube vertices

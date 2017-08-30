@@ -7,27 +7,6 @@
 namespace Voxel
 {
 	/**
-	*	@class Line
-	*	@brief Static class that provides line vertices
-	*/
-	/*
-	class Line
-	{
-	private:
-		// This is static class
-		Line() = delete;
-		~Line() = delete;
-	public:
-		static std::vector<float> getvertices(const glm::vec3& start, const glm::vec3& end);
-		static std::vector<float> getColors(const glm::vec3& color);
-		static std::vector<float> getColors(const glm::vec3& colorStart, const glm::vec3& colorEnd);
-		static std::vector<float> getVertices(const glm::vec3& start, const glm::vec3& end, const glm::vec3& color);
-		static std::vector<float> getVertices(const glm::vec3& start, const glm::vec3& end, const glm::vec3& colorStart, const glm::vec3& colorEnd);
-	};
-	*/
-
-
-	/**
 	*	@class Cube
 	*	@brief Static class that provides cube vertices
 	*/
@@ -58,6 +37,7 @@ namespace Voxel
 		// Cube size of 1 oriented zero to positive
 		//const static std::vector<float> vertices;
 		const static std::vector<std::vector<float>> allVertices;
+		const static std::vector<glm::vec3> allVerticesGlmVec3;
 
 		// Vertices
 		const static std::vector<float> FrontVertices;
@@ -100,6 +80,8 @@ namespace Voxel
 		static std::vector<float> getColors4WithShade(const Face face, const glm::vec4& color, const std::vector<unsigned int>& shadowWeight);
 		// Get cube indices
 		static std::vector<unsigned int> getIndices(Face face, const int cubeOffset);
+		// Face to string
+		static std::string faceToString(const Face& face);
 	};
 }
 

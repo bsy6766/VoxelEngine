@@ -7,11 +7,21 @@
 #include <ChunkUtil.h>
 #include <Block.h>
 #include <mutex>
+#include <Cube.h>
 
 namespace Voxel
 {
 	// forward
 	class Chunk;
+
+	// Raycast result
+	struct RayResult
+	{
+		// Nullptr if ray didn't hit
+		Block* block;
+		// The face that ray hit
+		Cube::Face face;
+	};
 
 	typedef std::unordered_map<glm::ivec2, Chunk*, KeyFuncs, KeyFuncs> ChunkUnorderedMap;
 
@@ -82,7 +92,10 @@ namespace Voxel
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 		
 		// From rayStart to rayEnd, visit all blocks
-		Block* raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
+		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
+		// Check which face of block(cube) did ray hit
+		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const AABB& blockAABB);
+		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Triangle& tri, glm::vec3& intersectingPoint);
 
 		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);

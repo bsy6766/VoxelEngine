@@ -35,14 +35,26 @@ using namespace Voxel;
 
 const std::vector<std::vector<float>> Cube::allVertices = {
 	// x, y, z
-	{ -0.5f, -0.5f, -0.5f, },
-	{ -0.5f, 0.5f, -0.5f, },
-	{ 0.5f, -0.5f, -0.5f, },
-	{ 0.5f, 0.5f, -0.5f, },
-	{ 0.5f, -0.5f, 0.5f, },
-	{ 0.5f, 0.5f, 0.5f, },
-	{ -0.5f, -0.5f, 0.5f, },
-	{ -0.5f, 0.5f, 0.5f },
+	{ -0.5f, -0.5f, -0.5f, },	// 0
+	{ -0.5f, 0.5f, -0.5f, },	// 1
+	{ 0.5f, -0.5f, -0.5f, },	// 2
+	{ 0.5f, 0.5f, -0.5f, },		// 3
+	{ -0.5f, -0.5f, 0.5f, },	// 4
+	{ -0.5f, 0.5f, 0.5f },		// 5
+	{ 0.5f, -0.5f, 0.5f, },		// 6
+	{ 0.5f, 0.5f, 0.5f, },		// 7
+};
+
+const std::vector<glm::vec3> Cube::allVerticesGlmVec3 = {
+	// x, y, z
+	glm::vec3(-0.5f, -0.5f, -0.5f),	// 0
+	glm::vec3(-0.5f, 0.5f, -0.5f),	// 1
+	glm::vec3(0.5f, -0.5f, -0.5f),	// 2
+	glm::vec3(0.5f, 0.5f, -0.5f),	// 3
+	glm::vec3(-0.5f, -0.5f, 0.5f),	// 4
+	glm::vec3(-0.5f, 0.5f, 0.5),	// 5
+	glm::vec3(0.5f, -0.5f, 0.5f),	// 6
+	glm::vec3(0.5f, 0.5f, 0.5f),	// 7
 };
 
 const std::vector<float>  Cube::FrontVertices = {
@@ -149,15 +161,15 @@ const std::vector<unsigned int> Cube::indices = {
 	// Front
 	0, 1, 2, 1, 2, 3,
 	// Left
-	2, 3, 4, 3, 4, 5,
+	0, 1, 4, 1, 4, 5,
 	// Back
 	4, 5, 6, 5, 6, 7,
 	// Right
-	6, 7, 0, 7, 0, 1,
+	2, 3, 6, 3, 6, 7,
 	// Top
-	1, 7, 3, 7, 3, 5,
+	1, 5, 3, 5, 3, 7,
 	// Bot
-	0, 6, 2, 6, 2, 4
+	0, 4, 2, 4, 2, 6
 };
 
 const float Cube::TopShadeRatio = 1.0f;
@@ -194,7 +206,7 @@ std::vector<float> Voxel::Cube::getVertices()
 	{
 		for (auto point : vertex)
 		{
-			vertecies.push_back(point * 10.0f);
+			vertecies.push_back(point);
 		}
 	}
 
@@ -864,5 +876,33 @@ std::vector<unsigned int> Voxel::Cube::getIndices(Face face, const int cubeOffse
 
 			return newIndices;
 		}
+	}
+}
+
+std::string Voxel::Cube::faceToString(const Face & face)
+{
+	switch (face)
+	{
+	case Cube::Face::FRONT:
+		return "FRONT";
+		break;
+	case Cube::Face::LEFT:
+		return "LEFT";
+		break;
+	case Cube::Face::BACK:
+		return "BACK";
+		break;
+	case Cube::Face::RIGHT:
+		return "RIGHT";
+		break;
+	case Cube::Face::TOP:
+		return "TOP";
+		break;
+	case Cube::Face::BOTTOM:
+		return "BOTTOM";
+		break;
+	default:
+		return std::string();
+		break;
 	}
 }

@@ -148,6 +148,11 @@ glm::vec4 Voxel::Block::getColor4()
 	return glm::vec4(getColor3(), 1.0f);
 }
 
+glm::ivec3 Voxel::Block::getWorldCoordinate()
+{
+	return worldCoordinate;
+}
+
 glm::vec3 Voxel::Block::getWorldPosition()
 {
 	return glm::vec3(worldCoordinate) + 0.5f;
@@ -156,4 +161,9 @@ glm::vec3 Voxel::Block::getWorldPosition()
 Block::BLOCK_ID Voxel::Block::getBlockID()
 {
 	return this->id;
+}
+
+AABB Voxel::Block::getAABB()
+{
+	return AABB(this->getWorldPosition(), glm::vec3(1.0f));
 }

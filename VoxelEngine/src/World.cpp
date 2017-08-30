@@ -315,7 +315,7 @@ void World::createPlayer()
 
 	// for debug
 	//player->initYLine();
-	//player->initRayLine();
+	player->initRayLine();
 }
 
 void World::createChunkMap()
@@ -396,11 +396,11 @@ void World::update(const float delta)
 		// If player either move or rotated, update frustum
 		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
 		// Also update raycast
-		Block* hit = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
-		if (hit)
+		auto result = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
+		if (result.block != nullptr)
 		{
-			player->setLookingBlock(hit);
-			debugConsole->updatePlayerLookingAt(glm::ivec3(hit->getWorldPosition()));
+			player->setLookingBlock(result.block);
+			debugConsole->updatePlayerLookingAt(result.block->getWorldCoordinate(), result.face);
 		}
 		else
 		{

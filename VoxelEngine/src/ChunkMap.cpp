@@ -3,6 +3,7 @@
 #include <ChunkSection.h>
 #include <iostream>
 #include <Utility.h>
+#include <Physics.h>
 
 using namespace Voxel;
 
@@ -344,10 +345,12 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 			}
 			// Can't access block that is in inactive chunk
 		}
+
+		return 3;
 	}
 }
 
-Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
+RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
 {
 	//std::cout << "RayCasting" << std::endl;
 
@@ -362,12 +365,12 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 
 	glm::vec3 dirVec = rayEnd - rayStart;
 
-	float div = 200.0f;
+	float div = 1500.0f;
 	glm::vec3 step = dirVec / div;
 
 	//std::cout << "step = " << step.x << ", " << step.y << ", " << step.z << ")" << std::endl;
 
-	int threshold = 200;
+	int threshold = 1500;
 
 	glm::vec3 curRayPoint = rayStart;
 
@@ -376,13 +379,17 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 
 	//std::cout << "start block (" << startBlockPos.x << ", " << startBlockPos.y << ", " << startBlockPos.z << ")" << std::endl;
 
+	RayResult result;
+	result.block = nullptr;
+	result.face = Cube::Face::NONE;
+
 	while (threshold >= 0)
 	{
 		curRayPoint += step;
 
 		if (glm::distance(curRayPoint, rayStart) > playerRange)
 		{
-			return nullptr;
+			return result;
 		}
 		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")" << std::endl;
 
@@ -403,7 +410,12 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 					if (curBlockPos != startBlockPos)
 					{
 						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
-						return curBlock;
+						result.block = curBlock;
+
+						// Check which face did ray hit on cube.
+						result.face = raycastFace(rayStart, curRayPoint, curBlock->getAABB());
+
+						return result;
 					}
 				}
 			}
@@ -413,7 +425,130 @@ Block* Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm:
 		threshold--;
 	}
 
-	return nullptr;
+	return result;
+}
+
+Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const AABB & blockAABB)
+{
+	// Check if ray hits each triangle of cube. 
+
+	Cube::Face result = Cube::Face::NONE;
+	auto triangles = blockAABB.toTriangles();
+	
+	float minDist = 1000000.0f;
+	unsigned int closestTriangle = 0;
+
+	for (unsigned int i = 0; i < triangles.size(); i++)
+	{
+		glm::vec3 intersectingPoint;
+		int rayResult = raycastTriangle(rayStart, rayEnd, triangles.at(i), intersectingPoint);
+
+		if (rayResult == 1)
+		{
+			//std::cout << "hit: " << i << std::endl;
+			//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint)<< std::endl;
+			float dist = glm::abs(glm::distance(intersectingPoint, rayStart));
+			if (dist < minDist)
+			{
+				minDist = dist;
+				closestTriangle = i;
+			}
+		}
+	}
+
+	switch (closestTriangle)
+	{
+	case 0:
+	case 1:
+		result = Cube::Face::FRONT;
+		//std::cout << "FRONT" << std::endl;
+		break;
+	case 2:
+	case 3:
+		result = Cube::Face::LEFT;
+		//std::cout << "LEFT" << std::endl;
+		break;
+	case 4:
+	case 5:
+		result = Cube::Face::BACK;
+		//std::cout << "BACK" << std::endl;
+		break;
+	case 6:
+	case 7:
+		result = Cube::Face::RIGHT;
+		//std::cout << "RIGHT" << std::endl;
+		break;
+	case 8:
+	case 9:
+		result = Cube::Face::TOP;
+		//std::cout << "TOP" << std::endl;
+		break;
+	case 10:
+	case 11:
+		result = Cube::Face::BOTTOM;
+		//std::cout << "BOTTOM" << std::endl;
+		break;
+	default:
+		break;
+	}
+	return result;
+}
+
+//    Return: -1 = triangle is degenerate (a segment or point)
+//             0 =  disjoint (no intersect)
+//             1 =  intersect in unique point I1
+//             2 =  are in the same plane
+int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Triangle & tri, glm::vec3 & intersectingPoint)
+{
+	glm::vec3    u, v, n;              // triangle vectors
+	glm::vec3    dir, w0, w;           // ray vectors
+	float     r, a, b;              // params to calc ray-plane intersect
+
+	// get triangle edge vectors and plane normal
+	u = tri.p2 - tri.p1;
+	v = tri.p3 - tri.p1;
+	n = glm::cross(u, v);              // cross product
+	if (n == glm::vec3(0))             // triangle is degenerate
+		return -1;                  // do not deal with this case
+
+	dir = rayEnd - rayStart;              // ray direction vector
+	w0 = rayStart - tri.p1;
+	a = -glm::dot(n, w0);
+	b = glm::dot(n, dir);
+	if (fabs(b) <  0.00000001f) {     // ray is  parallel to triangle plane
+		if (a == 0)                 // ray lies in triangle plane
+			return 2;
+		else return 0;              // ray disjoint from plane
+	}
+
+	// get intersect point of ray with triangle plane
+	r = a / b;
+	if (r < 0.0)                    // ray goes away from triangle
+		return 0;                   // => no intersect
+									// for a segment, also test if (r > 1.0) => no intersect
+
+	intersectingPoint = rayStart + (r * dir);  // intersect point of ray and plane
+
+									// is I inside T?
+	float    uu, uv, vv, wu, wv, D;
+	uu = glm::dot(u, u);
+	uv = glm::dot(u, v);
+	vv = glm::dot(v, v);
+	w = intersectingPoint - tri.p1;
+	wu = glm::dot(w, u);
+	wv = glm::dot(w, v);
+	D = uv * uv - uu * vv;
+
+	// get and test parametric coords
+	float s, t;
+	s = (uv * wv - vv * wu) / D;
+	if (s < 0.0 || s > 1.0)         // I is outside T
+		return 0;
+	t = (uv * wu - uu * wv) / D;
+	if (t < 0.0 || (s + t) > 1.0)  // I is outside T
+		return 0;
+
+	return 1;                       // I is in T
 }
 
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)

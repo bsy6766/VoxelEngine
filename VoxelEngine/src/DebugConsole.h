@@ -5,6 +5,7 @@
 #include <GLFW\glfw3.h>
 #include <string>
 #include <glm\glm.hpp>
+#include <Cube.h>
 
 namespace Voxel
 {
@@ -61,7 +62,7 @@ namespace Voxel
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);
 		void updatePlayerPosition(const glm::vec3& position);
-		void updatePlayerLookingAt(const glm::ivec3& lookingAt);
+		void updatePlayerLookingAt(const glm::ivec3& lookingAt, const Cube::Face& face);
 		void updateChunkNumbers(const int visible, const int active, const int total);
 		void updateMousePosition();
 	};

@@ -2,6 +2,7 @@
 #define BLOCK_H
 
 #include <glm\glm.hpp>
+#include <Physics.h>
 
 namespace Voxel
 {
@@ -63,11 +64,16 @@ namespace Voxel
 		glm::vec3 getColor3();
 		glm::vec4 getColor4();
 
+		// Get world coordinate
+		glm::ivec3 getWorldCoordinate();
 		// Get world position
 		glm::vec3 getWorldPosition();
 
 		// Get block ID
 		BLOCK_ID getBlockID();
+
+		// Get AABB
+		AABB getAABB();
 	};
 }
 

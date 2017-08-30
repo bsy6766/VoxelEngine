@@ -94,7 +94,7 @@ void Voxel::DebugConsole::init()
 	playerChunkPosition->setVisibility(false);
 	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
 
-	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(165.0f, -177.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
+	playerLookingAt = UI::Text::create("000000, 000000, 000000 Face (-)", glm::vec2(165.0f, -177.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 40);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
@@ -189,9 +189,9 @@ void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
 	playerChunkPosition->setText(std::to_string(chunkX) + ", " + std::to_string(chunkY) + ", " + std::to_string(chunkZ));
 }
 
-void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt)
+void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt, const Cube::Face& face)
 {
-	playerLookingAt->setText(std::to_string(lookingAt.x) + ", " + std::to_string(lookingAt.y) + ", " + std::to_string(lookingAt.z));
+	playerLookingAt->setText(std::to_string(lookingAt.x) + ", " + std::to_string(lookingAt.y) + ", " + std::to_string(lookingAt.z) + " FACE: " + Cube::faceToString(face));
 }
 
 void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total)
