@@ -265,7 +265,10 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 	// 1 for main thread
 	int threadCount = coreCount - 1;
 
+	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
 	
+	// for now, just use 1 thread. Using more than 1 thread doesn't really improves the loading performance
+	// (I guess because if mutex lock)
 	if (running)
 	{
 		for (int i = 0; i < 1; i++)
