@@ -148,8 +148,9 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 		auto start = Utility::Time::now();
 
-		std::vector<glm::ivec2> chunksToUnload;
-		std::vector<glm::ivec2> chunksToLoad;
+		std::vector<glm::ivec2> chunksToUnload;		// Chunks to unload and release
+		std::vector<glm::ivec2> chunksToLoad;		// Chunks to load (map gen and mesh build)
+		std::vector<glm::ivec2> chunksToReload;		// Chunks to reload (rebuild mesh)
 
 		if (d.x != 0)
 		{
@@ -175,6 +176,13 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				int x = activeChunks.front().front()->position.x - 1;
 				// Also get first z in list.
 				int zStart = activeChunks.back().front()->position.z;
+
+				// Before add new list on front, rebuild mesh for current front
+				for (auto chunk : activeChunks.front())
+				{
+					auto pos = chunk->getPosition();
+					chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
+				}
 
 				// Add new list on front with empty chunks
 				activeChunks.push_front(std::list<Chunk*>());
@@ -221,6 +229,13 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				int x = activeChunks.back().front()->position.x + 1;
 				// Also get first z in list.
 				int zStart = activeChunks.back().front()->position.z;
+
+				// Before add new list on back, rebuild mesh for current back
+				for (auto chunk : activeChunks.back())
+				{
+					auto pos = chunk->getPosition();
+					chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
+				}
 
 				// Add new list on front with empty chunks
 				activeChunks.push_back(std::list<Chunk*>());
@@ -285,10 +300,12 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 				for (auto& chunksZ : activeChunks)
 				{
-					int curX = chunksZ.front()->position.x;
+					// Before we add new chunk on front, we need to refresh current one
+					auto curPos = chunksZ.front()->getPosition();
+					chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
 
 					// get chunk
-					auto newChunk = map->getChunkAtXZ(curX, z);
+					auto newChunk = map->getChunkAtXZ(curPos.x, z);
 					newChunk->setActive(true);
 					newChunk->setVisibility(true);
 					newChunk->updateTimestamp(curTime);
@@ -332,10 +349,12 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 
 				for (auto& chunksZ : activeChunks)
 				{
-					int curX = chunksZ.front()->position.x;
+					// Before we add new chunk on back, we need to refresh current one
+					auto curPos = chunksZ.back()->getPosition();
+					chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
 
 					// get chunk
-					auto newChunk = map->getChunkAtXZ(curX, z);
+					auto newChunk = map->getChunkAtXZ(curPos.x, z);
 					newChunk->setActive(true);
 					newChunk->setVisibility(true);
 					newChunk->updateTimestamp(curTime);
@@ -349,20 +368,25 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 		// Else, didn't move in Z axis
 
 		bool notify = false;
+		// Unload has highest priority
 		if (!chunksToUnload.empty())
 		{
 			workManager->addUnload(chunksToUnload);
 			notify = true;
 		}
 
-		if (notify)
-		{
-			workManager->notify();
-		}
-
+		// Load has second priority
 		if (!chunksToLoad.empty())
 		{
 			workManager->addLoad(chunksToLoad);
+			notify = true;
+		}
+
+		// Rebuilding mesh isn't important unless player is build mode. 
+		// but we are rebuilding mesh that is far away from, so it has lowest priority
+		if (!chunksToReload.empty())
+		{
+			workManager->addLoad(chunksToReload);
 			notify = true;
 		}
 

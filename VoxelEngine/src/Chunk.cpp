@@ -265,20 +265,26 @@ void Voxel::Chunk::render()
 {
 	if (chunkMesh)
 	{
-		if (chunkMesh->hasBufferToLoad())
+		if (chunkMesh->isRenderable())
 		{
-			// Mesh has buffer to load
-			if (!chunkMesh->hasLoaded())
+			// Ready to render
+			chunkMesh->bind();
+			chunkMesh->render();
+		}
+		else
+		{
+			// mesh is not renderable. See if it can load
+			if (chunkMesh->isBufferLoadable())
 			{
 				chunkMesh->loadBuffer();
 			}
 
-			// Mesh already loaded buffer to gpu. render.
+			// Now ready to render
 			chunkMesh->bind();
 			chunkMesh->render();
 		}
-		// Else, mesh is not loaded. Don't render
 	}
+	// Doens't have chunk mesh. should be error
 }
 
 void Voxel::Chunk::setActive(const bool state)

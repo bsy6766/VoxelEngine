@@ -489,13 +489,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 
 	//auto chunkEnd = Utility::Time::now();
 	//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
-
-	// init chunkMesh
-	//auto newChunkMesh = new ChunkMesh();
-	//newChunkMesh->initBuffer(vertices, colors, indices);
-	//newChunkMesh->initOpenGLObjects();
-	//chunk->chunkMesh = newChunkMesh;
-
+	
 	chunk->chunkMesh->initBuffer(vertices, colors, normals, indices);
 
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;

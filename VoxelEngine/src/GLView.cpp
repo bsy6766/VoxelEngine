@@ -6,6 +6,8 @@
 #include <Shader.h>
 #include <Program.h>
 
+#include <sstream>
+
 #include <Camera.h>
 
 using namespace Voxel;
@@ -49,6 +51,7 @@ GLView::~GLView()
 
 void Voxel::GLView::init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
 {
+	initCPUName();
 	initGLFW();
 	initWindow(screenWidth, screenHeight, windowTitle, windowMode, vsync);
 	initGLEW();
@@ -165,12 +168,27 @@ void Voxel::GLView::initGLEW()
 		throw std::runtime_error("glew init failed");
 	}
 
-	cout << "\nOpenGL and system informations." << endl;
-	// print out some info about the graphics drivers
-	cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
-	cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
-	cout << "Vendor: " << glGetString(GL_VENDOR) << endl;
-	cout << "Renderer: " << glGetString(GL_RENDERER) << endl << endl;
+	cout << "\n[GLView] OpenGL and GPU informations" << endl;
+
+	std::stringstream vss;
+	vss << glGetString(GL_VENDOR);
+
+	GPUVendor = vss.str();
+
+	std::stringstream rss;
+	rss << glGetString(GL_RENDERER);
+
+	GPURenderer = rss.str();
+
+	std::stringstream glss;
+	glss << glGetString(GL_VERSION);
+
+	GLVersion = glss.str();
+
+	std::cout << "[GLView] OpenGL version: " << GLVersion << std::endl;
+	std::cout << "[GLView] GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	std::cout << "[GLView] GPU vendor: " << GPUVendor << std::endl;
+	std::cout << "[GLView] GPU renderer: " << GPURenderer << std::endl;
 
 	//@warning Hardcorded
 	if (!GLEW_VERSION_4_3) {
@@ -199,6 +217,46 @@ void Voxel::GLView::initOpenGL()
 void Voxel::GLView::initDefaultShaderProgram()
 {
 	ProgramManager::getInstance().initDefaultPrograms();
+}
+
+void Voxel::GLView::initCPUName()
+{
+	// Get extended ids.
+	int CPUInfo[4] = { -1 };
+	__cpuid(CPUInfo, 0x80000000);
+	unsigned int nExIds = CPUInfo[0];
+
+	// Get the information associated with each extended ID.
+	char CPUBrandString[0x40] = { 0 };
+	for (unsigned int i = 0x80000000; i <= nExIds; ++i)
+	{
+		__cpuid(CPUInfo, i);
+
+		// Interpret CPU brand string and cache information.
+		if (i == 0x80000002)
+		{
+			memcpy(CPUBrandString,
+				CPUInfo,
+				sizeof(CPUInfo));
+		}
+		else if (i == 0x80000003)
+		{
+			memcpy(CPUBrandString + 16,
+				CPUInfo,
+				sizeof(CPUInfo));
+		}
+		else if (i == 0x80000004)
+		{
+			memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+		}
+	}
+
+	CPUName = std::string(CPUBrandString);
+
+	auto first = CPUName.find_first_not_of(' ');
+	CPUName = CPUName.substr(first, CPUName.size());
+
+	std::cout << "[GLView] CPU: " << CPUName << std::endl;
 }
 
 bool Voxel::GLView::isRunning()
@@ -485,6 +543,26 @@ void Voxel::GLView::setClearColor(const glm::vec3 & color)
 void Voxel::GLView::close()
 {
 	glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+std::string Voxel::GLView::getCPUName()
+{
+	return CPUName;
+}
+
+std::string Voxel::GLView::getGLVersion()
+{
+	return GLVersion;
+}
+
+std::string Voxel::GLView::getGPUVendor()
+{
+	return GPUVendor;
+}
+
+std::string Voxel::GLView::getGPURenderer()
+{
+	return GPURenderer;
 }
 
 void GLView::glfwErrorCallback(int error, const char * description)

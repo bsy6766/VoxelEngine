@@ -2,6 +2,7 @@
 #include <UI.h>
 #include <Application.h>
 #include <sstream>
+#include <ChunkUtil.h>
 #include <iomanip>
 
 using namespace Voxel;
@@ -46,8 +47,14 @@ void Voxel::DebugConsole::init()
 
 	debugCanvas->addImage("cmdInputField", commandInputField, 0);
 
-	//staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nmouse position:\n\ncamera position:\ncamera rotation:\n\nfovy:\nfovx:\n\nplayer position:\nplayer rotation:\n\nchunk:map, loader\nchunk section:total, visible", glm::vec2(5.0f, -5.0f), 2);
-	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nplayer position:\nplayer looking at:\n\nChunk:", glm::vec2(5.0f, -5.0f), 2);
+	auto glview = Application::getInstance().getGLView();
+
+	auto CPUName = glview->getCPUName();
+	auto GLVersion = glview->getGLVersion();
+	auto GPUVendor = glview->getGPUVendor();
+	auto GPURenderer = glview->getGPURenderer();
+
+	staticLabels = UI::Text::create("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:", glm::vec2(5.0f, -5.0f), 2);
 	staticLabels->setVisibility(false);
 	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
@@ -75,19 +82,25 @@ void Voxel::DebugConsole::init()
 	vsyncMode->setVisibility(false);
 	debugCanvas->addText("vsyncMode", vsyncMode, 0);
 
-	playerPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(143.0f, -65.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	playerPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(143.0f, -149.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
 	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
 
-	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(165.0f, -79.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
+	playerChunkPosition = UI::Text::create("00000.00, 00000.00, 00000.00", glm::vec2(197.0f, -163.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	playerChunkPosition->setPivot(glm::vec2(-0.5f, 0.5f));
+	playerChunkPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerChunkPosition->setVisibility(false);
+	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
+
+	playerLookingAt = UI::Text::create("000000, 000000, 000000", glm::vec2(165.0f, -177.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 23);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::create("0000 / 0000 / 0000", glm::vec2(69.0f, -109.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 19);
+	chunkNumbers = UI::Text::create("0000 / 0000 / 0000", glm::vec2(69.0f, -207.f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 19);
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
@@ -125,6 +138,7 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	resolutionNumber->setVisibility(debugOutputVisibility);
 	vsyncMode->setVisibility(debugOutputVisibility);
 	playerPosition->setVisibility(debugOutputVisibility);
+	playerChunkPosition->setVisibility(debugOutputVisibility);
 	playerLookingAt->setVisibility(debugOutputVisibility);
 	chunkNumbers->setVisibility(debugOutputVisibility);
 }
@@ -161,6 +175,18 @@ void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
 	z << std::fixed << std::showpoint << std::setprecision(2) << position.z;
 
 	playerPosition->setText(x.str() + ", " + y.str() + ", " + z.str());
+
+	auto iPos = glm::ivec3(position);
+	int chunkX = iPos.x / Constant::CHUNK_SECTION_WIDTH;
+	int chunkY = iPos.y / Constant::CHUNK_SECTION_HEIGHT;
+	int chunkZ = iPos.z / Constant::CHUNK_SECTION_LENGTH;
+
+	// Shift by 1 if player is in negative position in XZ axis.
+	if (position.x < 0) chunkX -= 1;
+	if (position.y < 0) chunkY -= 1;
+	if (position.z < 0) chunkZ -= 1;
+
+	playerChunkPosition->setText(std::to_string(chunkX) + ", " + std::to_string(chunkY) + ", " + std::to_string(chunkZ));
 }
 
 void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt)

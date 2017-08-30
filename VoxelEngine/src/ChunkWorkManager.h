@@ -27,6 +27,10 @@ namespace Voxel
 	class ChunkWorkManager
 	{
 	private:
+		static const int IDLE_WORK = 0;
+		static const int UNLOAD_WORK = 1;
+		static const int LOAD_WORK = 2;
+	private:
 		// Queue with chunk coordinate that needs to either generate or build mesh. Can be both
 		std::list<glm::ivec2> loadQueue;
 		// Queue with chunk coordinate that needs to get unloaded.
@@ -40,7 +44,8 @@ namespace Voxel
 		std::mutex finishedQueueMutex;
 
 		// Worker thread.
-		std::thread meshBuilderThread;
+		std::vector<std::thread> workerThreads;
+		//std::thread meshBuilderThread;
 
 		// True if work manager is running. Else, false. 
 		std::atomic<bool> running;
@@ -64,7 +69,7 @@ namespace Voxel
 		void popFinishedAndNotify();
 
 		// Creates the thread. Make sure you call once after run.
-		void createThread(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator);
+		void createThreads(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator, const int coreCount);
 
 		// notify condition variable
 		void notify();

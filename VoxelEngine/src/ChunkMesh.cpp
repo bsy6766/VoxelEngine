@@ -16,8 +16,8 @@ ChunkMesh::ChunkMesh()
 	, ibo(0)
 	, indicesSize(0)
 {
-	bufferReady.store(false);
-	bufferLoaded.store(false);
+	renderable.store(false);
+	loadable.store(false);
 }
 
 ChunkMesh::~ChunkMesh()
@@ -49,12 +49,21 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	this->normals = normals;
 	this->indicesSize = indices.size();
 
-	this->bufferReady.store(true);
+	loadable.store(true);
+
+	if (vao != 0)
+	{
+		markAsUpdated();
+	}
 }
 
 void Voxel::ChunkMesh::loadBuffer()
 {
-	assert(vao == 0);
+	if (vao != 0)
+	{
+		glDeleteVertexArrays(1, &vao);
+	}
+
 	//auto start = Utility::Time::now();
 	// 1. VAO
 	// Generate vertex array object
@@ -132,9 +141,16 @@ void Voxel::ChunkMesh::loadBuffer()
 	this->normals.clear();
 	this->indices.clear();
 
-	bufferLoaded.store(true);
+	renderable.store(true);
+	loadable.store(false);
+
 	//auto end = Utility::Time::now();
 	//std::cout << "Loading buffer Elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::ChunkMesh::markAsUpdated()
+{
+	renderable.store(false);
 }
 
 void ChunkMesh::bind()
@@ -165,8 +181,6 @@ void Voxel::ChunkMesh::releaseVAO()
 	cbo = 0;
 	nbo = 0;
 	ibo = 0;
-
-	bufferLoaded.store(false);
 }
 
 void Voxel::ChunkMesh::clearBuffers()
@@ -177,15 +191,15 @@ void Voxel::ChunkMesh::clearBuffers()
 	indices.clear();
 	indicesSize = 0;
 
-	bufferReady.store(false);
 }
 
-bool Voxel::ChunkMesh::hasBufferToLoad()
+bool Voxel::ChunkMesh::isRenderable()
 {
-	return bufferReady.load();
+	return renderable.load();
 }
 
-bool Voxel::ChunkMesh::hasLoaded()
+bool Voxel::ChunkMesh::isBufferLoadable()
 {
-	return bufferLoaded.load();
+	// Check if mesh has buffer.
+	return loadable.load();
 }

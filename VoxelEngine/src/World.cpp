@@ -59,27 +59,10 @@ World::World()
 	, skybox(nullptr)
 	, calendar(nullptr)
 {
-	// Set clear color
-	//Application::getInstance().getGLView()->setClearColor(Color::SKYBOX);
-
 	// init instances
 	init();
 	// After creation, set cursor to center
 	input->setCursorToCenter();
-
-	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
-	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
-	/*
-	threadRunning = true;
-
-
-	chunkElapsedTime = 0;
-	for (int i = 0; i < concurentThreadsSupported - 1; i++)
-	{
-	testThreads.push_back(std::thread(&World::testThreadFunc, this));
-	std::cout << "spawning test thread #" << testThreads.back().get_id() << std::endl;
-	}
-	*/
 
 	//Camera::mainCamera->initDebugFrustumLines();
 
@@ -273,8 +256,11 @@ void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 void Voxel::World::initMeshBuilderThread()
 {
 	// run first, create thread later
+	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
+	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
+
 	chunkWorkManager->run();
-	chunkWorkManager->createThread(chunkMap, chunkMeshGenerator);
+	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, concurentThreadsSupported);
 }
 
 void Voxel::World::createNew(const std::string & worldName)

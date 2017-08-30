@@ -33,6 +33,7 @@ namespace Voxel
 		UI::Text* cameraRotation;
 
 		UI::Text* playerPosition;
+		UI::Text* playerChunkPosition;
 		UI::Text* playerLookingAt;
 
 		UI::Text* chunkNumbers;

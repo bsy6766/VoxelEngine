@@ -23,17 +23,18 @@ namespace Voxel
 
 		int indicesSize;
 
-		// Atomic bool. True if buffers are ready to get loaded to GPU
-		std::atomic<bool> bufferReady;
-		// Another atomic bool. True if mesh is ready to render
-		std::atomic<bool> bufferLoaded;
-
+		std::atomic<bool> renderable;
+		std::atomic<bool> loadable;
+		
 		// Opengl objects
 		GLuint vao;	// vertex array object
 		GLuint vbo;	// vertex buffer object (cube)
 		GLuint cbo;	// color buffer object
 		GLuint nbo;
 		GLuint ibo;	// index buffer object 
+
+		// Mark this mesh as updated and need to update buffer.
+		void markAsUpdated();
 	public:
 		ChunkMesh();
 		~ChunkMesh();
@@ -49,11 +50,11 @@ namespace Voxel
 		void releaseVAO();
 		// Clear all buffers(vertices, colors, indices)
 		void clearBuffers();
-
-		// True if mesh has all vertices, colors and indices ready to loaded to GPU
-		bool hasBufferToLoad();
-		// True if mesh loaded buffer to GPU
-		bool hasLoaded();
+		
+		// Check if it mesh is renderable. True if vao is not 0 or has buffer to load
+		bool isRenderable();
+		// Check if mesh buffer can be loaded to gPU
+		bool isBufferLoadable();
 	};
 }
 

@@ -49,6 +49,12 @@ namespace Voxel
 		int screenHeight;
 		std::string windowTitle;
 
+		// System info
+		std::string GLVersion;
+		std::string GPUVendor;
+		std::string GPURenderer;
+		std::string CPUName;
+
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
 
@@ -59,6 +65,7 @@ namespace Voxel
 		void initGLEW();
 		void initOpenGL();
 		void initDefaultShaderProgram();
+		void initCPUName();
 
 		bool isRunning();
 
@@ -106,6 +113,12 @@ namespace Voxel
 
 		// FPS callback
 		static std::function<void(int)> onFPSCounted;
+
+		// get system info
+		std::string getCPUName();
+		std::string getGLVersion();
+		std::string getGPUVendor();
+		std::string getGPURenderer();
 	};
 }
 

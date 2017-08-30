@@ -143,7 +143,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 		}
 
 		glm::ivec2 chunkXZ;
-		int flag = 0;
+		int flag = IDLE_WORK;
 
 		{
 			// Scope lock
@@ -168,22 +168,26 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 			{
 				chunkXZ = unloadQueue.front();
 				unloadQueue.pop_front();
-				flag = 1;
+				flag = UNLOAD_WORK;
 			}
 			else if (!loadQueue.empty())
 			{
 				chunkXZ = loadQueue.front();
 				loadQueue.pop_front();
-				flag = 2;
+				flag = LOAD_WORK;
+			}
+			//Else, flag is 0. 
+			else
+			{
+				continue;
 			}
 		}
 
 
 		if (map && chunkMeshGenerator)
 		{
-			if (flag == 1)
+			if (flag == UNLOAD_WORK)
 			{
-
 				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
 
 				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
@@ -207,9 +211,8 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 				}
 				// Else, has no chunk
 			}
-			else if (flag == 2)
+			else if (flag == LOAD_WORK)
 			{
-
 				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
 
 				// There must be a chunk. Chunk loader creates empty chunk.
@@ -228,11 +231,10 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 						auto mesh = chunk->getMesh();
 						if (mesh)
 						{
-							if (!mesh->hasBufferToLoad())
-							{
-								// Mesh doesn't have buffer to load
-								chunkMeshGenerator->generateSingleChunkMesh(chunk, map);
-							}
+							// There can be two cases. 
+							// 1. Chunk is newly generated and need mesh.
+							// 2. Chunk already has mesh but need to refresh
+							chunkMeshGenerator->generateSingleChunkMesh(chunk, map);
 						}
 						// Else, mesh is nullptr
 					}
@@ -257,11 +259,19 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 	}
 }
 
-void Voxel::ChunkWorkManager::createThread(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
+void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator, const int coreCount)
 {
+	// Get number of thread to spawn
+	// 1 for main thread
+	int threadCount = coreCount - 1;
+
+	
 	if (running)
 	{
-		meshBuilderThread = std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator);
+		for (int i = 0; i < 1; i++)
+		{
+			workerThreads.push_back(std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator));
+		}
 	}
 }
 
@@ -300,9 +310,12 @@ void Voxel::ChunkWorkManager::joinThread()
 
 	cv.notify_one();
 
-	if (meshBuilderThread.joinable())
+	for (auto& thread : workerThreads)
 	{
-		std::cout << "joining thread #" << meshBuilderThread.get_id() << std::endl;
-		meshBuilderThread.join();
+		if (thread.joinable())
+		{
+			std::cout << "joining thread #" << thread.get_id() << std::endl;
+			thread.join();
+		}
 	}
 }
