@@ -18,6 +18,7 @@ namespace Voxel
 	class DebugConsole;
 	class ChunkWorkManager;
 	class Skybox;
+	class Calendar;
 
 	namespace UI
 	{
@@ -62,6 +63,9 @@ namespace Voxel
 
 		// skybox
 		Skybox* skybox;
+
+		// Calendar
+		Calendar* calendar;
 
 		// Default UI canvas
 		UI::Canvas* defaultCanvas;

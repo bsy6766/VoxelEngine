@@ -97,6 +97,6 @@ void main()
 	}
 	else
 	{
-			fragColor = vertColor * ambientColor;
+			fragColor = vertColor;
 	}
 }

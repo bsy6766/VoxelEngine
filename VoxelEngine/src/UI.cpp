@@ -151,22 +151,28 @@ Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& positi
 
 void Voxel::UI::Text::setText(const std::string & text)
 {
-	if (type == TYPE::STATIC)
+	if (!text.empty())
 	{
-		std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text" << std::endl;
-	}
-	else
-	{
-		// Can modify text. reject larger texts
-		if (text.length() >= maxTextLength)
+		if (text != this->text)
 		{
-			std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
-			return;
-		}
-		else
-		{
-			this->text = text;
-			buildMesh(true);
+			if (type == TYPE::STATIC)
+			{
+				std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text" << std::endl;
+			}
+			else
+			{
+				// Can modify text. reject larger texts
+				if (text.length() >= maxTextLength)
+				{
+					std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+					return;
+				}
+				else
+				{
+					this->text = text;
+					buildMesh(true);
+				}
+			}
 		}
 	}
 }
@@ -1162,7 +1168,7 @@ Text * Voxel::UI::Canvas::getText(const std::string & name)
 	}
 }
 
-glm::vec2 Voxel::UI::Canvas::getPivot(PIVOT pivot)
+glm::vec2 Voxel::UI::Canvas::getPivotCanvasPos(PIVOT pivot)
 {
 	auto centerPos = this->centerPosition;
 
