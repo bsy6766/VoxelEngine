@@ -71,6 +71,7 @@ namespace Voxel
 
 		// Get block ID
 		BLOCK_ID getBlockID();
+		void setBlockID(const BLOCK_ID blockID);
 
 		// Get AABB
 		AABB getAABB();

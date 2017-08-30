@@ -3,6 +3,7 @@
 
 #include <glm\glm.hpp>
 #include <GL\glew.h>
+#include <Cube.h>
 
 namespace Voxel
 {
@@ -47,6 +48,7 @@ namespace Voxel
 
 		// Block that player is looking at
 		Block* lookingBlock;
+		Cube::Face lookingFace;
 
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
@@ -115,10 +117,11 @@ namespace Voxel
 		glm::vec3 getRayEnd();
 
 
-		void setLookingBlock(Block* block);
+		void setLookingBlock(Block* block, const Cube::Face& face);
 		// Check if player is looking at block
 		bool isLookingAtBlock();
 		Block* getLookingBlock();
+		Cube::Face getLookingFace();
 	};
 }
 

@@ -163,6 +163,11 @@ Block::BLOCK_ID Voxel::Block::getBlockID()
 	return this->id;
 }
 
+void Voxel::Block::setBlockID(const BLOCK_ID blockID)
+{
+	this->id = blockID;
+}
+
 AABB Voxel::Block::getAABB()
 {
 	return AABB(this->getWorldPosition(), glm::vec3(1.0f));

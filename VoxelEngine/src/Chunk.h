@@ -89,7 +89,9 @@ namespace Voxel
 		glm::vec3 getWorldPosition();
 
 		// Get chunkSection by Y (chunk section's y level not world pos)
-		ChunkSection* getChunkSectionByY(int y);
+		ChunkSection* getChunkSectionAtY(const int y);
+		void createChunkSectionAtY(const int y);
+		void deleteChunkSectionAtY(const int y);
 
 		// Render chunk
 		void render();

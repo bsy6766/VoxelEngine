@@ -1,6 +1,7 @@
 #include "ChunkMap.h"
 #include <Chunk.h>
 #include <ChunkSection.h>
+#include <ChunkMeshGenerator.h>
 #include <iostream>
 #include <Utility.h>
 #include <Physics.h>
@@ -272,7 +273,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 			if (chunk->isActive())
 			{
 				// target chunk section
-				auto chunkSection = chunk->getChunkSectionByY(chunkSectionPos.y);
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
 				if (chunkSection)
 				{
 					// return block
@@ -315,7 +316,7 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 			if (chunk->isActive())
 			{
 				// target chunk section
-				auto chunkSection = chunk->getChunkSectionByY(chunkSectionPos.y);
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
 				if (chunkSection)
 				{
 					// chunk section exists. return block
@@ -347,6 +348,130 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 		}
 
 		return 3;
+	}
+}
+
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face & faceDir, ChunkMeshGenerator* meshGenerator)
+{
+	glm::ivec3 targetPos = blockPos;
+	
+	switch (faceDir)
+	{
+	case Cube::Face::FRONT:
+		targetPos.z -= 1;
+		break;
+	case Cube::Face::BACK:
+		targetPos.z += 1;
+		break;
+	case Cube::Face::LEFT:
+		targetPos.x -= 1;
+		break;
+	case Cube::Face::RIGHT:
+		targetPos.x += 1;
+		break;
+	case Cube::Face::TOP:
+		targetPos.y += 1;
+		break;
+	case Cube::Face::BOTTOM:
+		targetPos.y -= 1;
+		break;
+	default:
+		return;
+		break;
+	}
+
+	if (targetPos.y < 0 || targetPos.y > 256)
+	{
+		return;
+	}
+
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(targetPos.x, targetPos.y, targetPos.z), blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+
+	if (hasChunk)
+	{
+		// target chunk
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+		if (chunk)
+		{
+			if (chunk->isActive())
+			{
+				// chunk is active. Only can place block at active chunk
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+				if (chunkSection == nullptr)
+				{
+					chunk->createChunkSectionAtY(chunkSectionPos.y);
+				}
+
+				chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+
+				assert(chunkSection != nullptr);
+
+				chunkSection->setBlockAt(blockLocalPos, Block::BLOCK_ID::GRASS);
+
+				meshGenerator->generateSingleChunkMesh(chunk, this);
+			}
+		}
+		// Else, chunk is nullptr.
+	}
+	else
+	{
+		// Player is impossible to place block where chunk doesn't exists.
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		return;
+	}
+}
+
+void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkMeshGenerator * meshGenerator)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockPos, blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+
+	if (hasChunk)
+	{
+		// target chunk
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+		if (chunk)
+		{
+			if (chunk->isActive())
+			{
+				// chunk is active. Only can place block at active chunk
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+				if (chunkSection)
+				{
+					chunkSection->setBlockAt(blockLocalPos, Block::BLOCK_ID::AIR);
+
+					if (chunkSection->getTotalNonAirBlockSize() == 0)
+					{
+						chunk->deleteChunkSectionAtY(chunkSectionPos.y);
+					}
+
+					meshGenerator->generateSingleChunkMesh(chunk, this);
+				}
+				else
+				{
+					std::cout << "[ChunkMap] Error. Tried to break block where chunk section doesn't exists" << std::endl;
+					return;
+				}
+			}
+		}
+		// Else, chunk is nullptr.
+	}
+	else
+	{
+		// Player is impossible to place block where chunk doesn't exists.
+		std::cout << "[ChunkMap] Error. Tried to break block where chunk doesn't exists" << std::endl;
+		return;
 	}
 }
 

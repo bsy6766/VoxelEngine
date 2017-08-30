@@ -21,6 +21,7 @@ Player::Player()
 	, direction(0)
 	, rayRange(0)
 	, lookingBlock(nullptr)
+	, lookingFace(Cube::Face::NONE)
 	// Debug
 	, yLineVao(0)
 	, yLineVbo(0)
@@ -249,9 +250,10 @@ glm::vec3 Voxel::Player::getRayEnd()
 	return position + (direction * rayRange);
 }
 
-void Voxel::Player::setLookingBlock(Block* block)
+void Voxel::Player::setLookingBlock(Block* block, const Cube::Face& face)
 {
 	lookingBlock = block;
+	lookingFace = face;
 }
 
 bool Voxel::Player::isLookingAtBlock()
@@ -262,6 +264,11 @@ bool Voxel::Player::isLookingAtBlock()
 Block* Voxel::Player::getLookingBlock()
 {
 	return lookingBlock;
+}
+
+Cube::Face Voxel::Player::getLookingFace()
+{
+	return lookingFace;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)

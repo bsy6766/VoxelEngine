@@ -396,16 +396,7 @@ void World::update(const float delta)
 		// If player either move or rotated, update frustum
 		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
 		// Also update raycast
-		auto result = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
-		if (result.block != nullptr)
-		{
-			player->setLookingBlock(result.block);
-			debugConsole->updatePlayerLookingAt(result.block->getWorldCoordinate(), result.face);
-		}
-		else
-		{
-			player->setLookingBlock(nullptr);
-		}
+		updatePlayerRaycast();
 	}
 
 	if (playerMoved)
@@ -714,21 +705,23 @@ void Voxel::World::updateMouseClickInput()
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
+		if (player->isLookingAtBlock())
+		{
+			auto lookingBlock = player->getLookingBlock();
+			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
+			chunkMap->removeBlockAt(blockPos, chunkMeshGenerator);
+			updatePlayerRaycast();
+		}
 	}
-	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
+	else if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 	{
-	}
-
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
-	{
-	}
-
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
-	{
-	}
-
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_4, true))
-	{
+		if (player->isLookingAtBlock())
+		{
+			auto lookingBlock = player->getLookingBlock();
+			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
+			chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkMeshGenerator);
+			updatePlayerRaycast();
+		}
 	}
 }
 
@@ -795,6 +788,20 @@ void Voxel::World::updateChunks()
 	// If so, we need to load new chunks. 
 	// Else, player reamains on same chunk as now.
 	bool updated = chunkLoader->update(player->getPosition(), chunkMap, chunkWorkManager, glfwGetTime());
+}
+
+void Voxel::World::updatePlayerRaycast()
+{
+	auto result = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
+	if (result.block != nullptr)
+	{
+		player->setLookingBlock(result.block, result.face);
+		debugConsole->updatePlayerLookingAt(result.block->getWorldCoordinate(), result.face);
+	}
+	else
+	{
+		player->setLookingBlock(nullptr, Cube::Face::NONE);
+	}
 }
 
 void Voxel::World::checkUnloadedChunks()

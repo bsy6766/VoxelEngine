@@ -249,7 +249,7 @@ glm::vec3 Chunk::getWorldPosition()
 	return worldPosition;
 }
 
-ChunkSection * Voxel::Chunk::getChunkSectionByY(int y)
+ChunkSection * Voxel::Chunk::getChunkSectionAtY(const int y)
 {
 	if (y >= 0 && y < chunkSections.size())
 	{
@@ -258,6 +258,45 @@ ChunkSection * Voxel::Chunk::getChunkSectionByY(int y)
 	else
 	{
 		return nullptr;
+	}
+}
+
+void Voxel::Chunk::createChunkSectionAtY(const int y)
+{
+	if (y >= 0 && y < chunkSections.size())
+	{
+		if (chunkSections.at(y) == nullptr)
+		{
+			auto newChucnkSection = ChunkSection::createEmpty(position.x, y, position.z, worldPosition);
+			if (newChucnkSection)
+			{
+				chunkSections.at(y) = newChucnkSection;
+			}
+			else
+			{
+				throw std::runtime_error("Failed to add chunk section at (" + std::to_string(position.x) + ", " + std::to_string(y) + ", " + std::to_string(position.z) + ")");
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+void Voxel::Chunk::deleteChunkSectionAtY(const int y)
+{
+	if (y >= 0 && y < chunkSections.size())
+	{
+		if (chunkSections.at(y))
+		{
+			delete chunkSections.at(y);
+			chunkSections.at(y) = nullptr;
+		}
+	}
+	else
+	{
+		return;
 	}
 }
 

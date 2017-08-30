@@ -90,6 +90,10 @@ namespace Voxel
 		// Retruns 2 if chunk section doesn't exists
 		// Retruns 3 if chunk doesn't exsits.
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
+
+		// place block at face direction
+		void placeBlockAt(const glm::ivec3& blockPos, const Cube::Face& faceDir, ChunkMeshGenerator* meshGenerator);
+		void removeBlockAt(const glm::ivec3& blockPos, ChunkMeshGenerator* meshGenerator);
 		
 		// From rayStart to rayEnd, visit all blocks
 		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);

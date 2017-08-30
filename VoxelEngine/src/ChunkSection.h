@@ -3,11 +3,10 @@
 
 #include <vector>
 #include <glm\glm.hpp>
+#include <Block.h>
 
 namespace Voxel
 {
-	class Block;
-
 	/**
 	*	@class ChunkSection
 	*	@brief A section of single chunk
@@ -19,6 +18,9 @@ namespace Voxel
 		friend class ChunkMeshGenerator;
 	public:
 		int XYZToIndex(const int x, const int y, const int z);
+
+		// Number of non air block size. if this is 0, chunk section can be deleted.
+		unsigned int nonAirBlockSize;
 	private:
 		ChunkSection();
 
@@ -32,17 +34,23 @@ namespace Voxel
 		std::vector<Block*> blocks;
 
 		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
 	public:
 		~ChunkSection();
 		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		static ChunkSection* createEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);
+		void setBlockAt(const glm::ivec3& localCoordinate, const Block::BLOCK_ID blockID);
+		void setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID);
 
 		// Get world position of chunk. Center of chunk.
 		glm::vec3 getWorldPosition();
+
+		 int getTotalNonAirBlockSize();
 	};
 }
 

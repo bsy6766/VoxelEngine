@@ -1,5 +1,4 @@
 #include "ChunkSection.h"
-#include <Block.h>
 #include <iostream>
 #include <ChunkUtil.h>
 #include <Color.h>
@@ -9,6 +8,7 @@ using namespace Voxel;
 ChunkSection::ChunkSection()
 	: position(0)
 	, worldPosition(0.0f)
+	, nonAirBlockSize(0)
 {}
 
 ChunkSection::~ChunkSection()
@@ -29,6 +29,22 @@ ChunkSection* ChunkSection::create(const int x, const int y, const int z, const 
 	ChunkSection* newChunkSection = new ChunkSection();
 	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
 	if (newChunkSection->init(x, y, z, chunkPosition))
+	{
+		//std::cout << "[ChunkSection] Done." << std::endl;
+		return newChunkSection;
+	}
+	else
+	{
+		delete newChunkSection;
+		return nullptr;
+	}
+}
+
+ChunkSection * Voxel::ChunkSection::createEmpty(const int x, const int y, const int z, const glm::vec3 & chunkPosition)
+{
+	ChunkSection* newChunkSection = new ChunkSection();
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	if (newChunkSection->initEmpty(x, y, z, chunkPosition))
 	{
 		//std::cout << "[ChunkSection] Done." << std::endl;
 		return newChunkSection;
@@ -79,6 +95,10 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 				if (newBlock)
 				{
 					blocks.push_back(newBlock);
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
 					// debug
 					newBlock->setColor(color);
 				}
@@ -92,6 +112,20 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 	//auto size = sizeof(Block);
 	//std::cout << "size = " << std::endl;
+
+	return true;
+}
+
+bool Voxel::ChunkSection::initEmpty(const int x, const int y, const int z, const glm::vec3 & chunkPosition)
+{
+	position = glm::ivec3(x, y, z);
+
+	// calculate world position. Only need to calculate Y.
+	worldPosition = chunkPosition;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
+
+	blocks.clear();
+	blocks.resize(4096, nullptr);
 
 	return true;
 }
@@ -196,6 +230,11 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 					newBlock->setColor(color);
 					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
 
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
 					localY++;
 				}
 			}
@@ -227,7 +266,55 @@ Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
 	}
 }
 
+void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const Block::BLOCK_ID blockID)
+{
+	setBlockAt(localCoordinate.x, localCoordinate.y, localCoordinate.z, blockID);
+}
+
+void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID)
+{
+	unsigned int index = XYZToIndex(x, y, z);
+	if (index >= 0 && index < blocks.size())
+	{
+		if (blocks.at(index) == nullptr)
+		{
+			// Block doesn't exists
+			if (blockID != Block::BLOCK_ID::AIR)
+			{
+				// Block isn't air
+				blocks.at(index) = Block::create(glm::ivec3(x, y, z), position);
+				blocks.at(index)->setBlockID(blockID);
+
+				nonAirBlockSize++;
+			}
+			// Else, block is air. do nothing
+		}
+		else
+		{
+			// Block already exists
+			if (blockID == Block::BLOCK_ID::AIR)
+			{
+				// Remove block
+				delete blocks.at(index);
+				blocks.at(index) = nullptr;
+
+				nonAirBlockSize--;
+			}
+			// Else, can't modify block.
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
 glm::vec3 Voxel::ChunkSection::getWorldPosition()
 {
 	return worldPosition;
+}
+
+int Voxel::ChunkSection::getTotalNonAirBlockSize()
+{
+	return nonAirBlockSize;
 }
