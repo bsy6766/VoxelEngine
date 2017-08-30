@@ -13,10 +13,7 @@ using namespace Voxel;
 
 ChunkWorkManager::ChunkWorkManager()
 {
-}
-
-ChunkWorkManager::~ChunkWorkManager()
-{
+	running.store(false);
 }
 
 void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate)
@@ -265,7 +262,6 @@ void Voxel::ChunkWorkManager::createThread(ChunkMap* map, ChunkMeshGenerator* ch
 	if (running)
 	{
 		meshBuilderThread = std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator);
-		meshBuilderThread2 = std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator);
 	}
 }
 
@@ -308,11 +304,5 @@ void Voxel::ChunkWorkManager::joinThread()
 	{
 		std::cout << "joining thread #" << meshBuilderThread.get_id() << std::endl;
 		meshBuilderThread.join();
-	}
-
-	if (meshBuilderThread2.joinable())
-	{
-		std::cout << "joining thread #" << meshBuilderThread.get_id() << std::endl;
-		meshBuilderThread2.join();
 	}
 }

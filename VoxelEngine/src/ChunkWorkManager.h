@@ -41,7 +41,6 @@ namespace Voxel
 
 		// Worker thread.
 		std::thread meshBuilderThread;
-		std::thread meshBuilderThread2;
 
 		// True if work manager is running. Else, false. 
 		std::atomic<bool> running;
@@ -53,7 +52,7 @@ namespace Voxel
 		void processChunk(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator);
 	public:
 		ChunkWorkManager();
-		~ChunkWorkManager();
+		~ChunkWorkManager() = default;
 
 		// Add or remove work
 		void addLoad(const glm::ivec2& coordinate);
