@@ -91,6 +91,11 @@ std::string Voxel::Calendar::getTimeInStr(const bool twelveHour)
 	}
 }
 
+int Voxel::Calendar::getTime()
+{
+	return (hour * 100) + minute;
+}
+
 Calendar::DAY Voxel::Calendar::getNextDAY()
 {
 	switch (curDAY)

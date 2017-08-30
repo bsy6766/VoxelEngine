@@ -63,6 +63,8 @@ namespace Voxel
 
 		// Get time in string
 		std::string getTimeInStr(const bool twelveHour);
+		// Get time in number. HHMM. i.e.) 1000 = 10am, 2330 = 11:30pm
+		int getTime();
 	};
 
 }

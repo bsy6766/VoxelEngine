@@ -118,13 +118,13 @@ void Voxel::World::init()
 	// cube outline
 	initCubeOutline();
 	// Skybox
-	initSkyBox(glm::vec4(Color::SKYBOX, 1.0f));
+	initSkyBox(glm::vec4(Color::NIGHTTIME, 1.0f));
 
 	// Calendar
 	calendar = new Calendar();
 	calendar->init();
 
-	defaultProgram->setUniformVec4("ambientColor", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+	defaultProgram->setUniformVec4("ambientColor", glm::vec4(1.0f));
 	defaultProgram->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
 	defaultProgram->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
