@@ -60,8 +60,8 @@ namespace Voxel
 		~ChunkWorkManager() = default;
 
 		// Add or remove work
-		void addLoad(const glm::ivec2& coordinate);
-		void addLoad(const std::vector<glm::ivec2>& coordinates);
+		void addLoad(const glm::ivec2& coordinate, const bool highPriority = false);
+		void addLoad(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
 		void addUnload(const glm::ivec2& coordinate);
 		void addUnload(const std::vector<glm::ivec2>& coordinates);
 		void addFinishedQueue(const glm::ivec2& coordinate);

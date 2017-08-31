@@ -49,6 +49,14 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 				for (int blockY = Constant::CHUNK_SECTION_HEIGHT - 1; blockY >= 0; blockY--)
 				{
 					unsigned int blockIndex = chunkSection->XYZToIndex(blockX, blockY, blockZ);
+
+					if (blockIndex < 0 || blockIndex >= Constant::TOTAL_BLOCKS)
+					{
+						std::cout << "Out or range (" << blockX << ", " << blockY << ", " << blockZ << ")" << std::endl;
+						std::cout << "blockIndex = " << blockIndex << std::endl;
+						throw std::runtime_error("out of range");
+					}
+
 					Block* block = chunkSection->blocks.at(blockIndex);
 
 					if (block == nullptr)
@@ -263,6 +271,17 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						else
 						{
 							auto worldPosition = block->getWorldPosition();
+
+							/*
+							if (worldPos == glm::ivec3(2, 79, 16))
+							{
+								for (auto w : shadowWeight)
+								{
+									std::cout << w << ", ";
+								}
+								std::cout << std::endl;
+							}
+							*/
 
 							auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), worldPosition);
 							vertices.insert(vertices.end(), blockVertices.begin(), blockVertices.end());

@@ -253,7 +253,14 @@ ChunkSection * Voxel::Chunk::getChunkSectionAtY(const int y)
 {
 	if (y >= 0 && y < chunkSections.size())
 	{
-		return chunkSections.at(y);
+		if (chunkSections.at(y) == nullptr)
+		{
+			return nullptr;
+		}
+		else
+		{
+			return chunkSections.at(y);
+		}
 	}
 	else
 	{

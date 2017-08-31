@@ -1,10 +1,10 @@
 #include "ChunkMap.h"
 #include <Chunk.h>
 #include <ChunkSection.h>
-#include <ChunkMeshGenerator.h>
 #include <iostream>
 #include <Utility.h>
 #include <Physics.h>
+#include <ChunkWorkManager.h>
 
 using namespace Voxel;
 
@@ -250,6 +250,62 @@ void Voxel::ChunkMap::blockWorldCoordinateToLocalAndChunkSectionCoordinate(const
 	chunkSectionCoordinate.z = chunkZ;
 }
 
+std::vector<glm::ivec2> Voxel::ChunkMap::getChunksNearByBlock(const glm::ivec3 & blockLocalPos, const glm::ivec3& blockChunkPos)
+{
+	std::vector<glm::ivec2> list;
+
+	auto edgeX = Constant::CHUNK_SECTION_WIDTH - 1;
+	auto edgeZ = Constant::CHUNK_SECTION_LENGTH - 1;
+
+	// add left, right, front, back chunks
+
+	if (blockLocalPos.x == 0)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x - 1, blockChunkPos.z));
+	}
+
+	if (blockLocalPos.z == 0)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x, blockChunkPos.z - 1));
+	}
+
+	if (blockLocalPos.x == edgeX)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x + 1, blockChunkPos.z));
+	}
+
+	if (blockLocalPos.z == edgeZ)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x, blockChunkPos.z + 1));
+	}
+
+	// Add diagonal chunks
+
+	if (blockLocalPos.x == 0 && blockLocalPos.z == 0)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x - 1, blockChunkPos.z - 1));
+	}
+
+	if (blockLocalPos.x == edgeX && blockLocalPos.z == edgeZ)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x + 1, blockChunkPos.z + 1));
+	}
+
+	if (blockLocalPos.x == 0 && blockLocalPos.z == edgeZ)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x - 1, blockChunkPos.z + 1));
+	}
+
+	if (blockLocalPos.x == edgeX && blockLocalPos.z == 0)
+	{
+		list.push_back(glm::ivec2(blockChunkPos.x + 1, blockChunkPos.z - 1));
+	}
+
+	list.push_back(glm::ivec2(blockChunkPos.x, blockChunkPos.z));
+
+	return list;
+}
+
 Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 {
 	glm::ivec3 blockLocalPos;
@@ -351,7 +407,7 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 	}
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face & faceDir, ChunkMeshGenerator* meshGenerator)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face & faceDir, ChunkWorkManager* workManager)
 {
 	glm::ivec3 targetPos = blockPos;
 	
@@ -414,7 +470,15 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 
 				chunkSection->setBlockAt(blockLocalPos, Block::BLOCK_ID::GRASS);
 
-				meshGenerator->generateSingleChunkMesh(chunk, this);
+				//meshGenerator->generateSingleChunkMesh(chunk, this);
+
+				//std::cout << "Placing block at chunk: " << Utility::Log::vec3ToStr(chunkSectionPos) << std::endl;
+				//std::cout << "Block pos = " << Utility::Log::vec3ToStr(targetPos) << std::endl;
+				//std::cout << "Block local pos = " << Utility::Log::vec3ToStr(blockLocalPos) << std::endl;
+			
+				std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+
+				workManager->addLoad(refreshList, true);
 			}
 		}
 		// Else, chunk is nullptr.
@@ -427,7 +491,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 	}
 }
 
-void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkMeshGenerator * meshGenerator)
+void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkWorkManager* workManager)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -456,7 +520,9 @@ void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkMeshGenera
 						chunk->deleteChunkSectionAtY(chunkSectionPos.y);
 					}
 
-					meshGenerator->generateSingleChunkMesh(chunk, this);
+					std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+
+					workManager->addLoad(refreshList, true);
 				}
 				else
 				{

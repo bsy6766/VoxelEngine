@@ -16,30 +16,47 @@ ChunkWorkManager::ChunkWorkManager()
 	running.store(false);
 }
 
-void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate)
+void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate, const bool highPriority)
 {
 	// Scope lock
 	std::unique_lock<std::mutex> lock(queueMutex);
 
-	loadQueue.push_back(coordinate);
+	if (highPriority)
+	{
+		loadQueue.push_front(coordinate);
+	}
+	else
+	{
+		loadQueue.push_back(coordinate);
+	}
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates)
+void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
 {
 	//auto start = Utility::Time::now();
 	// Scope lock
 	std::unique_lock<std::mutex> lock(queueMutex);
 
-	for (auto xz : coordinates)
+	if (highPriority)
 	{
-		loadQueue.push_back(xz);
+		for (auto xz : coordinates)
+		{
+			loadQueue.push_front(xz);
+		}
+	}
+	else
+	{
+		for (auto xz : coordinates)
+		{
+			loadQueue.push_back(xz);
+		}
 	}
 
 	//auto end = Utility::Time::now();
 	//std::cout << "addLoad() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 
-	//cv.notify_one();
+	cv.notify_one();
 }
 
 void Voxel::ChunkWorkManager::addUnload(const glm::ivec2 & coordinate)
@@ -263,7 +280,22 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 {
 	// Get number of thread to spawn
 	// 1 for main thread
-	int threadCount = coreCount - 1;
+	int threadCount = 0;
+	if (coreCount == 1 || coreCount == 2)
+	{
+		// For single and dual, spawn 1 thread
+		threadCount = 1;
+	}
+	else if(threadCount == 4)
+	{
+		// For quad core, spawn 2
+		threadCount = 2;
+	}
+	else
+	{
+		// For more than quad core, spawn 3
+		threadCount = 3;
+	}
 
 	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
 	
@@ -271,7 +303,7 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 	// (I guess because if mutex lock)
 	if (running)
 	{
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < threadCount; i++)
 		{
 			workerThreads.push_back(std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator));
 		}

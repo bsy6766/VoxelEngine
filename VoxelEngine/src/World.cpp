@@ -465,8 +465,13 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
-		player->setPosition(glm::vec3(70.6504f, 100.47f, 177.847f));
-		player->setRotation(glm::vec3(339, 37.1524, 0));
+		auto testPos = glm::ivec3(-24, -40, -1);
+		auto testLocal = glm::ivec3(0);
+		auto testChunk = glm::ivec3(0);
+		chunkMap->blockWorldCoordinateToLocalAndChunkSectionCoordinate(testPos, testLocal, testChunk);
+		std::cout << "testPos: " << Utility::Log::vec3ToStr(testPos) << std::endl;
+		std::cout << "testLocal: " << Utility::Log::vec3ToStr(testLocal) << std::endl;
+		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -709,7 +714,7 @@ void Voxel::World::updateMouseClickInput()
 		{
 			auto lookingBlock = player->getLookingBlock();
 			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
-			chunkMap->removeBlockAt(blockPos, chunkMeshGenerator);
+			chunkMap->removeBlockAt(blockPos, chunkWorkManager);
 			updatePlayerRaycast();
 		}
 	}
@@ -719,7 +724,7 @@ void Voxel::World::updateMouseClickInput()
 		{
 			auto lookingBlock = player->getLookingBlock();
 			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
-			chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkMeshGenerator);
+			chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkWorkManager);
 			updatePlayerRaycast();
 		}
 	}
@@ -850,7 +855,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
-	defaultProgram->setUniformBool("fogEnabled", true);
+	//defaultProgram->setUniformBool("fogEnabled", true);
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 
 	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
