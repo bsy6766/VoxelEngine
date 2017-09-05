@@ -4,6 +4,7 @@
 #include <glm\glm.hpp>
 #include <list>
 #include <unordered_map>
+#include <shared_ptr.hpp>
 
 namespace Voxel
 {
@@ -27,7 +28,7 @@ namespace Voxel
 		ChunkMap* manualChunks;
 
 		// Chunks that are currently active
-		std::list<std::list<Chunk*>> activeChunks;
+		std::list<std::list<std::shared_ptr<Chunk>>> activeChunks;
 	public:
 		ChunkLoader();
 		~ChunkLoader();

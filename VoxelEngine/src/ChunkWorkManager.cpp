@@ -251,7 +251,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 							// There can be two cases. 
 							// 1. Chunk is newly generated and need mesh.
 							// 2. Chunk already has mesh but need to refresh
-							chunkMeshGenerator->generateSingleChunkMesh(chunk, map);
+							chunkMeshGenerator->generateSingleChunkMesh(chunk.get(), map);
 						}
 						// Else, mesh is nullptr
 					}

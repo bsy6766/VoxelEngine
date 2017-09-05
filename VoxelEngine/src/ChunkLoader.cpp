@@ -51,7 +51,7 @@ std::vector<glm::vec2> Voxel::ChunkLoader::init(const glm::vec3 & playerPosition
 
 	for (int x = minX; x <= maxX; x++)
 	{
-		activeChunks.push_back(std::list<Chunk*>());
+		activeChunks.push_back(std::list<std::shared_ptr<Chunk>>());
 
 		for (int z = minZ; z <= maxZ; z++)
 		{
@@ -59,7 +59,7 @@ std::vector<glm::vec2> Voxel::ChunkLoader::init(const glm::vec3 & playerPosition
 			if (map->hasChunkAtXZ(x, z))
 			{
 				//std::cout << "[ChunkLoader] Loading chunk at (" << x << ", " << z << ")" << std::endl;
-				auto chunk = map->getChunkAtXZ(x, z);
+				std::shared_ptr<Chunk> chunk = map->getChunkAtXZ(x, z);
 				activeChunks.back().push_back(chunk);
 				chunk->setActive(true);
 				chunk->setVisibility(true);
@@ -185,7 +185,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				}
 
 				// Add new list on front with empty chunks
-				activeChunks.push_front(std::list<Chunk*>());
+				activeChunks.push_front(std::list<std::shared_ptr<Chunk>>());
 
 				// Add empty chunks
 				int lastZ = activeChunks.back().size() + zStart;
@@ -238,7 +238,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 				}
 
 				// Add new list on front with empty chunks
-				activeChunks.push_back(std::list<Chunk*>());
+				activeChunks.push_back(std::list<std::shared_ptr<Chunk>>());
 
 				// Add empty chunks
 				int lastZ = activeChunks.front().size() + zStart;
@@ -407,7 +407,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 int Voxel::ChunkLoader::findVisibleChunk()
 {
 	int count = 0;
-	for (auto x : activeChunks)
+	for (auto& x : activeChunks)
 	{
 		for (auto chunk : x)
 		{
@@ -421,7 +421,7 @@ int Voxel::ChunkLoader::findVisibleChunk()
 				}
 				else
 				{
-					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk);
+					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
 					chunk->setVisibility(visible);
 					if (visible) count++;
 				}

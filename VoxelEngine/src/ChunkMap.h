@@ -8,6 +8,7 @@
 #include <Block.h>
 #include <mutex>
 #include <Cube.h>
+#include <shared_ptr.hpp>
 
 namespace Voxel
 {
@@ -24,7 +25,7 @@ namespace Voxel
 		Cube::Face face;
 	};
 
-	typedef std::unordered_map<glm::ivec2, Chunk*, KeyFuncs, KeyFuncs> ChunkUnorderedMap;
+	typedef std::unordered_map<glm::ivec2, std::shared_ptr<Chunk>, KeyFuncs, KeyFuncs> ChunkUnorderedMap;
 
 	/**
 	*	@class ChunkMap
@@ -64,7 +65,8 @@ namespace Voxel
 		bool hasChunkAtXZ(int x, int z);
 
 		// Get chunk in x and z coordinate
-		Chunk* getChunkAtXZ(int x, int z);
+		//Chunk* getChunkAtXZ(int x, int z);
+		std::shared_ptr<Chunk> getChunkAtXZ(int x, int z);
 
 		// Generate region based on coordinate and size.
 		void generateRegion(const glm::ivec2& regionCoordinate);

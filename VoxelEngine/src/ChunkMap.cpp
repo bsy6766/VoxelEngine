@@ -79,7 +79,7 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 				// new chunk
 				//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") chunk." << std::endl;
 				Chunk* newChunk = Chunk::create(x, z);
-				map.emplace(coordinate, newChunk);
+				map.emplace(coordinate, std::shared_ptr<Chunk>(newChunk));
 
 				// Add to LUt
 				chunkLUT.emplace(coordinate);
@@ -95,6 +95,7 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 
 void ChunkMap::clear()
 {
+	/*
 	for (auto e : map)
 	{
 		if (e.second)
@@ -102,6 +103,7 @@ void ChunkMap::clear()
 			delete e.second;
 		}
 	}
+	*/
 
 	map.clear();
 }
@@ -113,7 +115,7 @@ bool Voxel::ChunkMap::hasChunkAtXZ(int x, int z)
 	return chunkLUT.find(v2) != chunkLUT.end();
 }
 
-Chunk * Voxel::ChunkMap::getChunkAtXZ(int x, int z)
+std::shared_ptr<Chunk> Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 {
 	std::unique_lock<std::mutex> lock(mapMutex);
 	auto find_it = map.find(glm::ivec2(x, z));
@@ -751,7 +753,7 @@ void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
 		{
 			std::unique_lock<std::mutex> lock(mapMutex);
 			chunk->releaseMesh();
-			delete chunk;
+			//delete chunk;
 
 			map.erase(coordinate);
 			chunkLUT.erase(coordinate);

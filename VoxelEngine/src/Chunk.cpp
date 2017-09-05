@@ -35,17 +35,19 @@ Chunk::~Chunk()
 	{
 		delete chunkMesh;
 	}
+
+	std::cout << "[Chunk] Deleting chunk at (" << position.x << ", " << position.z << ")..." << std::endl;
 }
 
 Chunk* Chunk::create(const int x, const int z)
 {
 	Chunk* newChunk = new Chunk();
-	//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
 	if (newChunk->init(x, z))
 	{
 		if (newChunk->generate())
 		{
 			//std::cout << "[Chunk] Done.\n" << std::endl;
+			std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
 			return newChunk;
 		}
 	}
@@ -61,6 +63,7 @@ Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 	if (newChunk->init(x, z))
 	{
 		//std::cout << "[Chunk] Done.\n" << std::endl;
+		std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")..." << std::endl;
 		return newChunk;
 	}
 

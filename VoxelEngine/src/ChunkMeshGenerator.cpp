@@ -531,14 +531,14 @@ void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, C
 	//int toalVertices = 0;
 
 	// Iterate active chunk in X Axis O(Render distance)
-	for (auto chunkListX : chunkLoader->activeChunks)
+	for (auto& chunkListX : chunkLoader->activeChunks)
 	{
 		// Iterate active chunk in Z axis O(Render distnace)
 		for (auto chunk : chunkListX)
 		{
 			if (chunk != nullptr)
 			{
-				generateSingleChunkMesh(chunk, chunkMap);
+				generateSingleChunkMesh(chunk.get(), chunkMap);
 
 				//toalVertices += chunk->chunkMesh->getVerticesSize();
 			}
@@ -553,7 +553,7 @@ void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, 
 	if (chunkLoader == nullptr) return;
 	if (chunkMap == nullptr) return;
 
-	for (auto chunkListX : chunkLoader->activeChunks)
+	for (auto& chunkListX : chunkLoader->activeChunks)
 	{
 		// Iterate active chunk in Z axis O(Render distnace)
 		for (auto chunk : chunkListX)
@@ -563,7 +563,7 @@ void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, 
 				if (chunk->chunkMesh == nullptr)
 				{
 					//std::cout << "[ChunkMeshGenerator] Generate mesh for new active chunk (" << chunk->position.x << ", " << chunk->position.z << ")" << std::endl;
-					generateSingleChunkMesh(chunk, chunkMap);
+					generateSingleChunkMesh(chunk.get(), chunkMap);
 				}
 			}
 		}
