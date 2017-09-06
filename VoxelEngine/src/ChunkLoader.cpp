@@ -378,6 +378,8 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 		// Load has second priority
 		if (!chunksToLoad.empty())
 		{
+			auto p = glm::vec2(newChunkXZ);
+			std::sort(chunksToLoad.begin(), chunksToLoad.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::abs(glm::distance(p, lhs)) < glm::abs(glm::distance(p, rhs)); });
 			workManager->addLoad(chunksToLoad);
 			notify = true;
 		}

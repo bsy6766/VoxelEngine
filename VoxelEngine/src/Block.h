@@ -24,6 +24,7 @@ namespace Voxel
 			AIR = 0,		// Default block. Transparent.
 			GRASS,
 			STONE,
+			WATER,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
 			INVALID = 255
 		};

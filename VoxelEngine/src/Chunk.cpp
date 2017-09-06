@@ -4,6 +4,7 @@
 #include <ChunkMesh.h>
 #include <ChunkUtil.h>
 #include <Utility.h>
+#include <HeightMap.h>
 
 using namespace Voxel;
 
@@ -118,28 +119,9 @@ bool Voxel::Chunk::generate()
 	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
 	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
 
-	// Frequency. Zoom factor of height map. Higher the value, compact heightmap.
-	float freq = 0.03f;
-
 	float nx = static_cast<float>(position.x);
 	float nz = static_cast<float>(position.z);
 	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
-
-	float octave1 = 1.0f;
-	float octave2 = 1.0f;
-	float octave3 = 1.0f;
-	float octave4 = 0.7f;
-	float octave5 = 0.3f;
-	float octave6 = 0.0f;
-
-	float octave1Mul = 1.0f;
-	float octave2Mul = 2.0f;
-	float octave3Mul = 4.0f;
-	float octave4Mul = 8.0f;
-	float octave5Mul = 16.0f;
-	float octave6Mul = 32.0f;
-
-	float redistribution = 3.0f;
 
 	for (int x = xStart; x < xEnd; x++)
 	{
@@ -148,34 +130,12 @@ bool Voxel::Chunk::generate()
 		{
 			// Noise returns value -1 to 1.
 			// Summing 6 noise will result in range of -6 to 6, but because of octave, it varies.
-			float val = octave1 * Utility::SimplexNoise::noise(glm::vec2(((octave1Mul * nx) + 0.5f) * freq, ((octave1Mul * nz) + 0.5f) * freq))
-					+ octave2 * Utility::SimplexNoise::noise(glm::vec2(((octave2Mul * nx) + 0.5f) * freq, ((octave2Mul * nz) + 0.5f) * freq))
-					+ octave3 * Utility::SimplexNoise::noise(glm::vec2(((octave3Mul * nx) + 0.5f) * freq, ((octave3Mul * nz) + 0.5f) * freq))
-					+ octave4 * Utility::SimplexNoise::noise(glm::vec2(((octave4Mul * nx) + 0.5f) * freq, ((octave4Mul * nz) + 0.5f) * freq))
-					+ octave5 * Utility::SimplexNoise::noise(glm::vec2(((octave5Mul * nx) + 0.5f) * freq, ((octave5Mul * nz) + 0.5f) * freq))
-					+ octave6 * Utility::SimplexNoise::noise(glm::vec2(((octave6Mul * nx) + 0.5f) * freq, ((octave6Mul * nz) + 0.5f) * freq));
-
-			// So we devide by sum of octaves
-			val /= (octave1 + octave2 + octave3 + octave4 + octave5 + octave6);
-
-			// Now val should be in range of -1 ~ 1. Add 1 to make it in range of 0 ~ 2
-			val += 1.0f;
-			
-			// Just in case if val is still 0, make it 0
-			if (val < 0)
-			{
-				std::cout << "Val = " << val << std::endl;
-				val = 0;
-			}
-
-			val = powf(val, redistribution);
-			//std::cout << "val = " << val << std::endl;
-			
-			// Noise returns in range of -1 ~ 1. Make it 0~1
-			//val = (val + 1.0f) * 0.5f;
+			float val = HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::DEBUG);
 
 			// boost it
-			int y = (static_cast<int>(val * 20.0f) + 60);
+			int y = (static_cast<int>(val * 20.0f) + 30);
+			//val = glm::floor(val * 20.0f);
+			//int y = (static_cast<int>(val) + 30);
 
 			heightMap.back().push_back(y);
 

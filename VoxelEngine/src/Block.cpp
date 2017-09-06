@@ -84,7 +84,22 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	}
 	*/
 
-	id = BLOCK_ID::GRASS;
+	if (worldCoordinate.y < 40)
+	{
+		id = BLOCK_ID::WATER;
+		auto color = Color::WATER;
+		r = color.r * 255.0f;
+		g = color.g * 255.0f;
+		b = color.b * 255.0f;
+	}
+	else
+	{
+		id = BLOCK_ID::GRASS;
+		auto color = Color::GRASS;
+		r = color.r * 255.0f;
+		g = color.g * 255.0f;
+		b = color.b * 255.0f;
+	}
 
 	/*
 	if (worldCoordinate.y < 1.0f)

@@ -22,6 +22,7 @@
 #include <glm\gtx\transform.hpp>
 #include <Cube.h>
 #include <Utility.h>
+#include <SimplexNoise.h>
 #include <Color.h>
 #include <Player.h>
 #include <Skybox.h>
@@ -65,8 +66,6 @@ World::World()
 	input->setCursorToCenter();
 
 	//Camera::mainCamera->initDebugFrustumLines();
-
-	Utility::SimplexNoise::randomize();
 }
 
 World::~World()
@@ -85,6 +84,9 @@ World::~World()
 
 void Voxel::World::init()
 {
+	// Init random first
+	initRandoms();
+
 	// Initialize default program
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 	defaultProgram->use(true);
@@ -146,6 +148,12 @@ void Voxel::World::release()
 	if (debugConsole) delete debugConsole;
 }
 
+void Voxel::World::initRandoms()
+{
+	const auto seed = "ENGINE";
+	Utility::Random::setSeed(seed);
+	Noise::Manager::init(seed);
+}
 void Voxel::World::initUI()
 {
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);

@@ -5,8 +5,6 @@
 #include <stdio.h>  /* defines FILENAME_MAX */
 #include <direct.h>
 
-#include <Utility.h>
-
 #include <World.h>
 
 #include <Camera.h>
@@ -57,8 +55,6 @@ Application::~Application()
 
 void Application::init()
 {
-	Utility::Random::setSeed("ENGINE");
-
 	initInternalSettings();
 
 	initGLView();

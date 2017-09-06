@@ -85,6 +85,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	// Fill vector in order of width(x), length(z) and then height(y)
 	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
 	auto color = Color::getRandomColor();
+
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
 	{
 		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
@@ -207,7 +208,7 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 
 	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
 	//auto color = Color::getRandomColor();
-	auto color = Color::GRASS;
+	//auto color = Color::GRASS;
 
 	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 	{
@@ -227,7 +228,7 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 				for (int blockY = yStart; blockY <= yEnd; blockY++)
 				{
 					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
-					newBlock->setColor(color);
+					//newBlock->setColor(color);
 					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
 
 					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)

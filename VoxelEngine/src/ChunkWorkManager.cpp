@@ -297,6 +297,9 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 		threadCount = 3;
 	}
 
+	// Debug. For now, just use 1 thread
+	threadCount = 1;
+
 	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
 	
 	// for now, just use 1 thread. Using more than 1 thread doesn't really improves the loading performance

@@ -95,6 +95,10 @@ namespace Voxel
 		// Load chunk meshes
 		void loadChunkMesh();
 
+		// Initialize everything that uses random
+		void initRandoms();
+
+		// Init UI 
 		void initUI();
 		void initCubeOutline();
 		void initSkyBox(const glm::vec4& skyColor);
