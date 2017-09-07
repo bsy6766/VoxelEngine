@@ -35,12 +35,14 @@ namespace Voxel
 
 		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
+		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
+		bool initWithValues(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap);
 	public:
 		~ChunkSection();
 		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		static ChunkSection* createEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<int>>& heightMap);
+		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
+		static ChunkSection* createWithValues(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap);
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);

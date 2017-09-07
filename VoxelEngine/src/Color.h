@@ -23,6 +23,19 @@ namespace Voxel
 		const glm::vec3 STONE = glm::vec3(134.0f / 255.0f, 134.0f / 255.0f, 134.0f / 255.0f);
 		const glm::vec3 BEDROCK = glm::vec3(33.0f / 255.0f, 33.0f / 255.0f, 33.0f / 255.0f);
 
+		// biome colors
+		const glm::uvec3 OCEAN = glm::uvec3(46, 59, 182);
+		const glm::uvec3 TUNDRA = glm::uvec3(170, 234, 250);
+		const glm::uvec3 GRASS_DESERT = glm::uvec3(255, 188, 64);
+		const glm::uvec3 DESERT = glm::uvec3(250, 148, 24);
+		const glm::uvec3 TAIGA = glm::uvec3(10, 64, 57);
+		const glm::uvec3 WOODS = glm::uvec3(43, 144, 57);
+		const glm::uvec3 FOREST = glm::uvec3(5, 102, 33);
+		const glm::uvec3 SWAMP = glm::uvec3(7, 249, 178);
+		const glm::uvec3 SAVANNA = glm::uvec3(189, 178, 95);
+		const glm::uvec3 SEASONAL_FOREST = glm::uvec3(71, 135, 90);
+		const glm::uvec3 RAIN_FOREST = glm::uvec3(9, 111, 122);
+
 		// Random color
 		static glm::vec3 getRandomColor()
 		{

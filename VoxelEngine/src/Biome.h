@@ -34,7 +34,7 @@ namespace Voxel
 		~Biome() = delete;
 
 	public:
-		Type getBiomeType(float moisture, float temperature, float elevation);
+		static Type getBiomeType(float moisture, float temperature, float elevation);
 	};
 }
 

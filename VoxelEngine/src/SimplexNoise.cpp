@@ -139,6 +139,8 @@ float Voxel::Noise::SimplexNoise::dot(const int* grad, const float x, const floa
 	return grad[0] * x + grad[1] * y;
 }
 
+
+
 void Voxel::Noise::Manager::init(const std::string & seed)
 {
 	worldNoise = std::unique_ptr<SimplexNoise>(new SimplexNoise(seed));

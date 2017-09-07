@@ -84,6 +84,7 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	}
 	*/
 
+	/*
 	if (worldCoordinate.y < 40)
 	{
 		id = BLOCK_ID::WATER;
@@ -100,6 +101,13 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 		g = color.g * 255.0f;
 		b = color.b * 255.0f;
 	}
+	*/
+
+	id = BLOCK_ID::GRASS;
+	auto color = Color::GRASS;
+	r = color.r * 255.0f;
+	g = color.g * 255.0f;
+	b = color.b * 255.0f;
 
 	/*
 	if (worldCoordinate.y < 1.0f)
@@ -151,6 +159,13 @@ void Voxel::Block::setColor(const unsigned char r, const unsigned char g, const 
 	this->r = r;
 	this->g = g;
 	this->b = b;
+}
+
+void Voxel::Block::setColor(const glm::uvec3 & color)
+{
+	this->r = static_cast<unsigned char>(color.r);
+	this->g = static_cast<unsigned char>(color.g);
+	this->b = static_cast<unsigned char>(color.b);
 }
 
 glm::vec3 Voxel::Block::getColor3()

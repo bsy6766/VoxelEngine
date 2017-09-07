@@ -62,7 +62,7 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 
 void Voxel::Camera::updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation, const int renderDistance)
 {
-	auto MVP = glm::translate(perspective(glm::radians(fovy), aspect, nears, static_cast<float>(renderDistance) * Constant::CHUNK_BORDER_SIZE) * playerOrientation, -playerPosition);
+	auto MVP = glm::translate(perspective(glm::radians(fovy), aspect, nears, static_cast<float>(renderDistance * 2.0f) * Constant::CHUNK_BORDER_SIZE) * playerOrientation, -playerPosition);
 	frustum->update(MVP);
 }
 

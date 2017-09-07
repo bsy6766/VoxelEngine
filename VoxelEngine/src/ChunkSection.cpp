@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ChunkUtil.h>
 #include <Color.h>
+#include <Biome.h>
 
 using namespace Voxel;
 
@@ -56,11 +57,27 @@ ChunkSection * Voxel::ChunkSection::createEmpty(const int x, const int y, const 
 	}
 }
 
-ChunkSection * Voxel::ChunkSection::createWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<int>>& heightMap)
+ChunkSection * Voxel::ChunkSection::createWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& heightMap)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
 	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
 	if (newChunkSection->initWithHeightMap(x, y, z, chunkPosition, heightMap))
+	{
+		//std::cout << "[ChunkSection] Done." << std::endl;
+		return newChunkSection;
+	}
+	else
+	{
+		delete newChunkSection;
+		return nullptr;
+	}
+}
+
+ChunkSection * Voxel::ChunkSection::createWithValues(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap)
+{
+	ChunkSection* newChunkSection = new ChunkSection();
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	if (newChunkSection->initWithValues(x, y, z, chunkPosition, eMap, tMap, mMap))
 	{
 		//std::cout << "[ChunkSection] Done." << std::endl;
 		return newChunkSection;
@@ -84,7 +101,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 	// Fill vector in order of width(x), length(z) and then height(y)
 	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
-	auto color = Color::getRandomColor();
+	//auto color = Color::getRandomColor();
 
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
 	{
@@ -101,7 +118,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 						nonAirBlockSize++;
 					}
 					// debug
-					newBlock->setColor(color);
+					//newBlock->setColor(color);
 				}
 				else
 				{
@@ -131,7 +148,7 @@ bool Voxel::ChunkSection::initEmpty(const int x, const int y, const int z, const
 	return true;
 }
 
-bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<int>>& heightMap)
+bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& heightMap)
 {
 	position = glm::ivec3(x, y, z);
 
@@ -215,7 +232,8 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
 		{
 			int localY = 0;
-			int heightY = heightMap.at(blockX).at(blockZ);
+			float e = heightMap.at(blockX).at(blockZ);
+			int heightY = static_cast<int>(e * 60.0f) + 30;
 
 			if (yStart <= heightY)
 			{
@@ -228,6 +246,110 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 				for (int blockY = yStart; blockY <= yEnd; blockY++)
 				{
 					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
+					//newBlock->setColor(color);
+					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
+
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
+					localY++;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap)
+{
+	position = glm::ivec3(x, y, z);
+
+	// calculate world position. Only need to calculate Y.
+	worldPosition = chunkPosition;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
+
+	blocks.clear();
+	blocks.resize(4096, nullptr);
+
+	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
+	//auto color = Color::getRandomColor();
+	//auto color = Color::GRASS;
+
+	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
+	{
+		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
+		{
+			int localY = 0;
+			float e = eMap.at(blockX).at(blockZ);
+			int heightY = static_cast<int>(e * 60.0f) + 30;
+
+			if (yStart <= heightY)
+			{
+				int yEnd = yStart + Constant::CHUNK_SECTION_HEIGHT - 1;
+				if (yEnd > heightY)
+				{
+					yEnd = heightY;
+				}
+
+				for (int blockY = yStart; blockY <= yEnd; blockY++)
+				{
+					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
+
+					auto biome = Biome::getBiomeType(mMap.at(blockX).at(blockZ), tMap.at(blockX).at(blockZ), e);
+					if (biome != Biome::Type::ERROR)
+					{
+						switch (biome)
+						{
+						case Voxel::Biome::Type::OCEAN:
+							newBlock->setColor(Color::OCEAN);
+							break;
+						case Voxel::Biome::Type::TUNDRA:
+							newBlock->setColor(Color::TUNDRA);
+							break;
+						case Voxel::Biome::Type::GRASS_DESERT:
+							newBlock->setColor(Color::GRASS_DESERT);
+							break;
+						case Voxel::Biome::Type::TAIGA:
+							newBlock->setColor(Color::TAIGA);
+							break;
+						case Voxel::Biome::Type::DESERT:
+							newBlock->setColor(Color::DESERT);
+							break;
+						case Voxel::Biome::Type::WOODS:
+							newBlock->setColor(Color::WOODS);
+							break;
+						case Voxel::Biome::Type::FOREST:
+							newBlock->setColor(Color::FOREST);
+							break;
+						case Voxel::Biome::Type::SWAMP:
+							newBlock->setColor(Color::SWAMP);
+							break;
+						case Voxel::Biome::Type::SAVANNA:
+							newBlock->setColor(Color::SAVANNA);
+							break;
+						case Voxel::Biome::Type::SEASONAL_FOREST:
+							newBlock->setColor(Color::SEASONAL_FOREST);
+							break;
+						case Voxel::Biome::Type::RAIN_FOREST:
+							newBlock->setColor(Color::RAIN_FOREST);
+							break;
+						default:
+							newBlock->setColor(28, 192, 11);
+							break;
+						}
+					}
+					else
+					{
+						throw std::runtime_error("Biome type is error");
+					}
+
 					//newBlock->setColor(color);
 					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
 

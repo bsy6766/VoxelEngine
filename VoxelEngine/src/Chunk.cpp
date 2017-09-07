@@ -110,7 +110,10 @@ bool Chunk::init(const int x, const int z)
 bool Voxel::Chunk::generate()
 {	
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
-	std::vector<std::vector<int>> heightMap;
+	std::vector<std::vector<float>> elevationMap;
+	std::vector<std::vector<float>> temperatureMap;
+	std::vector<std::vector<float>> moistureMap;
+
 	int maxY = 0;
 	int minY = 10000;
 
@@ -125,19 +128,19 @@ bool Voxel::Chunk::generate()
 
 	for (int x = xStart; x < xEnd; x++)
 	{
-		heightMap.push_back(std::vector<int>());
+		elevationMap.push_back(std::vector<float>());
+		temperatureMap.push_back(std::vector<float>());
+		moistureMap.push_back(std::vector<float>());
+
 		for (int z = zStart; z < zEnd; z++)
 		{
-			// Noise returns value -1 to 1.
-			// Summing 6 noise will result in range of -6 to 6, but because of octave, it varies.
+			// Get height 
 			float val = HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::DEBUG);
 
-			// boost it
-			int y = (static_cast<int>(val * 20.0f) + 30);
-			//val = glm::floor(val * 20.0f);
-			//int y = (static_cast<int>(val) + 30);
+			// The lowest block level is 30. The range of terrain in y axis is 120 (30 
+			int y = (static_cast<int>(val * 60.0f) + 30);
 
-			heightMap.back().push_back(y);
+			elevationMap.back().push_back(val);
 
 			if (y > maxY)
 			{
@@ -147,6 +150,10 @@ bool Voxel::Chunk::generate()
 			{
 				minY = y;
 			}
+
+			// Get temperature
+			temperatureMap.back().push_back(HeightMap::getTemperatureNoise2D(nx, nz));
+			moistureMap.back().push_back(HeightMap::getMoistureNosie2D(nx, nz));
 
 			nz += step;
 		}
@@ -161,13 +168,43 @@ bool Voxel::Chunk::generate()
 		lowestChunkSection = 0;
 	}
 
-	//std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
-	//std::cout << "maxY = " << maxY << std::endl;
-	//std::cout << "minY = " << minY << std::endl;
-	//std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
-	//std::cout << "lowestChunkSection = " << lowestChunkSection << std::endl;
+	/*
+	if (maxY >= 255.0f)
+	{
+		std::cout << "Chunk: " << Utility::Log::vec3ToStr(position) << std::endl;
+		std::cout << "maxY = " << maxY << std::endl;
+		std::cout << "minY = " << minY << std::endl;
+		std::cout << "heighestChunkSection = " << heighestChunkSection << std::endl;
+		std::cout << "lowestChunkSection = " << lowestChunkSection << std::endl;
+	}
+	*/
 
-	//int randY = Utility::Random::randomInt(2, 5);
+	/*
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		// Temp. All blocks above chunk section y 3 will be air.
+		if (i > 3)
+		{
+			//std::cout << "+ chunksection: " << i << std::endl;
+			chunkSections.push_back(nullptr);
+		}
+		else
+		{
+			//std::cout << "++ chunksection: " << i << std::endl;
+			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			//auto newChucnkSection = ChunkSection::createWithHeightMap(position.x, i, position.z, worldPosition, heightMap);
+			if (newChucnkSection)
+			{
+				chunkSections.push_back(newChucnkSection);
+			}
+			else
+			{
+				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+			}
+		}
+	}
+	*/
+
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
@@ -180,7 +217,7 @@ bool Voxel::Chunk::generate()
 		{
 			//std::cout << "++ chunksection: " << i << std::endl;
 			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
-			auto newChucnkSection = ChunkSection::createWithHeightMap(position.x, i, position.z, worldPosition, heightMap);
+			auto newChucnkSection = ChunkSection::createWithValues(position.x, i, position.z, worldPosition, elevationMap, temperatureMap, moistureMap);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);
