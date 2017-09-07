@@ -127,6 +127,9 @@ void Voxel::World::init()
 	Application::getInstance().getGLView()->setWindowedFullScreen(0);
 	defaultCanvas->setSize(glm::vec2(1920, 1080));
 	debugConsole->updateResolution(1920, 1080);
+
+	//Testing voronoi
+	chunkMap->initVoronoi();
 }
 
 void Voxel::World::release()

@@ -10,6 +10,8 @@
 #include <Cube.h>
 #include <shared_ptr.hpp>
 
+#include <boost\polygon\voronoi.hpp>
+
 namespace Voxel
 {
 	// forward
@@ -51,6 +53,9 @@ namespace Voxel
 	public:
 		ChunkMap() = default;
 		~ChunkMap();
+
+		// Voronoi 
+		void initVoronoi();
 
 		// Initialize spawn chunk
 		void initSpawnChunk();
