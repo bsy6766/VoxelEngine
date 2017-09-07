@@ -7,7 +7,6 @@
 #include <ChunkWorkManager.h>
 
 using namespace Voxel;
-using namespace boost::polygon;
 
 Voxel::ChunkMap::~ChunkMap()
 {
@@ -17,60 +16,6 @@ Voxel::ChunkMap::~ChunkMap()
 void Voxel::ChunkMap::initVoronoi()
 {
 
-	boost::polygon::voronoi_diagram<double> vd;
-
-	std::vector<boost::polygon::point_data<int>> points;
-	points.push_back(boost::polygon::point_data<int>(1000, 500));
-	points.push_back(boost::polygon::point_data<int>(-500, 800));
-	points.push_back(boost::polygon::point_data<int>(-300, -500));
-	points.push_back(boost::polygon::point_data<int>(500, -1000));
-
-	boost::polygon::construct_voronoi(points.begin(), points.end(), &vd);
-
-	for (auto it = vd.cells().begin(); it != vd.cells().end(); ++it)
-	{
-		const boost::polygon::voronoi_diagram<double>::cell_type &cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type *edge = cell.incident_edge();
-		const boost::polygon::voronoi_diagram<double>::edge_type *edgeEnd = cell.incident_edge();
-		// This is convenient way to iterate edges around Voronoi cell.
-
-		std::cout << "Cell: " << cell.source_index() << std::endl;
-
-		do
-		{
-			if (edge->is_primary())
-			{
-				std::cout << "Edge is primary" << std::endl;
-			}
-			if (edge->is_secondary())
-			{
-				std::cout << "Edge is secondary" << std::endl;
-			}
-			if (edge->is_finite())
-			{
-				std::cout << "Edge is finite" << std::endl;
-
-				auto p1 = glm::vec2(edge->vertex0()->x(), edge->vertex0()->y());
-				auto p2 = glm::vec2(edge->vertex1()->x(), edge->vertex1()->y());
-
-				std::cout << "Edge: " << Utility::Log::vec2ToStr(p1) << ", " << Utility::Log::vec2ToStr(p2) << std::endl;
-
-			}
-			if (edge->is_infinite())
-			{
-				std::cout << "Edge if infinite" << std::endl;
-			}
-
-
-
-
-			edge = edge->rot_next();
-
-		} while (edge != edgeEnd);
-	}
-
-
-	std::cout << std::endl;
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
