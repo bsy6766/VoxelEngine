@@ -451,7 +451,8 @@ void Voxel::World::initVoronoi()
 	const float maxBound = static_cast<float>(xPos * interval);
 
 	vd->buildCells(minBound, maxBound);
-	vd->buildGraph(grid.size(), grid.front().size());
+	vd->buildGraph(width, length);
+	vd->randomizeCells(width, length);
 	vd->initDebugDiagram();
 }
 

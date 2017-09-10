@@ -73,6 +73,7 @@ namespace Voxel
 
 			glm::vec2 getPosition();
 			Type getType();
+			void updateType(const Type type);
 		};
 
 		/**
@@ -94,6 +95,7 @@ namespace Voxel
 			bool valid;
 			// Neighbors
 			std::list<Cell*> neighbors;
+			
 		public:
 			Cell() = delete;
 			Cell(const unsigned int ID);
@@ -107,9 +109,14 @@ namespace Voxel
 			void setSite(Site* site);
 			void setValidation(const bool valid);
 			bool isValid();
-			const std::vector<Edge*>& getEdges();
+			std::vector<Edge*>& getEdges();
 			void addNeighbor(Cell* cell);
-			const std::list<Cell*>& getNeighbors();
+			std::list<Cell*>& getNeighbors();
+			unsigned int getNeighborSize();
+			void clearEdges();
+			void clearNeighbors();
+			unsigned int getID();
+			void updateSiteType(Site::Type type);
 		};
 
 		class Program;
@@ -146,11 +153,14 @@ namespace Voxel
 			float minBound;
 			float maxBound;
 
+			// total valid cells
+			int totalValidCells;
+
 			// Build undirected graph between cells
 			unsigned int xzToIndex(const int x, const int z, const int w);
 			bool inRange(const unsigned int index);
-			void checkNeighborCell(const std::vector<Edge*>& edges, Cell* curCell, const unsigned int index);
-			bool isConnected(const std::vector<Edge*>& edges, Cell* neighborCell);
+			void checkNeighborCell(std::vector<Edge*>& edges, Cell* curCell, const unsigned int index);
+			bool isConnected(std::vector<Edge*>& edges, Cell* neighborCell);
 
 			// For debug rendering
 			GLuint vao;
@@ -175,6 +185,8 @@ namespace Voxel
 			void construct(const std::vector<Site>& randomSites);
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
 			void buildCells(const float minBound, const float maxBound);
+			// Randomize cells by removing cells
+			void randomizeCells(const int w, const int l);
 			// Build graph based on cells.
 			void buildGraph(const int w, const int l);
 			// Intialize debug lines of diagram

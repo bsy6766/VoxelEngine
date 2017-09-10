@@ -51,6 +51,11 @@ void Voxel::Voronoi::Edge::setCoOwner(Cell * cell)
 	this->coOwner = cell;
 }
 
+Cell * Voxel::Voronoi::Edge::getCoOwner()
+{
+	return coOwner;
+}
+
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
 	, site(nullptr)
@@ -59,15 +64,7 @@ Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 
 Voxel::Voronoi::Cell::~Cell()
 {
-	for (auto edge : edges)
-	{
-		if (edge)
-		{
-			delete edge;
-		}
-	}
-
-	edges.clear();
+	clearEdges();
 
 	if (site)
 	{
@@ -110,7 +107,7 @@ bool Voxel::Voronoi::Cell::isValid()
 	return valid;
 }
 
-const std::vector<Edge*>& Voxel::Voronoi::Cell::getEdges()
+std::vector<Edge*>& Voxel::Voronoi::Cell::getEdges()
 {
 	return edges;
 }
@@ -120,9 +117,42 @@ void Voxel::Voronoi::Cell::addNeighbor(Cell * cell)
 	neighbors.push_back(cell);
 }
 
-const std::list<Cell*>& Voxel::Voronoi::Cell::getNeighbors()
+std::list<Cell*>& Voxel::Voronoi::Cell::getNeighbors()
 {
 	return neighbors;
+}
+
+unsigned int Voxel::Voronoi::Cell::getNeighborSize()
+{
+	return this->neighbors.size();
+}
+
+void Voxel::Voronoi::Cell::clearEdges()
+{
+	for (auto edge : edges)
+	{
+		if (edge)
+		{
+			delete edge;
+		}
+	}
+
+	edges.clear();
+}
+
+void Voxel::Voronoi::Cell::clearNeighbors()
+{
+	this->neighbors.clear();
+}
+
+unsigned int Voxel::Voronoi::Cell::getID()
+{
+	return ID;
+}
+
+void Voxel::Voronoi::Cell::updateSiteType(Site::Type type)
+{
+	this->site->updateType(type);
 }
 
 
@@ -135,6 +165,7 @@ Voxel::Voronoi::Diagram::Diagram()
 	, lineSize(0)
 	, minBound(0)
 	, maxBound(0)
+	, totalValidCells(0)
 {}
 
 Voxel::Voronoi::Diagram::~Diagram()
@@ -284,6 +315,8 @@ void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBo
 			}
 
 			newCell->setValidation(true);
+
+			totalValidCells++;
 		}
 		else
 		{
@@ -294,10 +327,141 @@ void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBo
 	}
 
 	std::cout << "Cell size = " << cells.size() << std::endl;
+	std::cout << "Valid cell size = " << totalValidCells << std::endl;
 
 	auto end = Utility::Time::now();
 
 	std::cout << "Voronoi build took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
+{
+	// randomly omit outer cells in grid. 
+	int count = Utility::Random::randomInt(10, 14);
+	// Get candidates
+	std::vector<unsigned int> candidates;
+
+	int xLen = w - 2;
+	int zLen = l - 2;
+	for (int x = 1; x <= xLen; ++x)
+	{
+		if (x == 1 || x == xLen)
+		{
+			for (int z = 1; z <= zLen; ++z)
+			{
+				candidates.push_back(xzToIndex(x, z, w));
+			}
+		}
+		else
+		{
+			candidates.push_back(xzToIndex(x, 1, w));
+			candidates.push_back(xzToIndex(x, zLen, w));
+		}
+	}
+
+	std::random_shuffle(candidates.begin(), candidates.end());
+
+	unsigned int index = 0;
+	auto len = candidates.size();
+
+	int totalRemoved = 0;
+
+	while (count > 0 && index < len)
+	{
+		auto find_it = cells.find(candidates.at(index));
+		if (find_it == cells.end())
+		{
+			index++;
+			continue;
+		}
+		else
+		{
+			auto cell = find_it->second;
+			if (cell->isValid())
+			{
+				std::cout << "Attempt to remove cell: " << index << std::endl;
+				// Check if this cell can be removed. 
+				// Iterate through neighbor and check if they will be isolated if this cell gets removed
+				auto& neighborCells = cell->getNeighbors();
+				bool skip = false;
+
+				std::cout << "Total neighbors: " << neighborCells.size() << std::endl;
+				// If neighbor cell has only 1 cell connected, skip
+				for(auto nc : neighborCells)
+				{
+					auto size = nc->getNeighborSize();
+					if (size == 1)
+					{
+						skip = true;
+						break;
+					}
+				}
+
+				if (skip)
+				{
+					// Skip. Next index
+					std::cout << "This cell can't be removed" << std::endl;
+					index++;
+					continue;
+				}
+				else
+				{
+					// This cell can be removed. Iterate neighbor cells again and remove form their neighbor list
+					auto cellID = cell->getID();
+					for (auto nc : neighborCells)
+					{
+						std::cout << "Checking on nieghbor cell: " << nc->getID() << std::endl;
+						auto& nnc = nc->getNeighbors();
+						std::cout << "Total neighbors in neighbors: " << nnc.size() << std::endl;
+
+						auto it = nnc.begin();
+						for (; it != nnc.end();)
+						{
+							if (cellID == (*it)->getID())
+							{
+								// Found the matching cell. remove from neighbor
+								std::cout << "Found" << std::endl;
+								// Make sure to reset coowner for sharing edges
+								auto& edges = (*it)->getEdges();
+
+								for (auto e : edges)
+								{
+									auto coOwner = e->getCoOwner();
+									if (coOwner)
+									{
+										if (coOwner->getID() == cellID)
+										{
+											std::cout << "Removing from cowoner" << std::endl;
+											e->setCoOwner(nullptr);
+											break;
+										}
+									}
+								}
+
+								nnc.erase(it);
+								break;
+							}
+							else
+							{
+								it++;
+							}
+						}
+					}
+
+					cell->setValidation(false);
+					cell->clearEdges();
+					cell->clearNeighbors();
+					cell->updateSiteType(Site::Type::OMITTED);
+					totalRemoved++;
+					count--;
+					index++;
+					std::cout << "Success!" << std::endl;
+				}
+			}
+		}
+	}
+
+	std::cout << "Removed " << totalRemoved << " cells" << std::endl;
 }
 
 void Voxel::Voronoi::Diagram::initDebugDiagram()
@@ -343,8 +507,6 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 
 		auto& neighbors = (c.second)->getNeighbors();
 		auto pos = (c.second)->getSitePosition();
-
-
 
 		for (auto nc : neighbors)
 		{
@@ -687,7 +849,7 @@ bool Voxel::Voronoi::Diagram::inRange(const unsigned int index)
 	return (index >= 0) && (index < cells.size());
 }
 
-void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<Edge*>& edges, Cell* curCell, const unsigned int index)
+void Voxel::Voronoi::Diagram::checkNeighborCell(std::vector<Edge*>& edges, Cell* curCell, const unsigned int index)
 {
 	if (inRange(index))
 	{
@@ -699,7 +861,7 @@ void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<Edge*>& edges,
 	}
 }
 
-bool Voxel::Voronoi::Diagram::isConnected(const std::vector<Edge*>& edges, Cell* neighborCell)
+bool Voxel::Voronoi::Diagram::isConnected(std::vector<Edge*>& edges, Cell* neighborCell)
 {
 	if (neighborCell->isValid())
 	{
@@ -851,4 +1013,9 @@ glm::vec2 Voxel::Voronoi::Site::getPosition()
 Site::Type Voxel::Voronoi::Site::getType()
 {
 	return type;
+}
+
+void Voxel::Voronoi::Site::updateType(const Type type)
+{
+	this->type = type;
 }
