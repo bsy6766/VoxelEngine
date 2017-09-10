@@ -259,33 +259,74 @@ void Voxel::World::initVoronoi()
 	// Generate random grid
 	std::vector<std::vector<int>> grid;
 
+	const int EMPTY = 0;
+	const int MARKED = 1;
+	const int OMITTED = 2;
+	const int BORDER = 3;
+
+	const int width = 10;
+	const int length = 10;
+
 	// Fill with M (1)
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < width; ++i)
 	{
 		grid.push_back(std::vector<int>());
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < length; ++j)
 		{
-			grid.back().push_back(1);
+			grid.back().push_back(MARKED);
 		}
 	}
 
 	// set edge of grid as border (2)
 	for (auto& i : grid.front())
 	{
-		i = 2;
+		i = BORDER;
 	}
 
 	for (auto& i : grid.back())
 	{
-		i = 2;
+		i = BORDER;
 	}
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < width; ++i)
 	{
-		grid.at(i).front() = 2;
-		grid.at(i).back() = 2;
+		grid.at(i).front() = BORDER;
+		grid.at(i).back() = BORDER;
 	}
 
+	// Now randomly omit outer cells in grid. 
+	int count = Utility::Random::randomInt(10, 14);
+	// Get candidates
+	std::vector<glm::ivec2> candidates;
+
+	int xLen = width - 2;
+	int zLen = length - 2;
+	for (int x = 1; x <= xLen; ++x)
+	{
+		if (x == 1 || x == xLen)
+		{
+			for (int z = 1; z <= zLen; ++z)
+			{
+				candidates.push_back(glm::ivec2(x, z));
+			}
+		}
+		else
+		{
+			candidates.push_back(glm::ivec2(x, 1));
+			candidates.push_back(glm::ivec2(x, zLen));
+		}
+	}
+
+	std::random_shuffle(candidates.begin(), candidates.end());
+
+	for (int i = 0; i < count; i++)
+	{
+		grid.at(candidates.at(i).x).at(candidates.at(i).y) = OMITTED;
+	}
+
+	// also pick few cells to omit on inner side as well
+
+	// print grid
 	for (auto i : grid)
 	{
 		for (auto j : i)
@@ -293,13 +334,16 @@ void Voxel::World::initVoronoi()
 			std::string str;
 			switch (j)
 			{
-			case 0:
+			case EMPTY:
 				str = "0";
 				break;
-			case 1:
+			case MARKED:
 				str = "M";
 				break;
-			case 2:
+			case OMITTED:
+				str = "X";
+				break;
+			case BORDER:
 				str = "B";
 				break;
 			default:
@@ -311,54 +355,95 @@ void Voxel::World::initVoronoi()
 		std::cout << std::endl;
 	}
 
-	// World range is -5000 ~ 5000 for now
-	// We can modify the min max later
+	//based on grid, generate random points
+
+	int xPos = grid.size() / 2;
+	int zPos = grid.front().size() / 2;
+
 	const int interval = 1000;
 	const int intervalHalf = interval / 2;
-	int min = -5000;
-	int max = 5000;
-	int xStart = max;
-	int zStart = max;
 
-	const int pad = 100;
+	glm::ivec2 pos = (glm::ivec2(xPos, zPos) * interval) - intervalHalf;
+
+	// For marked 
+	const int pad = interval / 10;
 	const int randMax = (interval - (pad * 2)) / 2;
 	const int randMin = randMax * -1;
 
-	int len = (max - min) / interval;
+	// For omiited cell. More controlled
+	const int omittedPad = pad * 3;
+	const int omittedRandMax = (interval - (omittedPad * 2)) / 2;
+	const int omittedRandMin = omittedRandMax * -1;
 
-	int x = xStart - intervalHalf;
-	int z = zStart - intervalHalf;
+	std::vector<Voronoi::Site> points;
 
-	std::vector<glm::ivec2> points;
-
-	for (int i = 0; i < len; i++)
+	for (auto x : grid)
 	{
-		for (int j = 0; j < len; j++)
+		for (auto z : x)
 		{
-			/*
-			*/
-			int randX = Utility::Random::randomInt(randMin, randMax);
-			int randZ = Utility::Random::randomInt(randMin, randMax);
+			glm::vec2 randPos;
+			Voronoi::Site::Type type;
+			switch (z)
+			{
+			case MARKED:
+			{
+				int randX = Utility::Random::randomInt(randMin, randMax);
+				int randZ = Utility::Random::randomInt(randMin, randMax);
 
-			glm::ivec2 randPoint = glm::ivec2(randX, randZ);
-			//std::cout << "Point = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
-			auto pos = glm::ivec2(x, z);
-			//std::cout << "Pos = " << Utility::Log::vec2ToStr(pos) << std::endl;
-			randPoint += pos;
+				randPos = glm::ivec2(randX, randZ);
 
-			//randPoint = glm::ivec2(x, z);
+				type = Voronoi::Site::Type::MARKED;
+				std::cout << "Marked" << std::endl;
+			}
+				break;
+			case OMITTED:
+			{
+				//int randX = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
+				//int randZ = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
 
-			points.push_back(randPoint);
-			std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
+				//randPos = glm::ivec2(randX, randZ);
 
-			z -= interval;
+				int randX = Utility::Random::randomInt(randMin, randMax);
+				int randZ = Utility::Random::randomInt(randMin, randMax);
+
+				randPos = glm::ivec2(randX, randZ);
+
+				type = Voronoi::Site::Type::OMITTED;
+				std::cout << "Omitted" << std::endl;
+			}
+				break;
+			case BORDER:
+			{
+				randPos = glm::vec2(0);
+				type = Voronoi::Site::Type::BORDER;
+				std::cout << "Border" << std::endl;
+			}
+				break;
+			case EMPTY:
+			default:
+				type = Voronoi::Site::Type::NONE;
+				continue;
+				break;
+			}
+
+			randPos += pos;
+			std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
+
+			points.push_back(Voronoi::Site(randPos, type));
+
+			pos.y/*z*/ -= interval;
 		}
-		z = zStart - intervalHalf;
-		x -= interval;
+
+		pos.y/*z*/ = (zPos * interval) - intervalHalf;
+		pos.x -= interval;
 	}
 
 	vd.construct(points);
-	vd.build();
+
+	const float minBound = static_cast<float>(xPos * interval * -1);
+	const float maxBound = static_cast<float>(xPos * interval);
+
+	vd.build(minBound, maxBound);
 	vd.initDebugDiagram();
 }
 

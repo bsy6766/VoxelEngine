@@ -29,6 +29,35 @@ namespace Voxel
 			Edge() = delete;
 			Edge(const glm::vec2& start, const glm::vec2& end);
 			~Edge() = default;
+
+			glm::vec2 getStart();
+			glm::vec2 getEnd();
+		};
+
+		/**
+		*	@class Site
+		*	@brief A vec2 point in voronoi diagram
+		*/
+		class Site
+		{
+		public:
+			enum class Type
+			{
+				NONE = 0,
+				BORDER,
+				MARKED,
+				OMITTED
+			};
+		private:
+			glm::vec2 position;
+			Type type;
+		public:
+			Site() = delete;
+			Site(const glm::vec2& position, const Type type);
+			~Site() = default;
+
+			glm::vec2 getPosition();
+			Type getType();
 		};
 
 		/**
@@ -39,7 +68,7 @@ namespace Voxel
 		{
 		private:
 			// Position of cell in x and z axis
-			glm::vec2 position;
+			Site* site;
 			// List if edges that forms the cell
 			std::vector<Edge*> edges;
 			// Number id
@@ -53,10 +82,13 @@ namespace Voxel
 
 			void addEdge(Edge* edge);
 
-			glm::vec2 getPosition();
-			void setPosition(const glm::vec2& position);
+			glm::vec2 getSitePosition();
+			Site::Type getSiteType();
+			void setSite(const glm::vec2& position, const Site::Type type);
+			void setSite(Site* site);
 			void setValidation(const bool valid);
 			bool isValid();
+			const std::vector<Edge*>& getEdges();
 		};
 
 		class Program;
@@ -80,25 +112,30 @@ namespace Voxel
 			std::unordered_map<unsigned int, Cell*> cells;
 
 			// site points
-			std::vector<glm::vec2> sites;
+			std::vector<glm::vec2> sitePositions;
+			std::vector<Site::Type> siteTypes;
+
+			// Boundary
+			float minBound;
+			float maxBound;
 
 			// For debug rendering
 			GLuint vao;
 			unsigned int size;
-
 			GLuint lineVao;
 			unsigned int lineSize;
 
-			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const glm::vec2& boundary);
+			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
 			glm::vec2 retrivePoint(const CellType& cell);
 		public:
 			Diagram();
 			~Diagram();
 
 			// Construct voronoi diagram based on random sites
-			void construct(const std::vector<glm::ivec2>& randomSites);
+			//void construct(const std::vector<glm::ivec2>& randomSites);
+			void construct(const std::vector<Site>& randomSites);
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
-			void build();
+			void build(const float minBound, const float maxBound);
 			void initDebugDiagram();
 			void render();
 		};

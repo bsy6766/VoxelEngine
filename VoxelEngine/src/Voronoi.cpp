@@ -13,9 +13,19 @@ Voxel::Voronoi::Edge::Edge(const glm::vec2& start, const glm::vec2& end)
 	, end(end)
 {}
 
+glm::vec2 Voxel::Voronoi::Edge::getStart()
+{
+	return start;
+}
+
+glm::vec2 Voxel::Voronoi::Edge::getEnd()
+{
+	return end;
+}
+
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
-	, position(0)
+	, site(nullptr)
 	, valid(false)
 {}
 
@@ -30,6 +40,11 @@ Voxel::Voronoi::Cell::~Cell()
 	}
 
 	edges.clear();
+
+	if (site)
+	{
+		delete site;
+	}
 }
 
 void Voxel::Voronoi::Cell::addEdge(Edge * edge)
@@ -37,14 +52,24 @@ void Voxel::Voronoi::Cell::addEdge(Edge * edge)
 	edges.push_back(edge);
 }
 
-glm::vec2 Voxel::Voronoi::Cell::getPosition()
+glm::vec2 Voxel::Voronoi::Cell::getSitePosition()
 {
-	return position;
+	return site->getPosition();
 }
 
-void Voxel::Voronoi::Cell::setPosition(const glm::vec2 & position)
+Site::Type Voxel::Voronoi::Cell::getSiteType()
 {
-	this->position = position;
+	return site->getType();
+}
+
+void Voxel::Voronoi::Cell::setSite(const glm::vec2& position, const Site::Type type)
+{
+	site = new Site(position, type);
+}
+
+void Voxel::Voronoi::Cell::setSite(Site * site)
+{
+	this->site = site;
 }
 
 void Voxel::Voronoi::Cell::setValidation(const bool valid)
@@ -57,6 +82,11 @@ bool Voxel::Voronoi::Cell::isValid()
 	return valid;
 }
 
+const std::vector<Edge*>& Voxel::Voronoi::Cell::getEdges()
+{
+	return edges;
+}
+
 
 
 
@@ -65,6 +95,8 @@ Voxel::Voronoi::Diagram::Diagram()
 	, size(0)
 	, lineVao(0)
 	, lineSize(0)
+	, minBound(0)
+	, maxBound(0)
 {}
 
 Voxel::Voronoi::Diagram::~Diagram()
@@ -78,24 +110,36 @@ Voxel::Voronoi::Diagram::~Diagram()
 	}
 
 	cells.clear();
+
+	if (vao)
+	{
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	if (lineVao)
+	{
+		glDeleteVertexArrays(1, &lineVao);
+	}
 }
 
-void Voxel::Voronoi::Diagram::construct(const std::vector<glm::ivec2>& randomSites)
+void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 {
 	auto start = Utility::Time::now();
 
 	// Convert random sites to float and store.
-	for (auto site : randomSites)
-	{
-		this->sites.push_back(glm::vec2(site));
-	}
-
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	for (auto& site : randomSites)
+	for (auto site : randomSites)
 	{
-		points.push_back(boost::polygon::point_data<int>(site.x, site.y));
+		auto pos = site.getPosition();
+
+		sitePositions.push_back(pos);
+		siteTypes.push_back(site.getType());
+
+		int x = static_cast<int>(pos.x);
+		int z = static_cast<int>(pos.y);
+		points.push_back(boost::polygon::point_data<int>(x, z));
 	}
 
 	// Construct voronoi diagram
@@ -106,9 +150,14 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<glm::ivec2>& randomSit
 	std::cout << "Voronoi construction took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::build()
+void Voxel::Voronoi::Diagram::build(const float minBound, const float maxBound)
 {
 	auto start = Utility::Time::now();
+
+	// save bound
+	this->minBound = minBound;
+	this->maxBound = maxBound;
+
 	// Iterate cells. Ignore all the cells that contains infinite edge
 	for (auto it = vd.cells().begin(); it != vd.cells().end(); ++it)
 	{
@@ -140,14 +189,14 @@ void Voxel::Voronoi::Diagram::build()
 					glm::vec2 e1 = glm::vec2(edge->vertex1()->x(), edge->vertex1()->y());
 
 					// Check boundary. 
-					if (e0.x > 5000.0f || e0.x < -5000.0f)
+					if (e0.x > maxBound || e0.x < minBound)
 						valid = false;
-					if (e0.y > 5000.0f || e0.y < -5000.0f)
+					if (e0.y > maxBound || e0.y < minBound)
 						valid = false;
 
-					if (e1.x > 5000.0f || e1.x < -5000.0f)
+					if (e1.x > maxBound || e1.x < minBound)
 						valid = false;
-					if (e1.y > 5000.0f || e1.y < -5000.0f)
+					if (e1.y > maxBound || e1.y < minBound)
 						valid = false;
 
 					if (!valid)
@@ -174,9 +223,10 @@ void Voxel::Voronoi::Diagram::build()
 		// This cell is valid
 		Cell* newCell = new Cell(cellID);
 
-		auto pos = this->sites.at(cellID);
+		auto pos = sitePositions.at(cellID);
+
 		// Save site position
-		newCell->setPosition(this->sites.at(cellID));
+		newCell->setSite(sitePositions.at(cellID), siteTypes.at(cellID));
 
 		if (valid)
 		{
@@ -212,47 +262,21 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
 
-	auto vdEdges = vd.edges();
-	buffer.clear();
-
 	auto randColor = Color::getRandomColor();
 
 	// Build edges
-	for (auto& e : vdEdges)
+	for (auto&c : cells)
 	{
-		if (e.is_secondary()) continue;
-
-		if (e.is_linear())
+		auto& edges = (c.second)->getEdges();
+		for (auto& e : edges)
 		{
-			glm::vec2 e0, e1;
-			if (e.is_infinite())
+			glm::vec2 e0 = e->getStart();
+			glm::vec2 e1 = e->getEnd();
+
+			auto type = (c.second)->getSiteType();
+
+			if (type == Site::Type::MARKED)
 			{
-				clipInfiniteEdge(e, e0, e1, glm::vec2(7000, 7000));
-
-				buffer.push_back(e0.x * scale);
-				buffer.push_back(100.0f);
-				buffer.push_back(e0.y * scale);
-				buffer.push_back(0.0f);
-				buffer.push_back(0.0f);
-				buffer.push_back(1.0f);
-				buffer.push_back(1.0f);
-
-				buffer.push_back(e1.x * scale);
-				buffer.push_back(100.0f);
-				buffer.push_back(e1.y * scale);
-				buffer.push_back(0.0f);
-				buffer.push_back(0.0f);
-				buffer.push_back(1.0f);
-				buffer.push_back(1.0f);
-			}
-			else
-			{
-				e0 = glm::vec2(e.vertex0()->x(), e.vertex0()->y());
-				e1 = glm::vec2(e.vertex1()->x(), e.vertex1()->y());
-
-				//e0 = glm::clamp(e0, -5000.0f, 5000.0f);
-				//e1 = glm::clamp(e1, -5000.0f, 5000.0f);
-
 				buffer.push_back(e0.x * scale);
 				buffer.push_back(100.0f);
 				buffer.push_back(e0.y * scale);
@@ -272,31 +296,79 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 		}
 	}
 
+	// Draw infinite edges for debug .
+	auto vdEdges = vd.edges();
+	for (auto& e : vdEdges)
+	{
+		if (e.is_secondary()) continue;
+
+		if (e.is_linear())
+		{
+			if (e.is_infinite())
+			{
+				glm::vec2 e0, e1;
+				clipInfiniteEdge(e, e0, e1, maxBound);
+
+				buffer.push_back(e0.x * scale);
+				buffer.push_back(100.0f);
+				buffer.push_back(e0.y * scale);
+				buffer.push_back(0.0f);
+				buffer.push_back(0.0f);
+				buffer.push_back(1.0f);
+				buffer.push_back(1.0f);
+
+				buffer.push_back(e1.x * scale);
+				buffer.push_back(100.0f);
+				buffer.push_back(e1.y * scale);
+				buffer.push_back(0.0f);
+				buffer.push_back(0.0f);
+				buffer.push_back(1.0f);
+				buffer.push_back(1.0f);
+			}
+		}
+	}
+
 	for (auto& c : cells)
 	{
-		auto pos = (c.second)->getPosition();
+		auto pos = (c.second)->getSitePosition();
 		if ((c.second)->isValid())
 		{
+			auto type = (c.second)->getSiteType();
+
+			glm::vec3 color;
+			if (type == Site::Type::MARKED)
+			{
+				color = glm::vec3(0.0f, 1.0f, 0.0f);
+			}
+			else if (type == Site::Type::OMITTED)
+			{
+				color = glm::vec3(1.0f, 0.5f, 0.0f);
+			}
+			else
+			{
+				color = glm::vec3(1.0f);
+			}
+
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(103.0f);
+			posBuffer.push_back(101.0f);
 			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
+			posBuffer.push_back(color.r);
+			posBuffer.push_back(color.g);
+			posBuffer.push_back(color.b);
 			posBuffer.push_back(1.0f);
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(97.0f);
+			posBuffer.push_back(99.0f);
 			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
+			posBuffer.push_back(color.r);
+			posBuffer.push_back(color.g);
+			posBuffer.push_back(color.b);
 			posBuffer.push_back(1.0f);
 		}
 		else
 		{
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(103.0f);
+			posBuffer.push_back(101.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(0.3f);
 			posBuffer.push_back(0.3f);
@@ -304,7 +376,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			posBuffer.push_back(1.0f);
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(97.0f);
+			posBuffer.push_back(99.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(0.3f);
 			posBuffer.push_back(0.3f);
@@ -344,65 +416,65 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	size = buffer.size() / 7;
 
 	{
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(-5000.0f * scale);
+		posBuffer.push_back(minBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(100.0f);
-		posBuffer.push_back(5000.0f * scale);
+		posBuffer.push_back(maxBound * scale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
@@ -436,7 +508,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 
 }
 
-void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const glm::vec2& boundary)
+void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound)
 {
 	const CellType& cell1 = *edge.cell();
 	const CellType& cell2 = *edge.twin()->cell();
@@ -484,12 +556,11 @@ void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& 
 		assert(false);
 	}
 
-	float coefWidth = boundary.x / glm::max(glm::abs(direction.x), glm::abs(direction.y));
-	float coefHeight = boundary.y / glm::max(glm::abs(direction.x), glm::abs(direction.y));
+	float coef = bound / glm::max(glm::abs(direction.x), glm::abs(direction.y));
 
 	if (edge.vertex0() == nullptr)
 	{
-		e0 = origin - direction * coefWidth;
+		e0 = origin - direction * coef;
 	}
 	else
 	{
@@ -498,7 +569,7 @@ void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& 
 
 	if (edge.vertex1() == nullptr)
 	{
-		e1 = origin + direction * coefWidth;
+		e1 = origin + direction * coef;
 	}
 	else
 	{
@@ -516,13 +587,13 @@ glm::vec2 Voxel::Voronoi::Diagram::retrivePoint(const CellType & cell)
 
 	if (category == SOURCE_CATEGORY_SINGLE_POINT) 
 	{
-		return sites[index];
+		return sitePositions[index];
 	}
 	else
 	{
 		assert(false);
 	}
-	return sites[index];
+	return sitePositions[index];
 }
 
 void Voxel::Voronoi::Diagram::render()
@@ -540,4 +611,21 @@ void Voxel::Voronoi::Diagram::render()
 
 		glDrawArrays(GL_LINES, 0, lineSize);
 	}
+}
+
+
+
+Voxel::Voronoi::Site::Site(const glm::vec2 & position, const Type type)
+	: position(position)
+	, type(type)
+{}
+
+glm::vec2 Voxel::Voronoi::Site::getPosition()
+{
+	return position;
+}
+
+Site::Type Voxel::Voronoi::Site::getType()
+{
+	return type;
 }

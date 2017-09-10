@@ -31,7 +31,15 @@ Player::Player()
 
 Player::~Player()
 {
+	if (yLineVao)
+	{
+		glDeleteVertexArrays(1, &yLineVao);
+	}
 
+	if (rayVao)
+	{
+		glDeleteVertexArrays(1, &rayVao);
+	}
 }
 
 void Voxel::Player::init(const glm::vec3 & position)

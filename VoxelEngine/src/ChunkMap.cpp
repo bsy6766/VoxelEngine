@@ -58,8 +58,8 @@ void Voxel::ChunkMap::initVoronoi()
 		x -= interval;
 	}
 
-	Voronoi::Diagram vd;
-	vd.construct(points);
+	//Voronoi::Diagram vd;
+	//vd.construct(points);
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
