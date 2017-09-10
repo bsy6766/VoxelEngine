@@ -11,6 +11,8 @@ using namespace Voxel::Voronoi;
 Voxel::Voronoi::Edge::Edge(const glm::vec2& start, const glm::vec2& end)
 	: start(start)
 	, end(end)
+	, owner(nullptr)
+	, coOwner(nullptr)
 {}
 
 glm::vec2 Voxel::Voronoi::Edge::getStart()
@@ -37,6 +39,16 @@ bool Voxel::Voronoi::Edge::equal(const Edge * edge)
 	{
 		return false;
 	}
+}
+
+void Voxel::Voronoi::Edge::setOwner(Cell * cell)
+{
+	this->owner = cell;
+}
+
+void Voxel::Voronoi::Edge::setCoOwner(Cell * cell)
+{
+	this->coOwner = cell;
 }
 
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
@@ -267,6 +279,7 @@ void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBo
 			for (unsigned int i = 0; i < len; i += 2)
 			{
 				Edge* newEdge = new Edge(edges.at(i), edges.at(i + 1));
+				newEdge->setOwner(newCell);
 				newCell->addEdge(newEdge);
 			}
 
@@ -686,18 +699,18 @@ void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<Edge*>& edges,
 	}
 }
 
-bool Voxel::Voronoi::Diagram::isConnected(const std::vector<Edge*>& edges, Cell * neighborCell)
+bool Voxel::Voronoi::Diagram::isConnected(const std::vector<Edge*>& edges, Cell* neighborCell)
 {
 	if (neighborCell->isValid())
 	{
-		auto& nEdges = neighborCell->getEdges();
-
+		auto& neighborEdges = neighborCell->getEdges();
 		for (auto e : edges)
 		{
-			for (auto ne : nEdges)
+			for (auto ne : neighborEdges)
 			{
 				if (e->equal(ne))
 				{
+					e->setCoOwner(neighborCell);
 					return true;
 				}
 			}
@@ -705,6 +718,10 @@ bool Voxel::Voronoi::Diagram::isConnected(const std::vector<Edge*>& edges, Cell 
 	}
 
 	return false;
+}
+
+void Voxel::Voronoi::Diagram::mergeDuplicatedEdges()
+{
 }
 
 void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound)

@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <unordered_map>
+#include <unordered_set>
 #include <boost\polygon\voronoi.hpp>
 #include <boost\polygon\segment_data.hpp>
 #include <GL\glew.h>
@@ -15,6 +16,8 @@ namespace Voxel
 {
 	namespace Voronoi
 	{
+		class Cell;
+
 		/**
 		*	@class Edge
 		*	@brief A edge in voronoi diagram. 
@@ -26,6 +29,11 @@ namespace Voxel
 			glm::vec2 start;
 			// End point of edge
 			glm::vec2 end;
+
+			// Cell that owns this edge
+			Cell* owner;
+			// Cell that shares this edge
+			Cell* coOwner;
 		public:
 			Edge() = delete;
 			Edge(const glm::vec2& start, const glm::vec2& end);
@@ -35,6 +43,10 @@ namespace Voxel
 			glm::vec2 getEnd();
 
 			bool equal(const Edge* edge);
+			void setOwner(Cell* cell);
+			Cell* getOwner();
+			void setCoOwner(Cell* cell);
+			Cell* getCoOwner();
 		};
 
 		/**
@@ -123,6 +135,8 @@ namespace Voxel
 
 			// List of cells. key equals to cell's ID that made from boost
 			std::unordered_map<unsigned int, Cell*> cells;
+			// Set of all edges
+			std::unordered_set<Edge*> edges;
 
 			// site points
 			std::vector<glm::vec2> sitePositions;
@@ -145,6 +159,9 @@ namespace Voxel
 			unsigned int lineSize;
 			GLuint graphLineVao;
 			unsigned int graphLineSize;
+
+			// void merge duplicate edges
+			void mergeDuplicatedEdges();
 
 			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
