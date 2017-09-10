@@ -150,7 +150,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	std::cout << "Voronoi construction took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::build(const float minBound, const float maxBound)
+void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBound)
 {
 	auto start = Utility::Time::now();
 
@@ -506,6 +506,57 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 
 	lineSize = (posBuffer.size() / 7) + 8;
 
+}
+
+void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
+{
+	// start form 0, 0
+	auto cellSize = cells.size();
+
+	for (int x = 0; x < w; ++x)
+	{
+		for (int z = 0; z < l; ++z)
+		{
+			auto index = xzToIndex(x, z, w);
+
+			//assert(index >= 0 && index < cellSize);
+
+			auto find_it = cells.find(index);
+			if (find_it == cells.end())
+			{
+				assert(false);
+			}
+			else
+			{
+				// Check if cell is valid
+				auto& cell = find_it->second;
+
+				if (cell->isValid())
+				{
+					// Check all 8 adjacent cells. 
+
+					// top
+					auto topIndex = xzToIndex(x - 1, z, w);
+					// bottom
+					// left top
+					// left
+					// left bottom
+					// right top
+					// right
+					// right bottom
+				}
+				else
+				{
+					continue;
+				}
+			}
+		}
+	}
+}
+
+unsigned int Voxel::Voronoi::Diagram::xzToIndex(const int x, const int z, const int w)
+{
+	return static_cast<unsigned int>((x * w) + z);
 }
 
 void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound)

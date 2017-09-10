@@ -138,6 +138,7 @@ void Application::run()
 		input.update();
 
 		world->updateInput(delta);
+		world->updateVoronoi();
 		//world->update(delta);
 
 		// Wipe input data for current frame

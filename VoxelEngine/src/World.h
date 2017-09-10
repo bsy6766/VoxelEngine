@@ -132,12 +132,14 @@ namespace Voxel
 		DebugConsole* debugConsole;
 
 		//temp
-		Voronoi::Diagram vd;
+		Voronoi::Diagram* vd;
 		void initVoronoi();
 
 		// Updates (tick) the world.
 		void update(const float delta);
 		void updateInput(const float delta);
+		// temp
+		void updateVoronoi();
 		void render(const float delta);
 		void renderVoronoi();
 	};

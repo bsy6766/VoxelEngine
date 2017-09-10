@@ -59,6 +59,7 @@ World::World()
 	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
+	, vd(nullptr)
 {
 	// init instances
 	init();
@@ -150,6 +151,8 @@ void Voxel::World::release()
 	if (defaultCanvas) delete defaultCanvas;
 
 	if (debugConsole) delete debugConsole;
+
+	if (vd) delete vd;
 }
 
 void Voxel::World::initRandoms()
@@ -158,6 +161,7 @@ void Voxel::World::initRandoms()
 	Utility::Random::setSeed(seed);
 	Noise::Manager::init(seed);
 }
+
 void Voxel::World::initUI()
 {
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
@@ -294,6 +298,7 @@ void Voxel::World::initVoronoi()
 		grid.at(i).back() = BORDER;
 	}
 
+	/*
 	// Now randomly omit outer cells in grid. 
 	int count = Utility::Random::randomInt(10, 14);
 	// Get candidates
@@ -325,6 +330,7 @@ void Voxel::World::initVoronoi()
 	}
 
 	// also pick few cells to omit on inner side as well
+	*/
 
 	// print grid
 	for (auto i : grid)
@@ -393,7 +399,7 @@ void Voxel::World::initVoronoi()
 				randPos = glm::ivec2(randX, randZ);
 
 				type = Voronoi::Site::Type::MARKED;
-				std::cout << "Marked" << std::endl;
+				//std::cout << "Marked" << std::endl;
 			}
 				break;
 			case OMITTED:
@@ -409,14 +415,14 @@ void Voxel::World::initVoronoi()
 				randPos = glm::ivec2(randX, randZ);
 
 				type = Voronoi::Site::Type::OMITTED;
-				std::cout << "Omitted" << std::endl;
+				//std::cout << "Omitted" << std::endl;
 			}
 				break;
 			case BORDER:
 			{
 				randPos = glm::vec2(0);
 				type = Voronoi::Site::Type::BORDER;
-				std::cout << "Border" << std::endl;
+				//std::cout << "Border" << std::endl;
 			}
 				break;
 			case EMPTY:
@@ -427,7 +433,7 @@ void Voxel::World::initVoronoi()
 			}
 
 			randPos += pos;
-			std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
+			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
 
 			points.push_back(Voronoi::Site(randPos, type));
 
@@ -438,13 +444,15 @@ void Voxel::World::initVoronoi()
 		pos.x -= interval;
 	}
 
-	vd.construct(points);
+	vd = new Voronoi::Diagram();
+	vd->construct(points);
 
 	const float minBound = static_cast<float>(xPos * interval * -1);
 	const float maxBound = static_cast<float>(xPos * interval);
 
-	vd.build(minBound, maxBound);
-	vd.initDebugDiagram();
+	vd->buildCells(minBound, maxBound);
+	vd->buildGraph(grid.size(), grid.front().size());
+	vd->initDebugDiagram();
 }
 
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
@@ -608,6 +616,7 @@ void World::update(const float delta)
 		defaultProgram->use(true);
 		defaultProgram->setUniformVec3("playerPosition", player->getPosition());
 	}
+
 	debugConsole->updateChunkNumbers(totalVisible, chunkLoader->getActiveChunksCount(), chunkMap->getSize());
 
 	player->update();
@@ -623,7 +632,17 @@ void Voxel::World::updateInput(const float delta)
 	updateMouseMoveInput(delta);
 	updateMouseClickInput();
 	updateControllerInput(delta);
+}
 
+void Voxel::World::updateVoronoi()
+{
+	bool playerMoved = player->didMoveThisFrame();
+
+	if (playerMoved)
+	{
+		// if player moved, update chunk
+		debugConsole->updatePlayerPosition(player->getPosition());
+	}
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -674,6 +693,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
+		/*
 		auto testPos = glm::ivec3(-24, -40, -1);
 		auto testLocal = glm::ivec3(0);
 		auto testChunk = glm::ivec3(0);
@@ -681,6 +701,14 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		std::cout << "testPos: " << Utility::Log::vec3ToStr(testPos) << std::endl;
 		std::cout << "testLocal: " << Utility::Log::vec3ToStr(testLocal) << std::endl;
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
+		*/
+
+		if (vd)
+		{
+			delete vd;
+		}
+
+		initVoronoi();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -1120,7 +1148,7 @@ void Voxel::World::renderVoronoi()
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 	defaultProgram->setUniformBool("fogEnabled", false);
 
-	vd.render();
+	vd->render();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);

@@ -32,6 +32,22 @@ namespace Voxel
 
 			glm::vec2 getStart();
 			glm::vec2 getEnd();
+
+			bool operator==(const Edge* edge)
+			{
+				if (this->start == edge->start && this->end == edge->end)
+				{
+					return true;
+				}
+				else if (this->start == edge->end && this->end == edge->start)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
 		};
 
 		/**
@@ -63,6 +79,8 @@ namespace Voxel
 		/**
 		*	@class Cell
 		*	@brief A cell in voronoi diagram. Cell must be surrounded by edges. 
+		*
+		*	Cell works as an node in undirected graph structure of cells.
 		*/
 		class Cell
 		{
@@ -75,6 +93,8 @@ namespace Voxel
 			unsigned int ID;
 			// True if cell is valid. For now, its only for debugging
 			bool valid;
+			// Neighbors
+			std::vector<Cell*> neightbors;
 		public:
 			Cell() = delete;
 			Cell(const unsigned int ID);
@@ -103,6 +123,10 @@ namespace Voxel
 		typedef VoronoiDiagram::cell_type::source_category_type SourceCategoryType;
 		typedef VoronoiDiagram::edge_type EdgeType;
 
+		/**
+		*	@class Diagram
+		*	@brief A voronoi diagram. Contains cell and site datas with boost's voronoi diagram
+		*/
 		class Diagram
 		{
 		private:
@@ -119,12 +143,16 @@ namespace Voxel
 			float minBound;
 			float maxBound;
 
+			// Build undirected graph between cells
+			unsigned int xzToIndex(const int x, const int z, const int w);
+
 			// For debug rendering
 			GLuint vao;
 			unsigned int size;
 			GLuint lineVao;
 			unsigned int lineSize;
 
+			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
 			glm::vec2 retrivePoint(const CellType& cell);
 		public:
@@ -135,7 +163,10 @@ namespace Voxel
 			//void construct(const std::vector<glm::ivec2>& randomSites);
 			void construct(const std::vector<Site>& randomSites);
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
-			void build(const float minBound, const float maxBound);
+			void buildCells(const float minBound, const float maxBound);
+			// Build graph based on cells.
+			void buildGraph(const int w, const int l);
+			// Intialize debug lines of diagram
 			void initDebugDiagram();
 			void render();
 		};
