@@ -105,9 +105,9 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 
 	id = BLOCK_ID::GRASS;
 	auto color = Color::GRASS;
-	r = color.r * 255.0f;
-	g = color.g * 255.0f;
-	b = color.b * 255.0f;
+	r = static_cast<unsigned char>(color.r * 255.0f);
+	g = static_cast<unsigned char>(color.g * 255.0f);
+	b = static_cast<unsigned char>(color.b * 255.0f);
 
 	/*
 	if (worldCoordinate.y < 1.0f)

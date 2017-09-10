@@ -44,8 +44,8 @@ namespace Voxel
 			std::vector<Edge*> edges;
 			// Number id
 			unsigned int ID;
-			// True if cell has infinite edge
-			bool infinite;
+			// True if cell is valid. For now, its only for debugging
+			bool valid;
 		public:
 			Cell() = delete;
 			Cell(const unsigned int ID);
@@ -55,7 +55,8 @@ namespace Voxel
 
 			glm::vec2 getPosition();
 			void setPosition(const glm::vec2& position);
-			void setInfinite(const bool infinite);
+			void setValidation(const bool valid);
+			bool isValid();
 		};
 
 		class Program;
@@ -83,20 +84,22 @@ namespace Voxel
 
 			// For debug rendering
 			GLuint vao;
-			GLuint vbo;
 			unsigned int size;
 
 			GLuint lineVao;
-			GLuint lineVbo;
 			unsigned int lineSize;
 
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const glm::vec2& boundary);
 			glm::vec2 retrivePoint(const CellType& cell);
 		public:
-			Diagram() = default;
+			Diagram();
 			~Diagram();
 
-			void init(const std::vector<glm::ivec2>& randomSites);
+			// Construct voronoi diagram based on random sites
+			void construct(const std::vector<glm::ivec2>& randomSites);
+			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
+			void build();
+			void initDebugDiagram();
 			void render();
 		};
 	}

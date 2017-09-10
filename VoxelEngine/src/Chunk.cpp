@@ -270,24 +270,31 @@ ChunkSection * Voxel::Chunk::getChunkSectionAtY(const int y)
 
 void Voxel::Chunk::createChunkSectionAtY(const int y)
 {
-	if (y >= 0 && y < chunkSections.size())
+	if (y < 0)
 	{
-		if (chunkSections.at(y) == nullptr)
-		{
-			auto newChucnkSection = ChunkSection::createEmpty(position.x, y, position.z, worldPosition);
-			if (newChucnkSection)
-			{
-				chunkSections.at(y) = newChucnkSection;
-			}
-			else
-			{
-				throw std::runtime_error("Failed to add chunk section at (" + std::to_string(position.x) + ", " + std::to_string(y) + ", " + std::to_string(position.z) + ")");
-			}
-		}
+		return;
 	}
 	else
 	{
-		return;
+		if (y >= 0 && y < static_cast<int>(chunkSections.size()))
+		{
+			if (chunkSections.at(y) == nullptr)
+			{
+				auto newChucnkSection = ChunkSection::createEmpty(position.x, y, position.z, worldPosition);
+				if (newChucnkSection)
+				{
+					chunkSections.at(y) = newChucnkSection;
+				}
+				else
+				{
+					throw std::runtime_error("Failed to add chunk section at (" + std::to_string(position.x) + ", " + std::to_string(y) + ", " + std::to_string(position.z) + ")");
+				}
+			}
+		}
+		else
+		{
+			return;
+		}
 	}
 }
 

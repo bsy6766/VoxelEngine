@@ -56,9 +56,7 @@ namespace Voxel
 
 		// temp
 		GLuint yLineVao;
-		GLuint yLineVbo;
 		GLuint rayVao;
-		GLuint rayVbo;
 	public:
 		Player();
 		~Player();

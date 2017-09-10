@@ -16,7 +16,7 @@ Voxel::Voronoi::Edge::Edge(const glm::vec2& start, const glm::vec2& end)
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
 	, position(0)
-	, infinite(false)
+	, valid(false)
 {}
 
 Voxel::Voronoi::Cell::~Cell()
@@ -47,13 +47,25 @@ void Voxel::Voronoi::Cell::setPosition(const glm::vec2 & position)
 	this->position = position;
 }
 
-void Voxel::Voronoi::Cell::setInfinite(const bool infinite)
+void Voxel::Voronoi::Cell::setValidation(const bool valid)
 {
-	this->infinite = infinite;
+	this->valid = valid;
+}
+
+bool Voxel::Voronoi::Cell::isValid()
+{
+	return valid;
 }
 
 
 
+
+Voxel::Voronoi::Diagram::Diagram()
+	: vao(0)
+	, size(0)
+	, lineVao(0)
+	, lineSize(0)
+{}
 
 Voxel::Voronoi::Diagram::~Diagram()
 {
@@ -68,10 +80,11 @@ Voxel::Voronoi::Diagram::~Diagram()
 	cells.clear();
 }
 
-void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
+void Voxel::Voronoi::Diagram::construct(const std::vector<glm::ivec2>& randomSites)
 {
 	auto start = Utility::Time::now();
 
+	// Convert random sites to float and store.
 	for (auto site : randomSites)
 	{
 		this->sites.push_back(glm::vec2(site));
@@ -88,41 +101,45 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 	// Construct voronoi diagram
 	boost::polygon::construct_voronoi(points.begin(), points.end(), &vd);
 
-	float scale = 0.005f;
-	std::vector<float> buffer;
-	std::vector<float> posBuffer;
-	int totalSize = 0;
+	auto end = Utility::Time::now();
 
+	std::cout << "Voronoi construction took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Voronoi::Diagram::build()
+{
+	auto start = Utility::Time::now();
 	// Iterate cells. Ignore all the cells that contains infinite edge
 	for (auto it = vd.cells().begin(); it != vd.cells().end(); ++it)
 	{
 		const auto& cell = *it;
+
+		// Get cell ID
 		auto cellID = cell.source_index();
 
-		std::cout << "cur cell: " << cellID << std::endl;
-
+		// Get first edge
 		auto edge = cell.incident_edge();
 
+		// True if this cell is valid (All edges in boundary)
 		bool valid = true;
 
+		// save edges
 		std::vector<glm::vec2> edges;
 
-		//debug
-		int totalEdges = 0;
-		auto randColor = Color::getRandomColor();
-		bool infinite = false;
-
+		// Iterate all edges
 		do
 		{
+			// Edge must be primary
 			if (edge->is_primary())
 			{
+				// Check if edge is finite or infinite
 				if (edge->is_finite())
 				{
-					totalEdges++;
-
+					// Edge if finite
 					glm::vec2 e0 = glm::vec2(edge->vertex0()->x(), edge->vertex0()->y());
 					glm::vec2 e1 = glm::vec2(edge->vertex1()->x(), edge->vertex1()->y());
 
+					// Check boundary. 
 					if (e0.x > 5000.0f || e0.x < -5000.0f)
 						valid = false;
 					if (e0.y > 5000.0f || e0.y < -5000.0f)
@@ -133,177 +150,74 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 					if (e1.y > 5000.0f || e1.y < -5000.0f)
 						valid = false;
 
+					if (!valid)
+					{
+						// Stop if this cell isn't valid
+						break;
+					}
+
+					// Add edge
 					edges.push_back(e0);
 					edges.push_back(e1);
-
-					//buffer.push_back(static_cast<float>(edge->vertex0()->x()) * scale);
-					//buffer.push_back(100.0f);
-					//buffer.push_back(static_cast<float>(edge->vertex0()->y()) * scale);
-					//buffer.push_back(randColor.r);
-					//buffer.push_back(randColor.g);
-					//buffer.push_back(randColor.b);
-					//buffer.push_back(1.0f);
-
-					//buffer.push_back(static_cast<float>(edge->vertex1()->x()) * scale);
-					//buffer.push_back(100.0f);
-					//buffer.push_back(static_cast<float>(edge->vertex1()->y()) * scale);
-					//buffer.push_back(randColor.r);
-					//buffer.push_back(randColor.g);
-					//buffer.push_back(randColor.b);
-					//buffer.push_back(1.0f);
-
-					//totalSize += 2;
 				}
 				else
 				{
 					valid = false;
-					//break;
-
-					//std::vector<boost::polygon::point_data<double>> clippedPoints;
-					/*
-					glm::vec2 e0, e1;
-					clipInfiniteEdge(*edge, e0, e1, glm::vec2(5000, 5000));
-
-					edges.push_back(e0);
-					edges.push_back(e1);
-					*/
-					/*
-					buffer.push_back(e0.x * scale);
-					buffer.push_back(100.0f);
-					buffer.push_back(e0.y * scale);
-					buffer.push_back(randColor.r);
-					buffer.push_back(randColor.g);
-					buffer.push_back(randColor.b);
-					buffer.push_back(1.0f);
-
-					buffer.push_back(e1.x * scale);
-					buffer.push_back(100.0f);
-					buffer.push_back(e1.y * scale);
-					buffer.push_back(randColor.r);
-					buffer.push_back(randColor.g);
-					buffer.push_back(randColor.b);
-					buffer.push_back(1.0f);
-
-					totalSize += 2;
-					*/
-
-					infinite = true;
+					break;
 				}
 			}
 
 			//edge = edge->rot_next();
 			edge = edge->next();
-		} 
-		while (edge != cell.incident_edge());
+		} while (edge != cell.incident_edge());
 
-		/*
-		if (edges.size() >= 6)
+		// This cell is valid
+		Cell* newCell = new Cell(cellID);
+
+		auto pos = this->sites.at(cellID);
+		// Save site position
+		newCell->setPosition(this->sites.at(cellID));
+
+		if (valid)
 		{
-			valid = true;
-		}
-		else
-		{
-			valid = false;
-		}
-		*/
-
-		if (valid && !infinite)
-		{
-			// Add cell
-			Cell* newCell = new Cell(cellID);
-
-			newCell->setPosition(this->sites.at(cellID));
-			newCell->setInfinite(infinite);
-
-			std::cout << "Cell #" << cellID << std::endl;
-			std::cout << "Position: " << Utility::Log::vec2ToStr(newCell->getPosition()) << std::endl;
-
+			// Save edges
 			auto len = edges.size();
-
-			//assert((len / 2) == totalEdges);
-
-			std::cout << "Total edges: " << totalEdges << std::endl;
 
 			for (unsigned int i = 0; i < len; i += 2)
 			{
 				Edge* newEdge = new Edge(edges.at(i), edges.at(i + 1));
 				newCell->addEdge(newEdge);
-				std::cout << "\tEdge0: " << Utility::Log::vec2ToStr(edges.at(i)) << std::endl;
-				std::cout << "\tEdge1: " << Utility::Log::vec2ToStr(edges.at(i + 1)) << std::endl;
-				/*
-				buffer.push_back(edges.at(i).x * scale);
-				buffer.push_back(100.0f);
-				buffer.push_back(edges.at(i).y * scale);
-				buffer.push_back(randColor.r);
-				buffer.push_back(randColor.g);
-				buffer.push_back(randColor.b);
-				buffer.push_back(1.0f);
-
-				buffer.push_back(edges.at(i + 1).x * scale);
-				buffer.push_back(100.0f);
-				buffer.push_back(edges.at(i + 1).y * scale);
-				buffer.push_back(randColor.r);
-				buffer.push_back(randColor.g);
-				buffer.push_back(randColor.b);
-				buffer.push_back(1.0f);
-				*/
-
-				totalSize += 2;
 			}
 
-			cells.emplace(cellID, newCell);
-
-			auto pos = this->sites.at(cellID);
-
-			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(103.0f);
-			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-
-			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(97.0f);
-			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
-			posBuffer.push_back(1.0f);
+			newCell->setValidation(true);
 		}
 		else
 		{
-			auto pos = this->sites.at(cellID);
-
-			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(103.0f);
-			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(1.0f);
-
-			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(97.0f);
-			posBuffer.push_back(pos.y * scale);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(0.3f);
-			posBuffer.push_back(1.0f);
-			continue;
+			newCell->setValidation(false);
 		}
-	}
-	auto end = Utility::Time::now();
 
-	std::cout << "Voronoi took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+		cells.emplace(cellID, newCell);
+	}
 
 	std::cout << "Cell size = " << cells.size() << std::endl;
+
+	auto end = Utility::Time::now();
+
+	std::cout << "Voronoi build took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Voronoi::Diagram::initDebugDiagram()
+{
+	float scale = 0.005f;
+	std::vector<float> buffer;
+	std::vector<float> posBuffer;
 
 	auto vdEdges = vd.edges();
 	buffer.clear();
 
 	auto randColor = Color::getRandomColor();
 
+	// Build edges
 	for (auto& e : vdEdges)
 	{
 		if (e.is_secondary()) continue;
@@ -329,7 +243,7 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 				buffer.push_back(0.0f);
 				buffer.push_back(0.0f);
 				buffer.push_back(1.0f);
-				buffer.push_back(1.0f); 
+				buffer.push_back(1.0f);
 			}
 			else
 			{
@@ -358,12 +272,53 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 		}
 	}
 
+	for (auto& c : cells)
+	{
+		auto pos = (c.second)->getPosition();
+		if ((c.second)->isValid())
+		{
+			posBuffer.push_back(pos.x * scale);
+			posBuffer.push_back(103.0f);
+			posBuffer.push_back(pos.y * scale);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
 
+			posBuffer.push_back(pos.x * scale);
+			posBuffer.push_back(97.0f);
+			posBuffer.push_back(pos.y * scale);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
+			posBuffer.push_back(1.0f);
+		}
+		else
+		{
+			posBuffer.push_back(pos.x * scale);
+			posBuffer.push_back(103.0f);
+			posBuffer.push_back(pos.y * scale);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(1.0f);
+
+			posBuffer.push_back(pos.x * scale);
+			posBuffer.push_back(97.0f);
+			posBuffer.push_back(pos.y * scale);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(0.3f);
+			posBuffer.push_back(1.0f);
+
+		}
+	}
 
 	// draw 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
+	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -383,6 +338,8 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
 
 	size = buffer.size() / 7;
 
@@ -455,6 +412,7 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 	glGenVertexArrays(1, &lineVao);
 	glBindVertexArray(lineVao);
 
+	GLuint lineVbo;
 	glGenBuffers(1, &lineVbo);
 	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
 
@@ -472,7 +430,10 @@ void Voxel::Voronoi::Diagram::init(const std::vector<glm::ivec2>& randomSites)
 
 	glBindVertexArray(0);
 
+	glDeleteBuffers(1, &lineVbo);
+
 	lineSize = (posBuffer.size() / 7) + 8;
+
 }
 
 void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const glm::vec2& boundary)

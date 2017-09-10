@@ -256,6 +256,61 @@ void Voxel::World::initCubeOutline()
 
 void Voxel::World::initVoronoi()
 {
+	// Generate random grid
+	std::vector<std::vector<int>> grid;
+
+	// Fill with M (1)
+	for (int i = 0; i < 10; ++i)
+	{
+		grid.push_back(std::vector<int>());
+		for (int j = 0; j < 10; ++j)
+		{
+			grid.back().push_back(1);
+		}
+	}
+
+	// set edge of grid as border (2)
+	for (auto& i : grid.front())
+	{
+		i = 2;
+	}
+
+	for (auto& i : grid.back())
+	{
+		i = 2;
+	}
+
+	for (int i = 0; i < 10; ++i)
+	{
+		grid.at(i).front() = 2;
+		grid.at(i).back() = 2;
+	}
+
+	for (auto i : grid)
+	{
+		for (auto j : i)
+		{
+			std::string str;
+			switch (j)
+			{
+			case 0:
+				str = "0";
+				break;
+			case 1:
+				str = "M";
+				break;
+			case 2:
+				str = "B";
+				break;
+			default:
+				continue;
+				break;
+			}
+			std::cout << str << " ";
+		}
+		std::cout << std::endl;
+	}
+
 	// World range is -5000 ~ 5000 for now
 	// We can modify the min max later
 	const int interval = 1000;
@@ -302,13 +357,9 @@ void Voxel::World::initVoronoi()
 		x -= interval;
 	}
 
-	//points.clear();
-	//points.push_back(glm::ivec2(2000, 2000));
-	//points.push_back(glm::ivec2(2000, -2000));
-	//points.push_back(glm::ivec2(-2000, 2000));
-	//points.push_back(glm::ivec2(-2000, -2000));
-
-	vd.init(points);
+	vd.construct(points);
+	vd.build();
+	vd.initDebugDiagram();
 }
 
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)

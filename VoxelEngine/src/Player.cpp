@@ -24,9 +24,7 @@ Player::Player()
 	, lookingFace(Cube::Face::NONE)
 	// Debug
 	, yLineVao(0)
-	, yLineVbo(0)
 	, rayVao(0)
-	, rayVbo(0)
 {
 
 }
@@ -53,6 +51,7 @@ void Voxel::Player::initYLine()
 	glBindVertexArray(yLineVao);
 
 	// Generate buffer object
+	GLuint yLineVbo;
 	glGenBuffers(1, &yLineVbo);
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
@@ -78,6 +77,8 @@ void Voxel::Player::initYLine()
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &yLineVbo);
 }
 
 void Voxel::Player::initRayLine()
@@ -89,6 +90,7 @@ void Voxel::Player::initRayLine()
 	glBindVertexArray(rayVao);
 
 	// Generate buffer object
+	GLuint rayVbo;
 	glGenBuffers(1, &rayVbo);
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
@@ -112,6 +114,8 @@ void Voxel::Player::initRayLine()
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &rayVbo);
 }
 
 void Player::moveFoward(const float delta)
