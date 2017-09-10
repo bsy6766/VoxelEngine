@@ -14,6 +14,8 @@
 #include <Setting.h>
 #include <FileSystem.h>
 
+#include <Utility.h>
+
 using std::cout;
 using std::endl;
 using namespace Voxel;
@@ -89,7 +91,8 @@ void Voxel::Application::initMainCamera()
 void Voxel::Application::initWorld()
 {
 	world = new World();
-	world->createNew("New World");
+	//world->createNew("New World");
+	world->createVoronoi();
 }
 
 void Voxel::Application::initInternalSettings()
@@ -134,12 +137,14 @@ void Application::run()
 		
 		input.update();
 
-		world->update(delta);
+		world->updateInput(delta);
+		//world->update(delta);
 
 		// Wipe input data for current frame
 		input.postUpdate();
 
-		world->render(delta);
+		//world->render(delta);
+		world->renderVoronoi();
 
 		glView->render();
 	}

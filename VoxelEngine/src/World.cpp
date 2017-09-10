@@ -129,7 +129,8 @@ void Voxel::World::init()
 	debugConsole->updateResolution(1920, 1080);
 
 	//Testing voronoi
-	chunkMap->initVoronoi();
+	initVoronoi();
+	//chunkMap->initVoronoi();
 }
 
 void Voxel::World::release()
@@ -253,6 +254,63 @@ void Voxel::World::initCubeOutline()
 	glBindVertexArray(0);
 }
 
+void Voxel::World::initVoronoi()
+{
+	// World range is -5000 ~ 5000 for now
+	// We can modify the min max later
+	const int interval = 1000;
+	const int intervalHalf = interval / 2;
+	int min = -5000;
+	int max = 5000;
+	int xStart = max;
+	int zStart = max;
+
+	const int pad = 100;
+	const int randMax = (interval - (pad * 2)) / 2;
+	const int randMin = randMax * -1;
+
+	int len = (max - min) / interval;
+
+	int x = xStart - intervalHalf;
+	int z = zStart - intervalHalf;
+
+	std::vector<glm::ivec2> points;
+
+	for (int i = 0; i < len; i++)
+	{
+		for (int j = 0; j < len; j++)
+		{
+			/*
+			*/
+			int randX = Utility::Random::randomInt(randMin, randMax);
+			int randZ = Utility::Random::randomInt(randMin, randMax);
+
+			glm::ivec2 randPoint = glm::ivec2(randX, randZ);
+			//std::cout << "Point = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
+			auto pos = glm::ivec2(x, z);
+			//std::cout << "Pos = " << Utility::Log::vec2ToStr(pos) << std::endl;
+			randPoint += pos;
+
+			//randPoint = glm::ivec2(x, z);
+
+			points.push_back(randPoint);
+			std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
+
+			z -= interval;
+		}
+		z = zStart - intervalHalf;
+		x -= interval;
+	}
+
+	//points.clear();
+	//points.push_back(glm::ivec2(2000, 2000));
+	//points.push_back(glm::ivec2(2000, -2000));
+	//points.push_back(glm::ivec2(-2000, 2000));
+	//points.push_back(glm::ivec2(-2000, -2000));
+
+	vd.init(points);
+}
+
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 {
 	skybox = new Skybox();
@@ -296,13 +354,13 @@ void Voxel::World::createNew(const std::string & worldName)
 	// initialize chunk loader.
 	loadChunkLoader();
 
-	// Then generate mesh for loaded chunks
-	//loadChunkMesh();
-
-	//chunkLoader->findVisibleChunk();
-
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::World::createVoronoi()
+{
+	createPlayer();
 }
 
 void World::createPlayer()
@@ -326,7 +384,7 @@ void World::createPlayer()
 
 	// for debug
 	//player->initYLine();
-	player->initRayLine();
+	//player->initRayLine();
 }
 
 void World::createChunkMap()
@@ -389,11 +447,6 @@ void World::loadChunkMesh()
 
 void World::update(const float delta)
 {
-	updateKeyboardInput(delta);
-	updateMouseMoveInput(delta);
-	updateMouseClickInput();
-	updateControllerInput(delta);
-
 	checkUnloadedChunks();
 
 	bool playerMoved = player->didMoveThisFrame();
@@ -426,6 +479,15 @@ void World::update(const float delta)
 
 	calendar->update(delta);
 	defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
+}
+
+void Voxel::World::updateInput(const float delta)
+{
+	updateKeyboardInput(delta);
+	updateMouseMoveInput(delta);
+	updateMouseClickInput();
+	updateControllerInput(delta);
+
 }
 
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -899,4 +961,37 @@ void World::render(const float delta)
 	glBindVertexArray(0);
 	glUseProgram(0);
 
+}
+
+void Voxel::World::renderVoronoi()
+{
+	glm::mat4 projMat = Camera::mainCamera->getProjection();
+	glm::mat4 worldMat = glm::mat4(1.0f);
+
+	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+
+	if (cameraMode)
+	{
+		worldMat = Camera::mainCamera->getView();
+	}
+	else
+	{
+		worldMat = player->getViewMatrix();
+	}
+
+	defaultProgram->setUniformMat4("projMat", projMat);
+	defaultProgram->setUniformMat4("worldMat", worldMat);
+	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+	defaultProgram->setUniformBool("fogEnabled", false);
+
+	vd.render();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
+
+	defaultCanvas->render();
+	debugConsole->render();
+
+	glBindVertexArray(0);
+	glUseProgram(0);
 }

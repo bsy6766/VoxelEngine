@@ -94,8 +94,8 @@ void Voxel::Player::initRayLine()
 	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
 
 	GLfloat ray[] = {
-		0, 0, 0, 1, 0, 0,
-		0, 0, -1 * rayRange, 1, 0, 0
+		0, 0, 0, 1, 0, 0, 1,
+		0, 0, -1 * rayRange, 1, 0, 0, 1,
 	};
 
 	// Load cube vertices
@@ -109,7 +109,7 @@ void Voxel::Player::initRayLine()
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
 	// color
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
 }

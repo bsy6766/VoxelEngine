@@ -6,6 +6,9 @@
 #include <GLFW\glfw3.h>
 #include <string>
 
+// Temp
+#include <Voronoi.h>
+
 namespace Voxel
 {
 	// Foward
@@ -118,6 +121,7 @@ namespace Voxel
 
 		// create new. 
 		void createNew(const std::string& worldName);
+		void createVoronoi();
 		// load from existing save
 		void load(const std::string& worldPath);
 
@@ -127,9 +131,15 @@ namespace Voxel
 		// debug
 		DebugConsole* debugConsole;
 
+		//temp
+		Voronoi::Diagram vd;
+		void initVoronoi();
+
 		// Updates (tick) the world.
 		void update(const float delta);
+		void updateInput(const float delta);
 		void render(const float delta);
+		void renderVoronoi();
 	};
 }
 

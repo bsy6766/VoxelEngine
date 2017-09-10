@@ -5,6 +5,7 @@
 #include <Utility.h>
 #include <Physics.h>
 #include <ChunkWorkManager.h>
+#include <Voronoi.h>
 
 using namespace Voxel;
 
@@ -15,7 +16,50 @@ Voxel::ChunkMap::~ChunkMap()
 
 void Voxel::ChunkMap::initVoronoi()
 {
+	// World range is -5000 ~ 5000 for now
+	// We can modify the min max later
 
+	const int interval = 500;
+	const int intervalHalf = interval / 2;
+	int min = -5000;
+	int max = 5000;
+	int xStart = 5000;
+	int zStart = 5000;
+
+	const int pad = 100;
+	const int randMax = (interval - (pad * 2)) / 2;
+	const int randMin = randMax * -1;
+
+	int len = (max - min) / interval;
+
+	int x = xStart - intervalHalf;
+	int z = zStart - intervalHalf;
+	
+	std::vector<glm::ivec2> points;
+
+	for (int i = 0; i < len; i++)
+	{
+		for (int j = 0; j < len; j++)
+		{
+			int randX = Utility::Random::randomInt(randMin, randMax);
+			int randZ = Utility::Random::randomInt(randMin, randMax);
+
+			glm::ivec2 randPoint = glm::ivec2(randX, randZ);
+			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
+			auto pos = glm::ivec2(x, z);
+			//std::cout << "Pos = " << Utility::Log::vec2ToStr(pos) << std::endl;
+			randPoint += pos;
+
+			points.push_back(randPoint);
+
+			z -= interval;
+		}
+		z = zStart - intervalHalf;
+		x -= interval;
+	}
+
+	Voronoi::Diagram vd;
+	vd.init(points);
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
