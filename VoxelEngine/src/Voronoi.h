@@ -3,6 +3,7 @@
 
 #include <glm\glm.hpp>
 #include <vector>
+#include <list>
 #include <unordered_map>
 #include <boost\polygon\voronoi.hpp>
 #include <boost\polygon\segment_data.hpp>
@@ -33,21 +34,7 @@ namespace Voxel
 			glm::vec2 getStart();
 			glm::vec2 getEnd();
 
-			bool operator==(const Edge* edge)
-			{
-				if (this->start == edge->start && this->end == edge->end)
-				{
-					return true;
-				}
-				else if (this->start == edge->end && this->end == edge->start)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
+			bool equal(const Edge* edge);
 		};
 
 		/**
@@ -94,7 +81,7 @@ namespace Voxel
 			// True if cell is valid. For now, its only for debugging
 			bool valid;
 			// Neighbors
-			std::vector<Cell*> neightbors;
+			std::list<Cell*> neighbors;
 		public:
 			Cell() = delete;
 			Cell(const unsigned int ID);
@@ -109,6 +96,8 @@ namespace Voxel
 			void setValidation(const bool valid);
 			bool isValid();
 			const std::vector<Edge*>& getEdges();
+			void addNeighbor(Cell* cell);
+			const std::list<Cell*>& getNeighbors();
 		};
 
 		class Program;
@@ -145,12 +134,17 @@ namespace Voxel
 
 			// Build undirected graph between cells
 			unsigned int xzToIndex(const int x, const int z, const int w);
+			bool inRange(const unsigned int index);
+			void checkNeighborCell(const std::vector<Edge*>& edges, Cell* curCell, const unsigned int index);
+			bool isConnected(const std::vector<Edge*>& edges, Cell* neighborCell);
 
 			// For debug rendering
 			GLuint vao;
 			unsigned int size;
 			GLuint lineVao;
 			unsigned int lineSize;
+			GLuint graphLineVao;
+			unsigned int graphLineSize;
 
 			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);

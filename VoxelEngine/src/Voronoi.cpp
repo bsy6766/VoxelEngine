@@ -23,6 +23,22 @@ glm::vec2 Voxel::Voronoi::Edge::getEnd()
 	return end;
 }
 
+bool Voxel::Voronoi::Edge::equal(const Edge * edge)
+{
+	if (this->start == edge->start && this->end == edge->end)
+	{
+		return true;
+	}
+	else if (this->start == edge->end && this->end == edge->start)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
 	, site(nullptr)
@@ -87,6 +103,16 @@ const std::vector<Edge*>& Voxel::Voronoi::Cell::getEdges()
 	return edges;
 }
 
+void Voxel::Voronoi::Cell::addNeighbor(Cell * cell)
+{
+	neighbors.push_back(cell);
+}
+
+const std::list<Cell*>& Voxel::Voronoi::Cell::getNeighbors()
+{
+	return neighbors;
+}
+
 
 
 
@@ -119,6 +145,11 @@ Voxel::Voronoi::Diagram::~Diagram()
 	if (lineVao)
 	{
 		glDeleteVertexArrays(1, &lineVao);
+	}
+
+	if (graphLineVao)
+	{
+		glDeleteVertexArrays(1, &graphLineVao);
 	}
 }
 
@@ -261,14 +292,16 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	float scale = 0.005f;
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
+	std::vector<float> graphBuffer;
 
 	auto randColor = Color::getRandomColor();
+	auto graphColor = Color::getRandomColor();
 
-	// Build edges
+	// Build edges and graph (delaunay triangulation)
 	for (auto&c : cells)
 	{
 		auto& edges = (c.second)->getEdges();
-		for (auto& e : edges)
+		for (auto e : edges)
 		{
 			glm::vec2 e0 = e->getStart();
 			glm::vec2 e1 = e->getEnd();
@@ -293,6 +326,31 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(randColor.b);
 				buffer.push_back(1.0f);
 			}
+		}
+
+		auto& neighbors = (c.second)->getNeighbors();
+		auto pos = (c.second)->getSitePosition();
+
+
+
+		for (auto nc : neighbors)
+		{
+			auto nPos = nc->getSitePosition();
+			graphBuffer.push_back(pos.x * scale);
+			graphBuffer.push_back(100.0f);
+			graphBuffer.push_back(pos.y * scale);
+			graphBuffer.push_back(graphColor.r);
+			graphBuffer.push_back(graphColor.g);
+			graphBuffer.push_back(graphColor.b);
+			graphBuffer.push_back(1.0f);
+
+			graphBuffer.push_back(nPos.x * scale);
+			graphBuffer.push_back(100.0f);
+			graphBuffer.push_back(nPos.y * scale);
+			graphBuffer.push_back(graphColor.r);
+			graphBuffer.push_back(graphColor.g);
+			graphBuffer.push_back(graphColor.b);
+			graphBuffer.push_back(1.0f);
 		}
 	}
 
@@ -506,10 +564,35 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 
 	lineSize = (posBuffer.size() / 7) + 8;
 
+	// graph
+	glGenVertexArrays(1, &graphLineVao);
+	glBindVertexArray(graphLineVao);
+
+	GLuint graphVbo;
+	glGenBuffers(1, &graphVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, graphVbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * graphBuffer.size(), &graphBuffer.front(), GL_STATIC_DRAW);
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &graphVbo);
+
+	graphLineSize = graphBuffer.size() / 7;
 }
 
 void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
 {
+	auto start = Utility::Time::now();
 	// start form 0, 0
 	auto cellSize = cells.size();
 
@@ -530,6 +613,7 @@ void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
 			{
 				// Check if cell is valid
 				auto& cell = find_it->second;
+				auto& edges = cell->getEdges();
 
 				if (cell->isValid())
 				{
@@ -537,13 +621,36 @@ void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
 
 					// top
 					auto topIndex = xzToIndex(x - 1, z, w);
+					checkNeighborCell(edges, cell, topIndex);
+
 					// bottom
+					auto botIndex = xzToIndex(x + 1, z, w);
+					checkNeighborCell(edges, cell, botIndex);
+
 					// left top
+					auto leftTopIndex = xzToIndex(x - 1, z - 1, w);
+					checkNeighborCell(edges, cell, leftTopIndex);
+
 					// left
+					auto leftIndex = xzToIndex(x, z - 1, w);
+					checkNeighborCell(edges, cell, leftIndex);
+
 					// left bottom
+					auto leftBotIndex = xzToIndex(x + 1, z - 1, w);
+					checkNeighborCell(edges, cell, leftBotIndex);
+
 					// right top
+					auto rightTopIndex = xzToIndex(x - 1, z + 1, w);
+					checkNeighborCell(edges, cell, rightTopIndex);
+
 					// right
+					auto rightIndex = xzToIndex(x, z + 1, w);
+					checkNeighborCell(edges, cell, rightIndex);
+
 					// right bottom
+					auto rightBotIndex = xzToIndex(x + 1, z + 1, w);
+					checkNeighborCell(edges, cell, rightBotIndex);
+
 				}
 				else
 				{
@@ -552,11 +659,52 @@ void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
 			}
 		}
 	}
+	auto end = Utility::Time::now();
+
+	std::cout << "graph construction took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
 unsigned int Voxel::Voronoi::Diagram::xzToIndex(const int x, const int z, const int w)
 {
 	return static_cast<unsigned int>((x * w) + z);
+}
+
+bool Voxel::Voronoi::Diagram::inRange(const unsigned int index)
+{
+	return (index >= 0) && (index < cells.size());
+}
+
+void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<Edge*>& edges, Cell* curCell, const unsigned int index)
+{
+	if (inRange(index))
+	{
+		auto nCell = cells.find(index)->second;
+		if (isConnected(edges, nCell))
+		{
+			curCell->addNeighbor(nCell);
+		}
+	}
+}
+
+bool Voxel::Voronoi::Diagram::isConnected(const std::vector<Edge*>& edges, Cell * neighborCell)
+{
+	if (neighborCell->isValid())
+	{
+		auto& nEdges = neighborCell->getEdges();
+
+		for (auto e : edges)
+		{
+			for (auto ne : nEdges)
+			{
+				if (e->equal(ne))
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound)
@@ -661,6 +809,13 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(lineVao);
 
 		glDrawArrays(GL_LINES, 0, lineSize);
+	}
+
+	if (graphLineVao)
+	{
+		glBindVertexArray(graphLineVao);
+
+		glDrawArrays(GL_LINES, 0, graphLineSize);
 	}
 }
 
