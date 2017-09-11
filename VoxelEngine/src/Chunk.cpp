@@ -108,7 +108,49 @@ bool Chunk::init(const int x, const int z)
 }
 
 bool Voxel::Chunk::generate()
-{	
+{
+	if (generated.load() == true)
+	{
+		std::cout << "Chunk trying to generate again" << std::endl;
+		assert(false);
+	}
+
+	if (chunkSections.empty() == false)
+	{
+		std::cout << "Chunk already has chunksections" << std::endl;
+		assert(false);
+	}
+
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		// Temp. All blocks above chunk section y 3 will be air.
+		if (i > 3)
+		{
+			//std::cout << "+ chunksection: " << i << std::endl;
+			chunkSections.push_back(nullptr);
+		}
+		else
+		{
+			//std::cout << "++ chunksection: " << i << std::endl;
+			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			if (newChucnkSection)
+			{
+				chunkSections.push_back(newChucnkSection);
+			}
+			else
+			{
+				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+			}
+		}
+	}
+
+	generated.store(true);
+	
+	return true;
+}
+
+bool Voxel::Chunk::generateWithBiomeTest()
+{
 	if (generated.load() == true)
 	{
 		std::cout << "Chunk trying to generate again" << std::endl;
@@ -242,7 +284,6 @@ bool Voxel::Chunk::generate()
 
 	generated.store(true);
 
-	return true;
 }
 
 glm::ivec3 Chunk::getPosition()

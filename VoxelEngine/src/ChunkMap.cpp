@@ -11,57 +11,195 @@
 
 using namespace Voxel;
 
+Voxel::ChunkMap::ChunkMap()
+	: currentChunkPos(0)
+	, vd(nullptr)
+{
+}
+
 Voxel::ChunkMap::~ChunkMap()
 {
 	clear();
+
+	if (vd)
+	{
+		delete vd;
+	}
 }
 
 void Voxel::ChunkMap::initVoronoi()
 {
-	// World range is -5000 ~ 5000 for now
-	// We can modify the min max later
 
-	const int interval = 500;
+	// Generate random grid
+	std::vector<std::vector<int>> grid;
+
+	const int EMPTY = 0;
+	const int MARKED = 1;
+	const int OMITTED = 2;
+	const int BORDER = 3;
+
+	const int width = 10;
+	const int length = 10;
+
+	// Fill with M (1)
+	for (int i = 0; i < width; ++i)
+	{
+		grid.push_back(std::vector<int>());
+		for (int j = 0; j < length; ++j)
+		{
+			grid.back().push_back(MARKED);
+		}
+	}
+
+	// set edge of grid as border (2)
+	for (auto& i : grid.front())
+	{
+		i = BORDER;
+	}
+
+	for (auto& i : grid.back())
+	{
+		i = BORDER;
+	}
+
+	for (int i = 0; i < width; ++i)
+	{
+		grid.at(i).front() = BORDER;
+		grid.at(i).back() = BORDER;
+	}
+
+	// print grid
+	for (auto i : grid)
+	{
+		for (auto j : i)
+		{
+			std::string str;
+			switch (j)
+			{
+			case EMPTY:
+				str = "0";
+				break;
+			case MARKED:
+				str = "M";
+				break;
+			case OMITTED:
+				str = "X";
+				break;
+			case BORDER:
+				str = "B";
+				break;
+			default:
+				continue;
+				break;
+			}
+			std::cout << str << " ";
+		}
+		std::cout << std::endl;
+	}
+
+	//based on grid, generate random points
+
+	int xPos = grid.size() / 2;
+	int zPos = grid.front().size() / 2;
+
+	const int interval = 1000;
 	const int intervalHalf = interval / 2;
-	int min = -5000;
-	int max = 5000;
-	int xStart = 5000;
-	int zStart = 5000;
 
-	const int pad = 100;
+	glm::ivec2 pos = (glm::ivec2(xPos, zPos) * interval) - intervalHalf;
+
+	// For marked 
+	const int pad = interval / 10;
 	const int randMax = (interval - (pad * 2)) / 2;
 	const int randMin = randMax * -1;
 
-	int len = (max - min) / interval;
+	// For omiited cell. More controlled
+	const int omittedPad = pad * 3;
+	const int omittedRandMax = (interval - (omittedPad * 2)) / 2;
+	const int omittedRandMin = omittedRandMax * -1;
 
-	int x = xStart - intervalHalf;
-	int z = zStart - intervalHalf;
-	
-	std::vector<glm::ivec2> points;
+	std::vector<Voronoi::Site> points;
 
-	for (int i = 0; i < len; i++)
+	for (auto x : grid)
 	{
-		for (int j = 0; j < len; j++)
+		for (auto z : x)
 		{
-			int randX = Utility::Random::randomInt(randMin, randMax);
-			int randZ = Utility::Random::randomInt(randMin, randMax);
+			glm::vec2 randPos;
+			Voronoi::Site::Type type;
+			switch (z)
+			{
+			case MARKED:
+			{
+				int randX = Utility::Random::randomInt(randMin, randMax);
+				int randZ = Utility::Random::randomInt(randMin, randMax);
 
-			glm::ivec2 randPoint = glm::ivec2(randX, randZ);
-			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPoint) << std::endl;
-			auto pos = glm::ivec2(x, z);
-			//std::cout << "Pos = " << Utility::Log::vec2ToStr(pos) << std::endl;
-			randPoint += pos;
+				randPos = glm::ivec2(randX, randZ);
 
-			points.push_back(randPoint);
+				type = Voronoi::Site::Type::MARKED;
+				//std::cout << "Marked" << std::endl;
+			}
+			break;
+			case OMITTED:
+			{
+				//int randX = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
+				//int randZ = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
 
-			z -= interval;
+				//randPos = glm::ivec2(randX, randZ);
+
+				int randX = Utility::Random::randomInt(randMin, randMax);
+				int randZ = Utility::Random::randomInt(randMin, randMax);
+
+				randPos = glm::ivec2(randX, randZ);
+
+				type = Voronoi::Site::Type::OMITTED;
+				//std::cout << "Omitted" << std::endl;
+			}
+			break;
+			case BORDER:
+			{
+				randPos = glm::vec2(0);
+				type = Voronoi::Site::Type::BORDER;
+				//std::cout << "Border" << std::endl;
+			}
+			break;
+			case EMPTY:
+			default:
+				type = Voronoi::Site::Type::NONE;
+				continue;
+				break;
+			}
+
+			randPos += pos;
+			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
+
+			points.push_back(Voronoi::Site(randPos, type));
+
+			pos.y/*z*/ -= interval;
 		}
-		z = zStart - intervalHalf;
-		x -= interval;
+
+		pos.y/*z*/ = (zPos * interval) - intervalHalf;
+		pos.x -= interval;
 	}
 
-	//Voronoi::Diagram vd;
-	//vd.construct(points);
+	vd = new Voronoi::Diagram();
+	vd->construct(points);
+
+	const float minBound = static_cast<float>(xPos * interval * -1);
+	const float maxBound = static_cast<float>(xPos * interval);
+
+	vd->buildCells(minBound, maxBound);
+	vd->buildGraph(width, length);
+	vd->randomizeCells(width, length);
+	vd->initDebugDiagram();
+}
+
+void Voxel::ChunkMap::rebuildVoronoi()
+{
+	if (vd)
+	{
+		delete vd;
+	}
+
+	initVoronoi();
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
@@ -866,7 +1004,7 @@ int Voxel::ChunkMap::getActiveChunksCount()
 
 	for (auto& e : map)
 	{
-		if ((e.second)->isVisible())
+		if ((e.second)->isActive())
 		{
 			count++;
 		}
@@ -1291,4 +1429,9 @@ void Voxel::ChunkMap::render()
 			}
 		}
 	}
+}
+
+void Voxel::ChunkMap::renderVoronoi()
+{
+	vd->render();
 }

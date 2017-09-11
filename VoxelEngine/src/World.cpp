@@ -55,9 +55,9 @@ World::World()
 	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
-	, vd(nullptr)
 	, renderChunks(true)
 	, renderVoronoi(true)
+	, updateChunkMap(true)
 {
 	// init instances
 	init();
@@ -129,9 +129,8 @@ void Voxel::World::init()
 	defaultCanvas->setSize(glm::vec2(1920, 1080));
 	debugConsole->updateResolution(1920, 1080);
 
-	//Testing voronoi
-	initVoronoi();
-	//chunkMap->initVoronoi();
+	//voronoi
+	chunkMap->initVoronoi();
 }
 
 void Voxel::World::release()
@@ -150,8 +149,6 @@ void Voxel::World::release()
 	if (defaultCanvas) delete defaultCanvas;
 
 	if (debugConsole) delete debugConsole;
-
-	if (vd) delete vd;
 }
 
 void Voxel::World::initRandoms()
@@ -256,170 +253,6 @@ void Voxel::World::initCubeOutline()
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
-}
-
-void Voxel::World::initVoronoi()
-{
-	// Generate random grid
-	std::vector<std::vector<int>> grid;
-
-	const int EMPTY = 0;
-	const int MARKED = 1;
-	const int OMITTED = 2;
-	const int BORDER = 3;
-
-	const int width = 10;
-	const int length = 10;
-
-	// Fill with M (1)
-	for (int i = 0; i < width; ++i)
-	{
-		grid.push_back(std::vector<int>());
-		for (int j = 0; j < length; ++j)
-		{
-			grid.back().push_back(MARKED);
-		}
-	}
-
-	// set edge of grid as border (2)
-	for (auto& i : grid.front())
-	{
-		i = BORDER;
-	}
-
-	for (auto& i : grid.back())
-	{
-		i = BORDER;
-	}
-
-	for (int i = 0; i < width; ++i)
-	{
-		grid.at(i).front() = BORDER;
-		grid.at(i).back() = BORDER;
-	}
-
-	// print grid
-	for (auto i : grid)
-	{
-		for (auto j : i)
-		{
-			std::string str;
-			switch (j)
-			{
-			case EMPTY:
-				str = "0";
-				break;
-			case MARKED:
-				str = "M";
-				break;
-			case OMITTED:
-				str = "X";
-				break;
-			case BORDER:
-				str = "B";
-				break;
-			default:
-				continue;
-				break;
-			}
-			std::cout << str << " ";
-		}
-		std::cout << std::endl;
-	}
-
-	//based on grid, generate random points
-
-	int xPos = grid.size() / 2;
-	int zPos = grid.front().size() / 2;
-
-	const int interval = 1000;
-	const int intervalHalf = interval / 2;
-
-	glm::ivec2 pos = (glm::ivec2(xPos, zPos) * interval) - intervalHalf;
-
-	// For marked 
-	const int pad = interval / 10;
-	const int randMax = (interval - (pad * 2)) / 2;
-	const int randMin = randMax * -1;
-
-	// For omiited cell. More controlled
-	const int omittedPad = pad * 3;
-	const int omittedRandMax = (interval - (omittedPad * 2)) / 2;
-	const int omittedRandMin = omittedRandMax * -1;
-
-	std::vector<Voronoi::Site> points;
-
-	for (auto x : grid)
-	{
-		for (auto z : x)
-		{
-			glm::vec2 randPos;
-			Voronoi::Site::Type type;
-			switch (z)
-			{
-			case MARKED:
-			{
-				int randX = Utility::Random::randomInt(randMin, randMax);
-				int randZ = Utility::Random::randomInt(randMin, randMax);
-
-				randPos = glm::ivec2(randX, randZ);
-
-				type = Voronoi::Site::Type::MARKED;
-				//std::cout << "Marked" << std::endl;
-			}
-				break;
-			case OMITTED:
-			{
-				//int randX = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
-				//int randZ = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
-
-				//randPos = glm::ivec2(randX, randZ);
-
-				int randX = Utility::Random::randomInt(randMin, randMax);
-				int randZ = Utility::Random::randomInt(randMin, randMax);
-
-				randPos = glm::ivec2(randX, randZ);
-
-				type = Voronoi::Site::Type::OMITTED;
-				//std::cout << "Omitted" << std::endl;
-			}
-				break;
-			case BORDER:
-			{
-				randPos = glm::vec2(0);
-				type = Voronoi::Site::Type::BORDER;
-				//std::cout << "Border" << std::endl;
-			}
-				break;
-			case EMPTY:
-			default:
-				type = Voronoi::Site::Type::NONE;
-				continue;
-				break;
-			}
-
-			randPos += pos;
-			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
-
-			points.push_back(Voronoi::Site(randPos, type));
-
-			pos.y/*z*/ -= interval;
-		}
-
-		pos.y/*z*/ = (zPos * interval) - intervalHalf;
-		pos.x -= interval;
-	}
-
-	vd = new Voronoi::Diagram();
-	vd->construct(points);
-
-	const float minBound = static_cast<float>(xPos * interval * -1);
-	const float maxBound = static_cast<float>(xPos * interval);
-
-	vd->buildCells(minBound, maxBound);
-	vd->buildGraph(width, length);
-	vd->randomizeCells(width, length);
-	vd->initDebugDiagram();
 }
 
 void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
@@ -539,7 +372,10 @@ void World::update(const float delta)
 	if (playerMoved)
 	{
 		// if player moved, update chunk
-		updateChunks();
+		if (updateChunkMap)
+		{
+			updateChunks();
+		}
 		debugConsole->updatePlayerPosition(player->getPosition());
 
 		defaultProgram->use(true);
@@ -622,12 +458,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 		*/
 
-		if (vd)
-		{
-			delete vd;
-		}
-
-		initVoronoi();
+		chunkMap->rebuildVoronoi();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_MINUS, true))
@@ -1016,8 +847,15 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
-	defaultProgram->setUniformBool("fogEnabled", true);
-	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
+	if (skybox->isFogEnabled())
+	{
+		defaultProgram->setUniformBool("fogEnabled", true);
+		defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
+	}
+	else
+	{
+		defaultProgram->setUniformBool("fogEnabled", false);
+	}
 
 	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
@@ -1025,13 +863,12 @@ void World::render(const float delta)
 	{
 		chunkMap->render();
 	}
-	
+
 	if (renderVoronoi)
 	{
-		vd->render();
+		chunkMap->renderVoronoi();
 	}
 
-	defaultProgram->setUniformBool("fogEnabled", false);
 
 	player->render(defaultProgram);
 
@@ -1067,4 +904,14 @@ void Voxel::World::setRenderChunkMode(const bool mode)
 void Voxel::World::setRenderVoronoiMode(const bool mode)
 {
 	renderVoronoi = mode;
+}
+
+void Voxel::World::setUpdateChunkMapMode(const bool mode)
+{
+	updateChunkMap = mode;
+}
+
+void Voxel::World::setFogEnabled(const bool enabled)
+{
+	skybox->setFogEnabled(enabled);
 }

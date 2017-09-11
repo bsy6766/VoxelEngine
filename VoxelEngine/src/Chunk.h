@@ -76,6 +76,7 @@ namespace Voxel
 
 		// generate terrains
 		bool generate();
+		bool generateWithBiomeTest();
 
 		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
 		void unload();

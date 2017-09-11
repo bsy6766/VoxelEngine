@@ -10,7 +10,7 @@
 #include <Cube.h>
 #include <shared_ptr.hpp>
 
-#include <boost\polygon\voronoi.hpp>
+#include <Voronoi.h>
 
 namespace Voxel
 {
@@ -56,17 +56,21 @@ namespace Voxel
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
 
+		// Voronoi diagram
+		Voronoi::Diagram* vd;
+
 		// Move calls when player moves to new chunk
 		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 	public:
-		ChunkMap() = default;
+		ChunkMap();
 		~ChunkMap();
 
 		// Voronoi 
 		void initVoronoi();
+		void rebuildVoronoi();
 
 		// Initialize spawn chunk
 		void initSpawnChunk();
@@ -140,6 +144,7 @@ namespace Voxel
 
 		// Renders visible chunk
 		void render();
+		void renderVoronoi();
 	};
 }
 

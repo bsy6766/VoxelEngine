@@ -6,9 +6,6 @@
 #include <GLFW\glfw3.h>
 #include <string>
 
-// Temp
-#include <Voronoi.h>
-
 namespace Voxel
 {
 	// Foward
@@ -55,9 +52,10 @@ namespace Voxel
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
-		// render modes
+		// modes
 		bool renderChunks;
 		bool renderVoronoi;
+		bool updateChunkMap;
 
 		// Chunks
 		ChunkMap* chunkMap;
@@ -127,20 +125,17 @@ namespace Voxel
 		// debug
 		DebugConsole* debugConsole;
 
-		//temp
-		Voronoi::Diagram* vd;
-		void initVoronoi();
-
 		// Updates (tick) the world.
 		void update(const float delta);
 		void updateInput(const float delta);
 
 		void render(const float delta);
 
-
 		// debug console function
 		void setRenderChunkMode(const bool mode);
 		void setRenderVoronoiMode(const bool mode);
+		void setUpdateChunkMapMode(const bool mode);
+		void setFogEnabled(const bool enabled);
 	};
 }
 
