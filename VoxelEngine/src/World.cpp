@@ -1016,7 +1016,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformMat4("worldMat", worldMat);
 	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
-	//defaultProgram->setUniformBool("fogEnabled", true);
+	defaultProgram->setUniformBool("fogEnabled", true);
 	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
 
 	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());

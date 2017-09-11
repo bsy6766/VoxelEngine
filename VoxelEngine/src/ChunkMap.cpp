@@ -944,36 +944,48 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 
 		if (d.x != 0)
 		{
+			// Run move function as much as chunk distance
+			int dist = glm::abs(d.x);
+
 			// Moved in x axis
-			if (d.x < 0)
+			for (int i = 0; i < dist; i++)
 			{
-				// Moved to west
-				std::cout << "Player moved to west. d.x = " << d.x << std::endl;
-				moveWest(chunksToUnload, chunksToLoad, chunksToReload, time);
-			}
-			else
-			{
-				// moved to east
-				std::cout << "Player moved to east. d.x = " << d.x << std::endl;
-				moveEast(chunksToUnload, chunksToLoad, chunksToReload, time);
+				if (d.x < 0)
+				{
+					// Moved to west
+					std::cout << "Player moved to west. d.x = " << d.x << std::endl;
+					moveWest(chunksToUnload, chunksToLoad, chunksToReload, time);
+				}
+				else
+				{
+					// moved to east
+					std::cout << "Player moved to east. d.x = " << d.x << std::endl;
+					moveEast(chunksToUnload, chunksToLoad, chunksToReload, time);
+				}
 			}
 		}
 		// Else, didn't move in X axis
 
 		if (d.y/*z*/ != 0)
 		{
+			// Run move function as much as chunk distance
+			int dist = glm::abs(d.y);
+			
 			// Moved in z axis
-			if (d.y < 0)
+			for (int i = 0; i < dist; i++)
 			{
-				// Move to north
-				std::cout << "Player moved to north. d.y = " << d.y << std::endl;
-				moveNorth(chunksToUnload, chunksToLoad, chunksToReload, time);
-			}
-			else
-			{
-				// Moved to sourth
-				std::cout << "Player moved to south. d.y = " << d.y << std::endl;
-				moveSouth(chunksToUnload, chunksToLoad, chunksToReload, time);
+				if (d.y < 0)
+				{
+					// Move to north
+					std::cout << "Player moved to north. d.y = " << d.y << std::endl;
+					moveNorth(chunksToUnload, chunksToLoad, chunksToReload, time);
+				}
+				else
+				{
+					// Moved to sourth
+					std::cout << "Player moved to south. d.y = " << d.y << std::endl;
+					moveSouth(chunksToUnload, chunksToLoad, chunksToReload, time);
+				}
 			}
 		}
 		// Else, didn't move in Z axis

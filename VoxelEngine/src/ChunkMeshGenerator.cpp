@@ -2,7 +2,6 @@
 
 #include <Chunk.h>
 #include <ChunkSection.h>
-#include <ChunkLoader.h>
 #include <ChunkMap.h>
 #include <ChunkMesh.h>
 #include <Block.h>
@@ -512,60 +511,4 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	chunk->chunkMesh->initBuffer(vertices, colors, normals, indices);
 
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;
-}
-
-void Voxel::ChunkMeshGenerator::generateAllChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap)
-{
-	if (chunkLoader == nullptr) return;
-	if (chunkMap == nullptr) return;
-
-	// size
-	auto chunkListXSize = chunkLoader->activeChunks.size();
-	auto chunkListZSize = chunkLoader->activeChunks.back().size();
-	
-	const int maxX = static_cast<int>(chunkListXSize) - 1;
-	const int maxZ = static_cast<int>(chunkListZSize) - 1;
-
-	//std::cout << "[ChunkMeshGenerator] Generating mesh..." << std::endl;
-
-	//int toalVertices = 0;
-
-	// Iterate active chunk in X Axis O(Render distance)
-	for (auto& chunkListX : chunkLoader->activeChunks)
-	{
-		// Iterate active chunk in Z axis O(Render distnace)
-		for (auto chunk : chunkListX)
-		{
-			if (chunk != nullptr)
-			{
-				generateSingleChunkMesh(chunk.get(), chunkMap);
-
-				//toalVertices += chunk->chunkMesh->getVerticesSize();
-			}
-		}
-	}
-	//std::cout << "[ChunkMeshGenerator] Total vertices " << toalVertices <<  std::endl;
-	//std::cout << "[ChunkMeshGenerator] Done. " << std::endl;
-}
-
-void Voxel::ChunkMeshGenerator::generateNewChunkMesh(ChunkLoader * chunkLoader, ChunkMap * chunkMap)
-{
-	if (chunkLoader == nullptr) return;
-	if (chunkMap == nullptr) return;
-
-	for (auto& chunkListX : chunkLoader->activeChunks)
-	{
-		// Iterate active chunk in Z axis O(Render distnace)
-		for (auto chunk : chunkListX)
-		{
-			if (chunk != nullptr)
-			{
-				if (chunk->chunkMesh == nullptr)
-				{
-					//std::cout << "[ChunkMeshGenerator] Generate mesh for new active chunk (" << chunk->position.x << ", " << chunk->position.z << ")" << std::endl;
-					generateSingleChunkMesh(chunk.get(), chunkMap);
-				}
-			}
-		}
-	}
 }

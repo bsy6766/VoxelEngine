@@ -42,12 +42,6 @@ namespace Voxel
 
 		// Generates mesh for single chunk
 		void generateSingleChunkMesh(Chunk* chunk, ChunkMap* chunkMap);
-		// Generates mesh for all chunk in chunk loader
-		void generateAllChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap);
-		// Generates mesh for all chunk that is only new.
-		// This functions needs to be called only chunk loader is updated.
-		// The reason why we use this function is because i
-		void generateNewChunkMesh(ChunkLoader* chunkLoader, ChunkMap* chunkMap);
 	};
 }
 
