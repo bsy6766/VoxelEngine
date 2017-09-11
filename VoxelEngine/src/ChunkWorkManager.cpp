@@ -179,10 +179,11 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
 	while (running)
 	{
-		/*
 		{
 			// Scope lock
 			std::unique_lock<std::mutex> fLock(finishedQueueMutex);
+			// Threads need to wait until ChunkMap releases the chunk, which modifies std::unordered_map.
+			// It's not safe to get chunk pointer from map while mainthread modifies the map.
 			while (!unloadFinishedQueue.empty())
 			{
 				cv.wait(fLock);
@@ -190,7 +191,6 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 
 			//std::cout << "No need to wait!" << std::endl;
 		}
-		*/
 
 		glm::ivec2 chunkXZ;
 		int flag = IDLE_WORK;

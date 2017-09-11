@@ -14,7 +14,6 @@ namespace Voxel
 	// Foward
 	class Program;
 	class ChunkMap;
-	class ChunkLoader;
 	class ChunkMeshGenerator;
 	class InputHandler;
 	class Player;
@@ -62,7 +61,6 @@ namespace Voxel
 
 		// Chunks
 		ChunkMap* chunkMap;
-		ChunkLoader* chunkLoader;
 		ChunkMeshGenerator* chunkMeshGenerator;
 		ChunkWorkManager* chunkWorkManager;
 
@@ -96,12 +94,6 @@ namespace Voxel
 
 		// Create/Load/release chunkMap
 		void createChunkMap();
-
-		// Load chunkMap
-		void loadChunkLoader();
-
-		// Load chunk meshes
-		void loadChunkMesh();
 
 		// Initialize everything that uses random
 		void initRandoms();

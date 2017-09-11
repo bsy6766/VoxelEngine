@@ -31,13 +31,13 @@ namespace Voxel
 
 	/**
 	*	@class ChunkMap
-	*	@brief Simple wrapper or unordered_map with Chunk with some functionalities.
+	*	@brief Manages all chunks
 	*
-	*	Chunk map stores all the chuncks that are ever generated.
-	*	It keep tracks if chunk has been explored and generated or not.
-	*	Chunk map doesn't update chunk. It only keeps the data.
+	*	ChunkMap manages all the chunks that are in the game. 
+	*	It can remove chunk, generate chunk, generate empty chunk, find visible chunk, etc
+	*	Also keep tracks the active chunks, this was originally ChunkLoader's job, but merge into ChunkMap
 	*
-	*	Chunk map always loads region (0, 0), which means 32 x 32 chunks
+	*	ChunkMap also works as world map. It contains voronoi diagram and cell graph data.
 	*/
 	class ChunkMap
 	{
@@ -50,6 +50,17 @@ namespace Voxel
 		// Chunk LUT. This stores chunk position (x, y. Not world pos) that has been ever generated
 		std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> chunkLUT;
 
+		// A chunk position currently player is standing
+		glm::ivec2 currentChunkPos;
+
+		// 2D list that keep tracks the active chunk coordinates
+		std::list<std::list<glm::ivec2>> activeChunks;
+
+		// Move calls when player moves to new chunk
+		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 	public:
 		ChunkMap() = default;
 		~ChunkMap();
@@ -62,6 +73,9 @@ namespace Voxel
 
 		// Initialize map data near by player based on player's last position and render distance
 		void initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
+
+		// Initialize active chunks 
+		std::vector<glm::vec2> initActiveChunks(const int renderDistance);
 
 		// Clears all the chunk in the map
 		void clear();
@@ -114,6 +128,18 @@ namespace Voxel
 
 		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);
+
+		// Get number of active chunks
+		int getActiveChunksCount();
+
+		// Update chunk map
+		bool update(const glm::vec3& playerPosition, ChunkWorkManager* workManager, const double time);
+
+		// find visible chunks. retrusn the number of chunks that is visible
+		int findVisibleChunk();
+
+		// Renders visible chunk
+		void render();
 	};
 }
 
