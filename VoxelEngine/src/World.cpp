@@ -986,6 +986,12 @@ void Voxel::World::updateChunks()
 	// If so, we need to load new chunks. 
 	// Else, player reamains on same chunk as now.
 	bool updated = chunkLoader->update(player->getPosition(), chunkMap, chunkWorkManager, glfwGetTime());
+
+	//Whenever player moved, sort the load queue again 
+	if (updated)
+	{
+		chunkWorkManager->sortLoadQueue(player->getPosition());
+	}
 }
 
 void Voxel::World::updatePlayerRaycast()

@@ -24,11 +24,13 @@ namespace Voxel
 		// A chunk position currently player is standing
 		glm::ivec2 currentChunkPos;
 		
-		// Chunks that are manually added to be active.
-		ChunkMap* manualChunks;
-
 		// Chunks that are currently active
 		std::list<std::list<std::shared_ptr<Chunk>>> activeChunks;
+
+		void moveWest(ChunkMap* map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveEast(ChunkMap* map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveSouth(ChunkMap* map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveNorth(ChunkMap* map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 	public:
 		ChunkLoader();
 		~ChunkLoader();

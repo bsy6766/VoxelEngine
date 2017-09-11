@@ -52,7 +52,7 @@ namespace Voxel
 		// Border & range
 		ChunkBorder border;
 
-		// active state. Only active chunk can be queried
+		// active state. Only active chunk can be queried and gets updated
 		bool active;
 
 		// visible state. True if chunk is visible to player

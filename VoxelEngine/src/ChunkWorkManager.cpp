@@ -103,6 +103,37 @@ void Voxel::ChunkWorkManager::addUnload(const std::vector<glm::ivec2>& coordinat
 	//cv.notify_one();
 }
 
+void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
+
+	// Shift by 1 if player is in negative position in XZ axis.
+	if (playerPosition.x < 0) chunkX -= 1;
+	if (playerPosition.z < 0) chunkZ -= 1;
+
+	glm::vec2 p = glm::vec2(chunkX, chunkZ);
+
+	std::vector<glm::vec2> loadQueueFloat;
+
+	for (auto xz : loadQueue)
+	{
+		loadQueueFloat.push_back(glm::vec2(xz));
+	}
+
+	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
+
+	loadQueue.clear();
+
+	for (auto xz : loadQueueFloat)
+	{
+		loadQueue.push_back(glm::ivec2(xz));
+	}
+}
+
 void Voxel::ChunkWorkManager::addFinishedQueue(const glm::ivec2 & coordinate)
 {
 	// Scope lock
@@ -148,6 +179,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
 	while (running)
 	{
+		/*
 		{
 			// Scope lock
 			std::unique_lock<std::mutex> fLock(finishedQueueMutex);
@@ -158,6 +190,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 
 			//std::cout << "No need to wait!" << std::endl;
 		}
+		*/
 
 		glm::ivec2 chunkXZ;
 		int flag = IDLE_WORK;
@@ -242,7 +275,10 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 						if (!chunk->isGenerated())
 						{
 							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
+							//auto s = Utility::Time::now();
 							chunk->generate();
+							//auto e = Utility::Time::now();
+							//std::cout << "g t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
 
 						auto mesh = chunk->getMesh();
@@ -251,7 +287,10 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 							// There can be two cases. 
 							// 1. Chunk is newly generated and need mesh.
 							// 2. Chunk already has mesh but need to refresh
+							//auto s = Utility::Time::now();
 							chunkMeshGenerator->generateSingleChunkMesh(chunk.get(), map);
+							//auto e = Utility::Time::now();
+							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
 						// Else, mesh is nullptr
 					}
@@ -298,7 +337,7 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 	}
 
 	// Debug. For now, just use 1 thread
-	threadCount = 1;
+	threadCount = 2;
 
 	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
 	

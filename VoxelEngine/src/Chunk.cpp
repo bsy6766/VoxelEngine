@@ -37,7 +37,7 @@ Chunk::~Chunk()
 		delete chunkMesh;
 	}
 
-	std::cout << "[Chunk] Deleting chunk at (" << position.x << ", " << position.z << ")..." << std::endl;
+	//std::cout << "[Chunk] Deleting chunk at (" << position.x << ", " << position.z << ")..." << std::endl;
 }
 
 Chunk* Chunk::create(const int x, const int z)
@@ -48,7 +48,7 @@ Chunk* Chunk::create(const int x, const int z)
 		if (newChunk->generate())
 		{
 			//std::cout << "[Chunk] Done.\n" << std::endl;
-			std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
+			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
 			return newChunk;
 		}
 	}
@@ -64,7 +64,7 @@ Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 	if (newChunk->init(x, z))
 	{
 		//std::cout << "[Chunk] Done.\n" << std::endl;
-		std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")..." << std::endl;
+		//std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")..." << std::endl;
 		return newChunk;
 	}
 
@@ -109,6 +109,17 @@ bool Chunk::init(const int x, const int z)
 
 bool Voxel::Chunk::generate()
 {	
+	if (generated.load() == true)
+	{
+		std::cout << "Chunk trying to generate again" << std::endl;
+		assert(false);
+	}
+
+	if (chunkSections.empty() == false)
+	{
+		std::cout << "Chunk already has chunksections" << std::endl;
+		assert(false);
+	}
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 	std::vector<std::vector<float>> elevationMap;
 	std::vector<std::vector<float>> temperatureMap;

@@ -268,7 +268,30 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 		{
 			if (commandStr == "player")
 			{
-				if (size == 5)
+				if (size == 3)
+				{
+					auto arg1 = split.at(1);
+					if (arg1 == "speed")
+					{
+						try
+						{
+							float speed = std::stof(split.at(2));
+							player->setMovementSpeed(speed);
+						}
+						catch (...)
+						{
+							if (split.at(2) == "default")
+							{
+								player->setMovementSpeed(15.0f);
+							}
+							else
+							{
+								return;
+							}
+						}
+					}
+				}
+				else if (size == 5)
 				{
 					//player position x y z
 					auto arg1 = split.at(1);

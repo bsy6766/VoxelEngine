@@ -11,17 +11,10 @@
 using namespace Voxel;
 
 Voxel::ChunkLoader::ChunkLoader()
-	: manualChunks(nullptr)
-{
-}
+{}
 
 Voxel::ChunkLoader::~ChunkLoader()
-{
-	if (manualChunks)
-	{
-		delete manualChunks;
-	}
-}
+{}
 
 std::vector<glm::vec2> Voxel::ChunkLoader::init(const glm::vec3 & playerPosition, ChunkMap* map, const int renderDistance, const double curTime)
 {
@@ -122,7 +115,7 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 		// Anyway, first we get how far player moved. In chunk distance.
 		// Then find which row and col need to be added based on direction player moved.
 		// also find which row and col to pop aswell.
-		auto d = newChunkXZ - currentChunkPos;
+		glm::ivec2 d = newChunkXZ - currentChunkPos;
 		std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")" << std::endl;
 		currentChunkPos = newChunkXZ;
 		
@@ -158,108 +151,14 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 			if (d.x < 0)
 			{
 				// Moved to west
-				std::cout << "Player moved to west" << std::endl;
-
-				// Unload all the chunk in the back of the active chunk list
-				for (auto chunk : activeChunks.back())
-				{
-					chunk->setActive(false);
-					chunk->setVisibility(false);
-					auto pos = chunk->getPosition();
-					chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
-				}
-
-				// Pop
-				activeChunks.pop_back();
-
-				// Get x from first list and -1 for new list to west (negative x)
-				int x = activeChunks.front().front()->position.x - 1;
-				// Also get first z in list.
-				int zStart = activeChunks.back().front()->position.z;
-
-				// Before add new list on front, rebuild mesh for current front
-				for (auto chunk : activeChunks.front())
-				{
-					auto pos = chunk->getPosition();
-					chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
-				}
-
-				// Add new list on front with empty chunks
-				activeChunks.push_front(std::list<std::shared_ptr<Chunk>>());
-
-				// Add empty chunks
-				int lastZ = activeChunks.back().size() + zStart;
-				for (int z = zStart; z < lastZ; z++)
-				{
-					if (!map->hasChunkAtXZ(x, z))
-					{
-						map->generateEmptyChunk(x, z);
-					}
-				}
-
-				for (int z = zStart; z < lastZ; z++)
-				{
-					auto newChunk = map->getChunkAtXZ(x, z);
-					newChunk->setActive(true);
-					newChunk->setVisibility(true);
-					newChunk->updateTimestamp(curTime);
-					activeChunks.front().push_back(newChunk);
-					auto pos = activeChunks.front().back()->getPosition();
-					chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
-				}
+				std::cout << "Player moved to west. d.x = " << d.x << std::endl;
+				moveWest(map, chunksToUnload, chunksToLoad, chunksToReload, curTime);
 			}
 			else
 			{
 				// moved to east
-				std::cout << "Player moved to east" << std::endl;
-
-				// Unload all the chunk in the front of chunk list
-				for (auto chunk : activeChunks.front())
-				{
-					chunk->setActive(false);
-					chunk->setVisibility(false);
-					auto pos = chunk->getPosition();
-					chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
-				}
-
-				// Pop
-				activeChunks.pop_front();
-
-				// Get x from last list and +1 for new list to east (positive x)
-				int x = activeChunks.back().front()->position.x + 1;
-				// Also get first z in list.
-				int zStart = activeChunks.back().front()->position.z;
-
-				// Before add new list on back, rebuild mesh for current back
-				for (auto chunk : activeChunks.back())
-				{
-					auto pos = chunk->getPosition();
-					chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
-				}
-
-				// Add new list on front with empty chunks
-				activeChunks.push_back(std::list<std::shared_ptr<Chunk>>());
-
-				// Add empty chunks
-				int lastZ = activeChunks.front().size() + zStart;
-				for (int z = zStart; z < lastZ; z++)
-				{
-					if (!map->hasChunkAtXZ(x, z))
-					{
-						map->generateEmptyChunk(x, z);
-					}
-				}
-
-				for (int z = zStart; z < lastZ; z++)
-				{
-					auto newChunk = map->getChunkAtXZ(x, z);
-					newChunk->setActive(true);
-					newChunk->setVisibility(true);
-					newChunk->updateTimestamp(curTime);
-					activeChunks.back().push_back(newChunk);
-					auto pos = activeChunks.back().back()->getPosition();
-					chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
-				}
+				std::cout << "Player moved to east. d.x = " << d.x << std::endl;
+				moveEast(map, chunksToUnload, chunksToLoad, chunksToReload, curTime);
 			}
 		}
 		// Else, didn't move in X axis
@@ -270,99 +169,14 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 			if (d.y < 0)
 			{
 				// Move to north
-				std::cout << "Player moved to north" << std::endl;
-
-				// Get z
-				int z = activeChunks.front().front()->position.z - 1;
-
-				// Iterate through active chunks and unload all the chunks in front of sub list
-				for (auto& chunksZ : activeChunks)
-				{
-					chunksZ.back()->setActive(false);
-					chunksZ.back()->setVisibility(false);
-					auto pos = chunksZ.back()->getPosition();
-					//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-					chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
-					chunksZ.pop_back();
-				}				
-
-				// Iterate through active chunks and add generate new chunk
-				for (auto& chunksZ : activeChunks)
-				{
-					int curX = chunksZ.front()->position.x;
-					if (!map->hasChunkAtXZ(curX, z))
-					{
-						// map doesn't have chunk. create empty
-						map->generateEmptyChunk(curX, z);
-					}
-					// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
-				}
-
-				for (auto& chunksZ : activeChunks)
-				{
-					// Before we add new chunk on front, we need to refresh current one
-					auto curPos = chunksZ.front()->getPosition();
-					chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
-
-					// get chunk
-					auto newChunk = map->getChunkAtXZ(curPos.x, z);
-					newChunk->setActive(true);
-					newChunk->setVisibility(true);
-					newChunk->updateTimestamp(curTime);
-					chunksZ.push_front(newChunk);
-					auto pos = chunksZ.front()->getPosition();
-					//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-					chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
-				}
+				std::cout << "Player moved to north. d.y = " << d.y << std::endl;
+				moveNorth(map, chunksToUnload, chunksToLoad, chunksToReload, curTime);
 			}
 			else
 			{
 				// Moved to sourth
-				std::cout << "Player moved to south" << std::endl;
-
-				// Get z. This is the new z coordinate that we will add to active chunk list
-				int z = activeChunks.front().back()->position.z + 1;
-				//std::cout << "new z = " << z << std::endl;
-
-				// Iterate through active chunks and unload all the chunks in front of sub list
-				for (auto& chunksZ : activeChunks)
-				{
-					chunksZ.front()->setActive(false);
-					chunksZ.front()->setVisibility(false);
-					auto pos = chunksZ.front()->getPosition();
-					//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-					chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
-					chunksZ.pop_front();
-				}				
-
-				// Iterate through active chunks and add generate new chunk.
-				for (auto& chunksZ : activeChunks)
-				{
-					int curX = chunksZ.front()->position.x;
-					if (!map->hasChunkAtXZ(curX, z))
-					{
-						// map doesn't have chunk. create empty
-						map->generateEmptyChunk(curX, z);
-					}
-					// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
-				}
-
-				for (auto& chunksZ : activeChunks)
-				{
-					// Before we add new chunk on back, we need to refresh current one
-					auto curPos = chunksZ.back()->getPosition();
-					chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
-
-					// get chunk
-					auto newChunk = map->getChunkAtXZ(curPos.x, z);
-					newChunk->setActive(true);
-					newChunk->setVisibility(true);
-					newChunk->updateTimestamp(curTime);
-					chunksZ.push_back(newChunk);
-					auto pos = chunksZ.back()->getPosition();
-					//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-					chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
-				}
+				std::cout << "Player moved to south. d.y = " << d.y << std::endl;
+				moveSouth(map, chunksToUnload, chunksToLoad, chunksToReload, curTime);
 			}
 		}
 		// Else, didn't move in Z axis
@@ -404,6 +218,201 @@ bool Voxel::ChunkLoader::update(const glm::vec3 & playerPosition, ChunkMap* map,
 	}
 
 	return false;
+}
+
+void Voxel::ChunkLoader::moveWest(ChunkMap * map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
+{
+	// Unload all the chunk in the back of the active chunk list
+	for (auto chunk : activeChunks.back())
+	{
+		chunk->setActive(false);
+		chunk->setVisibility(false);
+		auto pos = chunk->getPosition();
+		chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
+	}
+
+	// Pop
+	activeChunks.pop_back();
+
+	// Get x from first list and -1 for new list to west (negative x)
+	int x = activeChunks.front().front()->position.x - 1;
+	// Also get first z in list.
+	int zStart = activeChunks.back().front()->position.z;
+
+	// Before add new list on front, rebuild mesh for current front
+	for (auto chunk : activeChunks.front())
+	{
+		auto pos = chunk->getPosition();
+		chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
+	}
+
+	// Add new list on front with empty chunks
+	activeChunks.push_front(std::list<std::shared_ptr<Chunk>>());
+
+	// Add empty chunks
+	int lastZ = activeChunks.back().size() + zStart;
+	for (int z = zStart; z < lastZ; z++)
+	{
+		if (!map->hasChunkAtXZ(x, z))
+		{
+			map->generateEmptyChunk(x, z);
+		}
+	}
+
+	for (int z = zStart; z < lastZ; z++)
+	{
+		auto newChunk = map->getChunkAtXZ(x, z);
+		newChunk->setActive(true);
+		newChunk->setVisibility(true);
+		newChunk->updateTimestamp(curTime);
+		activeChunks.front().push_back(newChunk);
+		auto pos = activeChunks.front().back()->getPosition();
+		chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
+	}
+}
+
+void Voxel::ChunkLoader::moveEast(ChunkMap * map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
+{
+	// Unload all the chunk in the front of chunk list
+	for (auto chunk : activeChunks.front())
+	{
+		chunk->setActive(false);
+		chunk->setVisibility(false);
+		auto pos = chunk->getPosition();
+		chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
+	}
+
+	// Pop
+	activeChunks.pop_front();
+
+	// Get x from last list and +1 for new list to east (positive x)
+	int x = activeChunks.back().front()->position.x + 1;
+	// Also get first z in list.
+	int zStart = activeChunks.back().front()->position.z;
+
+	// Before add new list on back, rebuild mesh for current back
+	for (auto chunk : activeChunks.back())
+	{
+		auto pos = chunk->getPosition();
+		chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
+	}
+
+	// Add new list on front with empty chunks
+	activeChunks.push_back(std::list<std::shared_ptr<Chunk>>());
+
+	// Add empty chunks
+	int lastZ = activeChunks.front().size() + zStart;
+	for (int z = zStart; z < lastZ; z++)
+	{
+		if (!map->hasChunkAtXZ(x, z))
+		{
+			map->generateEmptyChunk(x, z);
+		}
+	}
+
+	for (int z = zStart; z < lastZ; z++)
+	{
+		auto newChunk = map->getChunkAtXZ(x, z);
+		newChunk->setActive(true);
+		newChunk->setVisibility(true);
+		newChunk->updateTimestamp(curTime);
+		activeChunks.back().push_back(newChunk);
+		auto pos = activeChunks.back().back()->getPosition();
+		chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
+	}
+}
+
+void Voxel::ChunkLoader::moveSouth(ChunkMap * map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
+{
+	// Get z. This is the new z coordinate that we will add to active chunk list
+	int z = activeChunks.front().back()->position.z + 1;
+	//std::cout << "new z = " << z << std::endl;
+
+	// Iterate through active chunks and unload all the chunks in front of sub list
+	for (auto& chunksZ : activeChunks)
+	{
+		chunksZ.front()->setActive(false);
+		chunksZ.front()->setVisibility(false);
+		auto pos = chunksZ.front()->getPosition();
+		//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+		chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
+		chunksZ.pop_front();
+	}
+
+	// Iterate through active chunks and add generate new chunk.
+	for (auto& chunksZ : activeChunks)
+	{
+		int curX = chunksZ.front()->position.x;
+		if (!map->hasChunkAtXZ(curX, z))
+		{
+			// map doesn't have chunk. create empty
+			map->generateEmptyChunk(curX, z);
+		}
+		// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
+	}
+
+	for (auto& chunksZ : activeChunks)
+	{
+		// Before we add new chunk on back, we need to refresh current one
+		auto curPos = chunksZ.back()->getPosition();
+		chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
+
+		// get chunk
+		auto newChunk = map->getChunkAtXZ(curPos.x, z);
+		newChunk->setActive(true);
+		newChunk->setVisibility(true);
+		newChunk->updateTimestamp(curTime);
+		chunksZ.push_back(newChunk);
+		auto pos = chunksZ.back()->getPosition();
+		//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+		chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
+	}
+}
+
+void Voxel::ChunkLoader::moveNorth(ChunkMap * map, std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
+{
+	// Get z
+	int z = activeChunks.front().front()->position.z - 1;
+
+	// Iterate through active chunks and unload all the chunks in front of sub list
+	for (auto& chunksZ : activeChunks)
+	{
+		chunksZ.back()->setActive(false);
+		chunksZ.back()->setVisibility(false);
+		auto pos = chunksZ.back()->getPosition();
+		//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+		chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
+		chunksZ.pop_back();
+	}
+
+	// Iterate through active chunks and add generate new chunk
+	for (auto& chunksZ : activeChunks)
+	{
+		int curX = chunksZ.front()->position.x;
+		if (!map->hasChunkAtXZ(curX, z))
+		{
+			// map doesn't have chunk. create empty
+			map->generateEmptyChunk(curX, z);
+		}
+		// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
+	}
+
+	for (auto& chunksZ : activeChunks)
+	{
+		// Before we add new chunk on front, we need to refresh current one
+		auto curPos = chunksZ.front()->getPosition();
+		chunksToReload.push_back(glm::ivec2(curPos.x, curPos.z));
+
+		// get chunk
+		auto newChunk = map->getChunkAtXZ(curPos.x, z);
+		newChunk->setActive(true);
+		newChunk->setVisibility(true);
+		newChunk->updateTimestamp(curTime);
+		chunksZ.push_front(newChunk);
+		auto pos = chunksZ.front()->getPosition();
+		//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
+		chunksToLoad.push_back(glm::ivec2(pos.x, pos.z));
+	}
 }
 
 int Voxel::ChunkLoader::findVisibleChunk()

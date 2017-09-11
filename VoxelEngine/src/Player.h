@@ -106,10 +106,17 @@ namespace Voxel
 		glm::mat4 getDirMatrix();
 		glm::mat4 getBillboardMatrix();
 
+		// Check if player moved this frame
 		bool didMoveThisFrame();
+		// Check if player rotated this frame
 		bool didRotateThisFrame();
 
+		// Set player movementspeed
+		void setMovementSpeed(const float speed);
+
+		// Get direction of player
 		glm::vec3 getDirection();
+		// Get ray range of player
 		float getRange();
 		// Get end point of player's raycast
 		glm::vec3 getRayEnd();

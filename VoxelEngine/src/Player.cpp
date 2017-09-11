@@ -247,6 +247,11 @@ bool Voxel::Player::didRotateThisFrame()
 	return rotated;
 }
 
+void Voxel::Player::setMovementSpeed(const float speed)
+{
+	this->movementSpeed = speed;
+}
+
 glm::vec3 Voxel::Player::getDirection()
 {
 	return direction;

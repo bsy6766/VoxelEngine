@@ -59,13 +59,21 @@ namespace Voxel
 		ChunkWorkManager();
 		~ChunkWorkManager() = default;
 
-		// Add or remove work
+		// Add single load work to load queue. locked by queueMutex
 		void addLoad(const glm::ivec2& coordinate, const bool highPriority = false);
+		// Add multiple load works to load queue. locked by queueMutex
 		void addLoad(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+		// Add single unload work to unload queue. locked by queueMutex
 		void addUnload(const glm::ivec2& coordinate);
+		// Add mutliple unload works to unload queue. locked by queueMutex
 		void addUnload(const std::vector<glm::ivec2>& coordinates);
+		// sort load queue based on chunk position that player is on. Locked by queueMutex
+		void sortLoadQueue(const glm::vec3& playerPosition);
+		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);
+		// Get first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
 		bool getFinishedFront(glm::ivec2& coordinate);
+		// Pop the first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
 		void popFinishedAndNotify();
 
 		// Creates the thread. Make sure you call once after run.
