@@ -8,6 +8,8 @@ InputHandler::InputHandler()
 	: curX(0)
 	, curY(0)
 	, controllerManager(ControllerManager::getInstance())
+	, mods(0)
+	, bufferEnabled(false)
 {
 }
 
@@ -49,8 +51,17 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 
 	//std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
 
-	InputHandler::getInstance().updateKeyboard(key, action, mods);
+	auto& instance = InputHandler::getInstance();
+	instance.updateKeyboard(key, action, mods);
 	//std::cout << "char = " << InputHandler::getInstance().glfwKeyToString(key, mods) << std::endl;
+
+	if (action == GLFW_PRESS)
+	{
+		if (instance.bufferEnabled)
+		{
+			instance.buffer += instance.glfwKeyToString(key, mods);
+		}
+	}
 }
 
 void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
@@ -330,12 +341,33 @@ void Voxel::InputHandler::setCursorToCenter()
 	curY = 0;
 }
 
+void Voxel::InputHandler::setBufferMode(const float enabled)
+{
+	bufferEnabled = enabled;
+}
+
+std::string Voxel::InputHandler::getBuffer()
+{
+	std::string copy = buffer;
+	buffer.clear();
+	return copy;
+}
+
 std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 {
-	// GLFW key is same as ascii. However, it doesn't support shifted keys.
-	// Alphabet
-	if (key >= 65 && key <= 90)
+	// Backspace
+	if (key == GLFW_KEY_BACKSPACE)
 	{
+		return "VOXEL_GLFW_KEY_BACKSPACE";
+	}
+	else if (key == GLFW_KEY_ENTER)
+	{
+		return "VOXEL_GLFW_KEY_ENTER";
+	}
+	else if (key >= 65 && key <= 90)
+	{
+		// GLFW key is same as ascii. However, it doesn't support shifted keys.
+		// Alphabet
 		if (mod & GLFW_MOD_SHIFT)
 		{
 			// upper case
@@ -347,57 +379,57 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 			return std::string(1, static_cast<char>(key + 32));
 		}
 	}
-	else if (key == 32)
+	else if (key == GLFW_KEY_SPACE)
 	{
 		// whitespace
 		return " ";
 	}
-	else if (key >= 48 && key <= 57)
+	else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
 	{
 		if (mod & GLFW_MOD_SHIFT)
 		{
 			// shift + number
 			switch (key)
 			{
-			case 49:
+			case GLFW_KEY_0:
+				// 0
+				return ")";
+				break;
+			case GLFW_KEY_1:
 				// 1
 				return "!";
 				break;
-			case 50:
+			case GLFW_KEY_2:
 				// 2
 				return "@";
 				break;
-			case 51:
+			case GLFW_KEY_3:
 				// 3
 				return "#";
 				break;
-			case 52:
+			case GLFW_KEY_4:
 				// 4
 				return "^";
 				break;
-			case 53:
+			case GLFW_KEY_5:
 				// 5
 				return "%";
 				break;
-			case 54:
+			case GLFW_KEY_6:
 				// 6
 				return "^";
 				break;
-			case 55:
+			case GLFW_KEY_7:
 				// 7
 				return "&";
 				break;
-			case 56:
+			case GLFW_KEY_8:
 				// 8
 				return "*";
 				break;
-			case 57:
+			case GLFW_KEY_9:
 				// 9
 				return "(";
-				break;
-			case 48:
-				// 0
-				return ")";
 				break;
 			default:
 				return "";

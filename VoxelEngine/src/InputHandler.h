@@ -6,6 +6,7 @@
 #include <GLFW\glfw3.h>
 #include <unordered_map>
 #include <ControllerManager.h>
+#include <functional>
 
 namespace Voxel
 {
@@ -32,6 +33,10 @@ namespace Voxel
 
 		// glfw modifier bit. 
 		int mods;
+
+		// input buffer. For debug console
+		bool bufferEnabled;
+		std::string buffer;
 
 		// Controller
 		ControllerManager* controllerManager;
@@ -66,7 +71,7 @@ namespace Voxel
 		static void onAxisMoved(ControllerID id, IO::XBOX_360::AXIS axis, const float value);
 		static void onControllerConnected(ControllerID id);
 		static void onControllerDisconnected(ControllerID id);
-		
+
 		// InputHandler functions. 
 		// Get mouse position. Pass x, y as reference
 		void getMousePosition(double& x, double& y);
@@ -90,6 +95,8 @@ namespace Voxel
 
 		void setCursorToCenter();
 
+		void setBufferMode(const float enabled);
+		std::string getBuffer();
 		std::string glfwKeyToString(const int key, const int mod);
 	};
 }

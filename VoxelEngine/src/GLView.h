@@ -35,8 +35,6 @@ namespace Voxel
 		double elapsedTime;
 		int fps;
 		double fpsElapsedTime;
-		bool fpsDisplay;
-		bool fpsKeyDown;
 
 		// vsync
 		bool vsync;
@@ -80,8 +78,6 @@ namespace Voxel
 		void resetTime();
 		int getFPS();
 		double getElaspedTime();
-
-		void setFPSDisplay(const bool mode);
 
 		bool isFullScreen();
 		void setFullScreen();

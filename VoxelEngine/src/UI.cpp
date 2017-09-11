@@ -131,22 +131,49 @@ Voxel::UI::Text::Text()
 	, maxTextLength(0)
 	, outlined(false)
 	, loaded(false)
+	, color(1.0f)
+	, outlineColor(1.0f)
 {
 }
 
-Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align, TYPE type, const int maxLength)
+Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& position, const glm::vec4& color, const int fontID, ALIGN align, TYPE type, const int maxLength)
 {
 	Text* newText = new Text();
-	if (newText->init(text, position, fontID, align, type, maxLength))
+	newText->font = FontManager::getInstance().getFont(fontID);
+
+	if (newText->font != nullptr)
 	{
-		return newText;
+		if (newText->init(text, position, color, align, type, maxLength))
+		{
+			return newText;
+		}
 	}
-	else
+
+	delete newText;
+	newText = nullptr;
+	return nullptr;
+}
+
+Text * Voxel::UI::Text::createWithOutline(const std::string & text, const glm::vec2 & position, const int fontID, const glm::vec4 & color, const glm::vec4 & outlineColor, ALIGN align, TYPE type, const int maxLength)
+{
+	Text* newText = new Text();
+	newText->font = FontManager::getInstance().getFont(fontID);
+
+	if (newText->font != nullptr)
 	{
-		delete newText;
-		newText = nullptr;
-		return nullptr;
+		// Check if font supports outline
+		if (newText->font->isOutlineEnabled())
+		{
+			if (newText->initWithOutline(text, position, color, outlineColor, align, type, maxLength))
+			{
+				return newText;
+			}
+		}
 	}
+
+	delete newText;
+	newText = nullptr;
+	return nullptr;
 }
 
 void Voxel::UI::Text::setText(const std::string & text)
@@ -177,9 +204,26 @@ void Voxel::UI::Text::setText(const std::string & text)
 	}
 }
 
+std::string Voxel::UI::Text::getText()
+{
+	return text;
+}
+
 bool Voxel::UI::Text::isOutlined()
 {
 	return outlined;
+}
+
+void Voxel::UI::Text::setColor(const glm::vec4 & color)
+{
+	this->color = color;
+
+	// Todo: rebuild color buffer
+}
+
+glm::vec4 Voxel::UI::Text::getOutlineColor()
+{
+	return outlineColor;
 }
 
 Voxel::UI::Text::~Text()
@@ -193,27 +237,33 @@ Voxel::UI::Text::~Text()
 	glDeleteVertexArrays(1, &vao);
 }
 
-bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const int fontID, ALIGN align, TYPE type, const int maxLength)
+bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const glm::vec4& color, ALIGN align, TYPE type, const int maxLength)
 {
-	this->font = FontManager::getInstance().getFont(fontID);
+	this->text = text;
+	this->align = align;
+	this->color = color;
+	this->position = position;
+	this->align = align;
+	this->type = type;
+	this->maxTextLength = maxLength;
+	//color will be same for all color for now
+	// Todo: make char quad to have own separate color
 
-	if (font == nullptr)
-	{
-		return false;
-	}
-	else
-	{
-		this->text = text;
-		this->align = align;
-		this->position = position;
-		this->align = align;
-		this->type = type;
-		this->maxTextLength = maxLength;
-		//color will be same for all color for now
-		// Todo: make char quad to have own separate color
+	return buildMesh(false);
+}
 
-		return buildMesh(false);
-	}
+bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec2 & position, const glm::vec4 & color, const glm::vec4 & outlineColor, ALIGN align, TYPE type, const int maxLength)
+{
+	this->text = text;
+	this->align = align;
+	this->color = color;
+	this->outlineColor = outlineColor;
+	this->position = position;
+	this->align = align;
+	this->type = type;
+	this->maxTextLength = maxLength;
+
+	return buildMesh(false);
 }
 
 bool Voxel::UI::Text::buildMesh(const bool update)
@@ -435,10 +485,12 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 					vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
 
 
-																												// Add global color for now
-					for (int j = 0; j < 16; j++)
+					for (int j = 0; j < 4; j++)
 					{
-						colors.push_back(1.0f);
+						colors.push_back(color.r);
+						colors.push_back(color.g);
+						colors.push_back(color.b);
+						colors.push_back(color.a);
 					}
 
 					// uv.
@@ -1037,6 +1089,7 @@ Canvas* Canvas::create(const glm::vec2& size, const glm::vec2& centerPosition)
 	return newCanvas;
 }
 
+/*
 bool Voxel::UI::Canvas::addImage(const std::string & name, const std::string & textureName, const glm::vec2& position, const glm::vec4& color)
 {
 	auto newImage = Image::create(textureName, position, color);
@@ -1050,6 +1103,7 @@ bool Voxel::UI::Canvas::addImage(const std::string & name, const std::string & t
 		return false;
 	}
 }
+*/
 
 bool Voxel::UI::Canvas::addImage(const std::string & name, Image * image, const int z)
 {
@@ -1065,9 +1119,10 @@ bool Voxel::UI::Canvas::addImage(const std::string & name, Image * image, const 
 	return false;
 }
 
-bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & text, const glm::vec2 & position, const int fontID, Text::ALIGN align, Text::TYPE type, const int maxLength)
+/*
+bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & text, const glm::vec2 & position, const glm::vec4& color, const int fontID, Text::ALIGN align, Text::TYPE type, const int maxLength)
 {
-	auto newText = Text::create(text, position, fontID, align, type, maxLength);
+	auto newText = Text::create(text, position, color, fontID, align, type, maxLength);
 	if (newText)
 	{
 		return addText(name, newText, 0);
@@ -1078,6 +1133,7 @@ bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & te
 		return false;
 	}
 }
+*/
 
 bool Voxel::UI::Canvas::addText(const std::string & name, Text * text, const int z)
 {
@@ -1125,11 +1181,13 @@ void Voxel::UI::Canvas::render()
 		{
 			textShader->setUniformBool("outlined", outlined);
 			textShader->setUniformInt("outlineSize", 2);
+			textShader->setUniformVec4("outlineColor", (text.second)->getOutlineColor());
 		}
 		else
 		{
 			textShader->setUniformBool("outlined", outlined);
 			textShader->setUniformInt("outlineSize", 0);
+			textShader->setUniformVec4("outlineColor", glm::vec4(1.0f));
 		}
 
 		auto canvasPivot = (text.second)->getCanvasPivot();

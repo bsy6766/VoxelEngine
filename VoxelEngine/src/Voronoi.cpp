@@ -466,7 +466,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 
 void Voxel::Voronoi::Diagram::initDebugDiagram()
 {
-	float scale = 1.0f;
+	float scale = 0.1f;
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
 	std::vector<float> graphBuffer;

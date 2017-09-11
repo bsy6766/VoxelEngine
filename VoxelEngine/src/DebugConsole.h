@@ -16,11 +16,15 @@ namespace Voxel
 		class Image;
 	}
 
+	class Player;
+
 	class DebugConsole
 	{
 	private:
 		bool openingConsole;
 		bool debugOutputVisibility;
+
+		const std::string DefaultCommandInputText = "ENTER COMMAND";
 
 		UI::Canvas* debugCanvas;
 
@@ -40,9 +44,15 @@ namespace Voxel
 		UI::Text* chunkNumbers;
 
 		UI::Image* commandInputField;
+		UI::Text* command;
+
+		void executeCommand(const std::string& command);
 	public:
 		DebugConsole();
 		~DebugConsole();
+
+		// instances for debug
+		Player* player;
 		 
 		void init();
 
@@ -51,7 +61,7 @@ namespace Voxel
 
 		bool isConsoleOpened();
 
-		void feedKeyboardInput(const std::string& c);
+		void updateConsoleInputText(const std::string& c);
 
 		void render();
 

@@ -140,6 +140,9 @@ namespace Voxel
 
 			TYPE type;
 
+			glm::vec4 color;
+			glm::vec4 outlineColor;
+
 			unsigned int indicesSize;
 			int maxTextLength;
 			
@@ -150,7 +153,8 @@ namespace Voxel
 
 			bool outlined;
 
-			bool init(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			bool init(const std::string& text, const glm::vec2& position, const glm::vec4& color, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			bool initWithOutline(const std::string& text, const glm::vec2& position, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
 			bool buildMesh(const bool update);
 			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
@@ -158,11 +162,16 @@ namespace Voxel
 		public:
 			~Text();
 
-			static Text* create(const std::string& text, const glm::vec2& position, const int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			static Text* create(const std::string& text, const glm::vec2& position, const glm::vec4& color, int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC,  const int maxLength = 0);
+			static Text* createWithOutline(const std::string& text, const glm::vec2& position, const int fontID, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
 
 			void setText(const std::string& text);
+			std::string getText();
 
 			bool isOutlined();
+
+			void setColor(const glm::vec4& color);
+			glm::vec4 getOutlineColor();
 
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};
@@ -209,11 +218,11 @@ namespace Voxel
 			static Canvas* create(const glm::vec2& size, const glm::vec2& centerPosition);
 
 			// add image
-			bool addImage(const std::string& name, const std::string& textureName, const glm::vec2& position, const glm::vec4& color);
+			//bool addImage(const std::string& name, const std::string& textureName, const glm::vec2& position, const glm::vec4& color);
 			bool addImage(const std::string& name, Image* image, const int z);
 
 			// add test
-			bool addText(const std::string& name, const std::string& text, const glm::vec2& position, const int fontID, Text::ALIGN align = Text::ALIGN::LEFT, Text::TYPE type = Text::TYPE::STATIC, const int maxLength = 0);
+			//bool addText(const std::string& name, const std::string& text, const glm::vec2& position, const glm::vec4& color, const int fontID, Text::ALIGN align = Text::ALIGN::LEFT, Text::TYPE type = Text::TYPE::STATIC, const int maxLength = 0);
 			bool addText(const std::string& name, Text* text, const int z);
 
 			// Render all UI objects

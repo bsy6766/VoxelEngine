@@ -3,6 +3,7 @@
 uniform sampler2D tex;
 uniform bool outlined;
 uniform int outlineSize;
+uniform vec4 outlineColor;
 
 //uniform float fontTextureWidth;
 //uniform float fontTextureHeight;
@@ -88,70 +89,12 @@ void main()
 
     		if(counter > 0)
     		{
-				fragColor = vec4(0, 0, 0, 1);
+				fragColor = outlineColor;
     		}
     		else
     		{
 				fragColor = vec4(0, 0, 0, 0);
     		}	
-    		/*
-
-	    	//counter = 0;
-	    	{
-
-	    		mul = float(2);
-
-	    		vec4 rightPixel = texture(tex, vec2(fragTexCoord.x + (udx * mul), fragTexCoord.y));
-	    		vec4 leftPixel = texture(tex, vec2(fragTexCoord.x - (udx * mul), fragTexCoord.y));
-	    		vec4 upPixel = texture(tex, vec2(fragTexCoord.x, fragTexCoord.y + (udy * mul)));
-	    		vec4 downPixel = texture(tex, vec2(fragTexCoord.x, fragTexCoord.y - (udy * mul)));
-
-	    		vec4 upRightPixel = texture(tex, vec2(fragTexCoord.x + (udx * mul), fragTexCoord.y + (udy * mul)));
-	    		vec4 upLeftPixel = texture(tex, vec2(fragTexCoord.x - (udx * mul), fragTexCoord.y + (udy * mul)));
-	    		vec4 downRightPixel = texture(tex, vec2(fragTexCoord.x + (udx * mul), fragTexCoord.y - (udy * mul)));
-	    		vec4 downLeftPixel = texture(tex, vec2(fragTexCoord.x - (udx * mul), fragTexCoord.y - (udy * mul)));
-
-	    		if(rightPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}    
-
-	    		if(leftPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}
-
-	    		if(upPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}
-
-	    		if(downPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}   	
-
-	    		if(upRightPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}    
-
-	    		if(upLeftPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}
-
-	    		if(downRightPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		}
-
-	    		if(downLeftPixel.r > 0.5)
-	    		{
-	    			counter++;
-	    		} 
-	    	} 
-	    	*/
     	}
     }
     else

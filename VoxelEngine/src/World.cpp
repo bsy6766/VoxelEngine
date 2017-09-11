@@ -119,6 +119,8 @@ void Voxel::World::init()
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
 	debugConsole->toggleDubugOutputs();
+	// for debugging
+	debugConsole->player = player;
 
 	//Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
 	//Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
@@ -169,10 +171,11 @@ void Voxel::World::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	// Add temporary cross hair
-	defaultCanvas->addImage("crossHair", "cross_hair.png", glm::vec2(0), glm::vec4(Color::WHITE, 1.0f));
+	auto crossHairImage = UI::Image::create("cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
+	defaultCanvas->addImage("crossHair", crossHairImage, 0);
+
 	// Add time label
-	UI::Text* timeLabel = UI::Text::create(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
-	//UI::Text* timeLabel = UI::Text::create(calendar->getTimeInStr(false), glm::vec2(0), 2, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
 	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
 	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
 	defaultCanvas->addText("timeLabel", timeLabel, 0);
@@ -638,7 +641,8 @@ void Voxel::World::updateKeyboardInput(const float delta)
 
 	if (debugConsole->isConsoleOpened())
 	{
-		// Stop input while opening console
+		// While console is opened, block all input in world
+		debugConsole->updateConsoleInputText(input->getBuffer());
 		return;
 	}
 

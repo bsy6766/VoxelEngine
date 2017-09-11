@@ -88,6 +88,9 @@ namespace Voxel
 
 		void activateTexture(unsigned int/*glenum*/ textureUnit);
 		void bind();
+
+		// Simply compares the size of outline. If 0, no outline supported
+		bool isOutlineEnabled();
 	};
 }
 

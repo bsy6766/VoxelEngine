@@ -300,3 +300,8 @@ void Voxel::Font::bind()
 {
 	texture->bind();
 }
+
+bool Voxel::Font::isOutlineEnabled()
+{
+	return outlineSize != 0;
+}
