@@ -17,6 +17,7 @@ namespace Voxel
 	}
 
 	class Player;
+	class World;
 
 	class DebugConsole
 	{
@@ -53,6 +54,7 @@ namespace Voxel
 
 		// instances for debug
 		Player* player;
+		World* world;
 		 
 		void init();
 

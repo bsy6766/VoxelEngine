@@ -144,6 +144,11 @@ namespace Voxel
 		void updateInput(const float delta);
 
 		void render(const float delta);
+
+
+		// debug console function
+		void setRenderChunkMode(const bool mode);
+		void setRenderVoronoiMode(const bool mode);
 	};
 }
 

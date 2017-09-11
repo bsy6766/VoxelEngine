@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <InputHandler.h>
 #include <Player.h>
+#include <World.h>
 
 using namespace Voxel;
 
@@ -23,6 +24,9 @@ DebugConsole::DebugConsole()
 	, playerPosition(nullptr)
 	, playerLookingAt(nullptr)
 	, chunkNumbers(nullptr)
+	// debug
+	, player(nullptr)
+	, world(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
@@ -157,7 +161,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 		}
 
 		std::string strCpy = c;
-		std::cout << "strcpy = " << strCpy << std::endl;
+		//std::cout << "strcpy = " << strCpy << std::endl;
 
 		while (strCpy.empty() == false)
 		{
@@ -168,7 +172,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 				{
 					// Check for enter
 					std::string token = strCpy.substr(0, 21);
-					std::cout << "Token: " << token << std::endl;
+					//std::cout << "Token: " << token << std::endl;
 					if (token == "VOXEL_GLFW_KEY_ENTER")
 					{
 						// execute command
@@ -183,11 +187,11 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 				{
 					// Check for back space
 					std::string token = strCpy.substr(0, 25);
-					std::cout << "Token: " << token << std::endl;
+					//std::cout << "Token: " << token << std::endl;
 
 					if (token == "VOXEL_GLFW_KEY_BACKSPACE")
 					{
-						std::cout << "Backspace" << std::endl;
+						//std::cout << "Backspace" << std::endl;
 
 						auto curSize = curText.size();
 						if (curSize == 0)
@@ -207,7 +211,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 						{
 							strCpy.clear();
 
-							std::cout << "strcpy = " << strCpy << std::endl;
+							//std::cout << "strcpy = " << strCpy << std::endl;
 							break;
 						}
 						else
@@ -224,7 +228,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 			curText += first;
 			strCpy = strCpy.substr(1);
 
-			std::cout << "strcpy = " << strCpy << std::endl;
+			//std::cout << "strcpy = " << strCpy << std::endl;
 		}
 
 
@@ -234,9 +238,11 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 
 void Voxel::DebugConsole::executeCommand(const std::string & command)
 {
+	std::string cmd = command;
+	std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
 	std::vector<std::string> split;
 
-	std::stringstream ss(command);
+	std::stringstream ss(cmd);
 	std::string token;
 
 	while (std::getline(ss, token, ' '))
@@ -266,7 +272,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 				{
 					//player position x y z
 					auto arg1 = split.at(1);
-					if (arg1 == "position")
+					if (arg1 == "position" || arg1 == "pos")
 					{
 						float x = 0;
 						try
@@ -302,9 +308,25 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					}
 				}
 			}
-			else
+			else if(commandStr == "world")
 			{
+				if (size == 3)
+				{
+					//world renderChunk false
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
 
+					bool arg2Bool = arg2 == "true" ? true : false;
+
+					if (arg1 == "renderchunks" || arg1 == "rc")
+					{
+						world->setRenderChunkMode(arg2Bool);
+					}
+					else if (arg1 == "rendervoronoi" || arg1 == "rv")
+					{
+						world->setRenderVoronoiMode(arg2Bool);
+					}
+				}
 			}
 		}
 	}

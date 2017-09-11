@@ -121,6 +121,7 @@ void Voxel::World::init()
 	debugConsole->toggleDubugOutputs();
 	// for debugging
 	debugConsole->player = player;
+	debugConsole->world = this;
 
 	//Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
 	//Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
@@ -1051,8 +1052,15 @@ void World::render(const float delta)
 
 	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
-	chunkLoader->render();
-	vd->render();
+	if (renderChunks)
+	{
+		chunkLoader->render();
+	}
+	
+	if (renderVoronoi)
+	{
+		vd->render();
+	}
 
 	defaultProgram->setUniformBool("fogEnabled", false);
 
@@ -1080,4 +1088,14 @@ void World::render(const float delta)
 	glBindVertexArray(0);
 	glUseProgram(0);
 
+}
+
+void Voxel::World::setRenderChunkMode(const bool mode)
+{
+	renderChunks = mode;
+}
+
+void Voxel::World::setRenderVoronoiMode(const bool mode)
+{
+	renderVoronoi = mode;
 }
