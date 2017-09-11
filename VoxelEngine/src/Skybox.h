@@ -27,6 +27,8 @@ namespace Voxel
 		glm::vec4 skyColor;
 		glm::vec4 curSkyColor;
 
+		bool fogEnabled;
+
 		GLuint vao;
 		int indicesSize;
 
@@ -47,6 +49,9 @@ namespace Voxel
 
 		void setFogDistanceByRenderDistance(const int renderDistance, const bool animate);
 		void setFogDistance(const float distance, const bool animate);
+
+		bool isFogEnabled();
+		void setFogEnabled(const bool enabled);
 	};
 }
 

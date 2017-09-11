@@ -17,6 +17,7 @@ Skybox::Skybox()
 	, fogDistance(0)
 	, curFogDistance(0)
 	, fogAnimationSpeed(0.25f)
+	, fogEnabled(true)
 {
 }
 
@@ -168,4 +169,14 @@ void Voxel::Skybox::setFogDistance(const float distance, const bool animate)
 	{
 		fogState = FOG_STATE::IDLE;
 	}
+}
+
+bool Voxel::Skybox::isFogEnabled()
+{
+	return fogEnabled;
+}
+
+void Voxel::Skybox::setFogEnabled(const bool enabled)
+{
+	this->fogEnabled = enabled;
 }

@@ -7,6 +7,7 @@
 #include <InputHandler.h>
 #include <Player.h>
 #include <World.h>
+#include <algorithm>
 
 using namespace Voxel;
 
@@ -348,6 +349,14 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					else if (arg1 == "rendervoronoi" || arg1 == "rv")
 					{
 						world->setRenderVoronoiMode(arg2Bool);
+					}
+					else if (arg1 == "updatechunkmap" || arg1 == "ucm")
+					{
+						world->setUpdateChunkMapMode(arg2Bool);
+					}
+					else if (arg1 == "fogenabled" || arg1 == "fog")
+					{
+						world->setFogEnabled(arg2Bool);
 					}
 				}
 			}
