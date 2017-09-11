@@ -50,9 +50,7 @@ World::World()
 	, mouseX(0)
 	, mouseY(0)
 	, cameraMode(false)
-	, keyCDown(false)
 	, cameraControlMode(false)
-	, keyXDown(false)
 	, chunkWorkManager(nullptr)
 	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
@@ -60,6 +58,8 @@ World::World()
 	, skybox(nullptr)
 	, calendar(nullptr)
 	, vd(nullptr)
+	, renderChunks(true)
+	, renderVoronoi(true)
 {
 	// init instances
 	init();
@@ -298,40 +298,6 @@ void Voxel::World::initVoronoi()
 		grid.at(i).back() = BORDER;
 	}
 
-	/*
-	// Now randomly omit outer cells in grid. 
-	int count = Utility::Random::randomInt(10, 14);
-	// Get candidates
-	std::vector<glm::ivec2> candidates;
-
-	int xLen = width - 2;
-	int zLen = length - 2;
-	for (int x = 1; x <= xLen; ++x)
-	{
-		if (x == 1 || x == xLen)
-		{
-			for (int z = 1; z <= zLen; ++z)
-			{
-				candidates.push_back(glm::ivec2(x, z));
-			}
-		}
-		else
-		{
-			candidates.push_back(glm::ivec2(x, 1));
-			candidates.push_back(glm::ivec2(x, zLen));
-		}
-	}
-
-	std::random_shuffle(candidates.begin(), candidates.end());
-
-	for (int i = 0; i < count; i++)
-	{
-		grid.at(candidates.at(i).x).at(candidates.at(i).y) = OMITTED;
-	}
-
-	// also pick few cells to omit on inner side as well
-	*/
-
 	// print grid
 	for (auto i : grid)
 	{
@@ -503,11 +469,6 @@ void Voxel::World::createNew(const std::string & worldName)
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::World::createVoronoi()
-{
-	createPlayer();
-}
-
 void World::createPlayer()
 {
 	// Initialize player. Pick random spot in region (0, 0). 
@@ -635,17 +596,6 @@ void Voxel::World::updateInput(const float delta)
 	updateControllerInput(delta);
 }
 
-void Voxel::World::updateVoronoi()
-{
-	bool playerMoved = player->didMoveThisFrame();
-
-	if (playerMoved)
-	{
-		// if player moved, update chunk
-		debugConsole->updatePlayerPosition(player->getPosition());
-	}
-}
-
 glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;
@@ -710,6 +660,16 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		}
 
 		initVoronoi();
+	}
+
+	if (input->getKeyDown(GLFW_KEY_MINUS, true))
+	{
+		renderChunks = !renderChunks;
+	}
+	
+	if (input->getKeyDown(GLFW_KEY_EQUAL, true))
+	{
+		renderVoronoi = !renderVoronoi;
 	}
 
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -820,24 +780,14 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	}
 
 	// For debug
-	if (!keyCDown && input->getKeyDown(GLFW_KEY_C))
+	if (input->getKeyDown(GLFW_KEY_C, true))
 	{
-		keyCDown = true;
-	}
-	else if (keyCDown && input->getKeyUp(GLFW_KEY_C))
-	{
-		keyCDown = false;
 		cameraMode = !cameraMode;
 		std::cout << "[World] Camera mode " << std::string(cameraMode ? "enabled" : "disabled") << std::endl;
 	}
 
-	if (!keyXDown && input->getKeyDown(GLFW_KEY_X))
+	if (input->getKeyDown(GLFW_KEY_X, true))
 	{
-		keyXDown = true;
-	}
-	else if (keyXDown && input->getKeyUp(GLFW_KEY_X))
-	{
-		keyXDown = false;
 		cameraControlMode = !cameraControlMode;
 		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
 	}
@@ -1085,7 +1035,6 @@ void World::render(const float delta)
 	}
 	else
 	{
-		//worldMat = player->getVP(Camera::mainCamera->getProjection());
 		worldMat = player->getViewMatrix();
 	}
 
@@ -1099,6 +1048,7 @@ void World::render(const float delta)
 	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
 	chunkLoader->render();
+	vd->render();
 
 	defaultProgram->setUniformBool("fogEnabled", false);
 
@@ -1126,37 +1076,4 @@ void World::render(const float delta)
 	glBindVertexArray(0);
 	glUseProgram(0);
 
-}
-
-void Voxel::World::renderVoronoi()
-{
-	glm::mat4 projMat = Camera::mainCamera->getProjection();
-	glm::mat4 worldMat = glm::mat4(1.0f);
-
-	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-
-	if (cameraMode)
-	{
-		worldMat = Camera::mainCamera->getView();
-	}
-	else
-	{
-		worldMat = player->getViewMatrix();
-	}
-
-	defaultProgram->setUniformMat4("projMat", projMat);
-	defaultProgram->setUniformMat4("worldMat", worldMat);
-	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
-	defaultProgram->setUniformBool("fogEnabled", false);
-
-	vd->render();
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glDepthFunc(GL_ALWAYS);
-
-	defaultCanvas->render();
-	debugConsole->render();
-
-	glBindVertexArray(0);
-	glUseProgram(0);
 }

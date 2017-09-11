@@ -466,13 +466,15 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 
 void Voxel::Voronoi::Diagram::initDebugDiagram()
 {
-	float scale = 0.005f;
+	float scale = 1.0f;
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
 	std::vector<float> graphBuffer;
 
 	auto randColor = Color::getRandomColor();
 	auto graphColor = Color::getRandomColor();
+
+	const float y = 150.0f;
 
 	// Build edges and graph (delaunay triangulation)
 	for (auto&c : cells)
@@ -488,7 +490,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			if (type == Site::Type::MARKED)
 			{
 				buffer.push_back(e0.x * scale);
-				buffer.push_back(100.0f);
+				buffer.push_back(y);
 				buffer.push_back(e0.y * scale);
 				buffer.push_back(randColor.r);
 				buffer.push_back(randColor.g);
@@ -496,7 +498,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(1.0f);
 
 				buffer.push_back(e1.x * scale);
-				buffer.push_back(100.0f);
+				buffer.push_back(y);
 				buffer.push_back(e1.y * scale);
 				buffer.push_back(randColor.r);
 				buffer.push_back(randColor.g);
@@ -512,7 +514,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 		{
 			auto nPos = nc->getSitePosition();
 			graphBuffer.push_back(pos.x * scale);
-			graphBuffer.push_back(100.0f);
+			graphBuffer.push_back(y);
 			graphBuffer.push_back(pos.y * scale);
 			graphBuffer.push_back(graphColor.r);
 			graphBuffer.push_back(graphColor.g);
@@ -520,7 +522,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			graphBuffer.push_back(1.0f);
 
 			graphBuffer.push_back(nPos.x * scale);
-			graphBuffer.push_back(100.0f);
+			graphBuffer.push_back(y);
 			graphBuffer.push_back(nPos.y * scale);
 			graphBuffer.push_back(graphColor.r);
 			graphBuffer.push_back(graphColor.g);
@@ -543,7 +545,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				clipInfiniteEdge(e, e0, e1, maxBound);
 
 				buffer.push_back(e0.x * scale);
-				buffer.push_back(100.0f);
+				buffer.push_back(y);
 				buffer.push_back(e0.y * scale);
 				buffer.push_back(0.0f);
 				buffer.push_back(0.0f);
@@ -551,7 +553,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(1.0f);
 
 				buffer.push_back(e1.x * scale);
-				buffer.push_back(100.0f);
+				buffer.push_back(y);
 				buffer.push_back(e1.y * scale);
 				buffer.push_back(0.0f);
 				buffer.push_back(0.0f);
@@ -583,7 +585,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			}
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(101.0f);
+			posBuffer.push_back(y + 1.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(color.r);
 			posBuffer.push_back(color.g);
@@ -591,7 +593,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			posBuffer.push_back(1.0f);
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(99.0f);
+			posBuffer.push_back(y - 1.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(color.r);
 			posBuffer.push_back(color.g);
@@ -601,7 +603,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 		else
 		{
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(101.0f);
+			posBuffer.push_back(y + 1.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(0.3f);
 			posBuffer.push_back(0.3f);
@@ -609,7 +611,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			posBuffer.push_back(1.0f);
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(99.0f);
+			posBuffer.push_back(y - 1.0f);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(0.3f);
 			posBuffer.push_back(0.3f);

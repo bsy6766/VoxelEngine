@@ -43,17 +43,22 @@ namespace Voxel
 		// Store default program
 		Program* defaultProgram;
 		
-		// For looking at chube
+		// For looking at cube
 		GLuint cvao;
 		GLuint cvbo;
 		GLuint ccbo;
 		GLuint cibo;
 
+		// Camera modes
 		bool cameraMode;
-		bool keyCDown;
 		bool cameraControlMode;
-		bool keyXDown;
+
+		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
+
+		// render modes
+		bool renderChunks;
+		bool renderVoronoi;
 
 		// Chunks
 		ChunkMap* chunkMap;
@@ -121,7 +126,6 @@ namespace Voxel
 
 		// create new. 
 		void createNew(const std::string& worldName);
-		void createVoronoi();
 		// load from existing save
 		void load(const std::string& worldPath);
 
@@ -138,10 +142,8 @@ namespace Voxel
 		// Updates (tick) the world.
 		void update(const float delta);
 		void updateInput(const float delta);
-		// temp
-		void updateVoronoi();
+
 		void render(const float delta);
-		void renderVoronoi();
 	};
 }
 

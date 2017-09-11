@@ -91,8 +91,7 @@ void Voxel::Application::initMainCamera()
 void Voxel::Application::initWorld()
 {
 	world = new World();
-	//world->createNew("New World");
-	world->createVoronoi();
+	world->createNew("New World");
 }
 
 void Voxel::Application::initInternalSettings()
@@ -138,14 +137,12 @@ void Application::run()
 		input.update();
 
 		world->updateInput(delta);
-		world->updateVoronoi();
-		//world->update(delta);
+		world->update(delta);
 
 		// Wipe input data for current frame
 		input.postUpdate();
 
-		//world->render(delta);
-		world->renderVoronoi();
+		world->render(delta);
 
 		glView->render();
 	}
