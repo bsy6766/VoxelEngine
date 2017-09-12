@@ -1611,5 +1611,5 @@ void Voxel::ChunkMap::render()
 
 void Voxel::ChunkMap::renderVoronoi()
 {
-	vd->render();
+	vd->render(true, false, true, false);
 }

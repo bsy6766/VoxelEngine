@@ -799,14 +799,22 @@ void Voxel::World::updatePlayerRaycast()
 
 void Voxel::World::checkUnloadedChunks()
 {
-	// Check if there is any chunk to unload
-	glm::ivec2 chunkXZ;
-	bool result  = chunkWorkManager->getFinishedFront(chunkXZ);
-	if (result)
+	bool result = true;
+	while (result)
 	{
-		chunkMap->releaseChunk(chunkXZ);
+		// Check if there is any chunk to unload
+		glm::ivec2 chunkXZ;
+		result = chunkWorkManager->getFinishedFront(chunkXZ);
+		if (result)
+		{
+			chunkMap->releaseChunk(chunkXZ);
 
-		chunkWorkManager->popFinishedAndNotify();
+			chunkWorkManager->popFinishedAndNotify();
+		}
+		else
+		{
+			break;
+		}
 	}
 }
 

@@ -1202,29 +1202,29 @@ glm::vec2 Voxel::Voronoi::Diagram::retrivePoint(const CellType & cell)
 	return sitePositions[index];
 }
 
-void Voxel::Voronoi::Diagram::render()
+void Voxel::Voronoi::Diagram::render(const bool edges, const bool fill, const bool pin, const bool graph)
 {
-	if (vao)
+	if (vao && edges)
 	{
 		glBindVertexArray(vao);
 
 		glDrawArrays(GL_LINES, 0, size);
 	}
 
-	if (fillVao)
+	if (fillVao && fill)
 	{
 		glBindVertexArray(fillVao);
 		glDrawElements(GL_TRIANGLE_FAN, fillSize, GL_UNSIGNED_INT, 0);
 	}
 
-	if (lineVao)
+	if (lineVao && pin)
 	{
 		glBindVertexArray(lineVao);
 
 		glDrawArrays(GL_LINES, 0, lineSize);
 	}
 
-	if (graphLineVao)
+	if (graphLineVao && graph)
 	{
 		glBindVertexArray(graphLineVao);
 

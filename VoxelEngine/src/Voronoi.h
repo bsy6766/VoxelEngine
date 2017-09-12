@@ -214,7 +214,7 @@ namespace Voxel
 			float getMaxBound();
 
 			// render the diagram
-			void render();
+			void render(const bool edges, const bool fill, const bool pin, const bool graph);
 		};
 	}
 }

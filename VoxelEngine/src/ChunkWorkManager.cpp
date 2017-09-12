@@ -276,7 +276,8 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 						{
 							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 							//auto s = Utility::Time::now();
-							chunk->generate();
+							//chunk->generate();
+							chunk->generateWithBiomeTest();
 							//auto e = Utility::Time::now();
 							//std::cout << "g t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
@@ -337,7 +338,7 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 	}
 
 	// Debug. For now, just use 1 thread
-	threadCount = 2;
+	threadCount = 1;
 
 	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
 	
