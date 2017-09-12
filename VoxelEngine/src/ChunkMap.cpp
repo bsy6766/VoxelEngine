@@ -15,6 +15,8 @@ using namespace Voxel;
 Voxel::ChunkMap::ChunkMap()
 	: currentChunkPos(0)
 	, vd(nullptr)
+	, gridWidth(0)
+	, gridLength(0)
 {
 }
 
@@ -38,9 +40,25 @@ Voxel::ChunkMap::~ChunkMap()
 	regions.clear();
 }
 
+void Voxel::ChunkMap::initWorldMap(const int gridWidth, const int gridLength)
+{
+	this->gridWidth = gridWidth;
+	this->gridLength = gridLength;
+
+	initVoronoi();
+	initRegions();
+	initVoronoiDebug();
+}
+
+void Voxel::ChunkMap::rebuildWorldMap()
+{
+	rebuildVoronoi();
+	rebuildRegions();
+	initVoronoiDebug();
+}
+
 void Voxel::ChunkMap::initVoronoi()
 {
-
 	// Generate random grid
 	std::vector<std::vector<int>> grid;
 
@@ -49,14 +67,11 @@ void Voxel::ChunkMap::initVoronoi()
 	const int OMITTED = 2;
 	const int BORDER = 3;
 
-	const int width = 10;
-	const int length = 10;
-
 	// Fill with M (1)
-	for (int i = 0; i < width; ++i)
+	for (int i = 0; i < gridWidth; ++i)
 	{
 		grid.push_back(std::vector<int>());
-		for (int j = 0; j < length; ++j)
+		for (int j = 0; j < gridLength; ++j)
 		{
 			grid.back().push_back(MARKED);
 		}
@@ -73,7 +88,7 @@ void Voxel::ChunkMap::initVoronoi()
 		i = BORDER;
 	}
 
-	for (int i = 0; i < width; ++i)
+	for (int i = 0; i < gridWidth; ++i)
 	{
 		grid.at(i).front() = BORDER;
 		grid.at(i).back() = BORDER;
@@ -198,8 +213,8 @@ void Voxel::ChunkMap::initVoronoi()
 	const float maxBound = static_cast<float>(xPos * interval);
 
 	vd->buildCells(minBound, maxBound);
-	vd->buildGraph(width, length);
-	vd->randomizeCells(width, length);
+	vd->buildGraph(gridWidth, gridLength);
+	vd->randomizeCells(gridWidth, gridLength);
 }
 
 void Voxel::ChunkMap::initVoronoiDebug()
@@ -208,31 +223,6 @@ void Voxel::ChunkMap::initVoronoiDebug()
 	{
 		vd->initDebugDiagram();
 	}
-}
-void Voxel::ChunkMap::rebuildVoronoi()
-{
-	if (vd)
-	{
-		delete vd;
-	}
-
-	initVoronoi();
-}
-
-void Voxel::ChunkMap::rebuildRegions()
-{
-	curRegion = nullptr;
-	for (auto e : regions)
-	{
-		if ((e.second) != nullptr)
-		{
-			delete e.second;
-		}
-	}
-
-	regions.clear();
-
-	initRegions();
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
@@ -365,9 +355,29 @@ void Voxel::ChunkMap::initRegions()
 {
 	auto& cells = vd->getCells();
 
-	float minDistFromCenter = 100000000;
-	unsigned int closestRegionID = -1;
+	// Iterate through cells and create region.
+	//float minDistFromCenter = std::numeric_limits<float>::max();
+	unsigned int startingRegionID = -1;
 
+	int xMin = (gridWidth / 2) - (gridWidth / 10);
+	int xMax = (gridWidth / 2);
+	int zMin = (gridLength / 2) - (gridLength / 10);
+	int zMax = (gridLength / 2);
+
+	std::vector<unsigned int> candidates;
+
+	for (int x = xMin; x <= xMax; x++)
+	{
+		for (int z = zMin; z <= zMax; z++)
+		{
+			candidates.push_back((x * gridWidth) + z);
+		}
+	}
+
+	int randIndex = Utility::Random::randomInt(0, candidates.size() - 1);
+
+	startingRegionID = candidates.at(randIndex);
+	
 	for (auto e : cells)
 	{
 		auto cell = e.second;
@@ -375,12 +385,14 @@ void Voxel::ChunkMap::initRegions()
 		auto cellID = cell->getID();
 		auto cellSitePos = cell->getSitePosition();
 
+		/*
 		auto d = glm::abs(glm::distance(glm::vec2(0, 0), cellSitePos));
 		if (d < minDistFromCenter)
 		{
 			minDistFromCenter = d;
-			closestRegionID = cellID;
+			startingRegionID = cellID;
 		}
+		*/
 
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
@@ -388,7 +400,9 @@ void Voxel::ChunkMap::initRegions()
 		regions.emplace(cellID, newRegion);
 	}
 
-	auto find_it = regions.find(closestRegionID);
+	// Pick random starting point. 
+
+	auto find_it = regions.find(startingRegionID);
 	if (find_it != regions.end())
 	{
 		curRegion = find_it->second;
@@ -398,11 +412,11 @@ void Voxel::ChunkMap::initRegions()
 	{
 		throw std::runtime_error("Failed to create starting zome");
 	}
-
+	
 	// from staring region, calculate distance to all region from starting region
 	std::vector<float> dist;
 	std::vector<unsigned int> prevPath;
-	vd->findShortestPathFromSrc(closestRegionID, dist, prevPath);
+	vd->findShortestPathFromSrc(startingRegionID, dist, prevPath);
 
 	// Based on dist and prevPath, calculate difficulty.
 	// Difficulty is defined with number of path point and total distance from starting region
@@ -437,7 +451,7 @@ void Voxel::ChunkMap::initRegions()
 			// Build path. 
 			int pathSize = 0;
 			unsigned int curID = cellID;
-			while (curID != closestRegionID)
+			while (curID != startingRegionID)
 			{
 				curID = prevPath.at(curID);
 				pathSize++;
@@ -464,6 +478,32 @@ void Voxel::ChunkMap::initRegions()
 			region->setDifficulty(pairs.at(cellID).dist, pairs.at(cellID).size, maxTotalDist, maxPathSize, vd->getMinBound(), vd->getMaxBound());
 		}
 	}
+}
+
+void Voxel::ChunkMap::rebuildVoronoi()
+{
+	if (vd)
+	{
+		delete vd;
+	}
+
+	initVoronoi();
+}
+
+void Voxel::ChunkMap::rebuildRegions()
+{
+	curRegion = nullptr;
+	for (auto e : regions)
+	{
+		if ((e.second) != nullptr)
+		{
+			delete e.second;
+		}
+	}
+
+	regions.clear();
+
+	initRegions();
 }
 
 void ChunkMap::clear()

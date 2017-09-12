@@ -57,6 +57,10 @@ namespace Voxel
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
 
+		// Grid size
+		int gridWidth;
+		int gridLength;
+
 		// Voronoi diagram
 		Voronoi::Diagram* vd;
 
@@ -65,15 +69,6 @@ namespace Voxel
 
 		// All regions
 		std::unordered_map<unsigned int, Region*> regions;
-
-		// Move calls when player moves to new chunk
-		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-	public:
-		ChunkMap();
-		~ChunkMap();
 
 		// Voronoi 
 		void initVoronoi();
@@ -85,6 +80,19 @@ namespace Voxel
 		// regions
 		void initRegions();
 		void rebuildRegions();
+
+		// Move calls when player moves to new chunk
+		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+	public:
+		ChunkMap();
+		~ChunkMap();
+
+		// initWorldMap
+		void initWorldMap(const int gridWidth, const int gridLength);
+		void rebuildWorldMap();
 
 		// Initialize spawn chunk
 		void initSpawnChunk();

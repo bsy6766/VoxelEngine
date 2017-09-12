@@ -157,7 +157,7 @@ namespace Voxel
 			// Boundary
 			float minBound;
 			float maxBound;
-
+			
 			// total valid cells
 			int totalValidCells;
 

@@ -355,7 +355,7 @@ void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBo
 void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 {
 	// randomly omit outer cells in grid. 
-	int count = Utility::Random::randomInt(10, 14);
+	int count = Utility::Random::randomInt(w, w + (w/4));
 	// Get candidates
 	std::vector<unsigned int> candidates;
 

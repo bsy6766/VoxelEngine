@@ -128,11 +128,6 @@ void Voxel::World::init()
 	Application::getInstance().getGLView()->setWindowedFullScreen(0);
 	defaultCanvas->setSize(glm::vec2(1920, 1080));
 	debugConsole->updateResolution(1920, 1080);
-
-	//voronoi and regions
-	chunkMap->initVoronoi();
-	chunkMap->initRegions();
-	chunkMap->initVoronoiDebug();
 }
 
 void Voxel::World::release()
@@ -296,11 +291,7 @@ void Voxel::World::createNew(const std::string & worldName)
 
 	// Then based init chunks
 	createChunkMap();
-
-
-	// initialize chunk loader.
-	//loadChunkLoader();
-
+	
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
@@ -348,6 +339,8 @@ void World::createChunkMap()
 	{
 		chunkWorkManager->addLoad(xz);
 	}
+
+	chunkMap->initWorldMap(10, 10);
 
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -460,9 +453,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 		*/
 
-		chunkMap->rebuildVoronoi();
-		chunkMap->rebuildRegions();
-		chunkMap->initVoronoiDebug();
+		chunkMap->rebuildWorldMap();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_MINUS, true))
