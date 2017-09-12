@@ -332,11 +332,11 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					}
 				}
 			}
-			else if(commandStr == "world")
+			else if(commandStr == "game")
 			{
 				if (size == 3)
 				{
-					//world renderChunk false
+					// game mode bool
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
 
