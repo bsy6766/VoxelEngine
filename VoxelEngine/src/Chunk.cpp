@@ -45,7 +45,7 @@ Chunk* Chunk::create(const int x, const int z)
 	Chunk* newChunk = new Chunk();
 	if (newChunk->init(x, z))
 	{
-		if (newChunk->generate())
+		if (newChunk->generateWithBiomeTest())
 		{
 			//std::cout << "[Chunk] Done.\n" << std::endl;
 			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
@@ -284,6 +284,8 @@ bool Voxel::Chunk::generateWithBiomeTest()
 
 	generated.store(true);
 
+
+	return true;
 }
 
 glm::ivec3 Chunk::getPosition()
