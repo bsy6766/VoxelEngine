@@ -1,4 +1,4 @@
-#include "World.h"
+#include "Game.h"
 
 #include <ChunkMap.h>
 #include <ChunkMeshGenerator.h>
@@ -40,7 +40,7 @@ using namespace Voxel;
 // Temporary. 
 // Todo: Move this to game settings
 
-World::World()
+Game::Game()
 	: chunkMap(nullptr)
 	, chunkMeshGenerator(nullptr)
 	, input(&InputHandler::getInstance())
@@ -67,7 +67,7 @@ World::World()
 	//Camera::mainCamera->initDebugFrustumLines();
 }
 
-World::~World()
+Game::~Game()
 {
 	// Stop running mesh building before releasing
 	chunkWorkManager->stop();
@@ -81,7 +81,7 @@ World::~World()
 	FontManager::getInstance().clear();
 }
 
-void Voxel::World::init()
+void Voxel::Game::init()
 {
 	// Init random first
 	initRandoms();
@@ -118,7 +118,7 @@ void Voxel::World::init()
 	debugConsole->toggleDubugOutputs();
 	// for debugging
 	debugConsole->player = player;
-	debugConsole->world = this;
+	debugConsole->game = this;
 
 	//Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
 	//Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
@@ -130,7 +130,7 @@ void Voxel::World::init()
 	debugConsole->updateResolution(1920, 1080);
 }
 
-void Voxel::World::release()
+void Voxel::Game::release()
 {
 	std::cout << "[World] Releasing all instances" << std::endl;
 	// delete everything
@@ -148,14 +148,14 @@ void Voxel::World::release()
 	if (debugConsole) delete debugConsole;
 }
 
-void Voxel::World::initRandoms()
+void Voxel::Game::initRandoms()
 {
 	const auto seed = "ENGINE";
 	Utility::Random::setSeed(seed);
 	Noise::Manager::init(seed);
 }
 
-void Voxel::World::initUI()
+void Voxel::Game::initUI()
 {
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20, 2);
@@ -172,7 +172,7 @@ void Voxel::World::initUI()
 	defaultCanvas->addText("timeLabel", timeLabel, 0);
 }
 
-void Voxel::World::initCubeOutline()
+void Voxel::Game::initCubeOutline()
 {
 
 	// Create debug chunk box
@@ -252,7 +252,7 @@ void Voxel::World::initCubeOutline()
 	glBindVertexArray(0);
 }
 
-void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
+void Voxel::Game::initSkyBox(const glm::vec4 & skyColor)
 {
 	skybox = new Skybox();
 	// Always set skybox with max render distance
@@ -263,7 +263,7 @@ void Voxel::World::initSkyBox(const glm::vec4 & skyColor)
 	defaultProgram->setUniformVec4("fogColor", skybox->getColor());
 }
 
-void Voxel::World::initMeshBuilderThread()
+void Voxel::Game::initMeshBuilderThread()
 {
 	// run first, create thread later
 	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
@@ -273,7 +273,7 @@ void Voxel::World::initMeshBuilderThread()
 	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, concurentThreadsSupported);
 }
 
-void Voxel::World::createNew(const std::string & worldName)
+void Voxel::Game::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
 	// Create folder
@@ -296,7 +296,7 @@ void Voxel::World::createNew(const std::string & worldName)
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void World::createPlayer()
+void Game::createPlayer()
 {
 	// Initialize player. Pick random spot in region (0, 0). 
 	// Range is 150 ~ 300, we don't want player to spawn in edge of region. 
@@ -320,7 +320,7 @@ void World::createPlayer()
 	//player->initRayLine();
 }
 
-void World::createChunkMap()
+void Game::createChunkMap()
 {
 	auto playerPosition = player->getPosition();
 	auto start = Utility::Time::now();
@@ -346,7 +346,7 @@ void World::createChunkMap()
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void World::update(const float delta)
+void Game::update(const float delta)
 {
 	checkUnloadedChunks();
 
@@ -386,7 +386,7 @@ void World::update(const float delta)
 	defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 }
 
-void Voxel::World::updateInput(const float delta)
+void Voxel::Game::updateInput(const float delta)
 {
 	updateKeyboardInput(delta);
 	updateMouseMoveInput(delta);
@@ -394,7 +394,7 @@ void Voxel::World::updateInput(const float delta)
 	updateControllerInput(delta);
 }
 
-glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
+glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;
 	if (axis.y == 1.0f)
@@ -413,7 +413,7 @@ glm::vec3 Voxel::World::getMovedDistByKeyInput(const float angleMod, const glm::
 	return movedDist;
 }
 
-void Voxel::World::updateKeyboardInput(const float delta)
+void Voxel::Game::updateKeyboardInput(const float delta)
 {
 	if (input->getKeyDown(GLFW_KEY_F3, true))
 	{
@@ -454,6 +454,33 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		*/
 
 		chunkMap->rebuildWorldMap();
+	}
+
+	if (input->getKeyDown(GLFW_KEY_Y, true))
+	{
+		std::mt19937 generator;
+		std::binomial_distribution<int> dist(9, 0.5);
+
+		std::cout << "max = " << dist.max() << std::endl;
+		std::cout << "min = " << dist.min() << std::endl;
+
+		std::vector<int> freq(10, 0);
+
+		for (int i = 0; i < 1000; i++)
+		{
+			freq.at(dist(generator))++;
+		}
+
+		for (int i = 0; i < 10; i++)
+		{
+			std::cout << i << ": ";
+			int len = freq.at(i) / 50;
+			for (int j = 0; j < len; j++)
+			{
+				std::cout << "*";
+			}
+			std::cout << "   (" << freq.at(i) << ")" << std::endl;
+		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_MINUS, true))
@@ -628,7 +655,7 @@ void Voxel::World::updateKeyboardInput(const float delta)
 	}
 }
 
-void Voxel::World::updateMouseMoveInput(const float delta)
+void Voxel::Game::updateMouseMoveInput(const float delta)
 {
 	double x, y;
 	input->getMousePosition(x, y);
@@ -682,7 +709,7 @@ void Voxel::World::updateMouseMoveInput(const float delta)
 	}
 }
 
-void Voxel::World::updateMouseClickInput()
+void Voxel::Game::updateMouseClickInput()
 {
 	if (debugConsole->isConsoleOpened())
 	{
@@ -712,7 +739,7 @@ void Voxel::World::updateMouseClickInput()
 	}
 }
 
-void Voxel::World::updateControllerInput(const float delta)
+void Voxel::Game::updateControllerInput(const float delta)
 {
 	if (input->hasController())
 	{
@@ -768,7 +795,7 @@ void Voxel::World::updateControllerInput(const float delta)
 	}
 }
 
-void Voxel::World::updateChunks()
+void Voxel::Game::updateChunks()
 {
 	// Update chunk.
 	// Based on player position, check if player moved to new chunk
@@ -783,7 +810,7 @@ void Voxel::World::updateChunks()
 	}
 }
 
-void Voxel::World::updatePlayerRaycast()
+void Voxel::Game::updatePlayerRaycast()
 {
 	auto result = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
 	if (result.block != nullptr)
@@ -797,7 +824,7 @@ void Voxel::World::updatePlayerRaycast()
 	}
 }
 
-void Voxel::World::checkUnloadedChunks()
+void Voxel::Game::checkUnloadedChunks()
 {
 	bool result = true;
 	while (result)
@@ -818,7 +845,7 @@ void Voxel::World::checkUnloadedChunks()
 	}
 }
 
-void World::render(const float delta)
+void Game::render(const float delta)
 {
 	glm::mat4 projMat = Camera::mainCamera->getProjection();
 	glm::mat4 worldMat = glm::mat4(1.0f);
@@ -899,22 +926,22 @@ void World::render(const float delta)
 
 }
 
-void Voxel::World::setRenderChunkMode(const bool mode)
+void Voxel::Game::setRenderChunkMode(const bool mode)
 {
 	renderChunks = mode;
 }
 
-void Voxel::World::setRenderVoronoiMode(const bool mode)
+void Voxel::Game::setRenderVoronoiMode(const bool mode)
 {
 	renderVoronoi = mode;
 }
 
-void Voxel::World::setUpdateChunkMapMode(const bool mode)
+void Voxel::Game::setUpdateChunkMapMode(const bool mode)
 {
 	updateChunkMap = mode;
 }
 
-void Voxel::World::setFogEnabled(const bool enabled)
+void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
 }

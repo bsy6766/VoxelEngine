@@ -10,7 +10,7 @@
 namespace Voxel
 {
 	// Foward
-	class World;
+	class Game;
 	class DataTree;
 
 	class Application
@@ -32,14 +32,14 @@ namespace Voxel
 		// Initialize functions
 		void initGLView();
 		void initMainCamera();
-		void initWorld();
+		void initGame();
 		void initInternalSettings();
 
 		// Path to working directory
 		std::string workingDirectory;
 
-		// world
-		World* world;
+		// game
+		Game* game;
 
 		// internal setting
 		DataTree* internalSetting;

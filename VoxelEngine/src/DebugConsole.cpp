@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <InputHandler.h>
 #include <Player.h>
-#include <World.h>
+#include <Game.h>
 #include <algorithm>
 
 using namespace Voxel;
@@ -27,7 +27,7 @@ DebugConsole::DebugConsole()
 	, chunkNumbers(nullptr)
 	// debug
 	, player(nullptr)
-	, world(nullptr)
+	, game(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
@@ -344,19 +344,19 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 
 					if (arg1 == "renderchunks" || arg1 == "rc")
 					{
-						world->setRenderChunkMode(arg2Bool);
+						game->setRenderChunkMode(arg2Bool);
 					}
 					else if (arg1 == "rendervoronoi" || arg1 == "rv")
 					{
-						world->setRenderVoronoiMode(arg2Bool);
+						game->setRenderVoronoiMode(arg2Bool);
 					}
 					else if (arg1 == "updatechunkmap" || arg1 == "ucm")
 					{
-						world->setUpdateChunkMapMode(arg2Bool);
+						game->setUpdateChunkMapMode(arg2Bool);
 					}
 					else if (arg1 == "fogenabled" || arg1 == "fog")
 					{
-						world->setFogEnabled(arg2Bool);
+						game->setFogEnabled(arg2Bool);
 					}
 				}
 			}

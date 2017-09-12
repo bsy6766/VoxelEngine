@@ -5,7 +5,7 @@
 #include <stdio.h>  /* defines FILENAME_MAX */
 #include <direct.h>
 
-#include <World.h>
+#include <Game.h>
 
 #include <Camera.h>
 #include <InputHandler.h>
@@ -21,7 +21,7 @@ using std::endl;
 using namespace Voxel;
 
 Application::Application()
-	: world(nullptr)
+	: game(nullptr)
 	, glView(nullptr)
 	, internalSetting(nullptr)
 {
@@ -62,7 +62,7 @@ void Application::init()
 	initGLView();
 
 	initMainCamera();
-	initWorld();
+	initGame();
 }
 
 void Voxel::Application::initGLView()
@@ -88,10 +88,10 @@ void Voxel::Application::initMainCamera()
 	Camera::mainCamera = Camera::create(vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
 }
 
-void Voxel::Application::initWorld()
+void Voxel::Application::initGame()
 {
-	world = new World();
-	world->createNew("New World");
+	game = new Game();
+	game->createNew("New World");
 }
 
 void Voxel::Application::initInternalSettings()
@@ -136,13 +136,13 @@ void Application::run()
 		
 		input.update();
 
-		world->updateInput(delta);
-		world->update(delta);
+		game->updateInput(delta);
+		game->update(delta);
 
 		// Wipe input data for current frame
 		input.postUpdate();
 
-		world->render(delta);
+		game->render(delta);
 
 		glView->render();
 	}
@@ -176,9 +176,9 @@ void Voxel::Application::cleanUp()
 		Camera::mainCamera = nullptr;
 	}
 
-	if (world)
+	if (game)
 	{
-		delete world;
+		delete game;
 	}
 
 	if (glView)

@@ -1,5 +1,5 @@
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef GAME_H
+#define GAME_H
 
 #include <glm\glm.hpp>
 #include <GL\glew.h>
@@ -26,14 +26,10 @@ namespace Voxel
 	}
 
 	/**
-	*	@class World
-	*	@brief A world where everything is in. Terrain, player, weather, skybox, entity, items and all the stuffs that are rendered or even those doesen't.
-	*
-	*	For now, World instance is managed by Application class.
-	*	There will be only one world at a time. There is no plan for zone phase shift or whatnot.
-	*	Just giant single world where (theoretically) infinitely generates.
+	*	@class Game
+	*	@brief A game. Manages everything that is in the game (World, player, input, etc)
 	*/
-	class World
+	class Game
 	{
 	private:
 		// Store default program
@@ -111,8 +107,8 @@ namespace Voxel
 
 		void checkUnloadedChunks();
 	public:
-		World();
-		~World();
+		Game();
+		~Game();
 
 		// create new. 
 		void createNew(const std::string& worldName);
