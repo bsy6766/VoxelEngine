@@ -157,6 +157,10 @@ namespace Voxel
 			// Boundary
 			float minBound;
 			float maxBound;
+
+			// Scale of diagram. For debug
+			float scale;
+			float debugScale;
 			
 			// total valid cells
 			int totalValidCells;
