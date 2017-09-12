@@ -18,6 +18,7 @@ namespace Voxel
 	class ChunkWorkManager;
 	class Skybox;
 	class Calendar;
+	class World;
 
 	namespace UI
 	{
@@ -53,6 +54,9 @@ namespace Voxel
 		bool renderVoronoi;
 		bool updateChunkMap;
 
+		// World
+		World* world;
+
 		// Chunks
 		ChunkMap* chunkMap;
 		ChunkMeshGenerator* chunkMeshGenerator;
@@ -83,11 +87,12 @@ namespace Voxel
 
 		// Create/Load/unload player
 		void createPlayer();
-		//void loadPlayer();
-		//void unload();
 
 		// Create/Load/release chunkMap
 		void createChunkMap();
+
+		// Create world
+		void createWorld();
 
 		// Initialize everything that uses random
 		void initRandoms();
@@ -97,14 +102,17 @@ namespace Voxel
 		void initCubeOutline();
 		void initSkyBox(const glm::vec4& skyColor);
 
+		// Update inputs
 		void updateKeyboardInput(const float delta);
 		void updateMouseMoveInput(const float delta);
 		void updateMouseClickInput();
 		void updateControllerInput(const float delta);
+
 		// Check if chunk loader needs to be updated
 		void updateChunks();
 		void updatePlayerRaycast();
-
+		
+		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();
 	public:
 		Game();

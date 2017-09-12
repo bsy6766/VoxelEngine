@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <World.h>
 #include <ChunkMap.h>
 #include <ChunkMeshGenerator.h>
 #include <ChunkSection.h>
@@ -41,7 +42,8 @@ using namespace Voxel;
 // Todo: Move this to game settings
 
 Game::Game()
-	: chunkMap(nullptr)
+	: world(nullptr)
+	, chunkMap(nullptr)
 	, chunkMeshGenerator(nullptr)
 	, input(&InputHandler::getInstance())
 	, player(nullptr)
@@ -89,6 +91,9 @@ void Voxel::Game::init()
 	// Initialize default program
 	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 	defaultProgram->use(true);
+
+	// Init world
+	world = new World();
 
 	// Init chunks
 	chunkMap = new ChunkMap();
@@ -146,6 +151,8 @@ void Voxel::Game::release()
 	if (defaultCanvas) delete defaultCanvas;
 
 	if (debugConsole) delete debugConsole;
+
+	if (world) delete world;
 }
 
 void Voxel::Game::initRandoms()
@@ -289,6 +296,9 @@ void Voxel::Game::createNew(const std::string & worldName)
 	// Threads
 	initMeshBuilderThread();
 
+	// Create world
+	createWorld();
+
 	// Then based init chunks
 	createChunkMap();
 	
@@ -340,10 +350,13 @@ void Game::createChunkMap()
 		chunkWorkManager->addLoad(xz);
 	}
 
-	chunkMap->initWorldMap(10, 10);
-
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Game::createWorld()
+{
+	world->init(10, 10);
 }
 
 void Game::update(const float delta)
@@ -453,7 +466,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 		*/
 
-		chunkMap->rebuildWorldMap();
+		world->rebuildWorldMap();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -896,7 +909,7 @@ void Game::render(const float delta)
 
 	if (renderVoronoi)
 	{
-		chunkMap->renderVoronoi();
+		world->renderVoronoi();
 	}
 
 

@@ -10,8 +10,6 @@
 #include <Cube.h>
 #include <shared_ptr.hpp>
 
-#include <Voronoi.h>
-
 namespace Voxel
 {
 	// forward
@@ -38,7 +36,6 @@ namespace Voxel
 	*	It can remove chunk, generate chunk, generate empty chunk, find visible chunk, etc
 	*	Also keep tracks the active chunks, this was originally ChunkLoader's job, but merge into ChunkMap
 	*
-	*	ChunkMap also works as world map. It contains voronoi diagram and cell graph data.
 	*/
 	class ChunkMap
 	{
@@ -57,30 +54,6 @@ namespace Voxel
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
 
-		// Grid size
-		int gridWidth;
-		int gridLength;
-
-		// Voronoi diagram
-		Voronoi::Diagram* vd;
-
-		// Current region
-		Region* curRegion;
-
-		// All regions
-		std::unordered_map<unsigned int, Region*> regions;
-
-		// Voronoi 
-		void initVoronoi();
-		void rebuildVoronoi();
-
-		// Voronoi debug
-		void initVoronoiDebug(); // Must call after building region
-
-		// regions
-		void initRegions();
-		void rebuildRegions();
-
 		// Move calls when player moves to new chunk
 		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
@@ -89,10 +62,6 @@ namespace Voxel
 	public:
 		ChunkMap();
 		~ChunkMap();
-
-		// initWorldMap
-		void initWorldMap(const int gridWidth, const int gridLength);
-		void rebuildWorldMap();
 
 		// Initialize spawn chunk
 		void initSpawnChunk();
@@ -166,9 +135,8 @@ namespace Voxel
 		// find visible chunks. retrusn the number of chunks that is visible
 		int findVisibleChunk();
 
-		// Renders visible chunk
+		// render chunks
 		void render();
-		void renderVoronoi();
 	};
 }
 
