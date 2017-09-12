@@ -4,6 +4,8 @@
 #include <ProgramManager.h>
 #include <Program.h>
 #include <Color.h>
+#include <Region.h>
+#include <limits>
 
 using namespace Voxel;
 using namespace Voxel::Voronoi;
@@ -60,6 +62,7 @@ Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
 	, site(nullptr)
 	, valid(false)
+	, region(nullptr)
 {}
 
 Voxel::Voronoi::Cell::~Cell()
@@ -155,6 +158,16 @@ void Voxel::Voronoi::Cell::updateSiteType(Site::Type type)
 	this->site->updateType(type);
 }
 
+void Voxel::Voronoi::Cell::setRegion(Region * region)
+{
+	this->region = region;
+}
+
+Region * Voxel::Voronoi::Cell::getRegion()
+{
+	return region;
+}
+
 
 
 
@@ -183,6 +196,11 @@ Voxel::Voronoi::Diagram::~Diagram()
 	if (vao)
 	{
 		glDeleteVertexArrays(1, &vao);
+	}
+
+	if (fillVao)
+	{
+		glDeleteVertexArrays(1, &fillVao);
 	}
 
 	if (lineVao)
@@ -379,13 +397,13 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 			auto cell = find_it->second;
 			if (cell->isValid())
 			{
-				std::cout << "Attempt to remove cell: " << index << std::endl;
+				//std::cout << "Attempt to remove cell: " << index << std::endl;
 				// Check if this cell can be removed. 
 				// Iterate through neighbor and check if they will be isolated if this cell gets removed
 				auto& neighborCells = cell->getNeighbors();
 				bool skip = false;
 
-				std::cout << "Total neighbors: " << neighborCells.size() << std::endl;
+				//std::cout << "Total neighbors: " << neighborCells.size() << std::endl;
 				// If neighbor cell has only 1 cell connected, skip
 				for(auto nc : neighborCells)
 				{
@@ -400,7 +418,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 				if (skip)
 				{
 					// Skip. Next index
-					std::cout << "This cell can't be removed" << std::endl;
+					//std::cout << "This cell can't be removed" << std::endl;
 					index++;
 					continue;
 				}
@@ -410,9 +428,9 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 					auto cellID = cell->getID();
 					for (auto nc : neighborCells)
 					{
-						std::cout << "Checking on nieghbor cell: " << nc->getID() << std::endl;
+						//std::cout << "Checking on nieghbor cell: " << nc->getID() << std::endl;
 						auto& nnc = nc->getNeighbors();
-						std::cout << "Total neighbors in neighbors: " << nnc.size() << std::endl;
+						//std::cout << "Total neighbors in neighbors: " << nnc.size() << std::endl;
 
 						auto it = nnc.begin();
 						for (; it != nnc.end();)
@@ -420,7 +438,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 							if (cellID == (*it)->getID())
 							{
 								// Found the matching cell. remove from neighbor
-								std::cout << "Found" << std::endl;
+								//std::cout << "Found" << std::endl;
 								// Make sure to reset coowner for sharing edges
 								auto& edges = (*it)->getEdges();
 
@@ -431,7 +449,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 									{
 										if (coOwner->getID() == cellID)
 										{
-											std::cout << "Removing from cowoner" << std::endl;
+											//std::cout << "Removing from cowoner" << std::endl;
 											e->setCoOwner(nullptr);
 											break;
 										}
@@ -453,32 +471,77 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 					cell->clearNeighbors();
 					cell->updateSiteType(Site::Type::OMITTED);
 					totalRemoved++;
+					totalValidCells--;
 					count--;
 					index++;
-					std::cout << "Success!" << std::endl;
+					//std::cout << "Success!" << std::endl;
 				}
 			}
 		}
 	}
 
 	std::cout << "Removed " << totalRemoved << " cells" << std::endl;
+	std::cout << "Total valid cell count: " << totalValidCells << std::endl;
 }
 
 void Voxel::Voronoi::Diagram::initDebugDiagram()
 {
-	float scale = 1.0f;
+	float scale = 0.01f;
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
 	std::vector<float> graphBuffer;
+	std::vector<float> fillBuffer;
+	std::vector<float> fillColor;
+	std::vector<unsigned int> fillIndices;
 
 	auto randColor = Color::getRandomColor();
 	auto graphColor = Color::getRandomColor();
 
 	const float y = 200.0f;
 
+	unsigned int index = 0;
+	GLuint PRIMITIVE_RESTART = 99999;
+	glEnable(GL_PRIMITIVE_RESTART);
+	glPrimitiveRestartIndex(PRIMITIVE_RESTART);
+
 	// Build edges and graph (delaunay triangulation)
 	for (auto&c : cells)
 	{
+		bool addPolygon = false;
+
+		auto region = (c.second)->getRegion();
+		auto difficulty = region->getDifficulty();
+
+		auto difficultyColor = glm::vec3(0);
+
+		switch (difficulty)
+		{
+		case 0:
+			difficultyColor = glm::vec3(0, 0, 1);
+			break;
+		case 1:
+			difficultyColor = glm::vec3(0, 1, 0);
+			break;
+		case 2:
+			difficultyColor = glm::vec3(1, 1, 0);
+			break;
+		case 3:
+			difficultyColor = glm::vec3(1, 180.0f / 255.0f, 0);
+			break;
+		case 4:
+			difficultyColor = glm::vec3(1, 100.0f / 255.0f, 0);
+			break;
+		case 5:
+			difficultyColor = glm::vec3(1, 0, 0);
+			break;
+		case 6:
+			difficultyColor = glm::vec3(0.6f, 0, 0);
+			break;
+		default:
+			difficultyColor = glm::vec3(0.4f, 0.4f, 0.4f);
+			break;
+		}
+
 		auto& edges = (c.second)->getEdges();
 		for (auto e : edges)
 		{
@@ -504,7 +567,38 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(randColor.g);
 				buffer.push_back(randColor.b);
 				buffer.push_back(1.0f);
+
+				fillBuffer.push_back(e0.x * scale);
+				fillBuffer.push_back(y);
+				fillBuffer.push_back(e0.y * scale);
+
+				fillColor.push_back(difficultyColor.r);
+				fillColor.push_back(difficultyColor.g);
+				fillColor.push_back(difficultyColor.b);
+				fillColor.push_back(0.8f);
+
+				fillBuffer.push_back(e1.x * scale);
+				fillBuffer.push_back(y);
+				fillBuffer.push_back(e1.y * scale);
+
+				fillColor.push_back(difficultyColor.r);
+				fillColor.push_back(difficultyColor.g);
+				fillColor.push_back(difficultyColor.b);
+				fillColor.push_back(0.8f);
+
+				addPolygon = true;
+
+				for (int i = 0; i < 2; i++)
+				{
+					fillIndices.push_back((index * 2) + i);
+				}
+				index++;
 			}
+		}
+
+		if(addPolygon)
+		{
+			fillIndices.push_back(PRIMITIVE_RESTART);
 		}
 
 		auto& neighbors = (c.second)->getNeighbors();
@@ -514,7 +608,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 		{
 			auto nPos = nc->getSitePosition();
 			graphBuffer.push_back(pos.x * scale);
-			graphBuffer.push_back(y);
+			graphBuffer.push_back(y + 0.5f);
 			graphBuffer.push_back(pos.y * scale);
 			graphBuffer.push_back(graphColor.r);
 			graphBuffer.push_back(graphColor.g);
@@ -522,7 +616,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			graphBuffer.push_back(1.0f);
 
 			graphBuffer.push_back(nPos.x * scale);
-			graphBuffer.push_back(y);
+			graphBuffer.push_back(y + 0.5f);
 			graphBuffer.push_back(nPos.y * scale);
 			graphBuffer.push_back(graphColor.r);
 			graphBuffer.push_back(graphColor.g);
@@ -530,6 +624,8 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			graphBuffer.push_back(1.0f);
 		}
 	}
+
+	fillIndices.pop_back();
 
 	// Draw infinite edges for debug .
 	auto vdEdges = vd.edges();
@@ -545,7 +641,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				clipInfiniteEdge(e, e0, e1, maxBound);
 
 				buffer.push_back(e0.x * scale);
-				buffer.push_back(y);
+				buffer.push_back(y + 0.5f);
 				buffer.push_back(e0.y * scale);
 				buffer.push_back(0.0f);
 				buffer.push_back(0.0f);
@@ -553,7 +649,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(1.0f);
 
 				buffer.push_back(e1.x * scale);
-				buffer.push_back(y);
+				buffer.push_back(y + 0.5f);
 				buffer.push_back(e1.y * scale);
 				buffer.push_back(0.0f);
 				buffer.push_back(0.0f);
@@ -584,8 +680,17 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				color = glm::vec3(1.0f);
 			}
 
+			auto difficulty = (c.second)->getRegion()->getDifficulty();
+
+			float yPad = 1.0f;
+			if (difficulty == 0)
+			{
+				yPad = 3.0f;
+				color = glm::vec3(0.5f, 1.0f, 0.0f);
+			}
+
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(y + 1.0f);
+			posBuffer.push_back(y + yPad);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(color.r);
 			posBuffer.push_back(color.g);
@@ -593,7 +698,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			posBuffer.push_back(1.0f);
 
 			posBuffer.push_back(pos.x * scale);
-			posBuffer.push_back(y - 1.0f);
+			posBuffer.push_back(y - yPad);
 			posBuffer.push_back(pos.y * scale);
 			posBuffer.push_back(color.r);
 			posBuffer.push_back(color.g);
@@ -649,6 +754,46 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	glDeleteBuffers(1, &vbo);
 
 	size = buffer.size() / 7;
+
+
+
+	glGenVertexArrays(1, &fillVao);
+	glBindVertexArray(fillVao);
+
+	GLuint fillVbo;
+	glGenBuffers(1, &fillVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, fillVbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillBuffer.size(), &fillBuffer.front(), GL_STATIC_DRAW);
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint fillColorVbo;
+	glGenBuffers(1, &fillColorVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, fillColorVbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillColor.size(), &fillColor.front(), GL_STATIC_DRAW);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint fillIbo;
+	glGenBuffers(1, &fillIbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fillIbo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * fillIndices.size(), &fillIndices.front(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &fillVbo);
+	glDeleteBuffers(1, &fillColorVbo);
+	glDeleteBuffers(1, &fillIbo);
+
+	fillSize = fillIndices.size();
 
 	{
 		posBuffer.push_back(maxBound * scale);
@@ -725,7 +870,6 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * posBuffer.size(), &posBuffer.front(), GL_STATIC_DRAW);
-	// Enable vertices attrib
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
@@ -765,6 +909,84 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	glDeleteBuffers(1, &graphVbo);
 
 	graphLineSize = graphBuffer.size() / 7;
+}
+
+std::unordered_map<unsigned int, Cell*>& Voxel::Voronoi::Diagram::getCells()
+{
+	return cells;
+}
+
+void Voxel::Voronoi::Diagram::findShortestPathFromSrc(const unsigned int src, std::vector<float>& dist, std::vector<unsigned int>& prevPath)
+{
+	// get size
+	auto cellSize = cells.size();
+	float MAX_FLOAT = std::numeric_limits<float>::max();
+
+	// Initialize dist to some large number that can be considered as infinite number.
+	dist.clear();
+	dist = std::vector<float>(cellSize, MAX_FLOAT);
+	// previous cell id.
+	prevPath.clear();
+	prevPath = std::vector<unsigned int>(cellSize, -1);
+
+	// Queue
+	std::list<Cell*> queue;
+
+	// Add src cell to queue
+	queue.push_back(cells.find(src)->second);
+	
+	// Dist from src to src is 0
+	dist.at(src) = 0;
+	// previous cell of src is src
+	prevPath.at(src) = src;
+
+	// find 
+	while (!queue.empty())
+	{
+		auto curCell = queue.front();
+		queue.pop_front();
+
+		auto curPos = curCell->getSitePosition();
+
+		auto curCellID = curCell->getID();
+		auto d = dist[curCellID];
+
+		//std::cout << "CurCell #" << curCellID << " dist: " << d << std::endl;
+
+		auto& neighborCells = curCell->getNeighbors();
+		for (auto nCell : neighborCells)
+		{
+			if (nCell->isValid())
+			{
+				glm::vec2 nPos = nCell->getSitePosition();
+				auto distFromCur = glm::abs(glm::distance(curPos, nPos));
+				auto distFromSrc = distFromCur + d;
+				auto nID = nCell->getID();
+
+				if (distFromSrc < dist[nID])
+				{
+					//std::cout << "nCell is shorter #" << nID << " with dist: " << distFromCur << ", distFromSrc: " << distFromSrc << std::endl;
+					dist[nID] = distFromSrc;
+					prevPath[nID] = curCellID;
+					queue.push_back(nCell);
+				}
+			}
+		}
+	}
+
+	std::vector<unsigned int> path;
+
+	// Iterate over
+}
+
+float Voxel::Voronoi::Diagram::getMinBound()
+{
+	return minBound;
+}
+
+float Voxel::Voronoi::Diagram::getMaxBound()
+{
+	return maxBound;
 }
 
 void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
@@ -983,6 +1205,12 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(vao);
 
 		glDrawArrays(GL_LINES, 0, size);
+	}
+
+	if (fillVao)
+	{
+		glBindVertexArray(fillVao);
+		glDrawElements(GL_TRIANGLE_FAN, fillSize, GL_UNSIGNED_INT, 0);
 	}
 
 	if (lineVao)

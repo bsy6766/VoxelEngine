@@ -129,8 +129,10 @@ void Voxel::World::init()
 	defaultCanvas->setSize(glm::vec2(1920, 1080));
 	debugConsole->updateResolution(1920, 1080);
 
-	//voronoi
+	//voronoi and regions
 	chunkMap->initVoronoi();
+	chunkMap->initRegions();
+	chunkMap->initVoronoiDebug();
 }
 
 void Voxel::World::release()
@@ -459,6 +461,8 @@ void Voxel::World::updateKeyboardInput(const float delta)
 		*/
 
 		chunkMap->rebuildVoronoi();
+		chunkMap->rebuildRegions();
+		chunkMap->initVoronoiDebug();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_MINUS, true))

@@ -17,6 +17,7 @@ namespace Voxel
 	// forward
 	class Chunk;
 	class ChunkWorkManager;
+	class Region;
 
 	// Raycast result
 	struct RayResult
@@ -59,6 +60,12 @@ namespace Voxel
 		// Voronoi diagram
 		Voronoi::Diagram* vd;
 
+		// Current region
+		Region* curRegion;
+
+		// All regions
+		std::unordered_map<unsigned int, Region*> regions;
+
 		// Move calls when player moves to new chunk
 		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
@@ -72,6 +79,13 @@ namespace Voxel
 		void initVoronoi();
 		void rebuildVoronoi();
 
+		// Voronoi debug
+		void initVoronoiDebug(); // Must call after building region
+
+		// regions
+		void initRegions();
+		void rebuildRegions();
+
 		// Initialize spawn chunk
 		void initSpawnChunk();
 
@@ -80,6 +94,7 @@ namespace Voxel
 
 		// Initialize active chunks 
 		std::vector<glm::vec2> initActiveChunks(const int renderDistance);
+
 
 		// Clears all the chunk in the map
 		void clear();
@@ -126,6 +141,7 @@ namespace Voxel
 		
 		// From rayStart to rayEnd, visit all blocks
 		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
+
 		// Check which face of block(cube) did ray hit
 		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const AABB& blockAABB);
 		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Triangle& tri, glm::vec3& intersectingPoint);

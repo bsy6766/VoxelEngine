@@ -14,6 +14,8 @@ using namespace boost::polygon;
 
 namespace Voxel
 {
+	class Region;
+
 	namespace Voronoi
 	{
 		class Cell;
@@ -95,7 +97,8 @@ namespace Voxel
 			bool valid;
 			// Neighbors
 			std::list<Cell*> neighbors;
-			
+			// Pointer to region that claims this cell
+			Region* region;
 		public:
 			Cell() = delete;
 			Cell(const unsigned int ID);
@@ -117,6 +120,8 @@ namespace Voxel
 			void clearNeighbors();
 			unsigned int getID();
 			void updateSiteType(Site::Type type);
+			void setRegion(Region* region);
+			Region* getRegion();
 		};
 
 		class Program;
@@ -165,6 +170,8 @@ namespace Voxel
 			// For debug rendering
 			GLuint vao;
 			unsigned int size;
+			GLuint fillVao;
+			unsigned int fillSize;
 			GLuint lineVao;
 			unsigned int lineSize;
 			GLuint graphLineVao;
@@ -191,6 +198,18 @@ namespace Voxel
 			void buildGraph(const int w, const int l);
 			// Intialize debug lines of diagram
 			void initDebugDiagram();
+
+			// get cells
+			std::unordered_map<unsigned int, Cell*>& getCells();
+
+			// Find shortest path from src to all cell using dijkstra
+			void findShortestPathFromSrc(const unsigned int src, std::vector<float>& dist, std::vector<unsigned int>& prevPath);
+			
+			// Get boundary
+			float getMinBound();
+			float getMaxBound();
+
+			// render the diagram
 			void render();
 		};
 	}

@@ -8,6 +8,7 @@
 #include <Voronoi.h>
 #include <Camera.h>
 #include <Frustum.h>
+#include <Region.h>
 
 using namespace Voxel;
 
@@ -25,6 +26,16 @@ Voxel::ChunkMap::~ChunkMap()
 	{
 		delete vd;
 	}
+
+	for (auto e : regions)
+	{
+		if (e.second)
+		{
+			delete e.second;
+		}
+	}
+
+	regions.clear();
 }
 
 void Voxel::ChunkMap::initVoronoi()
@@ -189,9 +200,15 @@ void Voxel::ChunkMap::initVoronoi()
 	vd->buildCells(minBound, maxBound);
 	vd->buildGraph(width, length);
 	vd->randomizeCells(width, length);
-	vd->initDebugDiagram();
 }
 
+void Voxel::ChunkMap::initVoronoiDebug()
+{
+	if (vd)
+	{
+		vd->initDebugDiagram();
+	}
+}
 void Voxel::ChunkMap::rebuildVoronoi()
 {
 	if (vd)
@@ -200,6 +217,22 @@ void Voxel::ChunkMap::rebuildVoronoi()
 	}
 
 	initVoronoi();
+}
+
+void Voxel::ChunkMap::rebuildRegions()
+{
+	curRegion = nullptr;
+	for (auto e : regions)
+	{
+		if ((e.second) != nullptr)
+		{
+			delete e.second;
+		}
+	}
+
+	regions.clear();
+
+	initRegions();
 }
 
 void Voxel::ChunkMap::initSpawnChunk()
@@ -326,6 +359,111 @@ std::vector<glm::vec2> Voxel::ChunkMap::initActiveChunks(const int renderDistanc
 	}
 
 	return chunkCoordinates;
+}
+
+void Voxel::ChunkMap::initRegions()
+{
+	auto& cells = vd->getCells();
+
+	float minDistFromCenter = 100000000;
+	unsigned int closestRegionID = -1;
+
+	for (auto e : cells)
+	{
+		auto cell = e.second;
+
+		auto cellID = cell->getID();
+		auto cellSitePos = cell->getSitePosition();
+
+		auto d = glm::abs(glm::distance(glm::vec2(0, 0), cellSitePos));
+		if (d < minDistFromCenter)
+		{
+			minDistFromCenter = d;
+			closestRegionID = cellID;
+		}
+
+		Region* newRegion = new Region(cell);
+		cell->setRegion(newRegion);
+		
+		regions.emplace(cellID, newRegion);
+	}
+
+	auto find_it = regions.find(closestRegionID);
+	if (find_it != regions.end())
+	{
+		curRegion = find_it->second;
+		curRegion->setAsStartingRegion();
+	}
+	else
+	{
+		throw std::runtime_error("Failed to create starting zome");
+	}
+
+	// from staring region, calculate distance to all region from starting region
+	std::vector<float> dist;
+	std::vector<unsigned int> prevPath;
+	vd->findShortestPathFromSrc(closestRegionID, dist, prevPath);
+
+	// Based on dist and prevPath, calculate difficulty.
+	// Difficulty is defined with number of path point and total distance from starting region
+	// Therefore, furthur player explore, harder the game is.
+	
+	float maxTotalDist = 0;
+	int maxPathSize = 0;
+
+	struct pair
+	{
+		float dist;
+		int size;
+	};
+
+	std::vector<pair> pairs(cells.size(), { 0, 0 });
+
+	for (auto e : cells)
+	{
+		auto cell = e.second;
+
+		if (cell->isValid())
+		{
+			auto cellID = cell->getID();
+			float d = dist.at(cellID);
+			if (d > maxTotalDist)
+			{
+				maxTotalDist = d;
+			}
+
+			pairs.at(cellID).dist = d;
+
+			// Build path. 
+			int pathSize = 0;
+			unsigned int curID = cellID;
+			while (curID != closestRegionID)
+			{
+				curID = prevPath.at(curID);
+				pathSize++;
+			}
+
+			if (pathSize > maxPathSize)
+			{
+				maxPathSize = pathSize;
+			}
+
+			pairs.at(cellID).size = pathSize;
+		}
+	}
+
+	for (auto e : cells)
+	{
+		auto cell = e.second;
+
+		if (cell->isValid())
+		{
+			auto cellID = cell->getID();
+			auto region = cell->getRegion();
+
+			region->setDifficulty(pairs.at(cellID).dist, pairs.at(cellID).size, maxTotalDist, maxPathSize, vd->getMinBound(), vd->getMaxBound());
+		}
+	}
 }
 
 void ChunkMap::clear()
