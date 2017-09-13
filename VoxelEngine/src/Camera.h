@@ -41,6 +41,9 @@ namespace Voxel
 		float screenWidth;
 		float screenHeight;
 
+		// Movement speed
+		float speed;
+
 		// width / height
 		float aspect;
 
@@ -90,6 +93,9 @@ namespace Voxel
 		void addAngle(const vec3& angle);
 		// Get angle in y axis
 		float getAngleY();
+
+		// set camera speed
+		void setSpeed(const float speed);
 
 		// Print camera info
 		void print();

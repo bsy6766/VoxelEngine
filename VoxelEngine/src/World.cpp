@@ -11,6 +11,8 @@ World::World()
 	, vd(nullptr)
 	, gridWidth(0)
 	, gridLength(0)
+	, temperature(0)
+	, moisture(0)
 {
 }
 

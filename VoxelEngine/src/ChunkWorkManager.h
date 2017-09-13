@@ -29,10 +29,13 @@ namespace Voxel
 	private:
 		static const int IDLE_WORK = 0;
 		static const int UNLOAD_WORK = 1;
-		static const int LOAD_WORK = 2;
+		static const int GENERATE_WORK = 2;
+		static const int BUILD_MESH_WORK = 3;
 	private:
-		// Queue with chunk coordinate that needs to either generate or build mesh. Can be both
-		std::list<glm::ivec2> loadQueue;
+		// Queue with chunk coordinate that needs to generate chunk
+		std::list<glm::ivec2> generateQueue;
+		// Queue with chunk coordinates that need to build mesh
+		std::list<glm::ivec2> buildMeshQueue;
 		// Queue with chunk coordinate that needs to get unloaded.
 		std::list<glm::ivec2> unloadQueue;
 		// Queue with chunk coordinate that needs to get unloaded by main thread.
@@ -62,13 +65,21 @@ namespace Voxel
 		// Add single load work to load queue. locked by queueMutex
 		void addLoad(const glm::ivec2& coordinate, const bool highPriority = false);
 		// Add multiple load works to load queue. locked by queueMutex
-		void addLoad(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+		void addLoads(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+
+		// Add single build mesh work to build mesh queue. locked by queueMutex
+		void addBuildMeshWork(const glm::ivec2& coordinate, const bool highPriority = false);
+		// Add mutliple build mesh works to unload queue. locked by queueMutex
+		void addBuildMeshWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+
 		// Add single unload work to unload queue. locked by queueMutex
 		void addUnload(const glm::ivec2& coordinate);
 		// Add mutliple unload works to unload queue. locked by queueMutex
-		void addUnload(const std::vector<glm::ivec2>& coordinates);
+		void addUnloads(const std::vector<glm::ivec2>& coordinates);
+
 		// sort load queue based on chunk position that player is on. Locked by queueMutex
 		void sortLoadQueue(const glm::vec3& playerPosition);
+
 		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);
 		// Get first in finished queue. Only used by mainthread. Locked by finishedQueueMutex

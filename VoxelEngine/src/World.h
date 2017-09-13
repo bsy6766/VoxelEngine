@@ -16,6 +16,10 @@ namespace Voxel
 	class World
 	{
 	private:
+		// Biome data
+		float temperature;
+		float moisture;
+
 		// Current region that player is at
 		Region* currentRegion;
 

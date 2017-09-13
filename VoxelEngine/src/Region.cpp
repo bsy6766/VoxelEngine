@@ -35,7 +35,6 @@ void Voxel::Region::initBoundingBox()
 		for (auto e : edges)
 		{
 			glm::vec2 e0 = e->getStart() + shift;
-			//glm::vec2 e1 = e->getEnd();
 
 			if (e0.x < minX)
 			{
@@ -56,18 +55,6 @@ void Voxel::Region::initBoundingBox()
 			{
 				maxZ = e0.y;
 			}
-
-			/*
-			if (e1.x < minX)
-			{
-			minX = e1.x;
-			}
-
-			if (e1.x > maxX)
-			{
-			maxX = e1.x;
-			}
-			*/
 		}
 
 		maxX -= shift;
@@ -85,7 +72,7 @@ void Voxel::Region::initBoundingBox()
 		boundingBox.center = glm::vec3(centerX, 0, centerZ);
 		boundingBox.size = glm::vec3(sizeX, 0, sizeZ);
 
-		std::cout << "Creating region #" << cell->getID() << " bb. center: " << Utility::Log::vec3ToStr(boundingBox.center) << ", size: " << Utility::Log::vec3ToStr(boundingBox.size) << std::endl;
+		//std::cout << "Creating region #" << cell->getID() << " bb. center: " << Utility::Log::vec3ToStr(boundingBox.center) << ", size: " << Utility::Log::vec3ToStr(boundingBox.size) << std::endl;
 	}
 }
 

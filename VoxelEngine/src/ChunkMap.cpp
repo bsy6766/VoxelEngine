@@ -92,7 +92,7 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 			{
 				// new chunk
 				//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") chunk." << std::endl;
-				Chunk* newChunk = Chunk::create(x, z);
+				Chunk* newChunk = Chunk::createEmpty(x, z);
 				map.emplace(coordinate, std::shared_ptr<Chunk>(newChunk));
 
 				// Add to LUt
@@ -535,7 +535,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 			
 				std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
 
-				workManager->addLoad(refreshList, true);
+				workManager->addBuildMeshWorks(refreshList, true);
 			}
 		}
 		// Else, chunk is nullptr.
@@ -579,7 +579,7 @@ void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkWorkManage
 
 					std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
 
-					workManager->addLoad(refreshList, true);
+					workManager->addBuildMeshWorks(refreshList, true);
 				}
 				else
 				{
@@ -952,7 +952,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		// Unload has highest priority
 		if (!chunksToUnload.empty())
 		{
-			workManager->addUnload(chunksToUnload);
+			workManager->addUnloads(chunksToUnload);
 			notify = true;
 		}
 
@@ -961,7 +961,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		{
 			auto p = glm::vec2(newChunkXZ);
 			std::sort(chunksToLoad.begin(), chunksToLoad.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::abs(glm::distance(p, lhs)) < glm::abs(glm::distance(p, rhs)); });
-			workManager->addLoad(chunksToLoad);
+			workManager->addLoads(chunksToLoad);
 			notify = true;
 		}
 
@@ -969,7 +969,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		// but we are rebuilding mesh that is far away from, so it has lowest priority
 		if (!chunksToReload.empty())
 		{
-			workManager->addLoad(chunksToReload);
+			workManager->addLoads(chunksToReload);
 			notify = true;
 		}
 
@@ -1217,11 +1217,14 @@ int Voxel::ChunkMap::findVisibleChunk()
 		auto chunk = e.second;
 		if (chunk != nullptr)
 		{
-			bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
-			chunk->setVisibility(visible);
+			if (chunk->isGenerated())
+			{
+				bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
+				chunk->setVisibility(visible);
 
-			if (visible) 
-				count++;
+				if (visible)
+					count++;
+			}
 		}
 	}
 

@@ -23,16 +23,17 @@ void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate, const bool 
 
 	if (highPriority)
 	{
-		loadQueue.push_front(coordinate);
+		generateQueue.push_front(coordinate);
 	}
 	else
 	{
-		loadQueue.push_back(coordinate);
+		generateQueue.push_back(coordinate);
 	}
+
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
+void Voxel::ChunkWorkManager::addLoads(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
 {
 	//auto start = Utility::Time::now();
 	// Scope lock
@@ -42,19 +43,59 @@ void Voxel::ChunkWorkManager::addLoad(const std::vector<glm::ivec2>& coordinates
 	{
 		for (auto xz : coordinates)
 		{
-			loadQueue.push_front(xz);
+			generateQueue.push_front(xz);
 		}
 	}
 	else
 	{
 		for (auto xz : coordinates)
 		{
-			loadQueue.push_back(xz);
+			generateQueue.push_back(xz);
 		}
 	}
 
 	//auto end = Utility::Time::now();
 	//std::cout << "addLoad() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addBuildMeshWork(const glm::ivec2 & coordinate, const bool highPriority)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		buildMeshQueue.push_front(coordinate);
+	}
+	else
+	{
+		buildMeshQueue.push_back(coordinate);
+	}
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addBuildMeshWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		for (auto xz : coordinates)
+		{
+			buildMeshQueue.push_front(xz);
+		}
+	}
+	else
+	{
+		for (auto xz : coordinates)
+		{
+			buildMeshQueue.push_back(xz);
+		}
+	}
 
 	cv.notify_one();
 }
@@ -65,12 +106,12 @@ void Voxel::ChunkWorkManager::addUnload(const glm::ivec2 & coordinate)
 	std::unique_lock<std::mutex> lock(queueMutex);
 
 	unloadQueue.push_back(coordinate);
-	loadQueue.remove(coordinate);
+	generateQueue.remove(coordinate);
 
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::addUnload(const std::vector<glm::ivec2>& coordinates)
+void Voxel::ChunkWorkManager::addUnloads(const std::vector<glm::ivec2>& coordinates)
 {
 	//auto start = Utility::Time::now();
 	// Scope lock
@@ -83,13 +124,13 @@ void Voxel::ChunkWorkManager::addUnload(const std::vector<glm::ivec2>& coordinat
 		unloadQueue.push_back(xz);
 	}
 
-	auto it = loadQueue.begin();
-	for (; it != loadQueue.end();)
+	auto it = generateQueue.begin();
+	for (; it != generateQueue.end();)
 	{
 		auto find_it = lut.find(*it);
 		if (find_it != lut.end())
 		{
-			it = loadQueue.erase(it);
+			it = generateQueue.erase(it);
 		}
 		else
 		{
@@ -119,18 +160,18 @@ void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
 
 	std::vector<glm::vec2> loadQueueFloat;
 
-	for (auto xz : loadQueue)
+	for (auto xz : generateQueue)
 	{
 		loadQueueFloat.push_back(glm::vec2(xz));
 	}
 
 	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
-	loadQueue.clear();
+	generateQueue.clear();
 
 	for (auto xz : loadQueueFloat)
 	{
-		loadQueue.push_back(glm::ivec2(xz));
+		generateQueue.push_back(glm::ivec2(xz));
 	}
 }
 
@@ -200,7 +241,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			// wait if both queue are empty. Must be running.
-			while (running && loadQueue.empty() && unloadQueue.empty())
+			while (running && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
 			{
 				cv.wait(lock);
 			}
@@ -213,18 +254,26 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 				break;
 			}
 
-
+			// Unloading goes first
 			if (!unloadQueue.empty())
 			{
 				chunkXZ = unloadQueue.front();
 				unloadQueue.pop_front();
 				flag = UNLOAD_WORK;
 			}
-			else if (!loadQueue.empty())
+			// If there is nothing to unload, start to load
+			else if (!generateQueue.empty())
 			{
-				chunkXZ = loadQueue.front();
-				loadQueue.pop_front();
-				flag = LOAD_WORK;
+				chunkXZ = generateQueue.front();
+				generateQueue.pop_front();
+				flag = GENERATE_WORK;
+			}
+			// If there is nothing to generate, start to build mesh
+			else if (!buildMeshQueue.empty())
+			{
+				chunkXZ = buildMeshQueue.front();
+				buildMeshQueue.pop_front();
+				flag = BUILD_MESH_WORK;
 			}
 			//Else, flag is 0. 
 			else
@@ -261,7 +310,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 				}
 				// Else, has no chunk
 			}
-			else if (flag == LOAD_WORK)
+			else if (flag == GENERATE_WORK)
 			{
 				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
 
@@ -280,8 +329,22 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 							chunk->generateWithBiomeTest();
 							//auto e = Utility::Time::now();
 							//std::cout << "g t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+							addBuildMeshWork(chunkXZ);
 						}
-
+					}
+					// Else, chunk is nullptr
+				}
+				// Else, has no chunk
+			}
+			else if (flag == BUILD_MESH_WORK)
+			{
+				// There must be a chunk. Chunk loader creates empty chunk.
+				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (hasChunk)
+				{
+					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+					if (chunk)
+					{
 						auto mesh = chunk->getMesh();
 						if (mesh)
 						{
@@ -375,7 +438,7 @@ void Voxel::ChunkWorkManager::joinThread()
 		//std::cout << "Waiting to thread join..." << std::endl;
 		// Scope lock
 		std::unique_lock<std::mutex> lock(queueMutex);
-		loadQueue.clear();
+		generateQueue.clear();
 		unloadQueue.clear();
 	}
 

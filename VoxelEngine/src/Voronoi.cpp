@@ -224,8 +224,8 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	this->scale = 1.0f;
-	this->debugScale = 0.05f;
+	this->scale = 0.01f;
+	this->debugScale = 1.0f;
 
 	for (auto site : randomSites)
 	{
@@ -252,8 +252,8 @@ void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBo
 	auto start = Utility::Time::now();
 
 	// save bound
-	this->minBound = minBound;
-	this->maxBound = maxBound;
+	this->minBound = minBound * this->scale;
+	this->maxBound = maxBound * this->scale;
 
 	// Iterate cells. Ignore all the cells that contains infinite edge
 	for (auto it = vd.cells().begin(); it != vd.cells().end(); ++it)
