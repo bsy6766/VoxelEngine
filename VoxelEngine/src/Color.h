@@ -36,19 +36,68 @@ namespace Voxel
 		const glm::uvec3 SEASONAL_FOREST = glm::uvec3(71, 135, 90);
 		const glm::uvec3 RAIN_FOREST = glm::uvec3(9, 111, 122);
 
+		// Difficulty color
+		const glm::uvec3 DIFFICULTY_0 = glm::uvec3(139, 151, 255);
+		const glm::uvec3 DIFFICULTY_1 = glm::uvec3(43, 64, 254);
+		const glm::uvec3 DIFFICULTY_2 = glm::uvec3(52, 255, 215);
+		const glm::uvec3 DIFFICULTY_3 = glm::uvec3(52, 255, 103);
+		const glm::uvec3 DIFFICULTY_4 = glm::uvec3(242, 255, 54);
+		const glm::uvec3 DIFFICULTY_5 = glm::uvec3(255, 177, 52);
+		const glm::uvec3 DIFFICULTY_6 = glm::uvec3(255, 52, 52);
+		const glm::uvec3 DIFFICULTY_7 = glm::uvec3(184, 0, 0);
+
 		// Random color
-		static glm::vec3 getRandomColor()
+		static inline glm::vec3 getRandomColor()
 		{
 			return glm::vec3(Utility::Random::randomReal(0.5f, 1.0f), 
 							Utility::Random::randomReal(0.5f, 1.0f), 
 							Utility::Random::randomReal(0.5f, 1.0f));
 		}
 
-		static glm::ivec3 getRandomColor255()
+		static inline glm::uvec3 getRandomColor255()
 		{
-			return glm::ivec3(Utility::Random::randomInt(127, 255),
-				Utility::Random::randomInt(127, 255),
-				Utility::Random::randomInt(127, 255));
+			return glm::uvec3(Utility::Random::randomInt(50, 200),
+				Utility::Random::randomInt(50, 200),
+				Utility::Random::randomInt(50, 200));
+		}
+
+		static inline glm::vec3 colorU3TocolorV3(const glm::uvec3& color)
+		{
+			return glm::vec3(static_cast<float>(color.r) / 255.0f, static_cast<float>(color.g) / 255.0f, static_cast<float>(color.b) / 255.0f);
+		}
+
+		static inline glm::uvec3 getDifficultyColor(const int difficulty)
+		{
+			switch (difficulty)
+			{
+			case 0:
+				return DIFFICULTY_0;
+				break;
+			case 1:
+				return DIFFICULTY_1;
+				break;
+			case 2:
+				return DIFFICULTY_2;
+				break;
+			case 3:
+				return DIFFICULTY_3;
+				break;
+			case 4:
+				return DIFFICULTY_4;
+				break;
+			case 5:
+				return DIFFICULTY_5;
+				break;
+			case 6:
+				return DIFFICULTY_6;
+				break;
+			case 7:
+				return DIFFICULTY_7;
+				break;
+			default:
+				return glm::uvec3(255);
+				break;
+			}
 		}
 	}
 }

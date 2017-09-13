@@ -47,7 +47,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 			{
 				for (int blockY = Constant::CHUNK_SECTION_HEIGHT - 1; blockY >= 0; blockY--)
 				{
-					unsigned int blockIndex = chunkSection->XYZToIndex(blockX, blockY, blockZ);
+					unsigned int blockIndex = chunkSection->localBlockXYZToIndex(blockX, blockY, blockZ);
 
 					if (blockIndex < 0 || blockIndex >= Constant::TOTAL_BLOCKS)
 					{

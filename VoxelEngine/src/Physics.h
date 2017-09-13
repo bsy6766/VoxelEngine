@@ -51,8 +51,10 @@ namespace Voxel
 		std::vector<Plane> toPlanes() const;
 		std::vector<Triangle> toTriangles() const;
 
-		glm::vec3 getMin();
-		glm::vec3 getMax();
+		glm::vec3 getMin() const;
+		glm::vec3 getMax() const;
+
+		void print();
 	};
 }
 

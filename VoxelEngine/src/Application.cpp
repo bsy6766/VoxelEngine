@@ -160,6 +160,11 @@ GLView * Voxel::Application::getGLView()
 	return glView;
 }
 
+Game * Voxel::Application::getGame()
+{
+	return this->game;
+}
+
 std::string Voxel::Application::getWorkingDirectory()
 {
 	return workingDirectory;

@@ -3,12 +3,14 @@
 #include <Voronoi.h>
 #include <iostream>
 #include <Utility.h>
+#include <Color.h>
 
 using namespace Voxel;
 
 Voxel::Region::Region(Voronoi::Cell * cell)
 	: cell(cell)
 	, difficulty(-1)
+	, randColor(Color::getRandomColor255())
 {
 	initBoundingBox();
 }
@@ -114,7 +116,64 @@ int Voxel::Region::getDifficulty()
 	return difficulty;
 }
 
+glm::vec2 Voxel::Region::getSitePosition()
+{
+	return cell->getSitePosition();
+}
+
 void Voxel::Region::setAsStartingRegion()
 {
 	difficulty = 0;
+}
+
+bool Voxel::Region::isPointIsInRegion(const glm::vec2 & point, Voronoi::Cell * cell)
+{
+	auto& edges = cell->getEdges();
+
+	std::vector<glm::vec2> vertices;
+	for (auto e : edges)
+	{
+		vertices.push_back(e->getStart());
+	}
+
+	int nvert = static_cast<int>(vertices.size());
+
+	int i, j, c = 0;
+
+	for (i = 0, j = nvert - 1; i < nvert; j = i++)
+	{
+		if (((vertices.at(i).y > point.y) != (vertices.at(j).y > point.y)) && (point.x < (vertices.at(j).x - vertices.at(i).x) * (point.y - vertices.at(i).y) / (vertices.at(j).y - vertices.at(i).y) + vertices.at(i).x))
+			c = !c;
+	}
+
+	return c;
+}
+
+bool Voxel::Region::isPointIsInRegion(const glm::vec2 & point)
+{
+	return isPointIsInRegion(point, this->cell);
+}
+
+bool Voxel::Region::isPointIsInRegionNeighbor(const glm::vec2 & point, unsigned int& neighborID)
+{
+	auto& nc = cell->getNeighbors();
+	for (auto neighbor : nc)
+	{
+		if (isPointIsInRegion(point, neighbor))
+		{
+			neighborID = neighbor->getID();
+			return true;
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return false;
+}
+
+bool Voxel::Region::isCellValid()
+{
+	return cell->isValid();
 }

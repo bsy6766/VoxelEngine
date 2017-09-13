@@ -16,8 +16,6 @@ namespace Voxel
 		const static float CHUNK_BORDER_SIZE = 16.0f;
 		const static float CHUNK_BORDER_SIZE_HALF = CHUNK_BORDER_SIZE * 0.5f;
 		const static int SPAWN_CHUNK_DISTANCE = 2;
-		const static int REGION_WIDTH = 4;
-		const static int REGION_LENGTH = 4;
 		const static float CHUNK_RANGE = 14.0f;
 	}
 

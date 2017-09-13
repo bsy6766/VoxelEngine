@@ -63,9 +63,6 @@ namespace Voxel
 		ChunkMap();
 		~ChunkMap();
 
-		// Initialize spawn chunk
-		void initSpawnChunk();
-
 		// Initialize map data near by player based on player's last position and render distance
 		void initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
 
@@ -82,9 +79,6 @@ namespace Voxel
 		// Get chunk in x and z coordinate
 		//Chunk* getChunkAtXZ(int x, int z);
 		std::shared_ptr<Chunk> getChunkAtXZ(int x, int z);
-
-		// Generate region based on coordinate and size.
-		void generateRegion(const glm::ivec2& regionCoordinate);
 
 		// Generate chunk with specific coordinate
 		void generateChunk(const int x, const int z);

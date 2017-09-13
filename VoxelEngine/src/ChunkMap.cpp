@@ -22,43 +22,6 @@ Voxel::ChunkMap::~ChunkMap()
 	clear();
 }
 
-void Voxel::ChunkMap::initSpawnChunk()
-{
-	//std::cout << "[ChunkMap] Creating map..." << std::endl;
-	
-	//std::cout << "[ChunkMap] Initializing spawn chunks.." << std::endl;
-	
-	// spawn chunk is always loaded.
-	//glm::ivec2 spawnChunkMinPos = glm::ivec2(-SPAWN_CHUNK_DISTANCE);
-	//glm::ivec2 spawnChunkMaxPos = glm::ivec2(SPAWN_CHUNK_DISTANCE);
-
-	int spawnX = -(Constant::SPAWN_CHUNK_DISTANCE - 1);
-	int spawnMaxX = (Constant::SPAWN_CHUNK_DISTANCE * 2) - 1 + spawnX;
-	int spawnMaxZ = spawnMaxX;
-	int spawnZ = spawnX;
-
-	// add spawn chunk. Todo: If this isn't a first initialization, read from map file
-	for (int x = spawnX; x < spawnMaxX; x++)
-	{
-		for (int z = spawnZ; z < spawnMaxZ; z++)
-		{
-			//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") as spawn chunk." << std::endl;
-
-			// Add to LUT
-			chunkLUT.emplace(glm::ivec2(x, z));
-
-			// Add new spawn chunk
-			Chunk* newChunk = Chunk::create(x, z);
-			map.emplace(glm::ivec2(x, z), newChunk);
-		}
-	}
-
-	// Then add chunks near player.
-	// Todo: get render distance from setting
-	int renderDistnace = 4;
-
-}
-
 void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
 {
 	std::cout << "[ChunkMap] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
@@ -181,24 +144,6 @@ std::shared_ptr<Chunk> Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 	else
 	{
 		return find_it->second;
-	}
-}
-
-void Voxel::ChunkMap::generateRegion(const glm::ivec2& regionCoordinate)
-{
-	int chunkX = regionCoordinate.x * Constant::REGION_WIDTH;
-	int chunkZ = regionCoordinate.y * Constant::REGION_LENGTH;
-
-	int chunkXLen = chunkX + Constant::REGION_WIDTH;
-	int chunkZLen = chunkZ + Constant::REGION_LENGTH;
-
-	for (int x = chunkX; x < chunkXLen; x++)
-	{
-		for (int z = chunkZ; z < chunkZLen; z++)
-		{
-			generateChunk(x, z);
-			//generateEmptyChunk(x, z);
-		}
 	}
 }
 

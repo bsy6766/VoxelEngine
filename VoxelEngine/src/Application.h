@@ -66,6 +66,9 @@ namespace Voxel
 		// Get OpenGL
 		GLView* getGLView();
 
+		// Get game
+		Game* getGame();
+
 		// Get working directory
 		std::string getWorkingDirectory();
 	};

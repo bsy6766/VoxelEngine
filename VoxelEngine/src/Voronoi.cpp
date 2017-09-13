@@ -224,7 +224,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	this->scale = 0.01f;
+	this->scale = 0.1f;
 	this->debugScale = 1.0f;
 
 	for (auto site : randomSites)
@@ -491,7 +491,6 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 
 void Voxel::Voronoi::Diagram::initDebugDiagram()
 {
-	//float scale = 1.0f;
 	std::vector<float> buffer;
 	std::vector<float> posBuffer;
 	std::vector<float> graphBuffer;
@@ -499,10 +498,10 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	std::vector<float> fillColor;
 	std::vector<unsigned int> fillIndices;
 
-	auto randColor = Color::getRandomColor();
+	auto lineColor = glm::vec3(0);
 	auto graphColor = Color::getRandomColor();
 
-	const float y = 200.0f;
+	const float y = 33.0f;
 
 	unsigned int index = 0;
 	GLuint PRIMITIVE_RESTART = 99999;
@@ -517,35 +516,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 		auto region = (c.second)->getRegion();
 		auto difficulty = region->getDifficulty();
 
-		auto difficultyColor = glm::vec3(0);
-
-		switch (difficulty)
-		{
-		case 0:
-			difficultyColor = glm::vec3(0, 0, 1);
-			break;
-		case 1:
-			difficultyColor = glm::vec3(0, 1, 0);
-			break;
-		case 2:
-			difficultyColor = glm::vec3(1, 1, 0);
-			break;
-		case 3:
-			difficultyColor = glm::vec3(1, 180.0f / 255.0f, 0);
-			break;
-		case 4:
-			difficultyColor = glm::vec3(1, 100.0f / 255.0f, 0);
-			break;
-		case 5:
-			difficultyColor = glm::vec3(1, 0, 0);
-			break;
-		case 6:
-			difficultyColor = glm::vec3(0.6f, 0, 0);
-			break;
-		default:
-			difficultyColor = glm::vec3(0.4f, 0.4f, 0.4f);
-			break;
-		}
+		auto difficultyColor = Color::colorU3TocolorV3(Color::getDifficultyColor(difficulty));
 
 		auto& edges = (c.second)->getEdges();
 		for (auto e : edges)
@@ -560,17 +531,17 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 				buffer.push_back(e0.x * debugScale);
 				buffer.push_back(y);
 				buffer.push_back(e0.y * debugScale);
-				buffer.push_back(randColor.r);
-				buffer.push_back(randColor.g);
-				buffer.push_back(randColor.b);
+				buffer.push_back(lineColor.r);
+				buffer.push_back(lineColor.g);
+				buffer.push_back(lineColor.b);
 				buffer.push_back(1.0f);
 
 				buffer.push_back(e1.x * debugScale);
 				buffer.push_back(y);
 				buffer.push_back(e1.y * debugScale);
-				buffer.push_back(randColor.r);
-				buffer.push_back(randColor.g);
-				buffer.push_back(randColor.b);
+				buffer.push_back(lineColor.r);
+				buffer.push_back(lineColor.g);
+				buffer.push_back(lineColor.b);
 				buffer.push_back(1.0f);
 
 				fillBuffer.push_back(e0.x * debugScale);

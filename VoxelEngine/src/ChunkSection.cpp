@@ -3,6 +3,10 @@
 #include <ChunkUtil.h>
 #include <Color.h>
 #include <Biome.h>
+#include <Application.h>
+#include <Game.h>
+#include <World.h>
+#include <Region.h>
 
 using namespace Voxel;
 
@@ -78,6 +82,38 @@ ChunkSection * Voxel::ChunkSection::createWithValues(const int x, const int y, c
 	ChunkSection* newChunkSection = new ChunkSection();
 	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
 	if (newChunkSection->initWithValues(x, y, z, chunkPosition, eMap, tMap, mMap))
+	{
+		//std::cout << "[ChunkSection] Done." << std::endl;
+		return newChunkSection;
+	}
+	else
+	{
+		delete newChunkSection;
+		return nullptr;
+	}
+}
+
+ChunkSection * Voxel::ChunkSection::createWithColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const glm::uvec3 & color)
+{
+	ChunkSection* newChunkSection = new ChunkSection();
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	if (newChunkSection->initWithColor(x, y, z, chunkPosition, color))
+	{
+		//std::cout << "[ChunkSection] Done." << std::endl;
+		return newChunkSection;
+	}
+	else
+	{
+		delete newChunkSection;
+		return nullptr;
+	}
+}
+
+ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<unsigned int>& blockRegion)
+{
+	ChunkSection* newChunkSection = new ChunkSection();
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	if (newChunkSection->initWithRegionColor(x, y, z, chunkPosition, blockRegion))
 	{
 		//std::cout << "[ChunkSection] Done." << std::endl;
 		return newChunkSection;
@@ -247,7 +283,7 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 				{
 					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
 					//newBlock->setColor(color);
-					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
+					blocks.at(localBlockXYZToIndex(blockX, localY, blockZ)) = newBlock;
 
 					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
 					{
@@ -308,40 +344,40 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 						switch (biome)
 						{
 						case Voxel::Biome::Type::OCEAN:
-							newBlock->setColor(Color::OCEAN);
+							newBlock->setColorU3(Color::OCEAN);
 							break;
 						case Voxel::Biome::Type::TUNDRA:
-							newBlock->setColor(Color::TUNDRA);
+							newBlock->setColorU3(Color::TUNDRA);
 							break;
 						case Voxel::Biome::Type::GRASS_DESERT:
-							newBlock->setColor(Color::GRASS_DESERT);
+							newBlock->setColorU3(Color::GRASS_DESERT);
 							break;
 						case Voxel::Biome::Type::TAIGA:
-							newBlock->setColor(Color::TAIGA);
+							newBlock->setColorU3(Color::TAIGA);
 							break;
 						case Voxel::Biome::Type::DESERT:
-							newBlock->setColor(Color::DESERT);
+							newBlock->setColorU3(Color::DESERT);
 							break;
 						case Voxel::Biome::Type::WOODS:
-							newBlock->setColor(Color::WOODS);
+							newBlock->setColorU3(Color::WOODS);
 							break;
 						case Voxel::Biome::Type::FOREST:
-							newBlock->setColor(Color::FOREST);
+							newBlock->setColorU3(Color::FOREST);
 							break;
 						case Voxel::Biome::Type::SWAMP:
-							newBlock->setColor(Color::SWAMP);
+							newBlock->setColorU3(Color::SWAMP);
 							break;
 						case Voxel::Biome::Type::SAVANNA:
-							newBlock->setColor(Color::SAVANNA);
+							newBlock->setColorU3(Color::SAVANNA);
 							break;
 						case Voxel::Biome::Type::SEASONAL_FOREST:
-							newBlock->setColor(Color::SEASONAL_FOREST);
+							newBlock->setColorU3(Color::SEASONAL_FOREST);
 							break;
 						case Voxel::Biome::Type::RAIN_FOREST:
-							newBlock->setColor(Color::RAIN_FOREST);
+							newBlock->setColorU3(Color::RAIN_FOREST);
 							break;
 						default:
-							newBlock->setColor(28, 192, 11);
+							newBlock->setColorRGB(28, 192, 11);
 							break;
 						}
 					}
@@ -351,7 +387,7 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 					}
 
 					//newBlock->setColor(color);
-					blocks.at(XYZToIndex(blockX, localY, blockZ)) = newBlock;
+					blocks.at(localBlockXYZToIndex(blockX, localY, blockZ)) = newBlock;
 
 					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
 					{
@@ -371,14 +407,121 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 	return true;
 }
 
-int Voxel::ChunkSection::XYZToIndex(const int x, const int y, const int z)
+bool Voxel::ChunkSection::initWithColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const glm::uvec3 & color)
+{
+	position = glm::ivec3(x, y, z);
+
+	// calculate world position. Only need to calculate Y.
+	worldPosition = chunkPosition;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
+
+	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
+	{
+		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
+		{
+			for (int k = 0; k < Constant::CHUNK_SECTION_WIDTH; k++)
+			{
+				auto newBlock = Block::create(glm::ivec3(k, i, j), position);
+				if (newBlock)
+				{
+					blocks.push_back(newBlock);
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
+					newBlock->setColorU3(color);
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Voxel::ChunkSection::initWithRegionColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<unsigned int>& blockRegion)
+{
+	position = glm::ivec3(x, y, z);
+
+	// calculate world position. Only need to calculate Y.
+	worldPosition = chunkPosition;
+	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
+
+	const int single = 1;
+	const int multiple = Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH;
+
+	glm::uvec3 color;
+
+	auto size = blockRegion.size();
+
+	if (size == single)
+	{
+		color = Application::getInstance().getGame()->getWorld()->getRegion(blockRegion.front())->randColor;
+	}
+
+	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
+	{
+		for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
+		{
+			for (int k = 0; k < Constant::CHUNK_SECTION_WIDTH; k++)
+			{
+				auto newBlock = Block::create(glm::ivec3(k, i, j), position);
+				if (newBlock)
+				{
+					blocks.push_back(newBlock);
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
+					if (size == single)
+					{
+						newBlock->setColorU3(color);
+
+					}
+					else if (size == multiple)
+					{
+						auto regionId = blockRegion.at(localBlockXZToMapIndex(k, j));
+						if (regionId == -1)
+						{
+							newBlock->setColorRGB(255, 255, 255);
+							//throw std::runtime_error("Region ID is invalid for this block. Fix this");
+						}
+						else
+						{
+							color = Application::getInstance().getGame()->getWorld()->getRegion(regionId)->randColor;
+							newBlock->setColorU3(color);
+						}
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+int Voxel::ChunkSection::localBlockXYZToIndex(const int x, const int y, const int z)
 {
 	return x + (Constant::CHUNK_SECTION_WIDTH * z) + (y * Constant::CHUNK_SECTION_LENGTH * Constant::CHUNK_SECTION_WIDTH);
 }
 
+int Voxel::ChunkSection::localBlockXZToMapIndex(const int x, const int z)
+{
+	return x + (Constant::CHUNK_SECTION_WIDTH * z);
+}
+
 Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
 {
-	unsigned int index = XYZToIndex(x, y, z);
+	unsigned int index = localBlockXYZToIndex(x, y, z);
 	if (index >= 0 && index < blocks.size())
 	{
 		return blocks.at(index);
@@ -396,7 +539,7 @@ void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const B
 
 void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID)
 {
-	unsigned int index = XYZToIndex(x, y, z);
+	unsigned int index = localBlockXYZToIndex(x, y, z);
 	if (index >= 0 && index < blocks.size())
 	{
 		if (blocks.at(index) == nullptr)

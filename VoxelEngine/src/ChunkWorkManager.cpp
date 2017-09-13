@@ -1,5 +1,6 @@
 #include "ChunkWorkManager.h"
 #include <iostream>
+#include <World.h>
 #include <ChunkMap.h>
 #include <Chunk.h>
 #include <ChunkUtil.h>
@@ -8,6 +9,7 @@
 #include <ChunkMesh.h>
 #include <Utility.h>
 #include <unordered_set>
+#include <Color.h>
 
 using namespace Voxel;
 
@@ -214,7 +216,7 @@ void Voxel::ChunkWorkManager::popFinishedAndNotify()
 	}
 }
 
-void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator)
+void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world)
 {
 	// loop while it's running
 	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
@@ -283,7 +285,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 		}
 
 
-		if (map && chunkMeshGenerator)
+		if (map && meshGenerator)
 		{
 			if (flag == UNLOAD_WORK)
 			{
@@ -324,12 +326,129 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 						if (!chunk->isGenerated())
 						{
 							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
-							//auto s = Utility::Time::now();
-							//chunk->generate();
-							chunk->generateWithBiomeTest();
-							//auto e = Utility::Time::now();
-							//std::cout << "g t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
-							addBuildMeshWork(chunkXZ);
+							auto s = Utility::Time::now();
+
+							// Get chunk's AABB
+							AABB boundingBox = chunk->getBoundingBox();
+
+							bool needMesh = false;
+
+							// hmm?
+							//boundingBox.size -= 1.0f;
+
+							// Get all regions that chunk is in.
+							std::vector<unsigned int> regionIDs;
+							world->findAllRegionsWithAABB(boundingBox, regionIDs);
+
+							if (!regionIDs.empty())
+							{
+								auto size = regionIDs.size();
+								if (size == 1)
+								{
+									// completely in region. 
+									chunk->setAllBlockRegion(regionIDs.front());
+									needMesh = true;
+								}
+								else
+								{
+									// In multiple regions
+									// Get all block world position in XZ axises and find which region the are at
+									std::vector<unsigned int> blockRegions(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
+
+									const float step = 1.0f;
+
+									float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
+									float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+
+									for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
+									{
+										for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
+										{
+											glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
+
+											auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
+
+											unsigned int regionID = -1;
+											world->findFirstRegionHasPoint(blockXZPos, regionID);
+
+											if (regionID == -1)
+											{
+												std::cout << "RegionID is -1. Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "), block (" << blockXZPos.x << ", " << blockXZPos.y << ")" << std::endl;
+												// AFAIK, this happens when point is on the edge of polygon.
+												// In this case, we can do either
+												// 1) iterate all region and find closest region
+												// 2) use chunk's center position to find region
+												// For now, I'm going to use first method
+												regionID = world->findClosestRegionToPoint(blockXZPos);
+												std::cout << "Resolved to closest region: " << regionID << std::endl;
+											}
+
+											blockRegions.at(index) = regionID;
+											/*
+											for (auto id : regionIDs)
+											{
+												if (world->isPointInRegion(id, blockXZPos))
+												{
+													blockRegions.at(index) = id;
+													break;
+												}
+												else
+												{
+													// Check neighbors too
+													unsigned int neighborID = -1;
+													if (world->isPointInRegionNeighbor(id, blockXZPos, neighborID))
+													{
+														blockRegions.at(index) = neighborID;
+														break;
+													}
+												}
+											}
+											*/
+
+											z += step;
+										}
+
+										x += step;
+										z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+									}
+
+									chunk->setBlockRegion(blockRegions);
+									needMesh = true;
+								}
+
+								chunk->generateWithRegionColor();
+							}
+
+
+
+
+							// Else, it's empty. do nothing
+
+							/*
+							// Check which region is this chunk at
+							unsigned int regionID = -1;
+							bool success = world->findRegionWithAABB(boundingBox, regionID);
+
+							if (success)
+							{
+								int difficulty = world->getRegionDifficulty(regionID);
+								chunk->generateWithColor(Color::getDifficultyColor(difficulty));
+								needMesh = true;
+							}
+							else
+							{
+								chunk->generateWithColor(glm::uvec3(255));
+								needMesh = true;
+							}
+							*/
+
+							if (needMesh)
+							{
+								addBuildMeshWork(chunkXZ);
+							}
+
+							auto e = Utility::Time::now();
+							std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
 					}
 					// Else, chunk is nullptr
@@ -352,7 +471,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 							// 1. Chunk is newly generated and need mesh.
 							// 2. Chunk already has mesh but need to refresh
 							//auto s = Utility::Time::now();
-							chunkMeshGenerator->generateSingleChunkMesh(chunk.get(), map);
+							meshGenerator->generateSingleChunkMesh(chunk.get(), map);
 							//auto e = Utility::Time::now();
 							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
@@ -379,7 +498,7 @@ void Voxel::ChunkWorkManager::processChunk(ChunkMap* map, ChunkMeshGenerator* ch
 	}
 }
 
-void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator, const int coreCount)
+void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world, const int coreCount)
 {
 	// Get number of thread to spawn
 	// 1 for main thread
@@ -411,7 +530,7 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* c
 	{
 		for (int i = 0; i < threadCount; i++)
 		{
-			workerThreads.push_back(std::thread(&ChunkWorkManager::processChunk, this, map, chunkMeshGenerator));
+			workerThreads.push_back(std::thread(&ChunkWorkManager::work, this, map, meshGenerator, world));
 		}
 	}
 }

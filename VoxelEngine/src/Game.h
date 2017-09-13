@@ -123,6 +123,8 @@ namespace Voxel
 		// load from existing save
 		void load(const std::string& worldPath);
 
+		World* getWorld();
+
 		// input handler instance
 		InputHandler* input;
 

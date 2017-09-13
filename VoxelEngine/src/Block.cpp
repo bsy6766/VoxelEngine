@@ -154,14 +154,14 @@ void Voxel::Block::setColor(const glm::vec3 & color)
 	b = static_cast<unsigned char>(color.b * 255.0f);
 }
 
-void Voxel::Block::setColor(const unsigned char r, const unsigned char g, const unsigned char b)
+void Voxel::Block::setColorRGB(const unsigned char r, const unsigned char g, const unsigned char b)
 {
 	this->r = r;
 	this->g = g;
 	this->b = b;
 }
 
-void Voxel::Block::setColor(const glm::uvec3 & color)
+void Voxel::Block::setColorU3(const glm::uvec3 & color)
 {
 	this->r = static_cast<unsigned char>(color.r);
 	this->g = static_cast<unsigned char>(color.g);

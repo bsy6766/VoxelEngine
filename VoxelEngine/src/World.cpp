@@ -62,6 +62,177 @@ Voronoi::Diagram * Voxel::World::getVoronoi()
 	return vd;
 }
 
+bool Voxel::World::findRegionWithAABB(const AABB & boundingBox, unsigned int & regionID) const
+{
+	std::vector<glm::vec2> vertices;
+
+	auto min = boundingBox.getMin();
+	auto max = boundingBox.getMax();
+
+	vertices.push_back(glm::vec2(min.x, min.z));
+	vertices.push_back(glm::vec2(min.x, max.z));
+	vertices.push_back(glm::vec2(max.x, min.z));
+	vertices.push_back(glm::vec2(max.x, max.z));
+	
+
+	for (auto& e : regions)
+	{
+		auto region = e.second;
+
+		if (region->isCellValid())
+		{
+			bool result = true;
+
+			for (auto& v : vertices)
+			{
+				if (!region->isPointIsInRegion(v))
+				{
+					result = false;
+					break;
+				}
+			}
+
+			if (result)
+			{
+				regionID = e.first;
+				return true;
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+
+	return false;
+}
+
+void Voxel::World::findAllRegionsWithAABB(const AABB & boundingBox, std::vector<unsigned int>& regionIDs)
+{
+	std::vector<glm::vec2> vertices;
+
+	auto min = boundingBox.getMin();
+	auto max = boundingBox.getMax();
+
+	vertices.push_back(glm::vec2(min.x, min.z));
+	vertices.push_back(glm::vec2(min.x, max.z));
+	vertices.push_back(glm::vec2(max.x, min.z));
+	vertices.push_back(glm::vec2(max.x, max.z));
+
+
+	for (auto& e : regions)
+	{
+		auto region = e.second;
+
+		if (region->isCellValid())
+		{
+			for (auto& v : vertices)
+			{
+				if (region->isPointIsInRegion(v))
+				{
+					regionIDs.push_back(e.first);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int & regionID)
+{
+	for (auto& e : regions)
+	{
+		auto region = e.second;
+
+		if (region->isCellValid())
+		{
+			if (region->isPointIsInRegion(point))
+			{
+				regionID = e.first;
+				return;
+			}
+		}
+	}
+}
+
+unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
+{
+	float dist = std::numeric_limits<float>::max();
+	unsigned int regionID = -1;
+
+	for (auto& e : regions)
+	{
+		auto region = e.second;
+
+		if (region->isCellValid())
+		{
+			auto pos = region->getSitePosition();
+
+			float d = glm::abs(glm::distance(point, pos));
+
+			if (d < dist)
+			{
+				dist = d;
+				regionID = e.first;
+			}
+		}
+	}
+
+	return regionID;
+}
+
+Region * Voxel::World::getRegion(const unsigned int regionID)
+{
+	auto find_it = regions.find(regionID);
+	if (find_it == regions.end())
+	{
+		return nullptr;
+	}
+	else
+	{
+		return find_it->second;
+	}
+}
+
+int Voxel::World::getRegionDifficulty(const unsigned int regionID)
+{
+	auto find_it = regions.find(regionID);
+	if (find_it == regions.end())
+	{
+		return -1;
+	}
+	else
+	{
+		return (find_it->second)->getDifficulty();
+	}
+}
+
+bool Voxel::World::isPointInRegion(const unsigned int regionID, const glm::vec2& point)
+{
+	auto region = getRegion(regionID);
+	if (region)
+	{
+		return region->isPointIsInRegion(point);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::World::isPointInRegionNeighbor(const unsigned int regionID, const glm::vec2 & point, unsigned int& neighborID)
+{
+	auto region = getRegion(regionID);
+	if (region)
+	{
+		return region->isPointIsInRegionNeighbor(point, neighborID);
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void Voxel::World::update(const float delta)
 {
 

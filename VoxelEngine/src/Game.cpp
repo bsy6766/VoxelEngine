@@ -106,7 +106,7 @@ void Voxel::Game::init()
 	// cube outline
 	initCubeOutline();
 	// Skybox
-	initSkyBox(glm::vec4(Color::NIGHTTIME, 1.0f));
+	initSkyBox(glm::vec4(Color::DAYTIME, 1.0f));
 
 	// Calendar
 	calendar = new Calendar();
@@ -277,7 +277,7 @@ void Voxel::Game::initMeshBuilderThread()
 	std::cout << "Number of supporting threads: " << concurentThreadsSupported << std::endl;
 
 	chunkWorkManager->run();
-	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, concurentThreadsSupported);
+	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, world, concurentThreadsSupported);
 }
 
 void Voxel::Game::createNew(const std::string & worldName)
@@ -304,6 +304,11 @@ void Voxel::Game::createNew(const std::string & worldName)
 	
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+World * Voxel::Game::getWorld()
+{
+	return world;
 }
 
 void Game::createPlayer()

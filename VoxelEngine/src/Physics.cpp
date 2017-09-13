@@ -1,9 +1,8 @@
 #include "Physics.h"
 #include <Cube.h>
+#include <iostream>
 
 using namespace Voxel;
-
-
 
 Voxel::Triangle::Triangle(const glm::vec3 & p1, const glm::vec3 & p2, const glm::vec3 & p3)
 	: p1(p1)
@@ -125,12 +124,17 @@ std::vector<Triangle> Voxel::AABB::toTriangles() const
 	return triangles;
 }
 
-glm::vec3 Voxel::AABB::getMin()
+glm::vec3 Voxel::AABB::getMin() const
 {
 	return center - (size * 0.5f);
 }
 
-glm::vec3 Voxel::AABB::getMax()
+glm::vec3 Voxel::AABB::getMax() const
 {
 	return center + (size * 0.5f);
+}
+
+void Voxel::AABB::print()
+{
+	std::cout << "[BoundingBox] center: (" << center.x << ", " << center.y << ", " << center.z << "), size: (" << size.x << ", " << size.y << ", " << size.z << ")" << std::endl;
 }

@@ -13,6 +13,7 @@ namespace Voxel
 {
 	class ChunkMap;
 	class ChunkMeshGenerator;
+	class World;
 
 	/**
 	*	@class Chunk Mesh Manager.
@@ -57,7 +58,7 @@ namespace Voxel
 		std::condition_variable cv;
 
 		// For mesh build thread
-		void processChunk(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator);
+		void work(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world);
 	public:
 		ChunkWorkManager();
 		~ChunkWorkManager() = default;
@@ -88,7 +89,7 @@ namespace Voxel
 		void popFinishedAndNotify();
 
 		// Creates the thread. Make sure you call once after run.
-		void createThreads(ChunkMap* map, ChunkMeshGenerator* chunkMeshGenerator, const int coreCount);
+		void createThreads(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world, const int coreCount);
 
 		// notify condition variable
 		void notify();

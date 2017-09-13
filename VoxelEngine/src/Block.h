@@ -59,9 +59,9 @@ namespace Voxel
 		void setColor(const glm::vec3& color);
 
 		// Set color of block (0 ~ 255)
-		void setColor(const unsigned char r, const unsigned char g, const unsigned char b);
+		void setColorRGB(const unsigned char r, const unsigned char g, const unsigned char b);
 		// Set color with glm::uvec3 (0 ~ 255)
-		void setColor(const glm::uvec3& color);
+		void setColorU3(const glm::uvec3& color);
 
 		// Get block color
 		glm::vec3 getColor3();
