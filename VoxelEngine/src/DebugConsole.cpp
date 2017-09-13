@@ -8,6 +8,7 @@
 #include <Player.h>
 #include <Game.h>
 #include <algorithm>
+#include <Camera.h>
 
 using namespace Voxel;
 
@@ -357,6 +358,34 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					else if (arg1 == "fogenabled" || arg1 == "fog")
 					{
 						game->setFogEnabled(arg2Bool);
+					}
+				}
+			}
+			else if (commandStr == "camera")
+			{
+				if (size == 3)
+				{
+					// camera arg1 arg2
+					auto arg1 = split.at(1);
+
+					if (arg1 == "speed")
+					{
+						try
+						{
+							float speed = std::stof(split.at(2));
+							Camera::mainCamera->setSpeed(speed);
+						}
+						catch (...)
+						{
+							if (split.at(2) == "default")
+							{
+								Camera::mainCamera->setSpeed(15.0f);
+							}
+							else
+							{
+								return;
+							}
+						}
 					}
 				}
 			}

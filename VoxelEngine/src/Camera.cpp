@@ -22,6 +22,7 @@ Camera::Camera()
 	, angle(0, 0, 0)
 	, frustum(nullptr)
 	, screenSpacePos(0)
+	, speed(15.0f)
 {}
 
 Camera::~Camera()
@@ -137,7 +138,7 @@ void Camera::setPosition(const vec3& position)
 
 void Camera::addPosition(const vec3 & distance)
 {
-	position += (distance * 1.0f);
+	position += (distance * speed);
 }
 
 void Camera::setAngle(const vec3 & angle)
@@ -159,6 +160,11 @@ void Camera::addAngle(const vec3 & angle)
 float Voxel::Camera::getAngleY()
 {
 	return angle.y;
+}
+
+void Voxel::Camera::setSpeed(const float speed)
+{
+	this->speed = speed;
 }
 
 void Camera::wrapAngle()
