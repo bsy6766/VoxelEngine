@@ -428,6 +428,19 @@ glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::v
 
 void Voxel::Game::updateKeyboardInput(const float delta)
 {
+	if (input->getKeyDown(GLFW_KEY_ESCAPE, true))
+	{
+		if (debugConsole->isConsoleOpened())
+		{
+			debugConsole->closeConsole();
+		}
+		else
+		{
+			Application::getInstance().getGLView()->close();
+		}
+		return;
+	}
+
 	if (input->getKeyDown(GLFW_KEY_F3, true))
 	{
 		debugConsole->toggleDubugOutputs();
@@ -548,33 +561,31 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	// Keyboard
 	if (cameraControlMode)
 	{
-		float cameraMovementSpeed = 15.0f;
-
 		if (input->getKeyDown(GLFW_KEY_W))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), delta));
 		}
 		else if (input->getKeyDown(GLFW_KEY_S))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), delta));
 		}
 
 		if (input->getKeyDown(GLFW_KEY_A))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), delta));
 		}
 		else if (input->getKeyDown(GLFW_KEY_D))
 		{
-			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), cameraMovementSpeed * delta));
+			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), delta));
 		}
 
 		if (input->getKeyDown(GLFW_KEY_SPACE))
 		{
-			Camera::mainCamera->addPosition(glm::vec3(0, cameraMovementSpeed * delta, 0));
+			Camera::mainCamera->addPosition(glm::vec3(0, delta, 0));
 		}
 		else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
 		{
-			Camera::mainCamera->addPosition(glm::vec3(0, -cameraMovementSpeed * delta, 0));
+			Camera::mainCamera->addPosition(glm::vec3(0, -delta, 0));
 		}
 	}
 	else

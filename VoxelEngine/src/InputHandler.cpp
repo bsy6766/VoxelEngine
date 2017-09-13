@@ -41,14 +41,6 @@ void Voxel::InputHandler::initControllerManager()
 
 void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (action == GLFW_PRESS)
-	{
-		if (key == GLFW_KEY_ESCAPE)
-		{
-			Application::getInstance().getGLView()->close();
-		}
-	}
-
 	//std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
 
 	auto& instance = InputHandler::getInstance();
