@@ -39,13 +39,10 @@ namespace Voxel
 	class AABB
 	{
 	public:
-		//AABB(const glm::vec3& min, const glm::vec3& max);
-		AABB(const glm::vec3& origin, const glm::vec3& size);
+		AABB();
+		AABB(const glm::vec3& center, const glm::vec3& size);
 		~AABB() = default;
 
-		glm::vec3 min;
-		glm::vec3 max;
-		glm::vec3 origin;
 		glm::vec3 center;
 		glm::vec3 size;
 
@@ -53,6 +50,9 @@ namespace Voxel
 		// 2 Triangles per side. Return vector must be size of 12.
 		std::vector<Plane> toPlanes() const;
 		std::vector<Triangle> toTriangles() const;
+
+		glm::vec3 getMin();
+		glm::vec3 getMax();
 	};
 }
 

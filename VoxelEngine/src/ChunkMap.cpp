@@ -683,7 +683,7 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 	Cube::Face result = Cube::Face::NONE;
 	auto triangles = blockAABB.toTriangles();
 	
-	float minDist = 1000000.0f;
+	float minDist = std::numeric_limits<float>::max();
 	unsigned int closestTriangle = 0;
 
 	for (unsigned int i = 0; i < triangles.size(); i++)

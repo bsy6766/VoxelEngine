@@ -50,8 +50,19 @@ void Voxel::World::rebuildWorldMap()
 	initVoronoiDebug();
 }
 
+Region * Voxel::World::getCurrentRegion()
+{
+	return currentRegion;
+}
+
+Voronoi::Diagram * Voxel::World::getVoronoi()
+{
+	return vd;
+}
+
 void Voxel::World::update(const float delta)
 {
+
 }
 
 void Voxel::World::initVoronoi()

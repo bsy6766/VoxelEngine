@@ -342,7 +342,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 
 					bool arg2Bool = arg2 == "true" ? true : false;
 
-					if (arg1 == "renderchunks" || arg1 == "rc")
+					if (arg1 == "renderchunks" || arg1 == "renderchunk" || arg1 == "rc")
 					{
 						game->setRenderChunkMode(arg2Bool);
 					}

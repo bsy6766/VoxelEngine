@@ -48,6 +48,10 @@ namespace Voxel
 		void init(const int gridWidth, const int gridLength);
 		void rebuildWorldMap();
 
+		// Getters
+		Region* getCurrentRegion();
+		Voronoi::Diagram* getVoronoi();
+
 		// Update world
 		void update(const float delta);
 

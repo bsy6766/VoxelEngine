@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <Biome.h>
+#include <Physics.h>
 
 namespace Voxel
 {
@@ -31,6 +32,11 @@ namespace Voxel
 
 		// Main biome 
 		Biome::Type biomeType;
+
+		// AABB
+		AABB boundingBox;
+
+		void initBoundingBox();
 	public:
 		Region() = delete;
 		Region(Voronoi::Cell* cell);

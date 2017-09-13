@@ -26,23 +26,15 @@ Voxel::Plane::Plane(const Triangle& triangle)
 }
 
 
-Voxel::AABB::AABB(const glm::vec3 & origin, const glm::vec3 & size)
-	: min(0)
-	, max(0)
-	, center(0)
-	, origin(0)
+Voxel::AABB::AABB()
+	: center(0)
 	, size(0)
-{
-	this->origin = origin;
-	this->size = size;
+{}
 
-	auto sizeHalf = size * 0.5f;
-
-	min = origin;
-	max = origin + size;
-
-	center = origin + sizeHalf;
-}
+Voxel::AABB::AABB(const glm::vec3 & center, const glm::vec3 & size)
+	: center(center)
+	, size(size)
+{}
 
 std::vector<Plane> Voxel::AABB::toPlanes() const
 {
@@ -52,7 +44,7 @@ std::vector<Plane> Voxel::AABB::toPlanes() const
 
 	for (auto& vertex : cubeVertices)
 	{
-		vertex += origin;
+		vertex += center;
 	}
 
 	// Front
@@ -97,7 +89,7 @@ std::vector<Triangle> Voxel::AABB::toTriangles() const
 
 	for (auto& vertex : cubeVertices)
 	{
-		vertex += origin;
+		vertex += center;
 	}
 
 	// Front
@@ -131,4 +123,14 @@ std::vector<Triangle> Voxel::AABB::toTriangles() const
 	triangles.push_back(Triangle(cubeVertices.at(6), cubeVertices.at(2), cubeVertices.at(4)));
 
 	return triangles;
+}
+
+glm::vec3 Voxel::AABB::getMin()
+{
+	return center - (size * 0.5f);
+}
+
+glm::vec3 Voxel::AABB::getMax()
+{
+	return center + (size * 0.5f);
 }

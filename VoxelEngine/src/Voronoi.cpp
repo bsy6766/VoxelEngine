@@ -224,7 +224,8 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	this->scale = 0.05f;
+	this->scale = 1.0f;
+	this->debugScale = 0.05f;
 
 	for (auto site : randomSites)
 	{
@@ -642,7 +643,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 			if (e.is_infinite())
 			{
 				glm::vec2 e0, e1;
-				clipInfiniteEdge(e, e0, e1, maxBound * scale);
+				clipInfiniteEdge(e, e0, e1, maxBound * debugScale);
 
 				buffer.push_back(e0.x * debugScale);
 				buffer.push_back(y + 0.5f);
@@ -800,65 +801,65 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	fillSize = fillIndices.size();
 
 	{
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(minBound * scale);
+		posBuffer.push_back(minBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(1.0f);
 
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(y);
-		posBuffer.push_back(maxBound * scale);
+		posBuffer.push_back(maxBound * debugScale);
 		posBuffer.push_back(1.0f);
 		posBuffer.push_back(0.0f);
 		posBuffer.push_back(0.0f);
