@@ -361,6 +361,8 @@ void Game::createChunkMap()
 
 void Voxel::Game::createWorld()
 {
+	world->setTemperature(0.5f, 1.5f);
+	world->setMoisture(0.5f, 1.5f);
 	world->init(10, 10);
 }
 

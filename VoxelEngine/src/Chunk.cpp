@@ -20,6 +20,23 @@ Chunk::Chunk()
 	generated.store(false);
 }
 
+bool Voxel::Chunk::canGenerate()
+{
+	if (generated.load() == true)
+	{
+		std::cout << "Chunk trying to generate again" << std::endl;
+		return false;
+	}
+
+	if (chunkSections.empty() == false)
+	{
+		std::cout << "Chunk already has chunksections" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
 Chunk::~Chunk()
 {
 	for (auto chunkSection : chunkSections)
@@ -45,7 +62,7 @@ Chunk* Chunk::create(const int x, const int z)
 	Chunk* newChunk = new Chunk();
 	if (newChunk->init(x, z))
 	{
-		if (newChunk->generate())
+		if (newChunk->generateSingleSection())
 		{
 			//std::cout << "[Chunk] Done.\n" << std::endl;
 			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
@@ -66,42 +83,6 @@ Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 		//std::cout << "[Chunk] Done.\n" << std::endl;
 		//std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")..." << std::endl;
 		return newChunk;
-	}
-
-	// Failed
-	delete newChunk;
-	return nullptr;
-}
-
-Chunk * Voxel::Chunk::createWithColor(const int x, const int z, const glm::vec3 & color)
-{
-	Chunk* newChunk = new Chunk();
-	if (newChunk->init(x, z))
-	{
-		if (newChunk->generate())
-		{
-			//std::cout << "[Chunk] Done.\n" << std::endl;
-			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
-			return newChunk;
-		}
-	}
-
-	// Failed
-	delete newChunk;
-	return nullptr;
-}
-
-Chunk * Voxel::Chunk::createWithRegionColor(const int x, const int z)
-{
-	Chunk* newChunk = new Chunk();
-	if (newChunk->init(x, z))
-	{
-		if (newChunk->generate())
-		{
-			//std::cout << "[Chunk] Done.\n" << std::endl;
-			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
-			return newChunk;
-		}
 	}
 
 	// Failed
@@ -150,17 +131,19 @@ bool Chunk::init(const int x, const int z)
 
 bool Voxel::Chunk::generate()
 {
-	if (generated.load() == true)
-	{
-		std::cout << "Chunk trying to generate again" << std::endl;
-		assert(false);
-	}
+	assert(!canGenerate());
 
-	if (chunkSections.empty() == false)
-	{
-		std::cout << "Chunk already has chunksections" << std::endl;
-		assert(false);
-	}
+	// Generate chunk
+
+
+	generated.store(true);
+
+	return true;
+}
+
+bool Voxel::Chunk::generateSingleSection()
+{
+	assert(!canGenerate());
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
@@ -192,17 +175,8 @@ bool Voxel::Chunk::generate()
 
 bool Voxel::Chunk::generateWithBiomeTest()
 {
-	if (generated.load() == true)
-	{
-		std::cout << "Chunk trying to generate again" << std::endl;
-		assert(false);
-	}
+	assert(!canGenerate());
 
-	if (chunkSections.empty() == false)
-	{
-		std::cout << "Chunk already has chunksections" << std::endl;
-		assert(false);
-	}
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 	std::vector<std::vector<float>> elevationMap;
 	std::vector<std::vector<float>> temperatureMap;
@@ -331,17 +305,7 @@ bool Voxel::Chunk::generateWithBiomeTest()
 
 bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 {
-	if (generated.load() == true)
-	{
-		std::cout << "Chunk trying to generate again" << std::endl;
-		assert(false);
-	}
-
-	if (chunkSections.empty() == false)
-	{
-		std::cout << "Chunk already has chunksections" << std::endl;
-		assert(false);
-	}
+	assert(!canGenerate());
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
@@ -373,18 +337,8 @@ bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 
 bool Voxel::Chunk::generateWithRegionColor()
 {
-	if (generated.load() == true)
-	{
-		std::cout << "Chunk trying to generate again" << std::endl;
-		assert(false);
-	}
-
-	if (chunkSections.empty() == false)
-	{
-		std::cout << "Chunk already has chunksections" << std::endl;
-		assert(false);
-	}
-
+	assert(!canGenerate());
+	
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.

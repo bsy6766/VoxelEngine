@@ -11,8 +11,10 @@ World::World()
 	, vd(nullptr)
 	, gridWidth(0)
 	, gridLength(0)
-	, temperature(0)
-	, moisture(0)
+	, minTemperature(0)
+	, maxTemperature(0)
+	, minMoisture(0)
+	, maxMoisture(0)
 {
 }
 
@@ -233,6 +235,24 @@ bool Voxel::World::isPointInRegionNeighbor(const unsigned int regionID, const gl
 	}
 }
 
+void Voxel::World::setTemperature(float min, float max)
+{
+	min = glm::clamp(min, 0.0f, 2.0f);
+	max = glm::clamp(max, 0.0f, 2.0f);
+
+	minTemperature = min;
+	maxTemperature = max;
+}
+
+void Voxel::World::setMoisture(float min, float max)
+{
+	min = glm::clamp(min, 0.0f, 2.0f);
+	max = glm::clamp(max, 0.0f, 2.0f);
+
+	minMoisture = min;
+	maxMoisture = max;
+}
+
 void Voxel::World::update(const float delta)
 {
 
@@ -451,6 +471,7 @@ void Voxel::World::initRegions()
 
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
+		newRegion->initTemperatureAndMoisture(minTemperature, maxTemperature, minMoisture, maxMoisture);
 
 		regions.emplace(cellID, newRegion);
 	}

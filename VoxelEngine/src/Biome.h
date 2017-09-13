@@ -29,6 +29,10 @@ namespace Voxel
 			RAIN_FOREST,
 			ERROR,
 		};
+
+		static const float COLD;
+		static const float WARM;
+		static const float HOT;
 	private:
 		Biome() = delete;
 		~Biome() = delete;

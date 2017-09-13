@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Utility.h>
 #include <Color.h>
+#include <HeightMap.h>
 
 using namespace Voxel;
 
@@ -124,6 +125,33 @@ glm::vec2 Voxel::Region::getSitePosition()
 void Voxel::Region::setAsStartingRegion()
 {
 	difficulty = 0;
+}
+
+void Voxel::Region::initTemperatureAndMoisture(const float minT, const float maxT, const float minM, const float maxM)
+{
+	auto sitePos = cell->getSitePosition();
+	auto t = HeightMap::getTemperatureNoise2D(sitePos.x, sitePos.y);
+
+	float shiftedMinT = minT - minT;
+	float shiftedMaxT = maxT - minT;
+
+	float newT = shiftedMaxT * t / 2.0f;
+
+	newT += minT;
+
+	auto m = HeightMap::getMoistureNosie2D(sitePos.x, sitePos.y);
+
+	float shiftedMinM = minM - minM;
+	float shiftedMaxM = maxM - minM;
+
+	float newM = shiftedMaxM * m / 2.0f;
+
+	newM += minM;
+
+	this->temperature = newT;
+	this->moisture = newM;
+
+	std::cout << "Setting region #" << cell->getID() << " t: " << temperature << ", m: " << moisture << std::endl;
 }
 
 bool Voxel::Region::isPointIsInRegion(const glm::vec2 & point, Voronoi::Cell * cell)

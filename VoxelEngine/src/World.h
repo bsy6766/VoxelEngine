@@ -17,9 +17,11 @@ namespace Voxel
 	class World
 	{
 	private:
-		// Biome data
-		float temperature;
-		float moisture;
+		// Biome theme. All regions will have different temperatur and moisture based on these values
+		float minTemperature;
+		float maxTemperature;
+		float minMoisture;
+		float maxMoisture;
 
 		// Current region that player is at
 		Region* currentRegion;
@@ -72,6 +74,10 @@ namespace Voxel
 		// Check if point is in region
 		bool isPointInRegion(const unsigned int regionID, const glm::vec2& point);
 		bool isPointInRegionNeighbor(const unsigned int regionID, const glm::vec2& point, unsigned int& neighborID);
+
+		// set biome theme
+		void setTemperature(float min, float max);
+		void setMoisture(float min, float max);
 
 		// Update world
 		void update(const float delta);

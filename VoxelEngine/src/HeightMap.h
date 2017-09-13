@@ -53,6 +53,7 @@ namespace Voxel
 		HeightMap() = delete;
 		~HeightMap() = delete;
 
+		// Returns value in range 0.0f ~ 2.0f
 		static float getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z);
 	public:
 		// Terrain presets

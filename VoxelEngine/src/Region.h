@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <Biome.h>
 #include <Physics.h>
 
 namespace Voxel
@@ -31,7 +30,8 @@ namespace Voxel
 		std::string name;
 
 		// Main biome 
-		Biome::Type biomeType;
+		float temperature;
+		float moisture;
 
 		// AABB
 		AABB boundingBox;
@@ -52,6 +52,9 @@ namespace Voxel
 		glm::vec2 getSitePosition();
 
 		void setAsStartingRegion();
+
+		// init temperature and moisture
+		void initTemperatureAndMoisture(const float minT, const float maxT, const float minM, const float maxM);
 
 		// Check if point is in cell's edges (polygon)
 		bool isPointIsInRegion(const glm::vec2& point, Voronoi::Cell* cell);

@@ -54,6 +54,9 @@ namespace Voxel
 
 		// Initialize
 		bool init(int x, int z);
+
+		// Check before generate
+		bool canGenerate();
 	public:
 		~Chunk();
 
@@ -61,13 +64,11 @@ namespace Voxel
 		static Chunk* create(const int x, const int z);
 		// Create empty chunk
 		static Chunk* createEmpty(const int x, const int z);
-		// Create with color
-		static Chunk* createWithColor(const int x, const int z, const glm::vec3& color);
-		// Create with region color
-		static Chunk* createWithRegionColor(const int x, const int z);
 
-		// Generates chunk. Default generation. Fills chunk with grass block
+		// Generates chunk.
 		bool generate();
+		// Generates chunk. Default generation. Fills single chunk section with grass block
+		bool generateSingleSection();
 		// Generates chunk. Uses noise to generate biome.
 		bool generateWithBiomeTest();
 		// Generates chunk. Same as default generation but with color

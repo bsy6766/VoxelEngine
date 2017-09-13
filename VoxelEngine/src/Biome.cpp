@@ -3,6 +3,10 @@
 
 using namespace Voxel;
 
+const float Biome::COLD = 0.5f;
+const float Biome::WARM = 1.0f;
+const float Biome::HOT = 1.5f;
+
 Biome::Type Voxel::Biome::getBiomeType(float moisture, float temperature, float elevation)
 {
 	// can't be negative
