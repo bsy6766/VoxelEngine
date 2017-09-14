@@ -418,7 +418,7 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 				{
 					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
 
-					auto biome = Biome::getBiomeType(mMap.at(blockX).at(blockZ), tMap.at(blockX).at(blockZ), e);
+					auto biome = Biome::getBiomeType(tMap.at(blockX).at(blockZ), mMap.at(blockX).at(blockZ), e);
 					if (biome != Biome::Type::ERROR)
 					{
 						switch (biome)

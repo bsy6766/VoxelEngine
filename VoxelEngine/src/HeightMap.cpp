@@ -91,10 +91,7 @@ float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noi
 		val = glm::round(val * np->terrace) / np->terrace;
 	}
 
-	val *= 0.5f;
-	val += 0.25f;
-
-	val = glm::clamp(val, 0.5f, 1.0f);
+	val = glm::clamp(val, 0.0f, 2.0f);
 
 	return val;
 }
@@ -143,7 +140,21 @@ float Voxel::HeightMap::getColorNoise2D(const float x, const float z)
 {
 	Noise::SimplexNoise* cNoise = Noise::Manager::getColorNoise();
 
-	return getNoise(&ColorPreset, cNoise, x, z);
+	// 0 ~ 2.0f
+	float val = getNoise(&ColorPreset, cNoise, x, z);
+
+	// 0 ~ 1.0f
+	val *= 0.5f;
+
+	float min = 0.5f;
+	float max = 1.0f;
+
+	float shiftedMin = min - min;
+	float shiftedMax = max - min;
+
+	float newVal = shiftedMax * val;
+
+	return newVal + min;
 }
 
 void Voxel::HeightMap::getHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<float>>& heightMap)
@@ -197,7 +208,17 @@ void Voxel::HeightMap::getHeightMapForChunk(const glm::vec3 & chunkPosition, int
 
 	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
-	minChunkSectionY = ((minY - 5) / Constant::CHUNK_SECTION_HEIGHT);
+	minY -= 5;
+
+	if (minY < 0)
+	{
+		minY = 0;
+		minChunkSectionY = 0;
+	}
+	else
+	{
+		minChunkSectionY = (minY / Constant::CHUNK_SECTION_HEIGHT);
+	}
 
 	if (minChunkSectionY < 0)
 	{

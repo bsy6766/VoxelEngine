@@ -10,6 +10,7 @@
 #include <ChunkWorkManager.h>
 #include <Block.h>
 #include <Biome.h>
+#include <Terrain.h>
 
 #include <Setting.h>
 
@@ -403,11 +404,8 @@ void Game::update(const float delta)
 		{
 			Region* curRegion = world->getCurrentRegion();
 			debugConsole->updateRegion(curRegion->getID());
-			auto t = curRegion->getTemperature();
-			auto m = curRegion->getMoisture();
-			Biome::Type type = Biome::getBiomeType(t, m, 0);
-			Biome::Terrain terrainType = curRegion->getTerrainType();
-			debugConsole->updateBiome(Biome::biomeTypeToString(type), Biome::terrainTypeToString(terrainType), t, m);
+			Biome biomeType = curRegion->getBiomeType();
+			debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 		}
 
 		debugConsole->updatePlayerPosition(playerPos);

@@ -521,7 +521,7 @@ void Voxel::World::initRegions()
 
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
-		newRegion->initTemperatureAndMoisture(minTemperature, maxTemperature, minMoisture, maxMoisture);
+		newRegion->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture);
 		newRegion->initTerrainType();
 
 		regions.emplace(cellID, newRegion);
