@@ -125,7 +125,7 @@ namespace Voxel
 
 		// Update chunk map
 		bool update(const glm::vec3& playerPosition, ChunkWorkManager* workManager, const double time);
-
+		
 		// find visible chunks. retrusn the number of chunks that is visible
 		int findVisibleChunk();
 

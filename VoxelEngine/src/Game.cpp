@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include <World.h>
+#include <Region.h>
 #include <ChunkMap.h>
 #include <ChunkMeshGenerator.h>
 #include <ChunkSection.h>
@@ -8,6 +9,8 @@
 #include <ChunkUtil.h>
 #include <ChunkWorkManager.h>
 #include <Block.h>
+#include <Biome.h>
+
 #include <Setting.h>
 
 #include <InputHandler.h>
@@ -391,10 +394,26 @@ void Game::update(const float delta)
 		{
 			updateChunks();
 		}
-		debugConsole->updatePlayerPosition(player->getPosition());
+
+		auto playerPos = player->getPosition();
+
+		bool regionChanged = world->updatePlayerPos(playerPos);
+
+		if (regionChanged)
+		{
+			Region* curRegion = world->getCurrentRegion();
+			debugConsole->updateRegion(curRegion->getID());
+			auto t = curRegion->getTemperature();
+			auto m = curRegion->getMoisture();
+			Biome::Type type = Biome::getBiomeType(t, m, 0);
+			Biome::Terrain terrainType = curRegion->getTerrainType();
+			debugConsole->updateBiome(Biome::biomeTypeToString(type), Biome::terrainTypeToString(terrainType), t, m);
+		}
+
+		debugConsole->updatePlayerPosition(playerPos);
 
 		defaultProgram->use(true);
-		defaultProgram->setUniformVec3("playerPosition", player->getPosition());
+		defaultProgram->setUniformVec3("playerPosition", playerPos);
 	}
 
 	debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());

@@ -146,3 +146,68 @@ Biome::Type Voxel::Biome::getBiomeType(float moisture, float temperature, float 
 	std::cout << "[Biome] Error. Wasn't able to find biome with t: " << temperature << ", m: " << moisture << ", e: " << elevation << std::endl;
 	return Type::ERROR;
 }
+
+std::string Voxel::Biome::biomeTypeToString(Type type)
+{
+	switch (type)
+	{
+	case Voxel::Biome::Type::OCEAN:
+		return "OCEAN";
+		break;
+	case Voxel::Biome::Type::TUNDRA:
+		return "TUNDRA";
+		break;
+	case Voxel::Biome::Type::GRASS_DESERT:
+		return "GRASS DESERT";
+		break;
+	case Voxel::Biome::Type::TAIGA:
+		return "TAIGA";
+		break;
+	case Voxel::Biome::Type::DESERT:
+		return "DESERT";
+		break;
+	case Voxel::Biome::Type::WOODS:
+		return "WOODS";
+		break;
+	case Voxel::Biome::Type::FOREST:
+		return "FOREST";
+		break;
+	case Voxel::Biome::Type::SWAMP:
+		return "SWAMP";
+		break;
+	case Voxel::Biome::Type::SAVANNA:
+		return "SAVANNA";
+		break;
+	case Voxel::Biome::Type::SEASONAL_FOREST:
+		return "SEASONAL FOREST";
+		break;
+	case Voxel::Biome::Type::RAIN_FOREST:
+		return "RAIN FOREST";
+		break;
+	case Voxel::Biome::Type::ERROR:
+	default:
+		break;
+	}
+
+	return "ERROR";
+}
+
+std::string Voxel::Biome::terrainTypeToString(Terrain terrain)
+{
+	switch (terrain)
+	{
+	case Voxel::Biome::Terrain::PLAIN:
+		return "PLAIN";
+		break;
+	case Voxel::Biome::Terrain::HILLS:
+		return "HILLS";
+		break;
+	case Voxel::Biome::Terrain::MOUNTAINS:
+		return "MOUNTAINS";
+		break;
+	default:
+		break;
+	}
+
+	return "ERROR";
+}

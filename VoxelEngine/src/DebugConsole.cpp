@@ -76,7 +76,7 @@ void Voxel::DebugConsole::init()
 	glm::vec4 outlineColor = glm::vec4(0, 0, 0, 1.0f);
 	const int fontID = 2;
 
-	staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
+	staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:\n\nBiome:\n\nRegion:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
 	staticLabels->setVisibility(false);
 	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
@@ -115,17 +115,29 @@ void Voxel::DebugConsole::init()
 	playerChunkPosition->setVisibility(false);
 	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
 
-	playerLookingAt = UI::Text::createWithOutline("000000, 000000, 000000 Face (-)", glm::vec2(165.0f, -177.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 40);
+	playerLookingAt = UI::Text::createWithOutline("000000, 000000, 000000 Face (-)", glm::vec2(165.0f, -175.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 40);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::createWithOutline("0000 / 0000 / 0000", glm::vec2(69.0f, -207.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 19);
+	chunkNumbers = UI::Text::createWithOutline("0000 / 0000 / 0000", glm::vec2(65.0f, -207.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 19);
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
 	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
+
+	biome = UI::Text::createWithOutline("biome type / 0.00 / 0.00", glm::vec2(57.0f, -239.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 50);
+	biome->setPivot(glm::vec2(-0.5f, 0.5f));
+	biome->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	biome->setVisibility(false);
+	debugCanvas->addText("biome", biome, 0);
+
+	region = UI::Text::createWithOutline("000", glm::vec2(64.0f, -273.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 4);
+	region->setPivot(glm::vec2(-0.5f, 0.5f));
+	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	region->setVisibility(false);
+	debugCanvas->addText("region", region, 0);
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -410,6 +422,8 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	playerChunkPosition->setVisibility(debugOutputVisibility);
 	playerLookingAt->setVisibility(debugOutputVisibility);
 	chunkNumbers->setVisibility(debugOutputVisibility);
+	biome->setVisibility(debugOutputVisibility);
+	region->setVisibility(debugOutputVisibility);
 }
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
@@ -468,4 +482,18 @@ void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt, co
 void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total)
 {
 	chunkNumbers->setText(std::to_string(visible) + " / " + std::to_string(active) + " / " + std::to_string(total));
+}
+
+void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::string& terrainType, const float t, const float m)
+{
+	std::stringstream temp, moist;
+	temp << std::fixed << std::showpoint << std::setprecision(2) << t;
+	moist << std::fixed << std::showpoint << std::setprecision(2) << m;
+
+	biome->setText(biomeType + " / " + terrainType + " / " + temp.str() + " / " + moist.str());
+}
+
+void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
+{
+	region->setText(std::to_string(regionID));
 }

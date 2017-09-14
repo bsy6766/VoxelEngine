@@ -151,7 +151,21 @@ void Voxel::Region::initTemperatureAndMoisture(const float minT, const float max
 	this->temperature = newT;
 	this->moisture = newM;
 
-	std::cout << "Setting region #" << cell->getID() << " t: " << temperature << ", m: " << moisture << std::endl;
+	if (cell->isValid())
+	{
+		std::cout << "Setting region #" << cell->getID() << " t: " << temperature << ", m: " << moisture << std::endl;
+		std::cout << "Biome: " << Biome::biomeTypeToString(Biome::getBiomeType(moisture, temperature, 0)) << std::endl;
+	}
+}
+
+void Voxel::Region::initTerrainType()
+{
+	terrainType = Biome::Terrain::PLAIN;
+}
+
+Biome::Terrain Voxel::Region::getTerrainType()
+{
+	return this->terrainType;
 }
 
 bool Voxel::Region::isPointIsInRegion(const glm::vec2 & point, Voronoi::Cell * cell)
@@ -204,4 +218,19 @@ bool Voxel::Region::isPointIsInRegionNeighbor(const glm::vec2 & point, unsigned 
 bool Voxel::Region::isCellValid()
 {
 	return cell->isValid();
+}
+
+float Voxel::Region::getTemperature()
+{
+	return temperature;
+}
+
+float Voxel::Region::getMoisture()
+{
+	return moisture;
+}
+
+unsigned int Voxel::Region::getID()
+{
+	return cell->getID();
 }

@@ -44,6 +44,9 @@ namespace Voxel
 
 		UI::Text* chunkNumbers;
 
+		UI::Text* biome;
+		UI::Text* region;
+
 		UI::Image* commandInputField;
 		UI::Text* command;
 
@@ -76,7 +79,8 @@ namespace Voxel
 		void updatePlayerPosition(const glm::vec3& position);
 		void updatePlayerLookingAt(const glm::ivec3& lookingAt, const Cube::Face& face);
 		void updateChunkNumbers(const int visible, const int active, const int total);
-		void updateMousePosition();
+		void updateBiome(const std::string& biomeType, const std::string& terrainType, const float t, const float m);
+		void updateRegion(const unsigned int regionID);
 	};
 }
 

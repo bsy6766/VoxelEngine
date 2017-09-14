@@ -17,11 +17,13 @@ namespace Voxel
 	class World
 	{
 	private:
-		// Biome theme. All regions will have different temperatur and moisture based on these values
+		// Biome theme. All regions will have different temperature and moisture based on these values
 		float minTemperature;
 		float maxTemperature;
 		float minMoisture;
 		float maxMoisture;
+
+		// 
 
 		// Current region that player is at
 		Region* currentRegion;
@@ -81,6 +83,8 @@ namespace Voxel
 
 		// Update world
 		void update(const float delta);
+		// Returns true if player moved to new region
+		bool updatePlayerPos(const glm::vec3& playerPos);
 
 		// Renders visible chunk
 		void render();

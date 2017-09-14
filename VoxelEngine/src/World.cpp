@@ -258,6 +258,56 @@ void Voxel::World::update(const float delta)
 
 }
 
+bool Voxel::World::updatePlayerPos(const glm::vec3 & playerPos)
+{
+	// Check if player moved to new region
+	auto pos = glm::vec2(playerPos.x, playerPos.z);
+	if (currentRegion->isPointIsInRegion(pos))
+	{
+		return false;
+	}
+	else
+	{
+		// Player is not in current region. Check neighbor
+		unsigned int regionID = -1;
+		if (currentRegion->isPointIsInRegionNeighbor(pos, regionID))
+		{
+			std::cout << "Player moved to neighbor region #" << regionID << " from " << currentRegion->getID() << std::endl;
+			Region* r = getRegion(regionID);
+			if (r == nullptr)
+			{
+				std::cout << "Region is nullptr" << std::endl;
+				return false;
+			}
+			else
+			{
+				currentRegion = r;
+				return true;
+			}
+		}
+		else
+		{
+			// Player is not in neighbor regions. Find
+			for (auto& e : regions)
+			{
+				auto region = e.second;
+
+				if (region->isPointIsInRegion(pos))
+				{
+					std::cout << "Player moved to region #" << e.first << " from " << currentRegion->getID() << std::endl;
+					currentRegion = region;
+					return true;
+				}
+			}
+
+			std::cout << "Can not find region at player position " << Utility::Log::vec3ToStr(playerPos) << std::endl;
+			return false;
+		}
+	}
+
+	return false;
+}
+
 void Voxel::World::initVoronoi()
 {
 	// Generate random grid
@@ -472,6 +522,7 @@ void Voxel::World::initRegions()
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
 		newRegion->initTemperatureAndMoisture(minTemperature, maxTemperature, minMoisture, maxMoisture);
+		newRegion->initTerrainType();
 
 		regions.emplace(cellID, newRegion);
 	}
