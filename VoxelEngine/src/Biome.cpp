@@ -7,7 +7,13 @@ const float Biome::COLD = 0.5f;
 const float Biome::WARM = 1.0f;
 const float Biome::HOT = 1.5f;
 
-Biome::Type Voxel::Biome::getBiomeType(float moisture, float temperature, float elevation)
+Voxel::Biome::Biome()
+	: temperature(0)
+	, moisture(0)
+	, type(Type::NONE)
+{}
+
+Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float elevation)
 {
 	// can't be negative
 	if (moisture < 0) moisture = 0;
@@ -192,22 +198,30 @@ std::string Voxel::Biome::biomeTypeToString(Type type)
 	return "ERROR";
 }
 
-std::string Voxel::Biome::terrainTypeToString(Terrain terrain)
+std::string Voxel::Biome::biomeTypeToString(Biome biomeType)
 {
-	switch (terrain)
-	{
-	case Voxel::Biome::Terrain::PLAIN:
-		return "PLAIN";
-		break;
-	case Voxel::Biome::Terrain::HILLS:
-		return "HILLS";
-		break;
-	case Voxel::Biome::Terrain::MOUNTAINS:
-		return "MOUNTAINS";
-		break;
-	default:
-		break;
-	}
+	return biomeTypeToString(biomeType.type);
+}
 
-	return "ERROR";
+void Voxel::Biome::setType(const float temperature, const float moisture)
+{
+	this->temperature = temperature;
+	this->moisture = moisture;
+
+	this->type = getBiomeType(temperature, moisture, 0);
+}
+
+Biome::Type Voxel::Biome::getType()
+{
+	return this->type;
+}
+
+float Voxel::Biome::getTemperature()
+{
+	return temperature;
+}
+
+float Voxel::Biome::getMoisture()
+{
+	return moisture;
 }

@@ -19,6 +19,7 @@ namespace Voxel
 	public:
 		enum class Type
 		{
+			NONE = 0,
 			OCEAN,					// Filled with water
 			TUNDRA,					// Coldest area covered with snow. Hard to find any trees. Several short shrubs or mosses. Possible berries. Rarely snows.
 			GRASS_DESERT,			// Desert with some plants. No trees. Random water (oasis). some cactus
@@ -33,42 +34,29 @@ namespace Voxel
 			ERROR,
 		};
 
-		// Default terrains. 
-		enum class Terrain
-		{
-			PLAIN = 0,		// Flat terrain. No hills and mountains
-			HILLS,			// Few hills in flat terrain
-			MOUNTAINS,		// 
-		};
-
-		enum class TerrainM
-		{
-			HILLS_M,		// Hills Medium: More hills. 
-			MOUNTAINS_M,	// Mountains Medium: More mountains
-		};
-
-		enum class TerrainL
-		{
-
-		};
-
-		enum class TerrainMega
-		{
-
-		};
-
 		static const float COLD;
 		static const float WARM;
 		static const float HOT;
+
+		float temperature;
+		float moisture;
+
+		Type type;
 		
-	private:
-		Biome() = delete;
-		~Biome() = delete;
 	public:
-		static Type getBiomeType(float moisture, float temperature, float elevation);
+		Biome();
+		~Biome() = default;
+
+		static Type getBiomeType(float temperature, float moisture, float elevation);
 
 		static std::string biomeTypeToString(Type type);
-		static std::string terrainTypeToString(Terrain terrain);
+		static std::string biomeTypeToString(Biome biomeType);
+
+		void setType(const float temperature, const float moisture);
+		Type getType();
+
+		float getTemperature();
+		float getMoisture();
 	};
 }
 
