@@ -914,7 +914,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		// but we are rebuilding mesh that is far away from, so it has lowest priority
 		if (!chunksToReload.empty())
 		{
-			workManager->addLoads(chunksToReload);
+			workManager->addBuildMeshWorks(chunksToReload);
 			notify = true;
 		}
 
