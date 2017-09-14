@@ -5,6 +5,7 @@
 #include <string>
 #include <Physics.h>
 #include <Biome.h>
+#include <Terrain.h>
 
 namespace Voxel
 {
@@ -31,11 +32,10 @@ namespace Voxel
 		std::string name;
 
 		// Main biome 
-		float temperature;
-		float moisture;
+		Biome biomeType;
 
 		// Terrain type
-		Biome::Terrain terrainType;
+		Terrain terrainType;
 
 		// AABB
 		AABB boundingBox;
@@ -58,10 +58,12 @@ namespace Voxel
 		void setAsStartingRegion();
 
 		// init temperature and moisture = biome
-		void initTemperatureAndMoisture(const float minT, const float maxT, const float minM, const float maxM);
+		void initBiomeType(const float minT, const float maxT, const float minM, const float maxM);
+		Biome getBiomeType();
+
 		// init terrain type
 		void initTerrainType();
-		Biome::Terrain getTerrainType();
+		Terrain getTerrainType();
 
 		// Check if point is in cell's edges (polygon)
 		bool isPointIsInRegion(const glm::vec2& point, Voronoi::Cell* cell);
@@ -70,10 +72,6 @@ namespace Voxel
 
 		// Cehck if region's cell is valid
 		bool isCellValid();
-
-		// Get temperature and moisture
-		float getTemperature();
-		float getMoisture();
 
 		// Get cell id
 		unsigned int getID();

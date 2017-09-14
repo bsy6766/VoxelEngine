@@ -127,7 +127,7 @@ void Voxel::Region::setAsStartingRegion()
 	difficulty = 0;
 }
 
-void Voxel::Region::initTemperatureAndMoisture(const float minT, const float maxT, const float minM, const float maxM)
+void Voxel::Region::initBiomeType(const float minT, const float maxT, const float minM, const float maxM)
 {
 	auto sitePos = cell->getSitePosition();
 	auto t = HeightMap::getTemperatureNoise2D(sitePos.x, sitePos.y);
@@ -148,24 +148,29 @@ void Voxel::Region::initTemperatureAndMoisture(const float minT, const float max
 
 	newM += minM;
 
-	this->temperature = newT;
-	this->moisture = newM;
+	biomeType.setType(newT, newM);
 
 	if (cell->isValid())
 	{
-		std::cout << "Setting region #" << cell->getID() << " t: " << temperature << ", m: " << moisture << std::endl;
-		std::cout << "Biome: " << Biome::biomeTypeToString(Biome::getBiomeType(moisture, temperature, 0)) << std::endl;
+		std::cout << "Setting region #" << cell->getID() << " t: " << newT << ", m: " << newM << std::endl;
+		std::cout << "Biome: " << Biome::biomeTypeToString(biomeType.getType()) << std::endl;
 	}
+}
+
+Biome Voxel::Region::getBiomeType()
+{
+	return biomeType;
 }
 
 void Voxel::Region::initTerrainType()
 {
-	terrainType = Biome::Terrain::PLAIN;
+	terrainType.setType(Terrain::Type::PLAIN);
+	terrainType.setModifier(Terrain::Modifier::NONE);
 }
 
-Biome::Terrain Voxel::Region::getTerrainType()
+Terrain Voxel::Region::getTerrainType()
 {
-	return this->terrainType;
+	return terrainType;
 }
 
 bool Voxel::Region::isPointIsInRegion(const glm::vec2 & point, Voronoi::Cell * cell)
@@ -218,16 +223,6 @@ bool Voxel::Region::isPointIsInRegionNeighbor(const glm::vec2 & point, unsigned 
 bool Voxel::Region::isCellValid()
 {
 	return cell->isValid();
-}
-
-float Voxel::Region::getTemperature()
-{
-	return temperature;
-}
-
-float Voxel::Region::getMoisture()
-{
-	return moisture;
 }
 
 unsigned int Voxel::Region::getID()
