@@ -161,37 +161,34 @@ bool Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int
 	return false;
 }
 
-unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point, const bool skipInvalidRegion)
+unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
 {
-	float dist = std::numeric_limits<float>::max();
-	unsigned int regionID = -1;
-
-	for (auto& e : regions)
+	if (vd->isPointInBoundary(point))
 	{
-		auto region = e.second;
+		float dist = std::numeric_limits<float>::max();
+		unsigned int regionID = -1;
 
-		/*
-		if (skipInvalidRegion)
+		for (auto& e : regions)
 		{
-			if (!region->isCellValid())
+			auto region = e.second;
+
+			auto pos = region->getSitePosition();
+
+			float d = glm::abs(glm::distance(point, pos));
+
+			if (d < dist)
 			{
-				continue;
+				dist = d;
+				regionID = e.first;
 			}
 		}
 
-		*/
-		auto pos = region->getSitePosition();
-
-		float d = glm::abs(glm::distance(point, pos));
-
-		if (d < dist)
-		{
-			dist = d;
-			regionID = e.first;
-		}
+		return regionID;
 	}
-
-	return regionID;
+	else
+	{
+		return -1;
+	}
 }
 
 Region * Voxel::World::getRegion(const unsigned int regionID)

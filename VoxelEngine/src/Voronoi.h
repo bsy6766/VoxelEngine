@@ -209,6 +209,9 @@ namespace Voxel
 			// Find shortest path from src to all cell using dijkstra
 			void findShortestPathFromSrc(const unsigned int src, std::vector<float>& dist, std::vector<unsigned int>& prevPath);
 			
+			// Check if point is in boundary
+			bool isPointInBoundary(const glm::vec2& point);
+
 			// Get boundary
 			float getMinBound();
 			float getMaxBound();

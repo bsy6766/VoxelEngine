@@ -955,6 +955,11 @@ void Voxel::Voronoi::Diagram::findShortestPathFromSrc(const unsigned int src, st
 	// Iterate over
 }
 
+bool Voxel::Voronoi::Diagram::isPointInBoundary(const glm::vec2 & point)
+{
+	return point.x >= minBound && point.x <= maxBound && point.y >= minBound && point.y <= maxBound;
+}
+
 float Voxel::Voronoi::Diagram::getMinBound()
 {
 	return minBound;
@@ -1154,8 +1159,8 @@ void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& 
 		e1 = glm::vec2(edge.vertex1()->x(), edge.vertex1()->y());
 	}
 
-	//e0 = glm::clamp(e0, -6000.0f, 6000.0f);
-	//e1 = glm::clamp(e1, -6000.0f, 6000.0f);
+	e0 = glm::clamp(e0, -bound, bound);
+	e1 = glm::clamp(e1, -bound, bound);
 }
 
 glm::vec2 Voxel::Voronoi::Diagram::retrivePoint(const CellType & cell)

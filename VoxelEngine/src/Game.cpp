@@ -323,7 +323,8 @@ void Game::createPlayer()
 	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
-	player->setPosition(glm::vec3(8, 100, 8));
+	player->setPosition(glm::vec3(0, 100, 0));
+	player->setPosition(glm::vec3(-300, 500, 0));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 

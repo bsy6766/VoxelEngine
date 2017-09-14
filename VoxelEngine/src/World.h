@@ -23,8 +23,6 @@ namespace Voxel
 		float minMoisture;
 		float maxMoisture;
 
-		// 
-
 		// Current region that player is at
 		Region* currentRegion;
 
@@ -65,7 +63,7 @@ namespace Voxel
 		bool findRegionWithAABB(const AABB& boundingBox, unsigned int& regionID) const;
 		void findAllRegionsWithAABB(const AABB& boundingBox, std::vector<unsigned int>& regionIDs);
 		bool findFirstRegionHasPoint(const glm::vec2& point, unsigned int& regionID);
-		unsigned int findClosestRegionToPoint(const glm::vec2& point, const bool skipInvalidRegion);
+		unsigned int findClosestRegionToPoint(const glm::vec2& point);
 
 		// Get retion
 		Region* getRegion(const unsigned int regionID);

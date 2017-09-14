@@ -575,7 +575,14 @@ bool Voxel::ChunkSection::initWithRegionColor(const int x, const int y, const in
 
 	if (size == single)
 	{
-		color = Application::getInstance().getGame()->getWorld()->getRegion(blockRegion.front())->randColor;
+		if (blockRegion.front() == -1)
+		{
+			color = glm::uvec3(255);
+		}
+		else
+		{
+			color = Application::getInstance().getGame()->getWorld()->getRegion(blockRegion.front())->randColor;
+		}
 	}
 
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)

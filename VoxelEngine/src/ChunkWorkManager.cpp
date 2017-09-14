@@ -341,6 +341,9 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
 							float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 
+							bool same = true;
+							std::unordered_set<unsigned int> regionIDSet;
+
 							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
 							{
 								for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
@@ -350,23 +353,30 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 									auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
 
 									// First, check if block is in region that we found
-									unsigned int regionID = world->findClosestRegionToPoint(blockXZPos, false);
+									unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
 
-									// This method can't be fail. It will must find closest region
-									assert(regionID != -1);
-
+									// This method can't be fail. It will must find closest region unless block is out of boundary
 									regionMap.at(index) = regionID;
 
 									z += step;
+
+									regionIDSet.emplace(regionID);
 								}
 
 								x += step;
 								z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 							}
 
-							// save region map to chunk
-							chunk->setRegionMap(regionMap);
-
+							if (regionIDSet.size() == 1)
+							{
+								chunk->setRegionMap(regionMap.front());
+							}
+							else
+							{
+								// save region map to chunk
+								chunk->setRegionMap(regionMap);
+							}
+							
 							//chunk->generate();
 							chunk->generateWithRegionColor();
 
