@@ -17,6 +17,7 @@ namespace Voxel
 	class Biome
 	{
 	public:
+		// Type of biome
 		enum class Type
 		{
 			NONE = 0,
@@ -31,8 +32,43 @@ namespace Voxel
 			SAVANNA,				// Hot and few moisture. Acacia tree can be found
 			SEASONAL_FOREST,		// 
 			RAIN_FOREST,			// Jungle. Lots of rain and hot area. Lots of tall trees. Lots of plants below the tree. 
+			BORDER,					// Area that can not be explored by player. 
 			ERROR,
 		};
+
+		// types of vegitation.
+		// Todo: Separate some types in to more detaisl
+		enum class Vegitation
+		{
+			NONE = 0,				// No vegitation
+			OAK_TREE,
+			PINE_TREE,
+			SPRUCE_TREE,
+			BIRCH_TREE,
+			ACACIA_TREE,
+			GRASS,
+			SHRUB,
+			CACTUS,
+			FLOWER,
+		};
+
+		// Types of living entity for biomes. 
+		enum class LivingEntity
+		{
+			NONE = 0,
+		};
+
+		// types of structure that can be spawned
+		enum class Structure
+		{
+			NONE = 0,
+		};
+
+	public:
+		// Store types of vegitation that can grow in biome
+		static const std::unordered_map<Type, std::vector<Vegitation>> vegitationMap;
+		// Store types of living entity that can live in biome
+		// Store types of structure that can be spawned in biome
 
 		static const float COLD;
 		static const float WARM;

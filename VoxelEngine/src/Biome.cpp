@@ -7,6 +7,13 @@ const float Biome::COLD = 0.5f;
 const float Biome::WARM = 1.0f;
 const float Biome::HOT = 1.5f;
 
+const std::unordered_map<Biome::Type, std::vector<Biome::Vegitation>> Biome::vegitationMap =
+{
+	{Biome::Type::WOODS, {Biome::Vegitation::OAK_TREE}},
+	{Biome::Type::FOREST, {Biome::Vegitation::OAK_TREE, Biome::Vegitation::BIRCH_TREE, Biome::Vegitation::SPRUCE_TREE}},		// Forest can have any type of trees except jungle tree
+	{Biome::Type::TAIGA, {Biome::Vegitation::SPRUCE_TREE}}
+};
+
 Voxel::Biome::Biome()
 	: temperature(0)
 	, moisture(0)

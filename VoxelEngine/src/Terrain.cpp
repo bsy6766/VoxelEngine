@@ -2,6 +2,22 @@
 
 using namespace Voxel;
 
+
+const std::unordered_map<Biome::Type, std::vector<Terrain::Type>> Terrain::biomeTerrainMap = 
+{
+	{ Biome::Type::WOODS,{ Terrain::Type::PLAIN, Terrain::Type::HILLS } },
+	{ Biome::Type::TAIGA,{ Terrain::Type::PLAIN, Terrain::Type::HILLS } },
+	{ Biome::Type::FOREST,{ Terrain::Type::PLAIN, Terrain::Type::HILLS, Terrain::Type::MOUNTAINS } },
+};
+
+const std::unordered_map<Terrain::Type, std::vector<Terrain::Modifier>> Terrain::TerrainModifierMap = 
+{
+	{ Terrain::Type::PLAIN,{ Terrain::Modifier::NONE } },
+	{ Terrain::Type::HILLS,{ Terrain::Modifier::MEDIUM, Terrain::Modifier::LARGE } },
+	{ Terrain::Type::MOUNTAINS,{ Terrain::Modifier::LARGE, Terrain::Modifier::MEGA } },
+};
+
+
 Voxel::Terrain::Terrain()
 	: type(Type::NONE)
 	, modifier(Modifier::NONE)
