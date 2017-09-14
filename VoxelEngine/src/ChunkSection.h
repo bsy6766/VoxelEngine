@@ -34,8 +34,9 @@ namespace Voxel
 		// 16 x 16 x 16 blocks. TODO: Consider using Octree.
 		std::vector<Block*> blocks;
 
-		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		bool initWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
 		bool initWithValues(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap);
 		bool initWithColor(const int x, const int y, const int z, const glm::vec3& chunkPosition, const glm::uvec3& color);
@@ -43,10 +44,11 @@ namespace Voxel
 	public:
 		~ChunkSection();
 
-		// Creates chunk section. Fill entire section with grass block
-		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		// Creates chunk section.
+		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		// Creates chunk section. Blocks are empty.
 		static ChunkSection* createEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
+		static ChunkSection* createWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		// Creates chunk section. Uses height map to fill blocks.
 		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
 		// Creates chunk section. Uses height map for terrain. Uses temperature and moisture map for biome.

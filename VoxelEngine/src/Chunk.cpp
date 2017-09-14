@@ -131,10 +131,39 @@ bool Chunk::init(const int x, const int z)
 
 bool Voxel::Chunk::generate()
 {
-	assert(!canGenerate());
+	assert(canGenerate());
 
-	// Generate chunk
+	int maxChunkSectionY = 0;
+	int minChunkSectionY = 0;
+	std::vector<std::vector<float>> heightMap;
+	std::vector<std::vector<float>> colorMap;
 
+	HeightMap::getHeightMapForChunk(position, maxChunkSectionY, minChunkSectionY, heightMap);
+	HeightMap::getHeightMapForColor(position, colorMap);
+
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		// Temp. All blocks above chunk section y 3 will be air.
+		if (i > maxChunkSectionY || i < minChunkSectionY)
+		{
+			//std::cout << "+ chunksection: " << i << std::endl;
+			chunkSections.push_back(nullptr);
+		}
+		else
+		{
+			//std::cout << "++ chunksection: " << i << std::endl;
+			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition, heightMap, colorMap);
+			if (newChucnkSection)
+			{
+				chunkSections.push_back(newChucnkSection);
+			}
+			else
+			{
+				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+			}
+		}
+	}
 
 	generated.store(true);
 
@@ -143,7 +172,7 @@ bool Voxel::Chunk::generate()
 
 bool Voxel::Chunk::generateSingleSection()
 {
-	assert(!canGenerate());
+	assert(canGenerate());
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
@@ -156,7 +185,7 @@ bool Voxel::Chunk::generateSingleSection()
 		else
 		{
 			//std::cout << "++ chunksection: " << i << std::endl;
-			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
+			auto newChucnkSection = ChunkSection::createWithFill(position.x, i, position.z, worldPosition);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);
@@ -175,7 +204,7 @@ bool Voxel::Chunk::generateSingleSection()
 
 bool Voxel::Chunk::generateWithBiomeTest()
 {
-	assert(!canGenerate());
+	assert(canGenerate());
 
 	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
 	std::vector<std::vector<float>> elevationMap;
@@ -305,7 +334,7 @@ bool Voxel::Chunk::generateWithBiomeTest()
 
 bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 {
-	assert(!canGenerate());
+	assert(canGenerate());
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
@@ -337,7 +366,7 @@ bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 
 bool Voxel::Chunk::generateWithRegionColor()
 {
-	assert(!canGenerate());
+	assert(canGenerate());
 	
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{

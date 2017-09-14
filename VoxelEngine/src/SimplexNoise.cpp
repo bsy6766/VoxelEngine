@@ -6,6 +6,7 @@ using namespace Voxel::Noise;
 std::unique_ptr<SimplexNoise> Manager::worldNoise = nullptr;
 std::unique_ptr<SimplexNoise> Manager::temperatureNoise = nullptr;
 std::unique_ptr<SimplexNoise> Manager::moistureNoise = nullptr;
+std::unique_ptr<SimplexNoise> Manager::colorNoise = nullptr;
 
 
 const float SimplexNoise::F2 = 0.366025403f;
@@ -146,6 +147,7 @@ void Voxel::Noise::Manager::init(const std::string & seed)
 	worldNoise = std::unique_ptr<SimplexNoise>(new SimplexNoise(seed));
 	temperatureNoise = std::unique_ptr<SimplexNoise>(new SimplexNoise(seed + "TEMP"));
 	moistureNoise = std::unique_ptr<SimplexNoise>(new SimplexNoise(seed + "MOIS"));
+	colorNoise = std::unique_ptr<SimplexNoise>(new SimplexNoise(seed + "COLOR"));
 }
 
 SimplexNoise * Voxel::Noise::Manager::getWorldNoise()
@@ -161,4 +163,9 @@ SimplexNoise * Voxel::Noise::Manager::getTemperatureNoise()
 SimplexNoise * Voxel::Noise::Manager::getMoistureNoise()
 {
 	return moistureNoise.get();
+}
+
+SimplexNoise * Voxel::Noise::Manager::getColorNoise()
+{
+	return colorNoise.get();
 }

@@ -416,7 +416,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 									needMesh = true;
 								}
 
-								chunk->generateWithRegionColor();
+								chunk->generate();
 							}
 
 

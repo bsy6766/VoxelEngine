@@ -27,12 +27,14 @@ namespace Voxel
 			static std::unique_ptr<SimplexNoise> worldNoise;	// For world gen
 			static std::unique_ptr<SimplexNoise> temperatureNoise;	// For biome temperature
 			static std::unique_ptr<SimplexNoise> moistureNoise;	// For biome moisture
+			static std::unique_ptr<SimplexNoise> colorNoise;
 		public:
 			static void init(const std::string& seed);
 
 			static SimplexNoise* getWorldNoise();
 			static SimplexNoise* getTemperatureNoise();
 			static SimplexNoise* getMoistureNoise();
+			static SimplexNoise* getColorNoise();
 		};
 
 		/**

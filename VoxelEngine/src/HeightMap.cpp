@@ -1,5 +1,6 @@
 #include "HeightMap.h"
 #include <Utility.h>
+#include <ChunkUtil.h>
 
 using namespace Voxel;
 
@@ -46,12 +47,13 @@ NoisePreset::NoisePreset(const float freq, const float octave1, const float octa
 
 
 
-const NoisePreset HeightMap::PlainPreset = NoisePreset();
-const NoisePreset HeightMap::DesertPreset = NoisePreset();
-const NoisePreset HeightMap::OceanPreset = NoisePreset();
+const NoisePreset HeightMap::PlainPreset =			NoisePreset(0.1f, 1.0f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 0.5f, 31.0f, true, false);
+const NoisePreset HeightMap::DesertPreset =			NoisePreset();
+const NoisePreset HeightMap::OceanPreset =			NoisePreset();
 const NoisePreset HeightMap::DebugPreset =			NoisePreset(0.01f, 1.0f, 0.5f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 1.5f, 31.0f, true, false);
 const NoisePreset HeightMap::TemperaturePreset =	NoisePreset(0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 1.0f, 0.0f, false, false);
 const NoisePreset HeightMap::MoisturePreset =		NoisePreset(0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 1.0f, 0.0f, false, false);
+const NoisePreset HeightMap::ColorPreset =			NoisePreset(0.15f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 1.0f, 0.0f, false, false);
 
 float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z)
 {
@@ -89,7 +91,10 @@ float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noi
 		val = glm::round(val * np->terrace) / np->terrace;
 	}
 
-	val = glm::clamp(val, 0.0f, 2.0f);
+	val *= 0.5f;
+	val += 0.25f;
+
+	val = glm::clamp(val, 0.5f, 1.0f);
 
 	return val;
 }
@@ -132,4 +137,106 @@ float Voxel::HeightMap::getMoistureNosie2D(const float x, const float z)
 
 	return getNoise(&MoisturePreset, mNoise, x, z);
 
+}
+
+float Voxel::HeightMap::getColorNoise2D(const float x, const float z)
+{
+	Noise::SimplexNoise* cNoise = Noise::Manager::getColorNoise();
+
+	return getNoise(&ColorPreset, cNoise, x, z);
+}
+
+void Voxel::HeightMap::getHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<float>>& heightMap)
+{
+	int maxY = 0;
+	int minY = 10000;
+
+	int xStart = static_cast<int>(chunkPosition.x);
+	int zStart = static_cast<int>(chunkPosition.z);
+	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
+	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
+
+	float nx = static_cast<float>(chunkPosition.x);
+	float nz = static_cast<float>(chunkPosition.z);
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
+	heightMap.clear();
+
+	for (int x = xStart; x < xEnd; x++)
+	{
+		heightMap.push_back(std::vector<float>());
+
+		for (int z = zStart; z < zEnd; z++)
+		{
+			// Get height 
+			float val = HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::PLAIN);
+
+			// The lowest block level is 30. The range of terrain in y axis is 120 (30 
+			int y = (static_cast<int>(val * 60.0f) + 30);
+
+			heightMap.back().push_back(val);
+
+			if (y > maxY)
+			{
+				maxY = y;
+			}
+			else if (y < minY)
+			{
+				minY = y;
+			}
+
+			// Get temperature
+			//temperatureMap.back().push_back(HeightMap::getTemperatureNoise2D(nx, nz));
+			//moistureMap.back().push_back(HeightMap::getMoistureNosie2D(nx, nz));
+
+			nz += step;
+		}
+		nx += step;
+		nz = static_cast<float>(chunkPosition.z);
+	}
+
+	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
+
+	minChunkSectionY = ((minY - 5) / Constant::CHUNK_SECTION_HEIGHT);
+
+	if (minChunkSectionY < 0)
+	{
+		minChunkSectionY = 0;
+	}
+}
+
+void Voxel::HeightMap::getHeightMapForColor(const glm::vec3 & chunkPosition, std::vector<std::vector<float>>& colorMap)
+{
+
+	int xStart = static_cast<int>(chunkPosition.x);
+	int zStart = static_cast<int>(chunkPosition.z);
+	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
+	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
+
+	float nx = static_cast<float>(chunkPosition.x);
+	float nz = static_cast<float>(chunkPosition.z);
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
+	colorMap.clear();
+
+	for (int x = xStart; x < xEnd; x++)
+	{
+		colorMap.push_back(std::vector<float>());
+
+		for (int z = zStart; z < zEnd; z++)
+		{
+			// Get height 
+			float val = HeightMap::getColorNoise2D(nx, nz);
+
+			colorMap.back().push_back(val);
+
+			// Get temperature
+			//temperatureMap.back().push_back(HeightMap::getTemperatureNoise2D(nx, nz));
+			//moistureMap.back().push_back(HeightMap::getMoistureNosie2D(nx, nz));
+
+			nz += step;
+		}
+		nx += step;
+		nz = static_cast<float>(chunkPosition.z);
+	}
 }

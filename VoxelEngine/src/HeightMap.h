@@ -71,11 +71,17 @@ namespace Voxel
 		static const NoisePreset TemperaturePreset;
 		// Moisture preset
 		static const NoisePreset MoisturePreset;
+		// color rpeset
+		static const NoisePreset ColorPreset;
 
 		// Get noise 2d. Return noise value between 0 and 2.
 		static float getNoise2D(const float x, const float z, const PRESET preset);
 		static float getTemperatureNoise2D(const float x, const float z);
 		static float getMoistureNosie2D(const float x, const float z);
+		static float getColorNoise2D(const float x, const float z);
+
+		static void getHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<float>>& heightMap);
+		static void getHeightMapForColor(const glm::vec3& chunkPosition, std::vector<std::vector<float>>& colorMap);
 	};
 }
 
