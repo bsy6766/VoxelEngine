@@ -29,7 +29,7 @@ ChunkSection::~ChunkSection()
 	blocks.clear();
 }
 
-ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap)
+ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
 	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
@@ -141,7 +141,7 @@ ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int
 	}
 }
 
-bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap)
+bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	position = glm::ivec3(x, y, z);
 
@@ -165,23 +165,12 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	const int single = 1;
 	const int multiple = Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH;
 
-	glm::uvec3 color;
-
-	auto size = regionMap.size();
-
-	if (size == single)
-	{
-		color = Application::getInstance().getGame()->getWorld()->getRegion(regionMap.front())->randColor;
-	}
-
-
 	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 	{
 		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
 		{
 			int localY = 0;
-			float e = heightMap.at(blockX).at(blockZ);
-			int heightY = static_cast<int>(e * 60.0f) + 30;
+			int heightY = heightMap.at(blockX).at(blockZ);
 
 			if (yStart <= heightY)
 			{
@@ -204,30 +193,8 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 
 					localY++;
 
-					/*
 					auto color = newBlock->getColor3() * colorMap.at(blockX).at(blockZ);
 					newBlock->setColor(color);
-					*/
-
-					if (size == single)
-					{
-						newBlock->setColorU3(color);
-
-					}
-					else if (size == multiple)
-					{
-						auto regionId = regionMap.at(localBlockXZToMapIndex(blockX, blockZ));
-						if (regionId == -1)
-						{
-							newBlock->setColorRGB(255, 255, 255);
-							//throw std::runtime_error("Region ID is invalid for this block. Fix this");
-						}
-						else
-						{
-							color = Application::getInstance().getGame()->getWorld()->getRegion(regionId)->randColor;
-							newBlock->setColorU3(color);
-						}
-					}
 				}
 			}
 			else

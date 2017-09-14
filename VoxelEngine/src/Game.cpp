@@ -324,7 +324,7 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
-	player->setPosition(glm::vec3(-300, 500, 0));
+	//player->setPosition(glm::vec3(-300, 500, 0));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 
@@ -334,6 +334,7 @@ void Game::createPlayer()
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
 	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
+	Camera::mainCamera->setSpeed(100.0f);
 
 	// for debug
 	//player->initYLine();

@@ -59,7 +59,7 @@ namespace Voxel
 
 		// getter
 		void setType(Type type);
-		Type getType();
+		Type getType() const;
 
 		// setter
 		void setModifier(Modifier modifier);

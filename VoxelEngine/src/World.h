@@ -47,6 +47,8 @@ namespace Voxel
 		void initRegions();
 		void rebuildRegions();
 		void initRegionDifficulty();
+		void initRegionBiome();
+		void initRegionTerrain();
 	public:
 		World();
 		~World();

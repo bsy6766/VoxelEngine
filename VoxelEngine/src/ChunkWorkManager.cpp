@@ -1,6 +1,8 @@
 #include "ChunkWorkManager.h"
 #include <iostream>
 #include <World.h>
+#include <Region.h>
+#include <Terrain.h>
 #include <ChunkMap.h>
 #include <Chunk.h>
 #include <ChunkUtil.h>
@@ -10,6 +12,7 @@
 #include <Utility.h>
 #include <unordered_set>
 #include <Color.h>
+#include <HeightMap.h>
 
 using namespace Voxel;
 
@@ -342,7 +345,9 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 
 							bool same = true;
+
 							std::unordered_set<unsigned int> regionIDSet;
+							std::unordered_map<unsigned int, Terrain> regionTerrains;
 
 							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
 							{
@@ -360,7 +365,19 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 									z += step;
 
-									regionIDSet.emplace(regionID);
+									auto find_it = regionIDSet.find(regionID);
+									if (find_it == regionIDSet.end())
+									{
+										if (regionID == -1)
+										{
+											regionTerrains.emplace(regionID, Terrain());
+										}
+										else
+										{
+											regionTerrains.emplace(regionID, world->getRegion(regionID)->getTerrainType());
+										}
+										regionIDSet.emplace(regionID);
+									}
 								}
 
 								x += step;
@@ -376,9 +393,16 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								// save region map to chunk
 								chunk->setRegionMap(regionMap);
 							}
+
+							int maxChunkSectionY = 0;
+							int minChunkSectionY = 0;
+
+							std::vector<std::vector<int>> heightMap;
 							
-							//chunk->generate();
-							chunk->generateWithRegionColor();
+							HeightMap::getHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, minChunkSectionY, heightMap, regionMap, regionTerrains);
+							
+							chunk->generate(heightMap, 0, maxChunkSectionY);
+							//chunk->generateWithRegionColor();
 
 							// we need mesh for newly generated chunk
 							addBuildMeshWork(chunkXZ);

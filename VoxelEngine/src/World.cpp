@@ -45,6 +45,8 @@ void Voxel::World::init(const int gridWidth, const int gridLength)
 	initVoronoi();
 	initRegions();
 	initRegionDifficulty();
+	initRegionBiome();
+	initRegionTerrain();
 	initVoronoiDebug();
 }
 
@@ -519,8 +521,6 @@ void Voxel::World::initRegions()
 
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
-		newRegion->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture);
-		newRegion->initTerrainType();
 
 		regions.emplace(cellID, newRegion);
 	}
@@ -608,6 +608,33 @@ void Voxel::World::initRegionDifficulty()
 			auto region = cell->getRegion();
 
 			region->setDifficulty(pairs.at(cellID).dist, pairs.at(cellID).size, maxTotalDist, maxPathSize, vd->getMinBound(), vd->getMaxBound());
+		}
+	}
+}
+
+void Voxel::World::initRegionBiome()
+{
+	for (auto& r : regions)
+	{
+		auto region = r.second;
+
+		region->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture);
+	}
+}
+
+void Voxel::World::initRegionTerrain()
+{
+	for (auto& r : regions)
+	{
+		auto region = r.second;
+
+		if (region->isCellValid())
+		{
+			region->initTerrainType();
+		}
+		else
+		{
+			region->initTerrainType(Terrain::Type::MOUNTAINS);
 		}
 	}
 }

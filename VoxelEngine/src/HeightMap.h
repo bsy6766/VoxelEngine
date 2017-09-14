@@ -2,6 +2,8 @@
 #define HEIGHT_MAP_H
 
 #include <SimplexNoise.h>
+#include <unordered_map>
+#include <Terrain.h>
 
 namespace Voxel
 {
@@ -44,9 +46,9 @@ namespace Voxel
 		enum class PRESET
 		{
 			NONE = 0,
-			PLAIN,
-			DESERT,
-			OCEAN,
+			PLAIN,			// Flat terrain. No hills and mountains
+			HILLS,			// Few hills in flat terrain
+			MOUNTAINS,		// 
 			DEBUG
 		};
 	private:
@@ -57,12 +59,9 @@ namespace Voxel
 		static float getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z);
 	public:
 		// Terrain presets
-		// Plain. Mostly flat 
 		static const NoisePreset PlainPreset;
-		// Desert. A bit flat with some low hills
-		static const NoisePreset DesertPreset;
-		// Ocean. Almost flat but with very few islands. 
-		static const NoisePreset OceanPreset;
+		static const NoisePreset HillsPreset;
+		static const NoisePreset MountainsPreset;
 
 		// Custom for debug
 		static const NoisePreset DebugPreset;
@@ -76,11 +75,14 @@ namespace Voxel
 
 		// Get noise 2d. Return noise value between 0 and 2.
 		static float getNoise2D(const float x, const float z, const PRESET preset);
+		static float getNoise2D(const float x, const float z, const Terrain& terrain);
 		static float getTemperatureNoise2D(const float x, const float z);
 		static float getMoistureNosie2D(const float x, const float z);
 		static float getColorNoise2D(const float x, const float z);
 
-		static void getHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<float>>& heightMap);
+		static int getYFromHeightValue(const float value, const Terrain::Type type);
+
+		static void getHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
 		static void getHeightMapForColor(const glm::vec3& chunkPosition, std::vector<std::vector<float>>& colorMap);
 	};
 }

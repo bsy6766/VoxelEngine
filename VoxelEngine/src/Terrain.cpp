@@ -74,7 +74,7 @@ void Voxel::Terrain::setType(Type type)
 	this->type = type;
 }
 
-Voxel::Terrain::Type Voxel::Terrain::getType()
+Voxel::Terrain::Type Voxel::Terrain::getType() const
 {
 	return this->type;
 }

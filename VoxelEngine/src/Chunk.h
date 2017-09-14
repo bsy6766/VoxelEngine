@@ -66,7 +66,7 @@ namespace Voxel
 		static Chunk* createEmpty(const int x, const int z);
 
 		// Generates chunk.
-		bool generate();
+		bool generate(const std::vector<std::vector<int>>& heightMap, const int minChunkSectionY, const int maxChunkSectionY);
 		// Generates chunk. Default generation. Fills single chunk section with grass block
 		bool generateSingleSection();
 		// Generates chunk. Uses noise to generate biome.

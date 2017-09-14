@@ -129,16 +129,12 @@ bool Chunk::init(const int x, const int z)
 	return true;
 }
 
-bool Voxel::Chunk::generate()
+bool Voxel::Chunk::generate(const std::vector<std::vector<int>>& heightMap, const int minChunkSectionY, const int maxChunkSectionY)
 {
 	assert(canGenerate());
 
-	int maxChunkSectionY = 0;
-	int minChunkSectionY = 0;
-	std::vector<std::vector<float>> heightMap;
 	std::vector<std::vector<float>> colorMap;
 
-	HeightMap::getHeightMapForChunk(position, maxChunkSectionY, minChunkSectionY, heightMap);
 	HeightMap::getHeightMapForColor(position, colorMap);
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
