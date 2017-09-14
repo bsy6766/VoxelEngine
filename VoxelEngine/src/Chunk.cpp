@@ -153,7 +153,7 @@ bool Voxel::Chunk::generate()
 		{
 			//std::cout << "++ chunksection: " << i << std::endl;
 			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
-			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition, heightMap, colorMap);
+			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition, regionMap, heightMap, colorMap);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);
@@ -379,7 +379,7 @@ bool Voxel::Chunk::generateWithRegionColor()
 		else
 		{
 			//std::cout << "++ chunksection: " << i << std::endl;
-			auto newChucnkSection = ChunkSection::createWithRegionColor(position.x, i, position.z, worldPosition, blockRegion);
+			auto newChucnkSection = ChunkSection::createWithRegionColor(position.x, i, position.z, worldPosition, regionMap);
 			if (newChucnkSection)
 			{
 				chunkSections.push_back(newChucnkSection);
@@ -413,7 +413,7 @@ glm::vec3 Chunk::getWorldPosition()
 
 ChunkSection * Voxel::Chunk::getChunkSectionAtY(const int y)
 {
-	if (y >= 0 && y < chunkSections.size())
+	if (y >= 0 && y < static_cast<int>(chunkSections.size()))
 	{
 		if (chunkSections.at(y) == nullptr)
 		{
@@ -462,7 +462,7 @@ void Voxel::Chunk::createChunkSectionAtY(const int y)
 
 void Voxel::Chunk::deleteChunkSectionAtY(const int y)
 {
-	if (y >= 0 && y < chunkSections.size())
+	if (y >= 0 && y < static_cast<int>(chunkSections.size()))
 	{
 		if (chunkSections.at(y))
 		{
@@ -541,15 +541,15 @@ AABB Voxel::Chunk::getBoundingBox()
 	return boundingBox;
 }
 
-void Voxel::Chunk::setAllBlockRegion(const unsigned int regionID)
+void Voxel::Chunk::setRegionMap(const unsigned int regionID)
 {
-	blockRegion.clear();
-	blockRegion.push_back(regionID);
+	regionMap.clear();
+	regionMap.push_back(regionID);
 }
 
-void Voxel::Chunk::setBlockRegion(const std::vector<unsigned int>& regionIDs)
+void Voxel::Chunk::setRegionMap(const std::vector<unsigned int>& regionIDs)
 {
-	blockRegion = regionIDs;
+	regionMap = regionIDs;
 }
 
 bool Voxel::Chunk::isGenerated()

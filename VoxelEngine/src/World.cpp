@@ -44,6 +44,7 @@ void Voxel::World::init(const int gridWidth, const int gridLength)
 
 	initVoronoi();
 	initRegions();
+	initRegionDifficulty();
 	initVoronoiDebug();
 }
 
@@ -126,6 +127,7 @@ void Voxel::World::findAllRegionsWithAABB(const AABB & boundingBox, std::vector<
 	{
 		auto region = e.second;
 
+		// Only check valid cells because invalid cells doesn't have edge data
 		if (region->isCellValid())
 		{
 			for (auto& v : vertices)
@@ -140,7 +142,7 @@ void Voxel::World::findAllRegionsWithAABB(const AABB & boundingBox, std::vector<
 	}
 }
 
-void Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int & regionID)
+bool Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int & regionID)
 {
 	for (auto& e : regions)
 	{
@@ -151,13 +153,15 @@ void Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int
 			if (region->isPointIsInRegion(point))
 			{
 				regionID = e.first;
-				return;
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
-unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
+unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point, const bool skipInvalidRegion)
 {
 	float dist = std::numeric_limits<float>::max();
 	unsigned int regionID = -1;
@@ -166,17 +170,24 @@ unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
 	{
 		auto region = e.second;
 
-		if (region->isCellValid())
+		/*
+		if (skipInvalidRegion)
 		{
-			auto pos = region->getSitePosition();
-
-			float d = glm::abs(glm::distance(point, pos));
-
-			if (d < dist)
+			if (!region->isCellValid())
 			{
-				dist = d;
-				regionID = e.first;
+				continue;
 			}
+		}
+
+		*/
+		auto pos = region->getSitePosition();
+
+		float d = glm::abs(glm::distance(point, pos));
+
+		if (d < dist)
+		{
+			dist = d;
+			regionID = e.first;
 		}
 	}
 
@@ -481,7 +492,6 @@ void Voxel::World::initRegions()
 	auto& cells = vd->getCells();
 
 	// Iterate through cells and create region.
-	//float minDistFromCenter = std::numeric_limits<float>::max();
 	unsigned int startingRegionID = -1;
 
 	int xMin = (gridWidth / 2) - (gridWidth / 10);
@@ -510,15 +520,6 @@ void Voxel::World::initRegions()
 		auto cellID = cell->getID();
 		auto cellSitePos = cell->getSitePosition();
 
-		/*
-		auto d = glm::abs(glm::distance(glm::vec2(0, 0), cellSitePos));
-		if (d < minDistFromCenter)
-		{
-		minDistFromCenter = d;
-		startingRegionID = cellID;
-		}
-		*/
-
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
 		newRegion->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture);
@@ -539,10 +540,16 @@ void Voxel::World::initRegions()
 	{
 		throw std::runtime_error("Failed to create starting zome");
 	}
+}
 
+void Voxel::World::initRegionDifficulty()
+{
 	// from staring region, calculate distance to all region from starting region
 	std::vector<float> dist;
 	std::vector<unsigned int> prevPath;
+
+	unsigned int startingRegionID = currentRegion->getID();
+
 	vd->findShortestPathFromSrc(startingRegionID, dist, prevPath);
 
 	// Based on dist and prevPath, calculate difficulty.
@@ -558,6 +565,7 @@ void Voxel::World::initRegions()
 		int size;
 	};
 
+	auto& cells = vd->getCells();
 	std::vector<pair> pairs(cells.size(), { 0, 0 });
 
 	for (auto e : cells)

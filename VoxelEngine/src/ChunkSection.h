@@ -34,7 +34,7 @@ namespace Voxel
 		// 16 x 16 x 16 blocks. TODO: Consider using Octree.
 		std::vector<Block*> blocks;
 
-		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
+		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
@@ -45,7 +45,7 @@ namespace Voxel
 		~ChunkSection();
 
 		// Creates chunk section.
-		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
+		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<float>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		// Creates chunk section. Blocks are empty.
 		static ChunkSection* createEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		static ChunkSection* createWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);

@@ -48,7 +48,7 @@ namespace Voxel
 		// regions
 		void initRegions();
 		void rebuildRegions();
-
+		void initRegionDifficulty();
 	public:
 		World();
 		~World();
@@ -64,8 +64,8 @@ namespace Voxel
 		// Find region that contains the bounding box and return the region(Cell) id. If success, returns true. Else, false.
 		bool findRegionWithAABB(const AABB& boundingBox, unsigned int& regionID) const;
 		void findAllRegionsWithAABB(const AABB& boundingBox, std::vector<unsigned int>& regionIDs);
-		void findFirstRegionHasPoint(const glm::vec2& point, unsigned int& regionID);
-		unsigned int findClosestRegionToPoint(const glm::vec2& point);
+		bool findFirstRegionHasPoint(const glm::vec2& point, unsigned int& regionID);
+		unsigned int findClosestRegionToPoint(const glm::vec2& point, const bool skipInvalidRegion);
 
 		// Get retion
 		Region* getRegion(const unsigned int regionID);

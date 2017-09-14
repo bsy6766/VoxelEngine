@@ -224,7 +224,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	this->scale = 1.0f;
+	this->scale = 0.1f;
 	this->debugScale = 1.0f;
 
 	for (auto site : randomSites)
@@ -501,7 +501,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	auto lineColor = glm::vec3(0);
 	auto graphColor = Color::getRandomColor();
 
-	const float y = 200.0f;
+	const float y = 32.0f;
 
 	unsigned int index = 0;
 	GLuint PRIMITIVE_RESTART = 99999;

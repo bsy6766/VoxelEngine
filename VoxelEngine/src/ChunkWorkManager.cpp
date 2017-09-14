@@ -328,124 +328,50 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 							auto s = Utility::Time::now();
 
-							// Get chunk's AABB
-							AABB boundingBox = chunk->getBoundingBox();
+							// My frist apporach here was getting all regions that chunk overlaps.
+							// Thought it would give small optimization, but this method can't tell if block is in which region if chunk is overlapped between valid and invalid regions
+							// So I'm going brute force here. There aren't much difference in performance with my machine, and not sure if I can bring better option
+							// Each chunk takes 1 ~ 2 ms to generate. (build: 1919)
+							
+							// Get all block world position in XZ axises and find which region the are at
+							std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
-							bool needMesh = false;
+							const float step = 1.0f;	// Block size
 
-							// hmm?
-							//boundingBox.size -= 1.0f;
+							float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
+							float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 
-							// Get all regions that chunk is in.
-							std::vector<unsigned int> regionIDs;
-							world->findAllRegionsWithAABB(boundingBox, regionIDs);
-
-							if (!regionIDs.empty())
+							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
 							{
-								auto size = regionIDs.size();
-								if (size == 1)
+								for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
 								{
-									// completely in region. 
-									chunk->setAllBlockRegion(regionIDs.front());
-									needMesh = true;
-								}
-								else
-								{
-									// In multiple regions
-									// Get all block world position in XZ axises and find which region the are at
-									std::vector<unsigned int> blockRegions(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
+									glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
 
-									const float step = 1.0f;
+									auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
 
-									float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
-									float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+									// First, check if block is in region that we found
+									unsigned int regionID = world->findClosestRegionToPoint(blockXZPos, false);
 
-									for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
-									{
-										for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
-										{
-											glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
+									// This method can't be fail. It will must find closest region
+									assert(regionID != -1);
 
-											auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
+									regionMap.at(index) = regionID;
 
-											unsigned int regionID = -1;
-											world->findFirstRegionHasPoint(blockXZPos, regionID);
-
-											if (regionID == -1)
-											{
-												std::cout << "RegionID is -1. Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "), block (" << blockXZPos.x << ", " << blockXZPos.y << ")" << std::endl;
-												// AFAIK, this happens when point is on the edge of polygon.
-												// In this case, we can do either
-												// 1) iterate all region and find closest region
-												// 2) use chunk's center position to find region
-												// For now, I'm going to use first method
-												regionID = world->findClosestRegionToPoint(blockXZPos);
-												std::cout << "Resolved to closest region: " << regionID << std::endl;
-											}
-
-											blockRegions.at(index) = regionID;
-											/*
-											for (auto id : regionIDs)
-											{
-												if (world->isPointInRegion(id, blockXZPos))
-												{
-													blockRegions.at(index) = id;
-													break;
-												}
-												else
-												{
-													// Check neighbors too
-													unsigned int neighborID = -1;
-													if (world->isPointInRegionNeighbor(id, blockXZPos, neighborID))
-													{
-														blockRegions.at(index) = neighborID;
-														break;
-													}
-												}
-											}
-											*/
-
-											z += step;
-										}
-
-										x += step;
-										z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
-									}
-
-									chunk->setBlockRegion(blockRegions);
-									needMesh = true;
+									z += step;
 								}
 
-								chunk->generate();
+								x += step;
+								z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 							}
 
+							// save region map to chunk
+							chunk->setRegionMap(regionMap);
 
+							//chunk->generate();
+							chunk->generateWithRegionColor();
 
-
-							// Else, it's empty. do nothing
-
-							/*
-							// Check which region is this chunk at
-							unsigned int regionID = -1;
-							bool success = world->findRegionWithAABB(boundingBox, regionID);
-
-							if (success)
-							{
-								int difficulty = world->getRegionDifficulty(regionID);
-								chunk->generateWithColor(Color::getDifficultyColor(difficulty));
-								needMesh = true;
-							}
-							else
-							{
-								chunk->generateWithColor(glm::uvec3(255));
-								needMesh = true;
-							}
-							*/
-
-							if (needMesh)
-							{
-								addBuildMeshWork(chunkXZ);
-							}
+							// we need mesh for newly generated chunk
+							addBuildMeshWork(chunkXZ);
 
 							auto e = Utility::Time::now();
 							std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;

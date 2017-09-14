@@ -942,12 +942,6 @@ void Game::render(const float delta)
 		chunkMap->render();
 	}
 
-	if (renderVoronoi)
-	{
-		world->renderVoronoi();
-	}
-
-
 	player->render(defaultProgram);
 
 	if (player->isLookingAtBlock())
@@ -965,6 +959,14 @@ void Game::render(const float delta)
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
+
+	if (renderVoronoi)
+	{
+		defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		world->renderVoronoi();
+	}
+
+
 
 	defaultCanvas->render();
 	debugConsole->render();
