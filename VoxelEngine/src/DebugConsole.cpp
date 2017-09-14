@@ -127,7 +127,7 @@ void Voxel::DebugConsole::init()
 	chunkNumbers->setVisibility(false);
 	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
 
-	biome = UI::Text::createWithOutline("biome type / 0.00 / 0.00", glm::vec2(57.0f, -239.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 50);
+	biome = UI::Text::createWithOutline("biome type / 0.00 / 0.00", glm::vec2(57.0f, -239.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 60);
 	biome->setPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setVisibility(false);
