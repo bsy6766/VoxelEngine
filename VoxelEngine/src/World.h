@@ -8,6 +8,7 @@
 namespace Voxel
 {
 	class Region;
+	class Program;
 
 	/**
 	*	@class World
@@ -35,6 +36,9 @@ namespace Voxel
 
 		// Voronoi diagram
 		Voronoi::Diagram* vd;
+
+		// render mode
+		bool renderVoronoiMode;
 
 		// Voronoi 
 		void initVoronoi();
@@ -86,9 +90,12 @@ namespace Voxel
 		// Returns true if player moved to new region
 		bool updatePlayerPos(const glm::vec3& playerPos);
 
+		// mode setter
+		void setRenderVoronoiMode(const bool mode);
+
 		// Renders visible chunk
 		void render();
-		void renderVoronoi();
+		void renderVoronoi(Program* program);
 	};
 }
 

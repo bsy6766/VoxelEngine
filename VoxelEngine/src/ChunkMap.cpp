@@ -1,4 +1,5 @@
 #include "ChunkMap.h"
+#include <glm/gtx/transform.hpp>
 #include <Chunk.h>
 #include <ChunkSection.h>
 #include <iostream>
@@ -9,17 +10,38 @@
 #include <Camera.h>
 #include <Frustum.h>
 #include <Region.h>
+#include <ProgramManager.h>
+#include <Program.h>
+#include <ChunkUtil.h>
 
 using namespace Voxel;
 
 Voxel::ChunkMap::ChunkMap()
 	: currentChunkPos(0)
+	, chunkBorderVao(0)
+	, chunkBorderLineSize(0)
+	, blockOutlineVao(0)
+	, chunkBorderModelMat(1.0f)
+	, renderChunkBorderMode(false)
+	, renderChunksMode(true)
+	, renderBlockOutlineMode(true)
+	, updateChunksMode(true)
 {
 }
 
 Voxel::ChunkMap::~ChunkMap()
 {
 	clear();
+
+	if (chunkBorderVao)
+	{
+		glDeleteVertexArrays(1, &chunkBorderVao);
+	}
+
+	if (blockOutlineVao)
+	{
+		glDeleteVertexArrays(1, &blockOutlineVao);
+	}
 }
 
 void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
@@ -109,6 +131,214 @@ std::vector<glm::vec2> Voxel::ChunkMap::initActiveChunks(const int renderDistanc
 	}
 
 	return chunkCoordinates;
+}
+
+void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
+{
+	// Generate vertex array object
+	glGenVertexArrays(1, &chunkBorderVao);
+	// Bind it
+	glBindVertexArray(chunkBorderVao);
+
+	// Generate buffer object
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	float size = Constant::CHUNK_BORDER_SIZE;
+	float yMin = 0;
+	float yMax = 256.0f;
+	
+	std::vector<float> lines = 
+	{
+		// vertical blue chunk lines
+		0, yMin, 0,
+		0, yMax, 0,
+		size, yMin, 0,
+		size, yMax, 0,
+		0, yMin, size,
+		0, yMax, size,
+		size, yMin, size,
+		size, yMax, size,
+	};
+
+	std::vector<float> colors = 
+	{
+		// vertical blue chunk lines
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+		0, 0, 1.0f, 1.0f,
+	};
+
+	float subY = 0.0f;
+	for (int i = 0; i < 17; i++)
+	{
+		lines.push_back(0); lines.push_back(subY); lines.push_back(0);
+		lines.push_back(0); lines.push_back(subY); lines.push_back(size);
+		lines.push_back(0); lines.push_back(subY); lines.push_back(size);
+		lines.push_back(size); lines.push_back(subY); lines.push_back(size);
+		lines.push_back(size); lines.push_back(subY); lines.push_back(size);
+		lines.push_back(size); lines.push_back(subY); lines.push_back(0);
+		lines.push_back(size); lines.push_back(subY); lines.push_back(0);
+		lines.push_back(0); lines.push_back(subY); lines.push_back(0);
+
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+		colors.push_back(0); colors.push_back(0); colors.push_back(1.0f); colors.push_back(1.0f);
+
+		subY += Constant::CHUNK_BORDER_SIZE;
+	}
+
+	float nx = -Constant::CHUNK_BORDER_SIZE;
+	float nz = -Constant::CHUNK_BORDER_SIZE;
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (i == 1 && j == 1) continue;
+
+			lines.push_back(nx); lines.push_back(yMin); lines.push_back(nz);
+			lines.push_back(nx); lines.push_back(yMax); lines.push_back(nz);
+
+			//red
+			colors.push_back(1.0f); colors.push_back(0); colors.push_back(0); colors.push_back(1.0f);
+			colors.push_back(1.0f); colors.push_back(0); colors.push_back(0); colors.push_back(1.0f);
+
+			nz += Constant::CHUNK_BORDER_SIZE;
+		}
+
+		nx += Constant::CHUNK_BORDER_SIZE;
+		nz = -Constant::CHUNK_BORDER_SIZE;
+	}
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * lines.size(), &lines.front(), GL_STATIC_DRAW);
+
+	// Enable vertices attrib
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	// Generate buffer object
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// unbind buffer
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+
+	chunkBorderLineSize = lines.size();
+}
+
+void Voxel::ChunkMap::initBlockOutline(Program* program)
+{
+	// Create debug chunk box
+	// Generate vertex array object
+	glGenVertexArrays(1, &blockOutlineVao);
+	// Bind it
+	glBindVertexArray(blockOutlineVao);
+
+	// Enable vertices attrib
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// Generate buffer object
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	GLfloat cube[] = {
+		// x, y, z
+		0.502f, -0.502f, -0.502f,
+		-0.502f, -0.502f, -0.502f,
+		-0.502f, -0.502f, 0.502f,
+		0.502f, -0.502f, 0.502f,
+		0.502f, 0.502f, -0.502f,
+		-0.502f, 0.502f, -0.502f,
+		-0.502f, 0.502f, 0.502f,
+		0.502f, 0.502f, 0.502f,
+	};
+
+	GLfloat color[] = {
+		// x, y, z
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	unsigned int indices[] = {
+		0, 1, 1, 2, 2, 3, 3, 0,
+		4, 5, 5, 6, 6, 7, 7, 4,
+		0, 4, 1, 5, 2, 6, 3, 7
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	// Generate buffer object
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	// unbind buffer
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	GLuint ibo;
+	// Generate indices object
+	glGenBuffers(1, &ibo);
+	// Bind indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	// Load indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// unbind buffer
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &ibo);
 }
 
 void ChunkMap::clear()
@@ -780,6 +1010,8 @@ int Voxel::ChunkMap::getActiveChunksCount()
 
 bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager * workManager, const double time)
 {
+	if (!updateChunksMode) return false;
+
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
@@ -788,6 +1020,13 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 	if (playerPosition.z < 0) chunkZ -= 1;
 
 	auto newChunkXZ = glm::ivec2(chunkX, chunkZ);
+
+	if (renderChunkBorderMode)
+	{
+		glm::vec3 translate = glm::vec3(newChunkXZ.x, 0, newChunkXZ.y);
+		translate *= Constant::CHUNK_BORDER_SIZE;
+		chunkBorderModelMat = glm::translate(glm::mat4(1.0f), translate);
+	}
 
 	if (newChunkXZ != currentChunkPos)
 	{
@@ -1176,24 +1415,72 @@ int Voxel::ChunkMap::findVisibleChunk()
 	return count;
 }
 
+void Voxel::ChunkMap::setRenderChunkBorderMode(const bool mode)
+{
+	renderChunkBorderMode = mode;
+}
+
+void Voxel::ChunkMap::setRenderChunksMode(const bool mode)
+{
+	renderChunksMode = mode;
+}
+
+void Voxel::ChunkMap::setRenderBlockOutlineMode(const bool mode)
+{
+	renderBlockOutlineMode = mode;
+}
+
+void Voxel::ChunkMap::setUpdateChunkMapMode(const bool mode)
+{
+	updateChunksMode = mode;
+}
+
 void Voxel::ChunkMap::render()
 {
-	for (auto& e : map)
+	if (renderChunksMode)
 	{
-		// Get chunk raw pointer. 
-		auto chunk = (e.second).get();
-		if (chunk != nullptr)
+		for (auto& e : map)
 		{
-			if (chunk->isActive())
+			// Get chunk raw pointer. 
+			auto chunk = (e.second).get();
+			if (chunk != nullptr)
 			{
-				if (chunk->isGenerated())
+				if (chunk->isActive())
 				{
-					if (chunk->isVisible())
+					if (chunk->isGenerated())
 					{
-						chunk->render();
+						if (chunk->isVisible())
+						{
+							chunk->render();
+						}
 					}
 				}
 			}
 		}
+	}
+}
+
+void Voxel::ChunkMap::renderChunkBorder(Program * program)
+{
+	if (renderChunkBorderMode)
+	{
+		glBindVertexArray(chunkBorderVao);
+
+		program->setUniformMat4("modelMat", chunkBorderModelMat);
+
+		glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
+	}
+}
+
+void Voxel::ChunkMap::renderBlockOutline(Program * lineProgram, const glm::vec3& blockPosition)
+{
+	if (renderBlockOutlineMode)
+	{
+		glBindVertexArray(blockOutlineVao);
+
+		glm::mat4 cubeMat = glm::translate(glm::mat4(1.0f), blockPosition);
+		lineProgram->setUniformMat4("modelMat", cubeMat);
+
+		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
 }

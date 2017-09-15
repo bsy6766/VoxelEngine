@@ -54,6 +54,13 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 			instance.buffer += instance.glfwKeyToString(key, mods);
 		}
 	}
+	else if (action == GLFW_REPEAT)
+	{
+		if (instance.bufferEnabled)
+		{
+			instance.buffer += instance.glfwKeyToString(key, mods);
+		}
+	}
 }
 
 void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
@@ -433,6 +440,10 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 			// number
 			return std::string(1, static_cast<char>(key));
 		}
+	}
+	else if (key == GLFW_KEY_MINUS)
+	{
+		return "-";
 	}
 
 	return "";

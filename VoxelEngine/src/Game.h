@@ -33,27 +33,13 @@ namespace Voxel
 	class Game
 	{
 	private:
-		// Store default program
-		Program* defaultProgram;
-		
-		// For looking at cube
-		GLuint cvao;
-		GLuint cvbo;
-		GLuint ccbo;
-		GLuint cibo;
-
 		// Camera modes
 		bool cameraMode;
 		bool cameraControlMode;
 
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
-
-		// modes
-		bool renderChunks;
-		bool renderVoronoi;
-		bool updateChunkMap;
-
+		
 		// World
 		World* world;
 
@@ -99,8 +85,7 @@ namespace Voxel
 
 		// Init UI 
 		void initUI();
-		void initCubeOutline();
-		void initSkyBox(const glm::vec4& skyColor);
+		void initSkyBox(const glm::vec4& skyColor, Program* program);
 
 		// Update inputs
 		void updateKeyboardInput(const float delta);
@@ -138,9 +123,6 @@ namespace Voxel
 		void render(const float delta);
 
 		// debug console function
-		void setRenderChunkMode(const bool mode);
-		void setRenderVoronoiMode(const bool mode);
-		void setUpdateChunkMapMode(const bool mode);
 		void setFogEnabled(const bool enabled);
 	};
 }

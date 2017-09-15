@@ -18,6 +18,8 @@ namespace Voxel
 
 	class Player;
 	class Game;
+	class ChunkMap;
+	class World;
 
 	class DebugConsole
 	{
@@ -58,6 +60,8 @@ namespace Voxel
 		// instances for debug
 		Player* player;
 		Game* game;
+		World* world;
+		ChunkMap* chunkMap;
 		 
 		void init();
 

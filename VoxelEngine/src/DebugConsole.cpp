@@ -7,8 +7,10 @@
 #include <InputHandler.h>
 #include <Player.h>
 #include <Game.h>
+#include <World.h>
 #include <algorithm>
 #include <Camera.h>
+#include <ChunkMap.h>
 
 using namespace Voxel;
 
@@ -343,6 +345,40 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 
 						player->setPosition(glm::vec3(x, y, z));
 					}
+					else if (arg1 == "rotation" || arg1 == "rot")
+					{
+						float x = 0;
+						try
+						{
+							x = std::stof(split.at(2));
+						}
+						catch (...)
+						{
+							return;
+						}
+
+						float y = 0;
+						try
+						{
+							y = std::stof(split.at(3));
+						}
+						catch (...)
+						{
+							return;
+						}
+
+						float z = 0;
+						try
+						{
+							z = std::stof(split.at(4));
+						}
+						catch (...)
+						{
+							return;
+						}
+
+						player->setRotation(glm::vec3(x, y, z));
+					}
 				}
 			}
 			else if(commandStr == "game")
@@ -355,21 +391,48 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 
 					bool arg2Bool = arg2 == "true" ? true : false;
 
+					if (arg1 == "fogenabled" || arg1 == "fog")
+					{
+						game->setFogEnabled(arg2Bool);
+					}
+				}
+			}
+			else if (commandStr == "world")
+			{
+				if (size == 3)
+				{
+					// game mode bool
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+
+					bool arg2Bool = arg2 == "true" ? true : false;
+
+					if (arg1 == "rendervoronoi" || arg1 == "rv")
+					{
+						world->setRenderVoronoiMode(arg2Bool);
+					}
+				}
+			}
+			else if (commandStr == "chunkmap" || commandStr == "cm")
+			{
+				if (size == 3)
+				{
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+
+					bool arg2Bool = arg2 == "true" ? true : false;
+
 					if (arg1 == "renderchunks" || arg1 == "renderchunk" || arg1 == "rc")
 					{
-						game->setRenderChunkMode(arg2Bool);
+						chunkMap->setRenderChunksMode(arg2Bool);
 					}
-					else if (arg1 == "rendervoronoi" || arg1 == "rv")
+					else if (arg1 == "renderchunkborder" || arg1 == "rcb")
 					{
-						game->setRenderVoronoiMode(arg2Bool);
+						chunkMap->setRenderChunkBorderMode(arg2Bool);
 					}
 					else if (arg1 == "updatechunkmap" || arg1 == "ucm")
 					{
-						game->setUpdateChunkMapMode(arg2Bool);
-					}
-					else if (arg1 == "fogenabled" || arg1 == "fog")
-					{
-						game->setFogEnabled(arg2Bool);
+						chunkMap->setUpdateChunkMapMode(arg2Bool);
 					}
 				}
 			}
@@ -392,6 +455,25 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 							if (split.at(2) == "default")
 							{
 								Camera::mainCamera->setSpeed(15.0f);
+							}
+							else
+							{
+								return;
+							}
+						}
+					}
+					else if (arg1 == "fovy")
+					{
+						try
+						{
+							float fovy = std::stof(split.at(2));
+							Camera::mainCamera->setFovy(fovy);
+						}
+						catch (...)
+						{
+							if (split.at(2) == "default")
+							{
+								Camera::mainCamera->setFovy(70.0f);
 							}
 							else
 							{

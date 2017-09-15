@@ -72,9 +72,9 @@ void Voxel::Player::initYLine()
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
@@ -111,9 +111,9 @@ void Voxel::Player::initRayLine()
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
 	// vert
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
@@ -335,13 +335,13 @@ void Voxel::Player::update()
 	rotated = false;
 }
 
-void Voxel::Player::render(Program* defaultProgram)
+void Voxel::Player::renderDebugLines(Program* lineProgram)
 {
 	if (yLineVao)
 	{
 		glBindVertexArray(yLineVao);
 
-		defaultProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
+		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 
@@ -355,7 +355,7 @@ void Voxel::Player::render(Program* defaultProgram)
 		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
 
-		defaultProgram->setUniformMat4("modelMat", rayMat);
+		lineProgram->setUniformMat4("modelMat", rayMat);
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 }

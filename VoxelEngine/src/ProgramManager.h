@@ -15,9 +15,10 @@ namespace Voxel
 	public:
 		enum PROGRAM_NAME : unsigned int
 		{
-			SHADER_COLOR = 0,
-			SHADER_TEXTURE_COLOR = 1,
-			SHADER_TEXT = 2,
+			SHADER_LINE = 0,
+			SHADER_COLOR,
+			SHADER_TEXTURE_COLOR,
+			SHADER_TEXT,
 			SHADER_MAX_COUNT
 		};
 	private:

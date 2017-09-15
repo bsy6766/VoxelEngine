@@ -96,7 +96,7 @@ namespace Voxel
 		void updateDirection();
 
 		void update();
-		void render(Program* defaultProgram);
+		void renderDebugLines(Program* lineProgram);
 
 		//glm::mat4 getVP(const glm::mat4& projection);
 		glm::mat4 getViewMatrix();

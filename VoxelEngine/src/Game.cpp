@@ -56,14 +56,10 @@ Game::Game()
 	, cameraMode(false)
 	, cameraControlMode(false)
 	, chunkWorkManager(nullptr)
-	, defaultProgram(nullptr)
 	, defaultCanvas(nullptr)
 	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
-	, renderChunks(true)
-	, renderVoronoi(true)
-	, updateChunkMap(true)
 {
 	// init instances
 	init();
@@ -92,9 +88,10 @@ void Voxel::Game::init()
 	// Init random first
 	initRandoms();
 
-	// Initialize default program
-	defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-	defaultProgram->use(true);
+	// program
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	// use it
+	program->use(true);
 
 	// Init world
 	world = new World();
@@ -107,36 +104,33 @@ void Voxel::Game::init()
 	// player
 	player = new Player();
 
-	// cube outline
-	initCubeOutline();
 	// Skybox
-	initSkyBox(glm::vec4(Color::DAYTIME, 1.0f));
+	initSkyBox(glm::vec4(Color::DAYTIME, 1.0f), program);
+
+	// Lights
+	program->setUniformVec4("ambientColor", glm::vec4(1.0f));
+	program->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
+	program->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+	// stop use
+	program->use(false);
 
 	// Calendar
 	calendar = new Calendar();
 	calendar->init();
 
-	defaultProgram->setUniformVec4("ambientColor", glm::vec4(1.0f));
-	defaultProgram->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
-	defaultProgram->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-
 	// UI & font
 	initUI();
+
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
 	debugConsole->toggleDubugOutputs();
+
 	// for debugging
 	debugConsole->player = player;
 	debugConsole->game = this;
-
-	//Camera::mainCamera->setPosition(glm::vec3(0, 130, -100));
-	//Camera::mainCamera->setAngle(glm::vec3(25, 140, 0));
-	//cameraMode = true;
-	//cameraControlMode = true;
-
-	Application::getInstance().getGLView()->setWindowedFullScreen(0);
-	defaultCanvas->setSize(glm::vec2(1920, 1080));
-	debugConsole->updateResolution(1920, 1080);
+	debugConsole->chunkMap = chunkMap;
+	debugConsole->world = world;
 }
 
 void Voxel::Game::release()
@@ -183,95 +177,17 @@ void Voxel::Game::initUI()
 	defaultCanvas->addText("timeLabel", timeLabel, 0);
 }
 
-void Voxel::Game::initCubeOutline()
-{
-
-	// Create debug chunk box
-	// Generate vertex array object
-	glGenVertexArrays(1, &cvao);
-	// Bind it
-	glBindVertexArray(cvao);
-
-	// Enable vertices attrib
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
-
-	// Generate buffer object
-	glGenBuffers(1, &cvbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, cvbo);
-
-	GLfloat cube[] = {
-		// x, y, z
-		0.502f, -0.502f, -0.502f,
-		-0.502f, -0.502f, -0.502f,
-		-0.502f, -0.502f, 0.502f,
-		0.502f, -0.502f, 0.502f,
-		0.502f, 0.502f, -0.502f,
-		-0.502f, 0.502f, -0.502f,
-		-0.502f, 0.502f, 0.502f,
-		0.502f, 0.502f, 0.502f,
-	};
-
-	GLfloat color[] = {
-		// x, y, z
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	unsigned int indices[] = {
-		0, 1, 1, 2, 2, 3, 3, 0,
-		4, 5, 5, 6, 6, 7, 7, 4,
-		0, 4, 1, 5, 2, 6, 3, 7
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	// Generate buffer object
-	glGenBuffers(1, &ccbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, ccbo);
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-	// unbind buffer
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// Generate indices object
-	glGenBuffers(1, &cibo);
-	// Bind indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cibo);
-	// Load indices
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	// unbind buffer
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-}
-
-void Voxel::Game::initSkyBox(const glm::vec4 & skyColor)
+void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 {
 	skybox = new Skybox();
 	// Always set skybox with max render distance
 	skybox->init(skyColor, Setting::getInstance().getRenderDistance());
 
-	defaultProgram->setUniformVec3("playerPosition", player->getPosition());
-	defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
-	defaultProgram->setUniformVec4("fogColor", skybox->getColor());
+	program->setUniformVec3("playerPosition", player->getPosition());
+	program->setUniformFloat("fogDistance", skybox->getFogDistance());
+	program->setUniformVec4("fogColor", skybox->getColor());
+	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
+	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -361,6 +277,11 @@ void Game::createChunkMap()
 		chunkWorkManager->addLoad(xz);
 	}
 
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+
+	chunkMap->initChunkBorderDebug(program);
+	chunkMap->initBlockOutline(program);
+
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
@@ -393,10 +314,7 @@ void Game::update(const float delta)
 	if (playerMoved)
 	{
 		// if player moved, update chunk
-		if (updateChunkMap)
-		{
-			updateChunks();
-		}
+		updateChunks();
 
 		auto playerPos = player->getPosition();
 
@@ -412,8 +330,9 @@ void Game::update(const float delta)
 
 		debugConsole->updatePlayerPosition(playerPos);
 
-		defaultProgram->use(true);
-		defaultProgram->setUniformVec3("playerPosition", playerPos);
+		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+		program->use(true);
+		program->setUniformVec3("playerPosition", playerPos);
 	}
 
 	debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());
@@ -534,17 +453,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			std::cout << "   (" << freq.at(i) << ")" << std::endl;
 		}
 	}
-
-	if (input->getKeyDown(GLFW_KEY_MINUS, true))
-	{
-		renderChunks = !renderChunks;
-	}
 	
-	if (input->getKeyDown(GLFW_KEY_EQUAL, true))
-	{
-		renderVoronoi = !renderVoronoi;
-	}
-
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
 		Camera::mainCamera->print();
@@ -663,29 +572,9 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
 	}
 
-	if (input->getKeyDown(GLFW_KEY_1))
-	{
-		player->setPosition(glm::vec3(0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_2))
-	{
-		player->setRotation(glm::vec3(0, 0, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_3))
-	{
-		player->setRotation(glm::vec3(0, 90, 0));
-	}
-
 	if (input->getKeyDown(GLFW_KEY_4))
 	{
 		player->setRotation(glm::vec3(0, 180, 0));
-	}
-
-	if (input->getKeyDown(GLFW_KEY_5))
-	{
-		player->setRotation(glm::vec3(0, 270, 0));
 	}
 
 	if (input->getKeyDown(GLFW_KEY_6))
@@ -900,8 +789,13 @@ void Game::render(const float delta)
 	glm::mat4 projMat = Camera::mainCamera->getProjection();
 	glm::mat4 worldMat = glm::mat4(1.0f);
 
-	ProgramManager::getInstance().useDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto& pm = ProgramManager::getInstance();
 
+	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	program->use(true);
+
+	// ------------------------------ Render world ------------------------------------------
+	// Get world view matrix based on mode
 	if (cameraMode)
 	{
 		worldMat = Camera::mainCamera->getView();
@@ -923,77 +817,68 @@ void Game::render(const float delta)
 		worldMat = player->getViewMatrix();
 	}
 
-	defaultProgram->setUniformMat4("projMat", projMat);
-	defaultProgram->setUniformMat4("worldMat", worldMat);
-	defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+	program->setUniformMat4("worldMat", worldMat);
 
-	if (skybox->isFogEnabled())
-	{
-		defaultProgram->setUniformBool("fogEnabled", true);
-		defaultProgram->setUniformFloat("fogDistance", skybox->getFogDistance());
-	}
-	else
-	{
-		defaultProgram->setUniformBool("fogEnabled", false);
-	}
+	// Model mat is identity matrix
+	program->setUniformMat4("modelMat", glm::mat4(1.0f));
 
-	defaultProgram->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
+	// Light
+	program->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
-	if (renderChunks)
-	{
-		chunkMap->render();
-	}
+	// Render chunk. Doesn't need molde matrix for each chunk. All vertices are translated.
+	chunkMap->render();
 
-	player->render(defaultProgram);
+	// Render skybox
+	program->setUniformMat4("modelMat", player->getTranslationMat());
+	skybox->render();
+	// --------------------------------------------------------------------------------------
+
+	// ------------------------------ Render Lines ------------------------------------------
+	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	lineProgram->setUniformMat4("worldMat", worldMat);
+
+	// render chunk border. Need model matrix
+	chunkMap->renderChunkBorder(lineProgram);
+
+	// render player. Need model matrix
+	player->renderDebugLines(lineProgram);
 
 	if (player->isLookingAtBlock())
 	{
-		glBindVertexArray(cvao);
-
-		glm::mat4 cubeMat = glm::translate(glm::mat4(1.0f), player->getLookingBlock()->getWorldPosition());
-		defaultProgram->setUniformMat4("modelMat", cubeMat);
-
-		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition());
 	}
 
-	defaultProgram->setUniformMat4("modelMat", player->getTranslationMat());
-	skybox->render();
-
+	// Clear depth buffer and render above current buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
 
-	if (renderVoronoi)
-	{
-		defaultProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
-		world->renderVoronoi();
-	}
+	// Render voronoi diagram
+	world->renderVoronoi(lineProgram);
+	// --------------------------------------------------------------------------------------
 
-
-
+	// --------------------------------- Render UI ------------------------------------------
+	// Render UIs
 	defaultCanvas->render();
 	debugConsole->render();
+	// --------------------------------------------------------------------------------------
 
 	glBindVertexArray(0);
 	glUseProgram(0);
-
-}
-
-void Voxel::Game::setRenderChunkMode(const bool mode)
-{
-	renderChunks = mode;
-}
-
-void Voxel::Game::setRenderVoronoiMode(const bool mode)
-{
-	renderVoronoi = mode;
-}
-
-void Voxel::Game::setUpdateChunkMapMode(const bool mode)
-{
-	updateChunkMap = mode;
 }
 
 void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
+
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	// fog
+	if (skybox->isFogEnabled())
+	{
+		program->setUniformBool("fogEnabled", true);
+		program->setUniformFloat("fogDistance", skybox->getFogDistance());
+	}
+	else
+	{
+		program->setUniformBool("fogEnabled", false);
+	}
 }

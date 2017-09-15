@@ -4,6 +4,8 @@
 #include <iostream>
 #include <Frustum.h>
 #include <ChunkUtil.h>
+#include <ProgramManager.h>
+#include <Program.h>
 
 using namespace Voxel;
 using namespace glm;
@@ -43,7 +45,7 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 	newCamera->screenWidth = screenWidth;
 	newCamera->screenHeight = screenHeight;
 	newCamera->aspect = screenWidth / screenHeight;
-	newCamera->fovy = fovy;
+	newCamera->setFovy(fovy);
 
 	// Refernce: http://wiki.panotools.org/Field_of_View
 	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * newCamera->aspect));
@@ -83,6 +85,16 @@ void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const flo
 void Voxel::Camera::setFovy(const float fovy)
 {
 	this->fovy = fovy;
+
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	program->use(true);
+	program->setUniformMat4("projMat", getProjection());
+
+	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	lineProgram->use(true);
+	lineProgram->setUniformMat4("projMat", getProjection());
+
+	lineProgram->use(false);
 }
 
 float Voxel::Camera::getFovy()

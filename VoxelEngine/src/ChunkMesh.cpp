@@ -57,7 +57,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	}
 }
 
-void Voxel::ChunkMesh::loadBuffer()
+void Voxel::ChunkMesh::loadBuffer(Program* program)
 {
 	if (vao != 0)
 	{
@@ -78,9 +78,6 @@ void Voxel::ChunkMesh::loadBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-
-	// Get program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 
 	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");

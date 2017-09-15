@@ -8,6 +8,8 @@
 
 namespace Voxel
 {
+	class Program;
+
 	/**
 	*	@class ChunkMesh
 	*	@brief Contains vertices data of chunk. Also manages OpenGL objects
@@ -40,7 +42,7 @@ namespace Voxel
 		~ChunkMesh();
 
 		void initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& normals, const std::vector<unsigned int>& indices);
-		void loadBuffer();
+		void loadBuffer(Program* program);
 
 		void bind();
 		void render();

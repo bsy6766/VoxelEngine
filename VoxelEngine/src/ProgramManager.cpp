@@ -36,6 +36,11 @@ void Voxel::ProgramManager::initDefaultPrograms()
 {
 	auto& shaderManager = ShaderManager::getInstance();
 
+	auto voxelShaderLineVert = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.vert", GL_VERTEX_SHADER);
+	auto voxelShaderLineFrag = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderLineProgram = Program::create(voxelShaderLineVert, voxelShaderLineFrag);
+	defaultPrograms.emplace(SHADER_LINE, voxelShaderLineProgram);
+
 	auto voxelShaderColorVert = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.vert", GL_VERTEX_SHADER);
 	auto voxelShaderColorFrag = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderColorProgram = Program::create(voxelShaderColorVert, voxelShaderColorFrag);

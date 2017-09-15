@@ -3,6 +3,7 @@
 #include <Region.h>
 #include <iostream>
 #include <Utility.h>
+#include <Program.h>
 
 using namespace Voxel;
 
@@ -15,6 +16,7 @@ World::World()
 	, maxTemperature(0)
 	, minMoisture(0)
 	, maxMoisture(0)
+	, renderVoronoiMode(false)
 {
 }
 
@@ -316,6 +318,11 @@ bool Voxel::World::updatePlayerPos(const glm::vec3 & playerPos)
 	}
 
 	return false;
+}
+
+void Voxel::World::setRenderVoronoiMode(const bool mode)
+{
+	renderVoronoiMode = mode;
 }
 
 void Voxel::World::initVoronoi()
@@ -669,7 +676,11 @@ void Voxel::World::render()
 {
 }
 
-void Voxel::World::renderVoronoi()
+void Voxel::World::renderVoronoi(Program* program)
 {
-	vd->render(true, false, true, false);
+	if (renderVoronoiMode)
+	{
+		program->setUniformMat4("modelMat", glm::mat4(1.0f));
+		vd->render(true, false, true, false);
+	}
 }

@@ -9,6 +9,7 @@
 #include <mutex>
 #include <Cube.h>
 #include <shared_ptr.hpp>
+#include <GL\glew.h>
 
 namespace Voxel
 {
@@ -16,6 +17,7 @@ namespace Voxel
 	class Chunk;
 	class ChunkWorkManager;
 	class Region;
+	class Program;
 
 	// Raycast result
 	struct RayResult
@@ -42,6 +44,7 @@ namespace Voxel
 	private:
 		// chunk map
 		ChunkUnorderedMap map;
+
 		// mutex for modifying map;
 		std::mutex mapMutex;
 
@@ -53,6 +56,22 @@ namespace Voxel
 
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
+
+		// Chunk debug border draw
+		GLuint chunkBorderVao;
+		unsigned int chunkBorderLineSize;
+		glm::mat4 chunkBorderModelMat;
+
+		// render mode
+		bool renderChunksMode;
+		bool renderChunkBorderMode;
+		bool renderBlockOutlineMode;
+
+		// update mode
+		bool updateChunksMode;
+
+		// Block select outline
+		GLuint blockOutlineVao;
 
 		// Move calls when player moves to new chunk
 		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
@@ -69,6 +88,11 @@ namespace Voxel
 		// Initialize active chunks 
 		std::vector<glm::vec2> initActiveChunks(const int renderDistance);
 
+		// Initialzie chunk border lines
+		void initChunkBorderDebug(Program* program);
+
+		// Initialize block outline
+		void initBlockOutline(Program* program);
 
 		// Clears all the chunk in the map
 		void clear();
@@ -129,8 +153,20 @@ namespace Voxel
 		// find visible chunks. retrusn the number of chunks that is visible
 		int findVisibleChunk();
 
+		// mode setter
+		void setRenderChunkBorderMode(const bool mode);
+		void setRenderChunksMode(const bool mode);
+		void setRenderBlockOutlineMode(const bool mode);
+		void setUpdateChunkMapMode(const bool mode);
+
 		// render chunks
 		void render();
+
+		// render chunk border debug
+		void renderChunkBorder(Program* program);
+
+		// render block outline
+		void renderBlockOutline(Program* lineProgram, const glm::vec3& blockPosition);
 	};
 }
 

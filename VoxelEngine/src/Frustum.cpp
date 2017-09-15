@@ -108,10 +108,10 @@ void Voxel::Frustum::initDebugLines(const float fovy, const float fovx, const fl
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 
-	auto colorShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
 
-	GLint vertLoc = colorShader->getAttribLocation("vert");
-	GLint colorLoc = colorShader->getAttribLocation("color");
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);

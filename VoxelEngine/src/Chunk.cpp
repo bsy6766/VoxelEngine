@@ -5,6 +5,8 @@
 #include <ChunkUtil.h>
 #include <Utility.h>
 #include <HeightMap.h>
+#include <ProgramManager.h>
+#include <Program.h>
 
 using namespace Voxel;
 
@@ -474,6 +476,8 @@ void Voxel::Chunk::deleteChunkSectionAtY(const int y)
 
 void Voxel::Chunk::render()
 {
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+
 	if (chunkMesh)
 	{
 		if (chunkMesh->isRenderable())
@@ -487,7 +491,7 @@ void Voxel::Chunk::render()
 			// mesh is not renderable. See if it can load
 			if (chunkMesh->isBufferLoadable())
 			{
-				chunkMesh->loadBuffer();
+				chunkMesh->loadBuffer(program);
 			}
 
 			// Now ready to render
