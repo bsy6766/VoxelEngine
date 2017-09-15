@@ -74,9 +74,13 @@ namespace Voxel
 			virtual void setCanvasPivot(const glm::vec2& pivot);
 			virtual glm::vec2 getCanvasPivot();
 		};
+
 		/**
 		*	@class Image
 		*	@brief Rectangular png ui image that renders on screen space
+		*
+		*	Simple image that renders in screen space. 
+		*	Image will be static and won't be changed nor animated
 		*/
 		class Image : public UINode
 		{
@@ -86,10 +90,6 @@ namespace Voxel
 			Texture2D* texture;
 
 			GLuint vao;
-			GLuint vbo;
-			GLuint cbo;
-			GLuint uvbo;
-			GLuint ibo;
 
 			bool init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 		public:
@@ -98,6 +98,52 @@ namespace Voxel
 			static Image* create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
+		};
+
+		/**
+		*	@class Cursor
+		*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
+		*
+		*	Unlike other UIs, cursor doesn't have parent canvas. It's universal for all canvases. Therefore cursor is managed by Game class.
+		*/
+		class Cursor
+		{
+		public:
+			enum class CursorType
+			{
+				POINTER = 0,	// Default cursor
+			};
+		private:
+			Cursor();
+
+			// Textures for cursor.
+			// Todo: Use sprite sheet for cursor
+			std::unordered_map<CursorType, Texture2D*> cursorTextrues;
+
+			// position of cursor
+			glm::vec2 position;
+			// Pivot. -0.5f ~ 0.5f.
+			glm::vec2 pivot;
+
+			GLuint vao;
+
+			// visibility
+			bool visible;
+
+			// Current cursor type
+			CursorType currentCursorType;
+
+			// Initailize all cursors
+			bool init();
+		public:
+			~Cursor();
+
+			// Creates cursor.
+			static Cursor* create();
+
+			void setPosition(const glm::vec2& position);
+
+			void setCursorType(const CursorType cursorType);
 		};
 
 		/**
