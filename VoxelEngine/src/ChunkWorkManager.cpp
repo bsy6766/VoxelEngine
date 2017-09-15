@@ -347,6 +347,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							bool same = true;
 
 							std::unordered_set<unsigned int> regionIDSet;
+							std::unordered_set<Terrain::Type> terrainTypeSet;
 							std::unordered_map<unsigned int, Terrain> regionTerrains;
 
 							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
@@ -374,8 +375,11 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										}
 										else
 										{
-											regionTerrains.emplace(regionID, world->getRegion(regionID)->getTerrainType());
+											auto terrainType = world->getRegion(regionID)->getTerrainType();
+											regionTerrains.emplace(regionID, terrainType);
+											terrainTypeSet.emplace(terrainType.getType());
 										}
+
 										regionIDSet.emplace(regionID);
 									}
 								}
@@ -399,7 +403,13 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 							std::vector<std::vector<int>> heightMap;
 							
-							HeightMap::getHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, minChunkSectionY, heightMap, regionMap, regionTerrains);
+							HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, minChunkSectionY, heightMap, regionMap, regionTerrains);
+
+							// If chunk has more than 1 terrain type, smooth it out
+							if (terrainTypeSet.size() > 1)
+							{
+								HeightMap::smoothHeightMap(heightMap);
+							}
 							
 							chunk->generate(heightMap, 0, maxChunkSectionY);
 							//chunk->generateWithRegionColor();

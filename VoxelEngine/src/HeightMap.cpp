@@ -202,7 +202,7 @@ int Voxel::HeightMap::getYFromHeightValue(const float value, const Terrain::Type
 		y = static_cast<int>(value * 60.0f) + 30;
 		break;
 	case Terrain::Type::MOUNTAINS:
-		y = static_cast<int>(value * 60.0f) + 60;
+		y = static_cast<int>(value * 50.0f) + 80;
 		break;
 	default:
 		break;
@@ -211,7 +211,84 @@ int Voxel::HeightMap::getYFromHeightValue(const float value, const Terrain::Type
 	return y;
 }
 
-void Voxel::HeightMap::getHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
+void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd)
+{
+
+	// https://en.wikipedia.org/wiki/Bilinear_interpolation#Algorithm
+
+	float q11 = static_cast<float>(heightMap.at(xStart).at(zStart));
+	float q12 = static_cast<float>(heightMap.at(xStart).at(zEnd - 1));
+	float q21 = static_cast<float>(heightMap.at(xEnd - 1).at(zStart));
+	float q22 = static_cast<float>(heightMap.at(xEnd - 1).at(zEnd - 1));
+
+	//std::cout << "q11 = " << q11 << std::endl;
+	//std::cout << "q12 = " << q12 << std::endl;
+	//std::cout << "q21 = " << q21 << std::endl;
+	//std::cout << "q22 = " << q22 << std::endl;
+
+
+	float x1 = static_cast<float>(xStart);
+	float x2 = static_cast<float>(xEnd);
+	float z1 = static_cast<float>(zStart);
+	float z2 = static_cast<float>(zEnd);
+
+	float x21 = x2 - x1;
+
+	for (unsigned int x = xStart; x < xEnd; ++x)
+	{
+		float xf = static_cast<float>(x);
+
+		for (unsigned int z = zStart; z < zEnd; ++z)
+		{
+			if (x == xStart && z == zStart) continue;
+			if (x == xStart && z == zEnd - 1) continue;
+			if (x == xEnd - 1 && z == zStart) continue;
+			if (x == xEnd - 1 && z == zEnd - 1) continue;
+
+			float zf = static_cast<float>(z);
+
+			float fxy1 = ((x2 - xf) / (x2 - x1) * q11) + ((xf - x1) / (x2 - x1) * q21);
+			float fxy2 = ((x2 - xf) / (x2 - x1) * q12) + ((xf - x1) / (x2 - x1) * q22);
+
+			float fxy = ((z2 - zf) / (z2 - z1) * fxy1) + ((zf - z1) / (z2 - z1) * fxy2);
+
+			heightMap.at(x).at(z) = static_cast<int>(glm::round(fxy));
+		}
+	}
+
+}
+
+void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap)
+{
+	/*
+	for (auto x : heightMap)
+	{
+		for (auto z : x)
+		{
+			std::cout << z << " ";
+		}
+		std::cout << std::endl;
+	}
+	*/
+
+	smoothHelper(heightMap, 0, 0, 8, 8);
+	smoothHelper(heightMap, 0, 8, 8, 16);
+	smoothHelper(heightMap, 8, 0, 16, 8);
+	smoothHelper(heightMap, 8, 8, 16, 16);
+
+	/*
+	for (auto x : heightMap)
+	{
+		for (auto z : x)
+		{
+			std::cout << z << " ";
+		}
+		std::cout << std::endl;
+	}
+	*/
+}
+
+void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, int& minChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
 {
 	int maxY = 0;
 	int minY = 10000;
@@ -277,11 +354,11 @@ void Voxel::HeightMap::getHeightMapForChunk(const glm::vec3 & chunkPosition, int
 
 	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
-	minY -= 5;
+	minY -= 32;
 
 	if (minY < 0)
 	{
-		minY = 0;
+		//minY = 0;
 		minChunkSectionY = 0;
 	}
 	else
