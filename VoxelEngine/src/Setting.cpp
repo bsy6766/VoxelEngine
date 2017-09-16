@@ -14,7 +14,7 @@ Setting::Setting()
 	vsync = gameSetting->getBool("videoSetting.vsync");
 	renderDistance = gameSetting->getInt("videoSetting.renderDistance");
 	fieldOfView = gameSetting->getInt("videoSetting.fieldOfView");
-	blockShadeMode = gameSetting->getBool("videoSetting.blockShade");
+	blockShadeMode = gameSetting->getInt("videoSetting.blockShade");
 
 	std::cout << "[Setting] Window mode = " << windowMode << std::endl;
 	std::cout << "[Setting] Resolution = (" << resolution.x << ", " << resolution.y << ")" << std::endl;
@@ -57,7 +57,7 @@ int Voxel::Setting::getFieldOfView()
 	return fieldOfView;
 }
 
-bool Voxel::Setting::getBlockShadeMode()
+int Voxel::Setting::getBlockShadeMode()
 {
 	return blockShadeMode;
 }

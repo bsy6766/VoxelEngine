@@ -26,7 +26,8 @@ namespace Voxel
 		bool vsync;
 		int renderDistance;
 		int fieldOfView;
-		bool blockShadeMode;
+		// 0 = none, 1 = minimum, 2 = maximum
+		int blockShadeMode;
 
 		// Keybind settings
 		// Audio settings
@@ -42,7 +43,7 @@ namespace Voxel
 		bool getVsync();
 		int getRenderDistance();
 		int getFieldOfView();
-		bool getBlockShadeMode();
+		int getBlockShadeMode();
 	};
 
 }
