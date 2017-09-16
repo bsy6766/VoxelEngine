@@ -11,6 +11,7 @@ namespace Voxel
 	class Texture2D;
 	class Font;
 	class Program;
+	class SpriteSheet;
 
 	namespace UI
 	{
@@ -92,10 +93,12 @@ namespace Voxel
 			GLuint vao;
 
 			bool init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
+			bool initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 		public:
 			~Image();
 
 			static Image* create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
+			static Image* createFromSpriteSheet(const std::string& spriteSheetName, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
 
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};

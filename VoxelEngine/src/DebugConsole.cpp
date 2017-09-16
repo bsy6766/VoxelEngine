@@ -52,7 +52,7 @@ void Voxel::DebugConsole::init()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 
-	commandInputField = UI::Image::create("2x2.png", glm::vec2(0, 10.0f), glm::vec4(1, 1, 1, 0.45f));
+	commandInputField = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0, 10.0f), glm::vec4(1, 1, 1, 0.45f));
 	commandInputField->setCanvasPivot(glm::vec2(0, -0.5f));
 	commandInputField->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
 	commandInputField->setVisibility(false);

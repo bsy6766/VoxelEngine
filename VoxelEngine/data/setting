@@ -2,7 +2,7 @@ videoSetting
 	window
 		mode 2
 		resolution
-			width 1980
+			width 1920
 			height 1080
 	vsync false
 	renderDistance 16

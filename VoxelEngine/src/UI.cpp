@@ -9,6 +9,7 @@
 #include <FontManager.h>
 #include <Font.h>
 #include <Camera.h>
+#include <SpriteSheet.h>
 #include <glm/gtx/transform.hpp>
 
 using namespace Voxel::UI;
@@ -961,6 +962,32 @@ Image* Image::create(const std::string& textureName, const glm::vec2& screenPosi
 	}
 }
 
+Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & spriteSheetName, const std::string & textureName, const glm::vec2 & screenPosition, const glm::vec4 & color)
+{
+	auto& ssm = SpriteSheetManager::getInstance();
+	
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		auto newImage = new Image();
+
+		if (newImage->initFromSpriteSheet(ss, textureName, screenPosition, color))
+		{
+			return newImage;
+		}
+		else
+		{
+			delete newImage;
+			return nullptr;
+		}
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog)
 {
 	if (!visible) return;
@@ -1049,6 +1076,84 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	return true;
 }
 
+bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
+{
+	this->texture = ss->getTexture();
+
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+
+	position = screenPosition;
+
+	auto imageEntry = ss->getImageEntry(textureName);
+	
+	auto vertices = Quad::getVertices(glm::vec2(imageEntry->width, imageEntry->height));
+	auto indices = Quad::indices;
+	auto colors = Quad::getColors(color);
+
+	auto& uvOrigin = imageEntry->uvOrigin;
+	auto& uvEnd = imageEntry->uvEnd;
+	
+	std::vector<float> uv = 
+	{
+		uvOrigin.x, uvOrigin.y,
+		uvOrigin.x, uvEnd.y,
+		uvEnd.x, uvOrigin.y,
+		uvEnd.x, uvEnd.y
+	};
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	this->boxMin = glm::vec2(vertices.at(6), vertices.at(7));
+	this->boxMax = glm::vec2(vertices.at(3), vertices.at(4));
+
+	this->updateMatrix();
+
+	this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+
+	return true;
+}
+
 
 
 
@@ -1066,7 +1171,6 @@ Voxel::UI::Cursor::~Cursor()
 		glDeleteVertexArrays(1, &vao);
 	}
 }
-
 
 bool Voxel::UI::Cursor::init()
 {

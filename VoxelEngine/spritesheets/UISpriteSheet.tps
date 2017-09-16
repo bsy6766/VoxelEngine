@@ -36,7 +36,7 @@
         <key>dataFormat</key>
         <string>json-array</string>
         <key>textureFileName</key>
-        <filename></filename>
+        <filename>../textures/UISpriteSheet.png</filename>
         <key>flipPVR</key>
         <false/>
         <key>pvrCompressionQuality</key>
@@ -197,7 +197,7 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">../textures/2x2.png</key>
+            <key type="filename">../sprites/2x2.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -210,7 +210,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../textures/cross_hair.png</key>
+            <key type="filename">../sprites/cross_hair.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -223,7 +223,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../textures/cursors/pointer.png</key>
+            <key type="filename">../sprites/cursors/pointer.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -239,9 +239,9 @@
         </map>
         <key>fileList</key>
         <array>
-            <filename>../textures/cursors</filename>
-            <filename>../textures/2x2.png</filename>
-            <filename>../textures/cross_hair.png</filename>
+            <filename>../sprites/cross_hair.png</filename>
+            <filename>../sprites/cursors</filename>
+            <filename>../sprites/2x2.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

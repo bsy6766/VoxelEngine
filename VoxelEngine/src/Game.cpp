@@ -138,6 +138,10 @@ void Voxel::Game::init()
 	debugConsole->world = world;
 
 	TextureManager::getInstance().print();
+
+	//Application::getInstance().getGLView()->setWindowedFullScreen(0);
+	//defaultCanvas->setSize(glm::vec2(1920, 1080));
+	//debugConsole->updateResolution(1920, 1080);
 }
 
 void Voxel::Game::release()
@@ -185,7 +189,7 @@ void Voxel::Game::initUI()
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	// Add temporary cross hair
-	auto crossHairImage = UI::Image::create("cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
+	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
 	defaultCanvas->addImage("crossHair", crossHairImage, 0);
 
 	// Add time label
