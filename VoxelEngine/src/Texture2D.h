@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 #include <string>
 #include <ProgramManager.h>
+#include <memory>
 
 namespace Voxel
 {
@@ -42,13 +43,13 @@ namespace Voxel
 
 		void generate2DTexture(const int width, const int height, const int channel, unsigned char* data);
 
-		bool init(const std::string& textureFilePath, GLenum textureTarget);
+		bool init(const std::string& textureName, GLenum textureTarget);
 		bool initFontTexture(const int width, const int height, GLenum textureTarget);
 	public:
 		~Texture2D();
 
-		static Texture2D* create(const std::string& textureFilePath, GLenum textureTarget);
-		static Texture2D* createFontTexture(const int width, const int height, GLenum textureTarget);
+		static Texture2D* create(const std::string& textureName, GLenum textureTarget);
+		static Texture2D* createFontTexture(const std::string& textureName, const int width, const int height, GLenum textureTarget);
 
 		glm::ivec2 getTextureSize();
 
@@ -56,6 +57,44 @@ namespace Voxel
 
 		void activate(GLenum textureUnit);
 		void bind();
+
+		void print();
+	};
+
+	/**
+	*	@class TextureManager
+	*	@brief Manages all texture in the game.
+	*
+	*	All other classes that has texture instance don't have to release. 
+	*/
+	class TextureManager
+	{
+	private:
+		TextureManager() = default;
+		~TextureManager();
+
+		// Delete copy, move, assign operators
+		TextureManager(TextureManager const&) = delete;             // Copy construct
+		TextureManager(TextureManager&&) = delete;                  // Move construct
+		TextureManager& operator=(TextureManager const&) = delete;  // Copy assign
+		TextureManager& operator=(TextureManager &&) = delete;      // Move assign
+
+		std::unordered_map<std::string, std::shared_ptr<Texture2D>> texturesMap;
+	public:
+		static TextureManager& getInstance()
+		{
+			static TextureManager instance;
+			return instance;
+		}
+
+		bool hasTexture(const std::string& textureName);
+		
+		bool addTexture(const std::string& textureName, Texture2D* texture);
+
+		std::shared_ptr<Texture2D> getTexture(const std::string& textureName);
+
+		void print();
+		void releaseAll();
 	};
 }
 

@@ -22,12 +22,7 @@ Font::Font()
 }
 
 Font::~Font()
-{
-	if (texture)
-	{
-		delete texture;
-	}
-}
+{}
 
 void Voxel::Font::initLibrary()
 {
@@ -160,7 +155,14 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	texAtlasWidth = static_cast<float>(pow2Width);
 	texAtlasHeight = static_cast<float>(pow2Height);
 
-	texture = Texture2D::createFontTexture(pow2Width, pow2Height, GL_TEXTURE_2D);
+	std::string textureName = fontName + "_" + std::to_string(fontSize);
+
+	if (outlineSize != 0)
+	{
+		textureName += "Outlined";
+	}
+
+	texture = Texture2D::createFontTexture(textureName, pow2Width, pow2Height, GL_TEXTURE_2D);
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 
 	// bind font texture

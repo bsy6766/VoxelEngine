@@ -22,31 +22,51 @@ Texture2D::~Texture2D()
 	glDeleteTextures(1, &textureObject);
 }
 
-Texture2D * Voxel::Texture2D::create(const std::string & textureFilePath, GLenum textureTarget)
+Texture2D * Voxel::Texture2D::create(const std::string & textureName, GLenum textureTarget)
 {
-	auto newTexture = new Texture2D();
-	if (newTexture->init(textureFilePath, textureTarget))
+	auto& tm = TextureManager::getInstance();
+
+	if (tm.hasTexture(textureName))
 	{
-		return newTexture;
+		return tm.getTexture(textureName).get();
 	}
 	else
 	{
-		delete newTexture;
-		return nullptr;
+		auto newTexture = new Texture2D();
+		if (newTexture->init(textureName, textureTarget))
+		{
+			tm.addTexture(textureName, newTexture);
+			return newTexture;
+		}
+		else
+		{
+			delete newTexture;
+			return nullptr;
+		}
 	}
 }
 
-Texture2D * Voxel::Texture2D::createFontTexture(const int width, const int height, GLenum textureTarget)
+Texture2D * Voxel::Texture2D::createFontTexture(const std::string& textureName, const int width, const int height, GLenum textureTarget)
 {
-	auto newTexture = new Texture2D();
-	if (newTexture->initFontTexture(width, height, textureTarget))
+	auto& tm = TextureManager::getInstance();
+
+	if (tm.hasTexture(textureName))
 	{
-		return newTexture;
+		return tm.getTexture(textureName).get();
 	}
 	else
 	{
-		delete newTexture;
-		return nullptr;
+		auto newTexture = new Texture2D();
+		if (newTexture->initFontTexture(width, height, textureTarget))
+		{
+			tm.addTexture(textureName, newTexture);
+			return newTexture;
+		}
+		else
+		{
+			delete newTexture;
+			return nullptr;
+		}
 	}
 }
 
@@ -72,9 +92,19 @@ void Voxel::Texture2D::bind()
 	glUniform1i(textureLocation, 0);
 }
 
-bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureTarget)
+void Voxel::Texture2D::print()
 {
-	unsigned char* data = loadImage(textureFilePath, this->width, this->height, this->channel);
+	std::cout << "Texture info:" << std::endl;
+	std::cout << "Object: " << textureObject << std::endl;
+	std::cout << "Target: " << textureTarget << std::endl;
+	std::cout << "Location: " << textureLocation << std::endl;
+	std::cout << "w: " << width << "h: " << height << std::endl;
+	std::cout << "Channel: " << channel << std::endl;
+}
+
+bool Voxel::Texture2D::init(const std::string & textureName, GLenum textureTarget)
+{
+	unsigned char* data = loadImage(textureName, this->width, this->height, this->channel);
 
 	if (width == 0 || height == 0 || channel == 0)
 	{
@@ -82,7 +112,7 @@ bool Voxel::Texture2D::init(const std::string & textureFilePath, GLenum textureT
 	}
 
 	this->textureTarget = textureTarget;
-	
+
 	if (data)
 	{
 		generate2DTexture(width, height, channel, data);
@@ -194,4 +224,59 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 	}
 
 	glBindTexture(textureTarget, 0);
+}
+
+
+
+Voxel::TextureManager::~TextureManager()
+{
+	releaseAll();
+}
+
+bool Voxel::TextureManager::hasTexture(const std::string & textureName)
+{
+	return texturesMap.find(textureName) != texturesMap.end();
+}
+
+bool Voxel::TextureManager::addTexture(const std::string & textureName, Texture2D * texture)
+{
+	if (hasTexture(textureName))
+	{
+		return false;
+	}
+	else
+	{
+		texturesMap.emplace(textureName, std::shared_ptr<Texture2D>(texture));
+		return true;
+	}
+}
+
+std::shared_ptr<Texture2D> Voxel::TextureManager::getTexture(const std::string & textureName)
+{
+	if (hasTexture(textureName))
+	{
+		return texturesMap[textureName];
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+void Voxel::TextureManager::print()
+{
+	for (auto& e : texturesMap)
+	{
+		if (e.second)
+		{
+			std::cout << "Texture name: " << e.first << std::endl;
+			std::cout << "Reference count: " << e.second.use_count() << std::endl;
+			e.second->print();
+		}
+	}
+}
+
+void Voxel::TextureManager::releaseAll()
+{
+	texturesMap.clear();
 }

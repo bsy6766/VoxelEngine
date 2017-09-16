@@ -942,11 +942,6 @@ Image::Image()
 
 Image::~Image()
 {
-	if (texture)
-	{
-		delete texture;
-	}
-
 	// Delte array
 	glDeleteVertexArrays(1, &vao);
 }

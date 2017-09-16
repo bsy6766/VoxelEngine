@@ -190,7 +190,7 @@ namespace Voxel
 			glm::vec4 outlineColor;
 
 			unsigned int indicesSize;
-			int maxTextLength;
+			unsigned int maxTextLength;
 			
 			float maxWidth;
 			float totalHeight;
