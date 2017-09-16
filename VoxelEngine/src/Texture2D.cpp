@@ -166,7 +166,7 @@ unsigned char * Voxel::Texture2D::loadImage(const std::string& textureFilePath, 
 	*/
 	unsigned char* data = stbi_load_from_file(file, &width, &height, &channel, 0);
 	// So.. we filp image 
-	flipImage(data);
+	//flipImage(data);
 
 	fclose(file);
 

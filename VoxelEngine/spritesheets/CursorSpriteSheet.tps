@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.3.1</string>
         <key>fileName</key>
-        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/spritesheets/UISpriteSheet.tps</string>
+        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/spritesheets/CursorSpriteSheet.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -36,7 +36,7 @@
         <key>dataFormat</key>
         <string>json-array</string>
         <key>textureFileName</key>
-        <filename>../textures/UISpriteSheet.png</filename>
+        <filename>../textures/CursorSpriteSheet.png</filename>
         <key>flipPVR</key>
         <false/>
         <key>pvrCompressionQuality</key>
@@ -150,7 +150,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>UISpriteSheet.json</filename>
+                <filename>CursorSpriteSheet.json</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -185,7 +185,7 @@
             <key>trimMargin</key>
             <uint>1</uint>
             <key>trimMode</key>
-            <enum type="SpriteSettings::TrimMode">Trim</enum>
+            <enum type="SpriteSettings::TrimMode">None</enum>
             <key>tracerTolerance</key>
             <int>200</int>
             <key>heuristicMask</key>
@@ -193,40 +193,40 @@
             <key>defaultPivotPoint</key>
             <point_f>0.5,0.5</point_f>
             <key>writePivotPoints</key>
-            <true/>
+            <false/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">../sprites/ui/2x2.png</key>
+            <key type="filename">../sprites/cursors/finger.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>1,1,1,1</rect>
+                <rect>6,6,11,11</rect>
                 <key>scale9Paddings</key>
-                <rect>1,1,1,1</rect>
+                <rect>6,6,11,11</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../sprites/ui/cross_hair.png</key>
+            <key type="filename">../sprites/cursors/pointer.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>8,8,16,16</rect>
+                <rect>4,6,8,11</rect>
                 <key>scale9Paddings</key>
-                <rect>8,8,16,16</rect>
+                <rect>4,6,8,11</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
         </map>
         <key>fileList</key>
         <array>
-            <filename>../sprites/ui</filename>
+            <filename>../sprites/cursors</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

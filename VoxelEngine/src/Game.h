@@ -24,6 +24,7 @@ namespace Voxel
 	{
 		class Canvas;
 		class Text;
+		class Cursor;
 	}
 
 	/**
@@ -59,6 +60,9 @@ namespace Voxel
 
 		// Default UI canvas
 		UI::Canvas* defaultCanvas;
+
+		// cursor
+		UI::Cursor* cursor;
 
 		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
 		double mouseX;

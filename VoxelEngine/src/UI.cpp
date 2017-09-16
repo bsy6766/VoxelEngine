@@ -10,6 +10,7 @@
 #include <Font.h>
 #include <Camera.h>
 #include <SpriteSheet.h>
+#include <Application.h>
 #include <glm/gtx/transform.hpp>
 
 using namespace Voxel::UI;
@@ -934,6 +935,8 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvas
 
 
 
+
+
 Image::Image()
 	: UINode()
 	, texture(nullptr)
@@ -1101,6 +1104,7 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 		uvEnd.x, uvEnd.y
 	};
 
+	//std::vector<float> uv = Quad::uv;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -1159,13 +1163,18 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 
 Voxel::UI::Cursor::Cursor()
 	: vao(0)
-	, visible(false)
+	, visible(true)
 	, position(0)
 {
 }
 
 Voxel::UI::Cursor::~Cursor()
 {
+	if (uvbo)
+	{
+		glDeleteBuffers(1, &uvbo);
+	}
+
 	if (vao)
 	{
 		glDeleteVertexArrays(1, &vao);
@@ -1175,18 +1184,33 @@ Voxel::UI::Cursor::~Cursor()
 bool Voxel::UI::Cursor::init()
 {
 	// Initialize cursors
+	auto ss = SpriteSheetManager::getInstance().getSpriteSheet("CursorSpriteSheet");
 
 	// pointer
-	auto texture = Texture2D::create("cursors/pointer.png", GL_TEXTURE_2D);
+	this->texture = ss->getTexture();
 
-	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+
+	auto size = Application::getInstance().getGLView()->getScreenSize();
+
+	position = glm::vec2(size) * 0.5f;
 	
-	auto size = texture->getTextureSize();
+	auto imageEntry = ss->getImageEntry("pointer.png");
 
-	auto vertices = Quad::getVertices(glm::vec2(size));
+	auto vertices = Quad::getVertices(glm::vec2(imageEntry->width, imageEntry->height));
 	auto indices = Quad::indices;
 	auto colors = Quad::getColors(glm::vec4(1.0f));
-	auto uv = Quad::uv;
+
+	auto& uvOrigin = imageEntry->uvOrigin;
+	auto& uvEnd = imageEntry->uvEnd;
+
+	std::vector<float> uv =
+	{
+		uvOrigin.x, uvOrigin.y,
+		uvOrigin.x, uvEnd.y,
+		uvEnd.x, uvOrigin.y,
+		uvEnd.x, uvEnd.y
+	};
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -1212,7 +1236,6 @@ bool Voxel::UI::Cursor::init()
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
-	GLuint uvbo;
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
@@ -1228,7 +1251,6 @@ bool Voxel::UI::Cursor::init()
 
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
 	return true;
@@ -1246,10 +1268,42 @@ Cursor * Voxel::UI::Cursor::create()
 	return nullptr;
 }
 
+void Voxel::UI::Cursor::setPosition(const glm::vec2 & position)
+{
+	this->position = position;
+}
+
+void Voxel::UI::Cursor::setVisibility(const bool visibility)
+{
+	visible = visibility;
+}
+
+void Voxel::UI::Cursor::render()
+{
+	if (visible)
+	{
+		if (vao)
+		{
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+			program->use(true);
+			program->setUniformMat4("cameraMat", Camera::mainCamera->getProjection(Camera::UIFovy));
+			program->setUniformMat4("worldMat", glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0, 1, 0)));
+
+			auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
+
+			texture->activate(GL_TEXTURE0);
+			texture->bind();
+
+			program->setUniformMat4("modelMat", uiMat);
+
+			glBindVertexArray(vao);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
+	}
+}
 
 
 
-const float Canvas::fixedFovy = 70.0f;
 
 Canvas::Canvas()
 	: size(0)
@@ -1351,7 +1405,9 @@ void Voxel::UI::Canvas::render()
 
 	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
 	imageShader->use(true);
-	imageShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection(Canvas::fixedFovy));
+	imageShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
+	//imageShader->setUniformMat4("worldMat", glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0, 1, 0)));
+	imageShader->setUniformMat4("worldMat", glm::mat4(1.0f));
 
 	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
 
@@ -1368,7 +1424,9 @@ void Voxel::UI::Canvas::render()
 
 	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
 	textShader->use(true);
-	textShader->setUniformMat4("cameraMat", Camera::mainCamera->getProjection(Canvas::fixedFovy));
+	textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
+
+	uiMat = Camera::mainCamera->getScreenSpaceMatrix();
 
 	for (auto text : texts)
 	{

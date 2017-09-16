@@ -11,6 +11,7 @@ using namespace Voxel;
 using namespace glm;
 
 Camera* Camera::mainCamera = nullptr;
+const float Camera::UIFovy = 70.0f;
 
 Camera::Camera()
 	: position(0, 0, 0)

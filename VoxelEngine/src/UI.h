@@ -115,13 +115,13 @@ namespace Voxel
 			enum class CursorType
 			{
 				POINTER = 0,	// Default cursor
+				FINGER,
 			};
 		private:
 			Cursor();
 
 			// Textures for cursor.
-			// Todo: Use sprite sheet for cursor
-			std::unordered_map<CursorType, Texture2D*> cursorTextrues;
+			Texture2D* texture;
 
 			// position of cursor
 			glm::vec2 position;
@@ -129,12 +129,15 @@ namespace Voxel
 			glm::vec2 pivot;
 
 			GLuint vao;
+			GLuint uvbo;
 
 			// visibility
 			bool visible;
 
 			// Current cursor type
 			CursorType currentCursorType;
+
+			float screenSpaceZ;
 
 			// Initailize all cursors
 			bool init();
@@ -147,6 +150,10 @@ namespace Voxel
 			void setPosition(const glm::vec2& position);
 
 			void setCursorType(const CursorType cursorType);
+
+			void setVisibility(const bool visibility);
+
+			void render();
 		};
 
 		/**
@@ -252,9 +259,7 @@ namespace Voxel
 			Canvas();
 
 			bool visible;
-
-			static const float fixedFovy;
-
+			
 			glm::vec2 size;
 			glm::vec2 centerPosition;
 

@@ -36,7 +36,7 @@ namespace Voxel
 		// fov
 		float fovy;
 		float fovx;
-
+		
 		// resolution
 		float screenWidth;
 		float screenHeight;
@@ -68,6 +68,9 @@ namespace Voxel
 		static Camera* create(const vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
 		
 		static Camera* mainCamera;
+
+		// UI fovy
+		static const float UIFovy;
 
 		void initDebugFrustumLines();
 

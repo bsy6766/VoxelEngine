@@ -161,6 +161,8 @@ void Voxel::Game::release()
 	if (skybox) delete skybox;
 	if (calendar) delete calendar;
 
+	if (cursor) delete cursor;
+
 	if (defaultCanvas) delete defaultCanvas;
 
 	if (debugConsole) delete debugConsole;
@@ -173,6 +175,7 @@ void Voxel::Game::initSpriteSheets()
 	auto& ssm = SpriteSheetManager::getInstance();
 
 	ssm.addSpriteSheet("UISpriteSheet.json");
+	ssm.addSpriteSheet("CursorSpriteSheet.json");
 }
 
 void Voxel::Game::initRandoms()
@@ -187,6 +190,9 @@ void Voxel::Game::initUI()
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
 	FontManager::getInstance().addFont("MunroSmall.ttf", 20, 2);
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
+
+	// cursor
+	cursor = UI::Cursor::create();
 
 	// Add temporary cross hair
 	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
@@ -621,6 +627,8 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
+	cursor->setPosition(glm::vec2(x, y));
+
 	double dx = x - mouseX;
 	double dy = y - mouseY;
 	mouseX = x;
@@ -882,6 +890,8 @@ void Game::render(const float delta)
 	// Render UIs
 	defaultCanvas->render();
 	debugConsole->render();
+
+	cursor->render();
 	// --------------------------------------------------------------------------------------
 
 	glBindVertexArray(0);
