@@ -23,7 +23,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
 	//std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
-	//auto chunkStart = Utility::Time::now();
+	auto chunkStart = Utility::Time::now();
 
 	// Iterate all chunk sections O(16)
 	int indicesOffsetPerBlock = 0;
@@ -39,7 +39,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 		// Iterate all blocks. O(4096)
 		//auto chunkSectionStart = Utility::Time::now();
 
-		bool shadeMode = Setting::getInstance().getBlockShadeMode();
+		int shadeMode = Setting::getInstance().getBlockShadeMode();
 
 		for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 		{
@@ -74,6 +74,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						// To check weight, we need to query 8 blocks around y - 1 and y + 1.
 						// Also we need to check for adjacent blocks
 						// So total (8 + 8 + 6 - 2(redundant)) = 20 blocks query per block.
+
+						//auto bt1 = Utility::Time::now();
 
 						{
 							// Get adjacent block and check if it's transparent or not
@@ -129,12 +131,18 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 							}
 						}
 
+						//auto bt2 = Utility::Time::now();
+						//std::cout << "block t: " << Utility::Time::toMicroSecondString(bt1, bt2) << std::endl;
+						// block t = 1 ~ 6 micro seconds
+
 						// After checking adjacent, check near by
 
 						// Shadow weight for each vertex point of block. Weight gets added by 1 whenever other opaque blocks touches the vertex point.
 						std::vector<unsigned int> shadowWeight;
 
-						if (shadeMode)
+						//auto st1 = Utility::Time::now();
+
+						if (shadeMode == 2)
 						{
 
 							shadowWeight.resize(16, 0);
@@ -260,6 +268,10 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 								}
 							}
 						}
+						
+						//auto st2 = Utility::Time::now();
+						//std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
+
 
 						// Check face
 						if (face == Cube::Face::NONE)
@@ -269,234 +281,42 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						}
 						else
 						{
+							//auto t1 = Utility::Time::now();
 							auto worldPosition = block->getWorldPosition();
 
-							/*
-							if (worldPos == glm::ivec3(2, 79, 16))
-							{
-								for (auto w : shadowWeight)
-								{
-									std::cout << w << ", ";
-								}
-								std::cout << std::endl;
-							}
-							*/
+							auto blockVerticiesSize = Cube::getVertices(static_cast<Cube::Face>(face), worldPosition, vertices);
 
-							auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), worldPosition);
-							vertices.insert(vertices.end(), blockVertices.begin(), blockVertices.end());
-
-							auto blockNormals = Cube::getNormals(static_cast<Cube::Face>(face), worldPosition);
-							normals.insert(normals.end(), blockNormals.begin(), blockNormals.end());
-
-							// temporary function for fake lighting. 
-							//auto blockColors = Cube::getColors3(static_cast<Cube::Face>(face), block->color);
-							std::vector<float> blockColors;
-
+							Cube::getNormals(static_cast<Cube::Face>(face), worldPosition, normals);
+							
 							auto blockColor = block->getColor4();
-							if (shadeMode)
+
+							if (shadeMode == 2)
 							{
 								// Change color based on shade
-								blockColors = Cube::getColors4WithShade(static_cast<Cube::Face>(face), blockColor, shadowWeight);
+								Cube::getColors4WithShade(static_cast<Cube::Face>(face), blockColor, shadowWeight, colors);
+							}
+							else if (shadeMode == 1)
+							{
+								Cube::getColors4WithoutShade(static_cast<Cube::Face>(face), blockColor, colors);
 							}
 							else
 							{
-								//blockColors = Cube::getColors4WithoutShade(static_cast<Cube::Face>(face), blockColor);
-								blockColors = Cube::getColors4WithDefaultShade(static_cast<Cube::Face>(face), blockColor);
+								Cube::getColors4WithDefaultShade(static_cast<Cube::Face>(face), blockColor, colors);
 							}
-							
-							//auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(0, 1, 0, 1));
-							colors.insert(colors.end(), blockColors.begin(), blockColors.end());
 
-							auto blockIndices = Cube::getIndices(static_cast<Cube::Face>(face), indicesOffsetPerBlock);
-							indicesOffsetPerBlock += (blockVertices.size() / 3);
-							indices.insert(indices.end(), blockIndices.begin(), blockIndices.end());
+							Cube::getIndices(static_cast<Cube::Face>(face), indicesOffsetPerBlock, indices);
+
+							indicesOffsetPerBlock += blockVerticiesSize;
+
+							//auto t2 = Utility::Time::now();
+							//std::cout << "build buffer t: " << Utility::Time::toMicroSecondString(t1, t2) << std::endl;
+							// build buffer: 1~3 micro s.
 						}
 					}
 				}
 			}
 		}
 
-
-		/*
-		for (auto block : chunkSection->blocks)
-		{
-			//std::cout << "[ChunkMeshGenerator] -> Generating for block at (" << block->worldCoordinate.x << ", " << block->worldCoordinate.y << ", " << block->worldCoordinate.z << ")" << std::endl;
-			// Check block id
-			if (block == nullptr)
-			{
-				// Skip air.
-				continue;
-			}
-			else
-			{
-				// Add face if it's not air.
-				unsigned int face = Cube::Face::NONE;
-				// Block's world position
-				auto worldPos = block->worldCoordinate;
-				//auto localPos = block->localCoordinate;
-
-				// To check weight, we need to query 8 blocks around y - 1 and y + 1.
-				// Also we need to check for adjacent blocks
-				// So total (8 + 8 + 6 - 2(redundant)) = 20 blocks query per block.
-
-				{
-					// Get adjacent block and check if it's transparent or not
-					// Up. Up face is different compared to sides. Add only if above block is transparent or chunk section doesn't exists
-					int blockUp = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y + 1, worldPos.z);
-					if (blockUp == 0 || blockUp == 2)
-					{
-						// Block exists and transparent. Add face
-						face |= Cube::Face::TOP;
-					}
-
-					// Down. If current block is the most bottom block, doesn't have to add face
-					if (worldPos.y > 0)
-					{
-						int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
-						if (blockDown == 0 || blockDown == 2)
-						{
-							// Block exists and transparent. Add face
-							face |= Cube::Face::BOTTOM;
-						}
-					}
-					
-
-					// Sides. Side faces (Left, right, front, back) is different compared to up and down. 
-					// Only add faces if side block is transparent or chunk section is nullptr. 
-					// If chunk doesn't exist, don't add.
-					// Left
-					auto blockLeft = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, worldPos.y, worldPos.z);
-					if (blockLeft == 0 || blockLeft == 2)
-					{
-						face |= Cube::Face::LEFT;
-					}
-
-					// Right
-					auto blockRight = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, worldPos.y, worldPos.z);
-					if (blockRight == 0 || blockRight == 2)
-					{
-						face |= Cube::Face::RIGHT;
-					}
-
-					// Front
-					auto blockFront = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z - 1);
-					if (blockFront == 0 || blockFront == 2)
-					{
-						face |= Cube::Face::FRONT;
-					}
-
-					// Back
-					auto blockBack = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z + 1);
-					if (blockBack == 0 || blockBack == 2)
-					{
-						face |= Cube::Face::BACK;
-					}
-				}
-				
-				// After checking adjacent, check near by
-
-				// Shadow weight for each vertex point of block. Weight gets added by 1 whenever other opaque blocks touches the vertex point.
-				std::vector<unsigned int> shadowWeight;
-				shadowWeight.resize(15, 0);
-
-					//			top biew
-					//			+z
-					//	below			above
-					//		0 7 6	8 15 14
-					//+x		1 - 5   9  + 13		 -x
-					//		2 3 4  10 11 12
-
-					//			-z
-
-				// Below first
-				{
-					const int belowY = worldPos.y - 1;
-					if (belowY >= 0)
-					{
-						int block0 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z - 1);
-						if (block0 == 1)
-						{
-							shadowWeight.at(0) += 1;
-						}
-
-						int block1 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z);
-						if (block1 == 1)
-						{
-							shadowWeight.at(1) += 1;
-						}
-
-						int block2 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z + 1);
-						if (block2 == 1)
-						{
-							shadowWeight.at(2) += 1;
-						}
-
-						int block3 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z + 1);
-						if (block3 == 1)
-						{
-							shadowWeight.at(3) += 1;
-						}
-
-						int block4 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z + 1);
-						if (block4 == 1)
-						{
-							shadowWeight.at(4) += 1;
-						}
-
-						int block5 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z);
-						if (block5 == 1)
-						{
-							shadowWeight.at(5) += 1;
-						}
-
-						int block6 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z - 1);
-						if (block6 == 1)
-						{
-							shadowWeight.at(6) += 1;
-						}
-
-						int block7 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z - 1);
-						if (block7 == 1)
-						{
-							shadowWeight.at(7) += 1;
-						}
-					}
-				}
-
-				// Then, above
-				{
-					const int aboveY = worldPos.y + 1;
-				}
-
-				// Check face
-				if (face == Cube::Face::NONE)
-				{
-					// Skip if it's surrounded by blocks
-					continue;
-				}
-				else
-				{
-					auto worldPosition = block->getWorldPosition();
-
-					auto blockVertices = Cube::getVertices(static_cast<Cube::Face>(face), worldPosition);
-					vertices.insert(vertices.end(), blockVertices.begin(), blockVertices.end());
-
-					auto blockNormals = Cube::getNormals(static_cast<Cube::Face>(face), worldPosition);
-					normals.insert(normals.end(), blockNormals.begin(), blockNormals.end());
-
-					// temporary function for fake lighting. 
-					//auto blockColors = Cube::getColors3(static_cast<Cube::Face>(face), block->color);
-					auto blockColors = Cube::getColors4WithShade(static_cast<Cube::Face>(face), glm::vec4(block->getColor(), 1.0f));
-					//auto blockColors = Cube::getColors4(static_cast<Cube::Face>(face), glm::vec4(0, 1, 0, 1));
-					colors.insert(colors.end(), blockColors.begin(), blockColors.end());
-
-					auto blockIndices = Cube::getIndices(static_cast<Cube::Face>(face), indicesOffsetPerBlock);
-					indicesOffsetPerBlock += (blockVertices.size() / 3);
-					indices.insert(indices.end(), blockIndices.begin(), blockIndices.end());
-				}
-			}
-		}
-		*/
 		//auto chunkSectionEnd = Utility::Time::now();
 		//std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
 

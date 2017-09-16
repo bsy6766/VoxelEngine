@@ -411,7 +411,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								HeightMap::smoothHeightMap(heightMap);
 							}
 							
-							chunk->generate(heightMap, 0, maxChunkSectionY);
+							// All chunks starts from chunk section 3 because sea level starts at 33.
+							chunk->generate(heightMap, 3, maxChunkSectionY);
 							//chunk->generateWithRegionColor();
 
 							// we need mesh for newly generated chunk
@@ -427,29 +428,28 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			}
 			else if (flag == BUILD_MESH_WORK)
 			{
-				// There must be a chunk. Chunk loader creates empty chunk.
-				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (hasChunk)
+				//auto s = Utility::Time::now();
+
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk)
 				{
-					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-					if (chunk)
+					auto mesh = chunk->getMesh();
+					if (mesh)
 					{
-						auto mesh = chunk->getMesh();
-						if (mesh)
-						{
-							// There can be two cases. 
-							// 1. Chunk is newly generated and need mesh.
-							// 2. Chunk already has mesh but need to refresh
-							//auto s = Utility::Time::now();
-							meshGenerator->generateSingleChunkMesh(chunk.get(), map);
-							//auto e = Utility::Time::now();
-							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
-						}
-						// Else, mesh is nullptr
+						// There can be two cases. 
+						// 1. Chunk is newly generated and need mesh.
+						// 2. Chunk already has mesh but need to refresh
+						//auto s = Utility::Time::now();
+						meshGenerator->generateSingleChunkMesh(chunk.get(), map);
+						//auto e = Utility::Time::now();
+						//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 					}
-					// Else, chunk is nullptr
+					// Else, mesh is nullptr
 				}
-				// Else, has no chunk
+				// Else, chunk is nullptr
+
+				//auto e = Utility::Time::now();
+				//std::cout << "Chunk mesh build took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 			}
 		}
 		else

@@ -211,7 +211,6 @@
                 <false/>
             </struct>
             <key type="filename">../textures/cross_hair.png</key>
-            <key type="filename">../textures/cursors/pointer.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -224,10 +223,25 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../textures/cursors/pointer.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>4,6,8,11</rect>
+                <key>scale9Paddings</key>
+                <rect>4,6,8,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
         </map>
         <key>fileList</key>
         <array>
-            <filename>../textures</filename>
+            <filename>../textures/cursors</filename>
+            <filename>../textures/2x2.png</filename>
+            <filename>../textures/cross_hair.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

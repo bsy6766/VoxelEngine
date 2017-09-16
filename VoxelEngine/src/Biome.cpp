@@ -33,7 +33,7 @@ Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float 
 	if (elevation > 2.0f) elevation = 2.0f;
 
 	/*
-		Lowest ocean level = 30
+		Lowest ocean level = 30		// Todo: lowest sea level is 33 now.
 		Sea level = 60
 		Highest block above sea level = 150
 	

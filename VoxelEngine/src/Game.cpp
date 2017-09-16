@@ -18,6 +18,8 @@
 #include <Camera.h>
 #include <Frustum.h>
 
+#include <SpriteSheet.h>
+
 #include <UI.h>
 #include <FontManager.h>
 
@@ -88,6 +90,9 @@ void Voxel::Game::init()
 	// Init random first
 	initRandoms();
 
+	// init spritesheet
+	initSpriteSheets();
+
 	// program
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 	// use it
@@ -131,11 +136,17 @@ void Voxel::Game::init()
 	debugConsole->game = this;
 	debugConsole->chunkMap = chunkMap;
 	debugConsole->world = world;
+
+	TextureManager::getInstance().print();
 }
 
 void Voxel::Game::release()
 {
 	std::cout << "[World] Releasing all instances" << std::endl;
+
+	SpriteSheetManager::getInstance().releaseAll();
+	TextureManager::getInstance().releaseAll();
+
 	// delete everything
 	if (chunkMap) delete chunkMap;
 	if (chunkMeshGenerator) delete chunkMeshGenerator;
@@ -151,6 +162,13 @@ void Voxel::Game::release()
 	if (debugConsole) delete debugConsole;
 
 	if (world) delete world;
+}
+
+void Voxel::Game::initSpriteSheets()
+{
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	ssm.addSpriteSheet("UISpriteSheet.json");
 }
 
 void Voxel::Game::initRandoms()

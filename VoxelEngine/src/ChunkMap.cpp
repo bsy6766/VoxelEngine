@@ -588,55 +588,45 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 
 	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(x, y, z), blockLocalPos, chunkSectionPos);
 
-	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
-
-	if (!hasChunk)
+	// target chunk
+	auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+	if (chunk)
 	{
-		// There is no chunk generated. 
-		return 3;
-	}
-	else
-	{
-		// target chunk
-		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
-		if (chunk)
+		if (chunk->isActive())
 		{
-			if (chunk->isActive())
+			// target chunk section
+			auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+			if (chunkSection)
 			{
-				// target chunk section
-				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
-				if (chunkSection)
+				// chunk section exists. return block
+				Block* block = chunkSection->getBlockAt(blockLocalPos.x, blockLocalPos.y, blockLocalPos.z);
+				if (block)
 				{
-					// chunk section exists. return block
-					Block* block = chunkSection->getBlockAt(blockLocalPos.x, blockLocalPos.y, blockLocalPos.z);
-					if (block)
+					if (block->isTransparent())
 					{
-						if (block->isTransparent())
-						{
-							return 0;
-						}
-						else
-						{
-							return 1;
-						}
+						return 0;
 					}
 					else
 					{
-						// block is air == nullptr
-						return 0;
+						return 1;
 					}
 				}
-				// There is no block in this chunk section = nullptr
 				else
 				{
-					return 2;
+					// block is air == nullptr
+					return 0;
 				}
 			}
-			// Can't access block that is in inactive chunk
+			// There is no block in this chunk section = nullptr
+			else
+			{
+				return 2;
+			}
 		}
-
-		return 3;
+		// Can't access block that is in inactive chunk
 	}
+
+	return 3;
 }
 
 void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face & faceDir, ChunkWorkManager* workManager)

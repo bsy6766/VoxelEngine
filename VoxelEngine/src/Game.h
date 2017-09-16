@@ -68,6 +68,9 @@ namespace Voxel
 		void init();
 		void release();
 
+		// Initialize sprite sheets
+		void initSpriteSheets();
+
 		// Mesh builder thread
 		void initMeshBuilderThread();
 
