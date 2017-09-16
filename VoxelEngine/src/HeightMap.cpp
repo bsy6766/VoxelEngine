@@ -199,7 +199,7 @@ int Voxel::HeightMap::getYFromHeightValue(const float value, const Terrain::Type
 	{
 	case Terrain::Type::PLAIN:
 	case Terrain::Type::HILLS:
-		y = static_cast<int>(value * 60.0f) + 30;
+		y = static_cast<int>(value * 60.0f) + 33;	//33 = lowest sea level
 		break;
 	case Terrain::Type::MOUNTAINS:
 		y = static_cast<int>(value * 50.0f) + 80;
@@ -354,7 +354,7 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 
 	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
-	minY -= 32;
+	//minY -= 16;
 
 	if (minY < 0)
 	{
