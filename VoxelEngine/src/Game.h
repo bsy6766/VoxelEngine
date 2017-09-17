@@ -33,6 +33,12 @@ namespace Voxel
 	*/
 	class Game
 	{
+	public:
+		enum class GameState
+		{
+			IDLE = 0,
+			CURSOR_MODE,
+		};
 	private:
 		// Camera modes
 		bool cameraMode;
@@ -40,6 +46,8 @@ namespace Voxel
 
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
+
+		GameState gameState;
 		
 		// World
 		World* world;

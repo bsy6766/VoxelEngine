@@ -128,11 +128,18 @@ namespace Voxel
 			// Pivot. -0.5f ~ 0.5f.
 			glm::vec2 pivot;
 
+			// size is fixed to 32 x 32
+			const glm::vec2 size = glm::vec2(32.0f, 32.0f);
+
 			GLuint vao;
 			GLuint uvbo;
 
 			// visibility
 			bool visible;
+
+			// screen boundary
+			glm::vec2 minScreenBoundary;
+			glm::vec2 maxScreenBoundary;
 
 			// Current cursor type
 			CursorType currentCursorType;
@@ -148,6 +155,7 @@ namespace Voxel
 			static Cursor* create();
 
 			void setPosition(const glm::vec2& position);
+			void addPosition(const glm::vec2& distance);
 
 			void setCursorType(const CursorType cursorType);
 

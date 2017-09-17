@@ -96,11 +96,11 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 		newEntry.width = frame.at("w");
 		newEntry.height = frame.at("h");
 		
-		newEntry.uvOrigin.x = 1.0f - ((newEntry.position.x + newEntry.width) / textureWidth);
-		newEntry.uvOrigin.y = 1.0f - ((newEntry.position.y + newEntry.height) / textureHeight);
+		newEntry.uvOrigin.x = ((newEntry.position.x + newEntry.width) / textureWidth);
+		newEntry.uvOrigin.y = ((newEntry.position.y + newEntry.height) / textureHeight);
 
-		newEntry.uvEnd.x = 1.0f - (newEntry.position.x / textureWidth);
-		newEntry.uvEnd.y = 1.0f - (newEntry.position.y / textureHeight);
+		newEntry.uvEnd.x = (newEntry.position.x / textureWidth);
+		newEntry.uvEnd.y = (newEntry.position.y / textureHeight);
 
 		imageEntryMap.emplace(imageName, newEntry);
 	}

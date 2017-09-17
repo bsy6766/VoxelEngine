@@ -413,7 +413,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							
 							// All chunks starts from chunk section 3 because sea level starts at 33.
 							chunk->generate(heightMap, 3, maxChunkSectionY);
-							//chunk->generateWithRegionColor();
 
 							// we need mesh for newly generated chunk
 							addBuildMeshWork(chunkXZ);

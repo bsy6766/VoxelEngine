@@ -62,6 +62,7 @@ Game::Game()
 	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
+	, gameState(GameState::IDLE)
 {
 	// init instances
 	init();
@@ -440,6 +441,18 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 
+
+	if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
+	{
+		gameState = GameState::CURSOR_MODE;
+		cursor->setVisibility(true);
+	}
+	else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
+	{
+		gameState = GameState::IDLE;
+		cursor->setVisibility(false);
+	}
+
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
 		/*
@@ -553,37 +566,40 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	}
 	else
 	{
-		if (input->getKeyDown(GLFW_KEY_W))
+		if (gameState == GameState::IDLE)
 		{
-			player->moveFoward(delta);
-			//std::cout << "!" << std::endl;
-		}
-		else if (input->getKeyDown(GLFW_KEY_S))
-		{
-			player->moveBackward(delta);
-		}
+			if (input->getKeyDown(GLFW_KEY_W))
+			{
+				player->moveFoward(delta);
+				//std::cout << "!" << std::endl;
+			}
+			else if (input->getKeyDown(GLFW_KEY_S))
+			{
+				player->moveBackward(delta);
+			}
 
-		if (input->getKeyDown(GLFW_KEY_A))
-		{
-			player->moveLeft(delta);
-		}
-		else if (input->getKeyDown(GLFW_KEY_D))
-		{
-			player->moveRight(delta);
-		}
+			if (input->getKeyDown(GLFW_KEY_A))
+			{
+				player->moveLeft(delta);
+			}
+			else if (input->getKeyDown(GLFW_KEY_D))
+			{
+				player->moveRight(delta);
+			}
 
-		if (input->getKeyDown(GLFW_KEY_SPACE))
-		{
-			player->moveUp(delta);
-		}
-		else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
-		{
-			player->moveDown(delta);
-		}
+			if (input->getKeyDown(GLFW_KEY_SPACE))
+			{
+				player->moveUp(delta);
+			}
+			else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+			{
+				player->moveDown(delta);
+			}
 
-		if (input->getKeyDown(GLFW_KEY_BACKSPACE))
-		{
-			Camera::mainCamera->print();
+			if (input->getKeyDown(GLFW_KEY_BACKSPACE))
+			{
+				Camera::mainCamera->print();
+			}
 		}
 	}
 
@@ -600,12 +616,22 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
 	}
 
-	if (input->getKeyDown(GLFW_KEY_4))
+	if (input->getKeyDown(GLFW_KEY_1, true))
+	{
+		cursor->setCursorType(UI::Cursor::CursorType::POINTER);
+	}
+
+	if (input->getKeyDown(GLFW_KEY_2, true))
+	{
+		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
+	}
+
+	if (input->getKeyDown(GLFW_KEY_4, true))
 	{
 		player->setRotation(glm::vec3(0, 180, 0));
 	}
 
-	if (input->getKeyDown(GLFW_KEY_6))
+	if (input->getKeyDown(GLFW_KEY_6, true))
 	{
 		Camera::mainCamera->setPosition(player->getPosition());
 	}
@@ -627,54 +653,59 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	double x, y;
 	input->getMousePosition(x, y);
 
-	cursor->setPosition(glm::vec2(x, y));
-
 	double dx = x - mouseX;
 	double dy = y - mouseY;
 	mouseX = x;
 	mouseY = y;
 
-	// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
-	// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
-	// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
-	// 60 fps. So if if delta is bigger than 1/60, force 1/60
-
-	float newDelta = delta;
-
-	if (delta < 0.0166666667f)
+	if (gameState == GameState::IDLE)
 	{
-		newDelta = 0.01666666666667f;
+		// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
+		// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
+		// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
+		// 60 fps. So if if delta is bigger than 1/60, force 1/60
+
+		float newDelta = delta;
+
+		if (delta < 0.0166666667f)
+		{
+			newDelta = 0.01666666666667f;
+		}
+
+		if (debugConsole->isConsoleOpened())
+		{
+			// Stop input while opening console
+			return;
+		}
+
+		if (cameraControlMode)
+		{
+			if (dx != 0)
+			{
+				Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
+			}
+
+			if (dy != 0)
+			{
+				Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
+			}
+		}
+		else
+		{
+			if (dx != 0.0)
+			{
+				player->addRotationY(newDelta * static_cast<float>(dx));
+			}
+
+			if (dy != 0.0)
+			{
+				player->addRotationX(newDelta * static_cast<float>(-dy));
+			}
+		}
 	}
-
-	if (debugConsole->isConsoleOpened())
+	else if (gameState == GameState::CURSOR_MODE)
 	{
-		// Stop input while opening console
-		return;
-	}
-
-	if (cameraControlMode)
-	{
-		if (dx != 0)
-		{
-			Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
-		}
-
-		if (dy != 0)
-		{
-			Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
-		}
-	}
-	else
-	{
-		if (dx != 0.0)
-		{
-			player->addRotationY(newDelta * static_cast<float>(dx));
-		}
-
-		if (dy != 0.0)
-		{
-			player->addRotationX(newDelta * static_cast<float>(-dy));
-		}
+		cursor->addPosition(glm::vec2(dx, -dy));
 	}
 }
 
@@ -686,25 +717,32 @@ void Voxel::Game::updateMouseClickInput()
 		return;
 	}
 
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+	if (gameState == GameState::IDLE)
 	{
-		if (player->isLookingAtBlock())
+		if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 		{
-			auto lookingBlock = player->getLookingBlock();
-			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
-			chunkMap->removeBlockAt(blockPos, chunkWorkManager);
-			updatePlayerRaycast();
+			if (player->isLookingAtBlock())
+			{
+				auto lookingBlock = player->getLookingBlock();
+				auto blockPos = player->getLookingBlock()->getWorldCoordinate();
+				chunkMap->removeBlockAt(blockPos, chunkWorkManager);
+				updatePlayerRaycast();
+			}
+		}
+		else if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+		{
+			if (player->isLookingAtBlock())
+			{
+				auto lookingBlock = player->getLookingBlock();
+				auto blockPos = player->getLookingBlock()->getWorldCoordinate();
+				chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkWorkManager);
+				updatePlayerRaycast();
+			}
 		}
 	}
-	else if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+	else if (gameState == GameState::CURSOR_MODE)
 	{
-		if (player->isLookingAtBlock())
-		{
-			auto lookingBlock = player->getLookingBlock();
-			auto blockPos = player->getLookingBlock()->getWorldCoordinate();
-			chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkWorkManager);
-			updatePlayerRaycast();
-		}
+
 	}
 }
 

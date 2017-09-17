@@ -2,19 +2,19 @@
 
 {
 	"filename": "finger.png",
-	"frame": {"x":1,"y":1,"w":23,"h":21},
+	"frame": {"x":1,"y":1,"w":32,"h":32},
 	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":23,"h":21},
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32},
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
 	"filename": "pointer.png",
-	"frame": {"x":1,"y":24,"w":17,"h":23},
+	"frame": {"x":1,"y":35,"w":32,"h":32},
 	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":17,"h":23},
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32},
 	"pivot": {"x":0.5,"y":0.5}
 }],
@@ -23,8 +23,8 @@
 	"version": "1.0",
 	"image": "CursorSpriteSheet.png",
 	"format": "RGBA8888",
-	"size": {"w":64,"h":64},
+	"size": {"w":128,"h":128},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:f35abd76907887caa6f9675ef1856d12:4c2f8d8b8ff04991ca8405b3ff1d6262:6eb4193a090dc0335c9cef8810c35d3f$"
+	"smartupdate": "$TexturePacker:SmartUpdate:6ef60b2bd9bbd289f2cdfaef67570552:4c2f8d8b8ff04991ca8405b3ff1d6262:6eb4193a090dc0335c9cef8810c35d3f$"
 }
 }
