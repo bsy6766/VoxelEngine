@@ -274,17 +274,18 @@ void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap)
 	}
 	*/
 
-	smoothHelper(heightMap, 0, 0, 8, 8);
-	smoothHelper(heightMap, 0, 8, 8, 16);
-	smoothHelper(heightMap, 8, 0, 16, 8);
-	smoothHelper(heightMap, 8, 8, 16, 16);
+	//smoothHelper(heightMap, 0, 0, 8, 8);
+	//smoothHelper(heightMap, 0, 8, 8, 16);
+	//smoothHelper(heightMap, 8, 0, 16, 8);
+	//smoothHelper(heightMap, 8, 8, 16, 16);
 
-	smoothHelper(heightMap, 4, 4, 12, 12);
-	smoothHelper(heightMap, 0, 0, 4, 4);
-	smoothHelper(heightMap, 0, 12, 4, 16);
-	smoothHelper(heightMap, 12, 0, 16, 4);
-	smoothHelper(heightMap, 12, 12, 16, 16);
-	//smoothHelper(heightMap, 0, 0, 16, 16);
+	//smoothHelper(heightMap, 4, 4, 12, 12);
+	//smoothHelper(heightMap, 0, 0, 4, 4);
+	//smoothHelper(heightMap, 0, 12, 4, 16);
+	//smoothHelper(heightMap, 12, 0, 16, 4);
+	//smoothHelper(heightMap, 12, 12, 16, 16);
+
+	smoothHelper(heightMap, 0, 0, 16, 16);
 
 	/*
 	for (auto x : heightMap)
@@ -302,43 +303,20 @@ void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, co
 {
 	// https://en.wikipedia.org/wiki/Bilinear_interpolation#Algorithm
 
-	/*
-	float q11 = static_cast<float>(heightMap.at(xStart).at(zStart));
-	float q12 = static_cast<float>(heightMap.at(xStart).at(zEnd - 1));
-	float q21 = static_cast<float>(heightMap.at(xEnd - 1).at(zStart));
-	float q22 = static_cast<float>(heightMap.at(xEnd - 1).at(zEnd - 1));
-	*/
-
-	/*
-	float x1 = 0;
-	float x2 = xLen;
-	float z1 = 0;
-	float z2 = zLen;
-	*/
 	float x1 = static_cast<float>(xStart);
 	float x2 = static_cast<float>(xEnd);
 	float z1 = static_cast<float>(zStart);
 	float z2 = static_cast<float>(zEnd);
-	
+
 	const float x2_1 = x2 - x1;
 	const float z2_1 = z2 - z1;
-
-	auto sizeX = heightMap.size();
-	auto sizeZ = heightMap.front().size();
-
+	
 	for (unsigned int x = xStart; x < xEnd; ++x)
 	{
 		float xf = static_cast<float>(x);
 
 		for (unsigned int z = zStart; z < zEnd; ++z)
 		{
-			/*
-			if (x == xStart && z == zStart) continue;
-			if (x == xStart && z == zEnd - 1) continue;
-			if (x == xEnd - 1 && z == zStart) continue;
-			if (x == xEnd - 1 && z == zEnd - 1) continue;
-			*/
-
 			float zf = static_cast<float>(z);
 
 			float fxy1 = ((x2 - xf) / (x2_1)* q11) + ((xf - x1) / (x2_1)* q21);

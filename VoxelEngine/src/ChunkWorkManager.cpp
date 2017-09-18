@@ -65,6 +65,23 @@ void Voxel::ChunkWorkManager::addPreGenerateWorks(const std::vector<glm::ivec2>&
 	cv.notify_one();
 }
 
+void Voxel::ChunkWorkManager::addSmoothWork(const glm::ivec2 & coordinate, const bool highPriority)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		smoothQueue.push_front(coordinate);
+	}
+	else
+	{
+		smoothQueue.push_back(coordinate);
+	}
+
+	cv.notify_one();
+}
+
 void Voxel::ChunkWorkManager::addGenerateWork(const glm::ivec2 & coordinate, const bool highPriority)
 {
 	// Scope lock
@@ -290,7 +307,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			// wait if both queue are empty. Must be running.
-			while (running && preGenerateQueue.empty() && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
+			while (running && preGenerateQueue.empty() && smoothQueue.empty() && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
 			{
 				cv.wait(lock);
 			}
@@ -318,6 +335,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				preGenerateQueue.pop_front();
 				flag = PRE_GENERATE_WORK;
 			}
+			else if (!smoothQueue.empty())
+			{
+				chunkXZ = smoothQueue.front();
+				smoothQueue.pop_front();
+				flag = SMOOTH_WORK;
+			}
 			// If there is nothing to pregenerate, generate chunk. (generates blocks)
 			else if (!generateQueue.empty())
 			{
@@ -342,7 +365,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
-			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
+			std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 			if (flag == UNLOAD_WORK)
 			{
 				//std::cout << "Unload" << std::endl;
@@ -452,6 +475,30 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					// Chunk is pre generated. add to generate queue
 					if (!map->isChunkOnEdge(chunkXZ))
 					{
+						//addGenerateWork(chunkXZ);
+					}
+					addSmoothWork(chunkXZ);
+				}
+			}
+			else if (flag == SMOOTH_WORK)
+			{
+				// There must be a chunk. Chunk loader creates empty chunk.
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk)
+				{
+					//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
+					//auto s = Utility::Time::now();
+
+					if (chunk->hasMultipleRegion())
+					{
+						//std::cout << "Smooth" << std::endl;
+
+						HeightMap::smoothHeightMap(chunk->heightMap);
+						chunk->smoothed = true;
+					}
+
+					if (!map->isChunkOnEdge(chunkXZ))
+					{
 						addGenerateWork(chunkXZ);
 					}
 				}
@@ -469,71 +516,126 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 						//auto s = Utility::Time::now();
 
-						bool needSmooth = false;
-						/*
-						for (auto& row : nearByChunks)
+						if (!chunk->smoothed)
 						{
-							for (auto& chunk : row)
+							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+							int needSmooth = 0;
+
+							const int cq11 = chunk->getQ11();
+							const int cq12 = chunk->getQ12();
+							const int cq21 = chunk->getQ21();
+							const int cq22 = chunk->getQ22();
+
+							const int diff = 3;
+
+							auto& EChunk = nearByChunks.at(1).at(0);
+							if (EChunk)
 							{
-								if (chunk)
+								if (EChunk->isSmoothed())
 								{
-									if (chunk->hasMultipleRegion())
+									const int ecQ12 = EChunk->getQ12();
+									const int ecQ11 = EChunk->getQ11();
+
+									const int diffQ12 = glm::abs(ecQ12 - cq22);
+									const int diffQ11 = glm::abs(ecQ11 - cq21);
+
+									if (diffQ12 > diff || diffQ11 > diff)
 									{
-										needSmooth = true;
-										break;
+										needSmooth++;
 									}
 								}
 							}
 
-							if (needSmooth)
+							auto& WChunk = nearByChunks.at(1).at(2);
+							if (WChunk)
 							{
-								break;
-							}
-						}
-						*/
-						std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+								if (WChunk->isSmoothed())
+								{
+									const int wcQ22 = WChunk->getQ22();
+									const int wcQ21 = WChunk->getQ21();
 
-											
-						if (chunk->hasMultipleRegion())
-						{
-							needSmooth = true;
-						}
-						else
-						{
-							if (nearByChunks.at(1).at(0)->hasMultipleRegion())
-							{
-								needSmooth = true;
-							}
-							else if (nearByChunks.at(0).at(1)->hasMultipleRegion())
-							{
-								needSmooth = true;
-							}
-							else if (nearByChunks.at(1).at(2)->hasMultipleRegion())
-							{
-								needSmooth = true;
-							}
-							else if (nearByChunks.at(2).at(1)->hasMultipleRegion())
-							{
-								needSmooth = true;
-							}
-						}
+									const int diffQ22 = glm::abs(wcQ22 - cq12);
+									const int diffQ21 = glm::abs(wcQ21 - cq11);
 
-						if (needSmooth)
-						{
-							const int q11 = nearByChunks.at(2).at(2)->getQ11();
-							const int q12 = nearByChunks.at(0).at(2)->getQ12();
-							const int q21 = nearByChunks.at(2).at(0)->getQ21();
-							const int q22 = nearByChunks.at(0).at(0)->getQ22();
+									if (diffQ22 > diff || diffQ21 > diff)
+									{
+										needSmooth++;
+									}
+								}
+							}
 
-							const int qCenter = chunk->heightMap.at(8).at(8);
+							auto& SChunk = nearByChunks.at(0).at(1);
+							if (SChunk)
+							{
+								if (SChunk->isSmoothed())
+								{
+									const int scQ11 = SChunk->getQ11();
+									const int scQ21 = SChunk->getQ21();
 
-							HeightMap::smoothHeightMap(chunk->heightMap, q11, q12, q21, q22, 16, 16);
-							/*
-							HeightMap::smoothHelper(chunk->heightMap, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), nearByChunks.at(1).at(0)->heightMap.at(15).at(8), q22, 8, 8, 16, 16, 16, 16);
-							HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), q12, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), 0, 8, 8, 16, 16, 16);
-							HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, q21, nearByChunks.at(1).at(0)->heightMap.at(15).at(8), 8, 0, 16, 8, 16, 16);
-							HeightMap::smoothHelper(chunk->heightMap, q11, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, 0, 0, 8, 8, 16, 16);
-							*/
+									const int diffQ11 = glm::abs(scQ11 - cq12);
+									const int diffQ21 = glm::abs(scQ21 - cq22);
+
+									if (diffQ11 > diff || diffQ21 > diff)
+									{
+										needSmooth++;
+									}
+								}
+							}
+
+							auto& NChunk = nearByChunks.at(2).at(1);
+							if (NChunk)
+							{
+								if (NChunk->isSmoothed())
+								{
+									const int ncQ22 = NChunk->getQ22();
+									const int ncQ12 = NChunk->getQ12();
+
+									const int diffQ22 = glm::abs(ncQ22 - cq21);
+									const int diffQ12 = glm::abs(ncQ12 - cq11);
+									if (diffQ22 > diff || diffQ12 > diff)
+									{
+										needSmooth++;
+									}
+								}
+							}
+
+							if (needSmooth >= 2)
+							{
+								//std::cout << "Gen smooth" << std::endl;
+								const int q11 = nearByChunks.at(2).at(2)->getQ22();
+								const int q12 = nearByChunks.at(0).at(2)->getQ21(); 
+								const int q21 = nearByChunks.at(2).at(0)->getQ12();
+								const int q22 = nearByChunks.at(0).at(0)->getQ11();
+
+								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, 16, 16);
+								/*
+								const int diffQ11 = glm::abs(cq11 - q11);
+								const int diffQ12 = glm::abs(cq12 - q12);
+								const int diffQ21 = glm::abs(cq21 - q21);
+								const int diffQ22 = glm::abs(cq22 - q22);
+
+								if (diffQ11 > 4 || diffQ12 > 4 || diffQ21 > 4 || diffQ22 > 4)
+								{
+									//HeightMap::smoothHeightMap(chunk->heightMap);
+								}
+								*/
+
+								//HeightMap::smoothHeightMap(chunk->heightMap, q22, q12, q21, q11, 16, 16);
+								//HeightMap::smoothHeightMap(chunk->heightMap, q11, q12, q21, q22, 16, 16);
+								//HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, 16, 16);
+
+								/*
+								const int qCenter = chunk->heightMap.at(8).at(8);
+
+
+								HeightMap::smoothHelper(chunk->heightMap, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), nearByChunks.at(1).at(0)->heightMap.at(15).at(8), q22, 8, 8, 16, 16, 24, 24);
+								HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), q12, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), 0, 8, 8, 16, 24, 24);
+								HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, q21, nearByChunks.at(1).at(0)->heightMap.at(15).at(8), 8, 0, 16, 8, 24, 24);
+								HeightMap::smoothHelper(chunk->heightMap, q11, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, 0, 0, 8, 8, 24, 24);
+
+								*/
+								//chunk->smoothed = true;
+							}
 						}
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.

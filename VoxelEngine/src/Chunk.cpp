@@ -17,6 +17,7 @@ Chunk::Chunk()
 	, active(false)
 	, visible(false)
 	, timestamp(0)
+	, smoothed(false)
 {
 	chunkMesh = new ChunkMesh();
 	generated.store(false);
@@ -579,24 +580,55 @@ bool Voxel::Chunk::hasMultipleRegion()
 
 int Voxel::Chunk::getQ11()
 {
-	return heightMapOriginal.back().back();
-	//return heightMap.front().front();
+	if (smoothed)
+	{
+		return heightMap.front().front();
+	}
+	else
+	{
+		return heightMapOriginal.front().front();
+	}
 }
 
 int Voxel::Chunk::getQ12()
 {
-	return heightMapOriginal.back().front();
+	if (smoothed)
+	{
+		return heightMap.front().back();
+	}
+	else
+	{
+		return heightMapOriginal.front().back();
+	}
 }
 
 int Voxel::Chunk::getQ21()
 {
-	return heightMapOriginal.front().back();
+	if (smoothed)
+	{
+		return heightMap.back().front();
+	}
+	else
+	{
+		return heightMapOriginal.back().front();
+	}
 }
 
 int Voxel::Chunk::getQ22()
 {
-	return heightMapOriginal.front().front();
-	//return heightMap.back().back();
+	if (smoothed)
+	{
+		return heightMap.back().back();
+	}
+	else
+	{
+		return heightMapOriginal.back().back();
+	}
+}
+
+bool Voxel::Chunk::isSmoothed()
+{
+	return smoothed;
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)

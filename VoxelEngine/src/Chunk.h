@@ -48,6 +48,8 @@ namespace Voxel
 		std::vector<std::vector<int>> heightMap;
 		std::vector<std::vector<int>> heightMapOriginal;
 
+		bool smoothed;
+
 		// End of chunk map datas....
 
 		// active state. Only active chunk can be queried and gets updated
@@ -143,6 +145,8 @@ namespace Voxel
 		int getQ12();
 		int getQ21();
 		int getQ22();
+
+		bool isSmoothed();
 
 		// Update chunk's last activated timestamp
 		void updateTimestamp(const double timestamp);

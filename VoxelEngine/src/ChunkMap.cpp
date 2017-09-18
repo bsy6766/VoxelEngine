@@ -1610,6 +1610,7 @@ void Voxel::ChunkMap::removeRowWest(ChunkWorkManager* wm)
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
@@ -1654,6 +1655,7 @@ void Voxel::ChunkMap::removeRowEast(ChunkWorkManager* wm)
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
@@ -1697,6 +1699,7 @@ void Voxel::ChunkMap::removeColSouth(ChunkWorkManager * wm)
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
@@ -1740,6 +1743,7 @@ void Voxel::ChunkMap::removeColNorth(ChunkWorkManager * wm)
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
