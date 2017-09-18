@@ -9,7 +9,7 @@
 #include <mutex>
 #include <Cube.h>
 #include <Terrain.h>
-#include <shared_ptr.hpp>
+#include <memory>
 #include <GL\glew.h>
 
 namespace Voxel
@@ -123,6 +123,8 @@ namespace Voxel
 		// Get chunk in x and z coordinate
 		//Chunk* getChunkAtXZ(int x, int z);
 		std::shared_ptr<Chunk> getChunkAtXZ(int x, int z);
+
+		std::vector<std::vector<std::shared_ptr<Chunk>>> getNearByChunks(const glm::ivec2& chunkXZ);
 
 		// Generate chunk with specific coordinate
 		void generateChunk(const int x, const int z);

@@ -342,9 +342,10 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
+			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 			if (flag == UNLOAD_WORK)
 			{
-				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
+				//std::cout << "Unload" << std::endl;
 
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
@@ -364,10 +365,10 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			}
 			else if (flag == PRE_GENERATE_WORK)
 			{
-				std::cout << "PreGen Work (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
+					//std::cout << "PreGen" << std::endl;
 					// Get all block world position in XZ axises and find which region the are at
 					std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
@@ -443,6 +444,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					// Generate height map.
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, chunk->heightMap, regionMap, map->getRegionTerrainsMap());
+					chunk->heightMapOriginal = chunk->heightMap;
 
 					// Pre generate chunk sections
 					chunk->preGenerateChunkSections(3, maxChunkSectionY);
@@ -456,22 +458,82 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			}
 			else if (flag == GENERATE_WORK)
 			{
-				std::cout << "Gen Work (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
-
 				// There must be a chunk. Chunk loader creates empty chunk.
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
-					if (!chunk->isGenerated())
+					if (!chunk->isGenerated() && chunk->isActive())
 					{
+						//std::cout << "Gen" << std::endl;
+
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 						//auto s = Utility::Time::now();
 
-						std::vector<std::vector<Chunk*>> nearByChunks;
+						bool needSmooth = false;
+						/*
+						for (auto& row : nearByChunks)
+						{
+							for (auto& chunk : row)
+							{
+								if (chunk)
+								{
+									if (chunk->hasMultipleRegion())
+									{
+										needSmooth = true;
+										break;
+									}
+								}
+							}
 
+							if (needSmooth)
+							{
+								break;
+							}
+						}
+						*/
+						std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+
+											
 						if (chunk->hasMultipleRegion())
 						{
-							HeightMap::smoothHeightMap(chunk->heightMap);
+							needSmooth = true;
+						}
+						else
+						{
+							if (nearByChunks.at(1).at(0)->hasMultipleRegion())
+							{
+								needSmooth = true;
+							}
+							else if (nearByChunks.at(0).at(1)->hasMultipleRegion())
+							{
+								needSmooth = true;
+							}
+							else if (nearByChunks.at(1).at(2)->hasMultipleRegion())
+							{
+								needSmooth = true;
+							}
+							else if (nearByChunks.at(2).at(1)->hasMultipleRegion())
+							{
+								needSmooth = true;
+							}
+						}
+
+						if (needSmooth)
+						{
+							const int q11 = nearByChunks.at(2).at(2)->getQ11();
+							const int q12 = nearByChunks.at(0).at(2)->getQ12();
+							const int q21 = nearByChunks.at(2).at(0)->getQ21();
+							const int q22 = nearByChunks.at(0).at(0)->getQ22();
+
+							const int qCenter = chunk->heightMap.at(8).at(8);
+
+							HeightMap::smoothHeightMap(chunk->heightMap, q11, q12, q21, q22, 16, 16);
+							/*
+							HeightMap::smoothHelper(chunk->heightMap, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), nearByChunks.at(1).at(0)->heightMap.at(15).at(8), q22, 8, 8, 16, 16, 16, 16);
+							HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), q12, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), 0, 8, 8, 16, 16, 16);
+							HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, q21, nearByChunks.at(1).at(0)->heightMap.at(15).at(8), 8, 0, 16, 8, 16, 16);
+							HeightMap::smoothHelper(chunk->heightMap, q11, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, 0, 0, 8, 8, 16, 16);
+							*/
 						}
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.
@@ -490,7 +552,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			}
 			else if (flag == BUILD_MESH_WORK)
 			{
-				std::cout << "BuildMesh Work (" << chunkXZ.x << ", " << chunkXZ.y << ")...";
+				//std::cout << "BuildMesh";
 				//auto s = Utility::Time::now();
 
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
@@ -506,7 +568,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							// 2. Chunk already has mesh but need to refresh
 							//auto s = Utility::Time::now();
 							meshGenerator->generateSingleChunkMesh(chunk.get(), map);
-							std::cout << "Done" << std::endl;
+							//std::cout << "Done" << std::endl;
 							//auto e = Utility::Time::now();
 							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}

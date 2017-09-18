@@ -142,7 +142,7 @@ void Voxel::Game::init()
 
 	//Application::getInstance().getGLView()->setWindowedFullScreen(0);
 	//defaultCanvas->setSize(glm::vec2(1920, 1080));
-	debugConsole->updateResolution(1920, 1080);
+	//debugConsole->updateResolution(1920, 1080);
 }
 
 void Voxel::Game::release()
@@ -272,6 +272,7 @@ void Game::createPlayer()
 	player->setPosition(glm::vec3(0, 100, 0));
 	//player->setPosition(glm::vec3(0, 200, 0));
 	//player->setPosition(glm::vec3(-270, 150, 200));
+	player->setPosition(glm::vec3(-690, 150, 128));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	player->setRotation(glm::vec3(320, 270, 0));
 	// Todo: load player's last direction

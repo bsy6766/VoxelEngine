@@ -149,8 +149,8 @@ bool Voxel::Chunk::generate()
 		}
 	}
 
-	regionMap.clear();
-	heightMap.clear();
+	//regionMap.clear();
+	//heightMap.clear();
 
 	generated.store(true);
 
@@ -575,6 +575,28 @@ bool Voxel::Chunk::isGenerated()
 bool Voxel::Chunk::hasMultipleRegion()
 {
 	return regionMap.size() > 1;
+}
+
+int Voxel::Chunk::getQ11()
+{
+	return heightMapOriginal.back().back();
+	//return heightMap.front().front();
+}
+
+int Voxel::Chunk::getQ12()
+{
+	return heightMapOriginal.back().front();
+}
+
+int Voxel::Chunk::getQ21()
+{
+	return heightMapOriginal.front().back();
+}
+
+int Voxel::Chunk::getQ22()
+{
+	return heightMapOriginal.front().front();
+	//return heightMap.back().back();
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)

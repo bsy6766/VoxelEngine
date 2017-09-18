@@ -378,6 +378,83 @@ std::shared_ptr<Chunk> Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 	}
 }
 
+std::vector<std::vector<std::shared_ptr<Chunk>>> Voxel::ChunkMap::getNearByChunks(const glm::ivec2 & chunkXZ)
+{
+	std::vector<std::vector<std::shared_ptr<Chunk>>> nearBy;
+
+	for (int i = 0; i < 3; i++)
+	{
+		nearBy.push_back(std::vector<std::shared_ptr<Chunk>>());
+		for (int j = 0; j < 3; j++)
+		{
+			nearBy.back().push_back(nullptr);
+		}
+	}
+
+	// south east
+	auto SEChunk = getChunkAtXZ(chunkXZ.x + 1, chunkXZ.y + 1);
+	if (SEChunk)
+	{
+		nearBy.at(0).at(0) = SEChunk;
+	}
+
+	// south 
+	auto SChunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y + 1);
+	if (SChunk)
+	{
+		nearBy.at(0).at(1) = SChunk;
+	}
+
+	// south west
+	auto SWChunk = getChunkAtXZ(chunkXZ.x - 1, chunkXZ.y + 1);
+	if (SWChunk)
+	{
+		nearBy.at(0).at(2) = SWChunk;
+	}
+
+	// east
+	auto EChunk = getChunkAtXZ(chunkXZ.x + 1, chunkXZ.y);
+	if (EChunk)
+	{
+		nearBy.at(1).at(0) = EChunk;
+	}
+
+	// center
+	// Skip
+	//nearBy.at(1).at(1) = nullptr;
+
+	// west
+	auto WChunk = getChunkAtXZ(chunkXZ.x - 1, chunkXZ.y);
+	if (WChunk)
+	{
+		nearBy.at(1).at(2) = WChunk;
+	}
+
+	// north east
+	auto NEChunk = getChunkAtXZ(chunkXZ.x + 1, chunkXZ.y - 1);
+	if (NEChunk)
+	{
+		nearBy.at(2).at(0) = NEChunk;
+	}
+
+	// north
+	auto NChunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y - 1);
+	if (NChunk)
+	{
+		nearBy.at(2).at(1) = NChunk;
+	}
+
+	// north west
+	auto NWChunk = getChunkAtXZ(chunkXZ.x - 1, chunkXZ.y - 1);
+	if (NWChunk)
+	{
+		nearBy.at(2).at(2) = NWChunk;
+	}
+	
+
+	return nearBy;
+}
+
 void Voxel::ChunkMap::generateChunk(const int x, const int z)
 {
 	// for sake, just check one more time

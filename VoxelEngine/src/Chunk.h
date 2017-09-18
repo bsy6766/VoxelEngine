@@ -46,6 +46,7 @@ namespace Voxel
 
 		// Height map data for each block. Once chunk is generated, this will be cleared
 		std::vector<std::vector<int>> heightMap;
+		std::vector<std::vector<int>> heightMapOriginal;
 
 		// End of chunk map datas....
 
@@ -136,6 +137,12 @@ namespace Voxel
 
 		// Check if chunk has multiple region
 		bool hasMultipleRegion();
+
+		// Get heightmap value
+		int getQ11();
+		int getQ12();
+		int getQ21();
+		int getQ22();
 
 		// Update chunk's last activated timestamp
 		void updateTimestamp(const double timestamp);
