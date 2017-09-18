@@ -56,69 +56,12 @@ bool Voxel::Block::init(const glm::ivec3& position, const glm::ivec3& chunkSecti
 	//this->worldPosition.y += (static_cast<float>(chunkSectionPosition.y) * Constant::CHUNK_SECTION_HEIGHT);
 	//this->worldPosition.z += (static_cast<float>(chunkSectionPosition.z) * Constant::CHUNK_SECTION_LENGTH);
 
-	auto randColor = Color::getRandomColor255();
-	r = static_cast<unsigned char>(randColor.r);
-	g = static_cast<unsigned char>(randColor.g);
-	b = static_cast<unsigned char>(randColor.b);
-
-	/*
-	if (worldCoordinate.y == 0)
-	{
-		id = BLOCK_ID::BEDROCK;
-		color = Color::BEDROCK;
-	}
-	else if (worldCoordinate.y > 0 && worldCoordinate.y < 3)
-	{
-		id = BLOCK_ID::STONE;
-		color = Color::STONE;
-	}
-	else if (worldCoordinate.y >= 3 && worldCoordinate.y < 10)
-	{
-		id = BLOCK_ID::GRASS;
-		color = Color::GRASS;
-	}
-	else
-	{
-		id = BLOCK_ID::AIR;
-		color = Color::WHITE;
-	}
-	*/
-
-	/*
-	if (worldCoordinate.y < 40)
-	{
-		id = BLOCK_ID::WATER;
-		auto color = Color::WATER;
-		r = color.r * 255.0f;
-		g = color.g * 255.0f;
-		b = color.b * 255.0f;
-	}
-	else
-	{
-		id = BLOCK_ID::GRASS;
-		auto color = Color::GRASS;
-		r = color.r * 255.0f;
-		g = color.g * 255.0f;
-		b = color.b * 255.0f;
-	}
-	*/
-
 	id = BLOCK_ID::GRASS;
-	auto color = Color::GRASS;
-	r = static_cast<unsigned char>(color.r * 255.0f);
-	g = static_cast<unsigned char>(color.g * 255.0f);
-	b = static_cast<unsigned char>(color.b * 255.0f);
 
-	/*
-	if (worldCoordinate.y < 1.0f)
-	{
-		id = BLOCK_ID::GRASS;
-	}
-	else
-	{
-		id = BLOCK_ID::AIR;
-	}
-	*/
+	auto color = Color::GRASS;
+	r = color.r;
+	g = color.g;
+	b = color.b;
 
 	return true;
 }
