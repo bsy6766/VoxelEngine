@@ -222,6 +222,7 @@ namespace Voxel
 			bool buildMesh(const bool update);
 			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			void clearBuffer();
 			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
 		public:
 			~Text();
@@ -236,6 +237,8 @@ namespace Voxel
 
 			void setColor(const glm::vec4& color);
 			glm::vec4 getOutlineColor();
+
+			void clear();
 
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};

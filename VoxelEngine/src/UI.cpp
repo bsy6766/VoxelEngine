@@ -204,6 +204,10 @@ void Voxel::UI::Text::setText(const std::string & text)
 			}
 		}
 	}
+	else
+	{
+		clear();
+	}
 }
 
 std::string Voxel::UI::Text::getText()
@@ -226,6 +230,12 @@ void Voxel::UI::Text::setColor(const glm::vec4 & color)
 glm::vec4 Voxel::UI::Text::getOutlineColor()
 {
 	return outlineColor;
+}
+
+void Voxel::UI::Text::clear()
+{
+	text = "";
+
 }
 
 Voxel::UI::Text::~Text()
@@ -787,6 +797,15 @@ void Voxel::UI::Text::updateBuffer(const std::vector<float>& vertices, const std
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(float) * indices.size(), &indices.front());
 
 		indicesSize = indices.size();
+	}
+}
+
+void Voxel::UI::Text::clearBuffer()
+{
+	if (type == TYPE::DYNAMIC)
+	{
+		//instead of delete buffer and all, just render nothing
+		indicesSize = 0;
 	}
 }
 
