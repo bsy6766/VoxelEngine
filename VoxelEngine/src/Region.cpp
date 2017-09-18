@@ -164,8 +164,7 @@ Biome Voxel::Region::getBiomeType()
 
 void Voxel::Region::initTerrainType()
 {
-	terrainType.setType(Terrain::Type::PLAIN);
-	terrainType.setModifier(Terrain::Modifier::NONE);
+	terrainType.setTypeByBiome(this->biomeType.getType());
 }
 
 void Voxel::Region::initTerrainType(Terrain::Type type)
