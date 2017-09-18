@@ -17,15 +17,17 @@ using namespace Voxel;
 DebugConsole::DebugConsole()
 	: openingConsole(false)
 	, debugCanvas(nullptr)
-	, staticLabels(nullptr)
+	//, staticLabels(nullptr)
 	, debugOutputVisibility(false)
 	, fpsNumber(nullptr)
 	, resolutionNumber(nullptr)
 	, vsyncMode(nullptr)
+	, hardwardInfo(nullptr)
 	, mousePosition(nullptr)
 	, cameraPosition(nullptr)
 	, cameraRotation(nullptr)
 	, playerPosition(nullptr)
+	, playerRotation(nullptr)
 	, playerLookingAt(nullptr)
 	, chunkNumbers(nullptr)
 	// debug
@@ -78,64 +80,78 @@ void Voxel::DebugConsole::init()
 	glm::vec4 outlineColor = glm::vec4(0, 0, 0, 1.0f);
 	const int fontID = 2;
 
+	/*
 	staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:\n\nBiome:\n\nRegion:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
 	staticLabels->setVisibility(false);
 	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
 	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 
 	debugCanvas->addText("staticLabels", staticLabels, 0);
+	*/
 
 	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::createWithOutline("9999", glm::vec2(41.0f, -5.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 6);
+	fpsNumber = UI::Text::createWithOutline("fps: 00000", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f));
 	fpsNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	fpsNumber->setVisibility(false);
 	debugCanvas->addText("fpsNumber", fpsNumber, 0);
 
-	resolutionNumber = UI::Text::createWithOutline(std::to_string(resolution.x) + ", " + std::to_string(resolution.y), glm::vec2(101.0f, -19.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 13);
+	resolutionNumber = UI::Text::createWithOutline("resolution: 00000 x 00000", glm::vec2(5.0f, -19.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
 	resolutionNumber->setPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setVisibility(false);
 	debugCanvas->addText("resolutionNumber", resolutionNumber, 0);
 
 	auto vsync = Application::getInstance().getGLView()->isVsyncEnabled();
-	vsyncMode = UI::Text::createWithOutline("False", glm::vec2(65.0f, -33.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 6);
+	vsyncMode = UI::Text::createWithOutline("vsync: false", glm::vec2(5.0f, -33.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	vsyncMode->setPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
 	debugCanvas->addText("vsyncMode", vsyncMode, 0);
 
-	playerPosition = UI::Text::createWithOutline("00000.00, 00000.00, 00000.00", glm::vec2(143.0f, -149.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	hardwardInfo = UI::Text::createWithOutline("CPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion, glm::vec2(5.0f, -65.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	hardwardInfo->setPivot(glm::vec2(-0.5f, 0.5f));
+	hardwardInfo->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	hardwardInfo->setVisibility(false);
+	debugCanvas->addText("hardwardInfo", hardwardInfo, 0);
+
+	playerPosition = UI::Text::createWithOutline("player position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -149.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
 
-	playerChunkPosition = UI::Text::createWithOutline("00000.00, 00000.00, 00000.00", glm::vec2(197.0f, -163.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 30);
+	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -163.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	playerRotation->setPivot(glm::vec2(-0.5f, 0.5f));
+	playerRotation->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerRotation->setVisibility(false);
+	debugCanvas->addText("playerRotation", playerRotation, 0);
+
+	playerChunkPosition = UI::Text::createWithOutline("player chunk position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -181.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerChunkPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setVisibility(false);
 	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
 
-	playerLookingAt = UI::Text::createWithOutline("000000, 000000, 000000 Face (-)", glm::vec2(165.0f, -175.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 40);
+	playerLookingAt = UI::Text::createWithOutline("player looking at: 000000, 000000, 000000 Face (front)", glm::vec2(5.0f, -197.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::createWithOutline("0000 / 0000 / 0000", glm::vec2(65.0f, -207.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 19);
+	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -223.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
 	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
 
-	biome = UI::Text::createWithOutline("biome type / 0.00 / 0.00", glm::vec2(57.0f, -239.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 60);
+	biome = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -255.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	biome->setPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setVisibility(false);
 	debugCanvas->addText("biome", biome, 0);
 
-	region = UI::Text::createWithOutline("000", glm::vec2(64.0f, -273.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 4);
+	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -289.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	region->setPivot(glm::vec2(-0.5f, 0.5f));
 	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	region->setVisibility(false);
@@ -496,13 +512,31 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 {
 	debugOutputVisibility = !debugOutputVisibility;
 
-	staticLabels->setVisibility(debugOutputVisibility);
+	//staticLabels->setVisibility(debugOutputVisibility);
 	fpsNumber->setVisibility(debugOutputVisibility);
 	resolutionNumber->setVisibility(debugOutputVisibility);
 	vsyncMode->setVisibility(debugOutputVisibility);
+	hardwardInfo->setVisibility(debugOutputVisibility);
 	playerPosition->setVisibility(debugOutputVisibility);
+	playerRotation->setVisibility(debugOutputVisibility);
 	playerChunkPosition->setVisibility(debugOutputVisibility);
-	playerLookingAt->setVisibility(debugOutputVisibility);
+
+	if (debugOutputVisibility)
+	{
+		if (playerLookingAt->isVisible())
+		{
+			playerLookingAt->setVisibility(true);
+		}
+		else
+		{
+			playerLookingAt->setVisibility(false);
+		}
+	}
+	else
+	{
+		playerLookingAt->setVisibility(debugOutputVisibility);
+	}
+
 	chunkNumbers->setVisibility(debugOutputVisibility);
 	biome->setVisibility(debugOutputVisibility);
 	region->setVisibility(debugOutputVisibility);
@@ -510,14 +544,14 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
 {
-	fpsNumber->setText(std::to_string(fps));
+	fpsNumber->setText("fps: " + std::to_string(fps));
 }
 
 void Voxel::DebugConsole::updateResolution(int width, int height)
 {
 	debugCanvas->setSize(glm::vec2(width, height));
 
-	resolutionNumber->setText(std::to_string(width) + ", " + std::to_string(height));
+	resolutionNumber->setText("resolution: " + std::to_string(width) + ", " + std::to_string(height));
 
 	commandInputField->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 10.0f));
 }
@@ -526,11 +560,11 @@ void Voxel::DebugConsole::updateVsync(bool vsync)
 {
 	if (vsync)
 	{
-		vsyncMode->setText("True");
+		vsyncMode->setText("vsync: True");
 	}
 	else
 	{
-		vsyncMode->setText("False");
+		vsyncMode->setText("vsync: False");
 	}
 }
 
@@ -541,7 +575,7 @@ void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
 	y << std::fixed << std::showpoint << std::setprecision(2) << position.y;
 	z << std::fixed << std::showpoint << std::setprecision(2) << position.z;
 
-	playerPosition->setText(x.str() + ", " + y.str() + ", " + z.str());
+	playerPosition->setText("player position: " + x.str() + ", " + y.str() + ", " + z.str());
 
 	auto iPos = glm::ivec3(position);
 	int chunkX = iPos.x / Constant::CHUNK_SECTION_WIDTH;
@@ -553,17 +587,54 @@ void Voxel::DebugConsole::updatePlayerPosition(const glm::vec3 & position)
 	if (position.y < 0) chunkY -= 1;
 	if (position.z < 0) chunkZ -= 1;
 
-	playerChunkPosition->setText(std::to_string(chunkX) + ", " + std::to_string(chunkY) + ", " + std::to_string(chunkZ));
+	playerChunkPosition->setText("player chunk position: " + std::to_string(chunkX) + ", " + std::to_string(chunkY) + ", " + std::to_string(chunkZ));
+}
+
+void Voxel::DebugConsole::updatePlayerRotation(const glm::vec3 & rotation)
+{
+	std::stringstream x, y, z;
+	x << std::fixed << std::showpoint << std::setprecision(2) << rotation.x;
+	y << std::fixed << std::showpoint << std::setprecision(2) << rotation.y;
+	z << std::fixed << std::showpoint << std::setprecision(2) << rotation.z;
+
+	std::string facing = "  Facing ";
+	// 0
+	if ((rotation.y >= 0 && rotation.y < 45) || (rotation.y <= 360.0f && rotation.y >  315.0f))
+	{
+		facing += "North (Toward negative z)";
+	}
+	// 90
+	else if (rotation.y > 45 && rotation.y <= 135)
+	{
+		facing += "East (Toward positive x)";
+	}
+	// 180
+	else if (rotation.y > 135 && rotation.y <= 225)
+	{
+		facing += "South (Toward positive z)";
+	}
+	// 270
+	else if (rotation.y > 225 && rotation.y <= 315)
+	{
+		facing += "West (Toward negative x)";
+	}
+
+	playerRotation->setText("player rotation: " + x.str() + ", " + y.str() + ", " + z.str() + facing);
 }
 
 void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt, const Cube::Face& face)
 {
-	playerLookingAt->setText(std::to_string(lookingAt.x) + ", " + std::to_string(lookingAt.y) + ", " + std::to_string(lookingAt.z) + " FACE: " + Cube::faceToString(face));
+	playerLookingAt->setText("player looking at: " + std::to_string(lookingAt.x) + ", " + std::to_string(lookingAt.y) + ", " + std::to_string(lookingAt.z) + " FACE: " + Cube::faceToString(face));
+}
+
+void Voxel::DebugConsole::setPlayerLookingAtVisibility(const bool visibility)
+{
+	playerLookingAt->setVisibility(visibility);
 }
 
 void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total)
 {
-	chunkNumbers->setText(std::to_string(visible) + " / " + std::to_string(active) + " / " + std::to_string(total));
+	chunkNumbers->setText("chunks: " + std::to_string(visible) + " / " + std::to_string(active) + " / " + std::to_string(total));
 }
 
 void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::string& terrainType, const float t, const float m)
@@ -572,10 +643,10 @@ void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::
 	temp << std::fixed << std::showpoint << std::setprecision(2) << t;
 	moist << std::fixed << std::showpoint << std::setprecision(2) << m;
 
-	biome->setText(biomeType + " / " + terrainType + " / " + temp.str() + " / " + moist.str());
+	biome->setText("biome: " + biomeType + " / " + terrainType + " / " + temp.str() + " / " + moist.str());
 }
 
 void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 {
-	region->setText(std::to_string(regionID));
+	region->setText("region: " + std::to_string(regionID));
 }
