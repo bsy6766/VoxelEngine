@@ -346,29 +346,25 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			{
 				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Unload" << std::endl;
 
-				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (hasChunk)
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk)
 				{
-					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-					if (chunk)
+					auto mesh = chunk->getMesh();
+					if (mesh)
 					{
-						auto mesh = chunk->getMesh();
-						if (mesh)
-						{
-							// Clear buffer. 
-							mesh->clearBuffers();
+						// Clear buffer. 
+						mesh->clearBuffers();
 
-							// Let main thread to relase it
-							addFinishedQueue(chunkXZ);
-						}
-						// Else, mesh is nullptr
+						// Let main thread to relase it
+						addFinishedQueue(chunkXZ);
 					}
-					// Else, chunk is nullptr
+					// Else, mesh is nullptr
 				}
-				// Else, has no chunk
+				// Else, chunk is nullptr
 			}
 			else if (flag == PRE_GENERATE_WORK)
 			{
+				std::cout << "PreGen Work (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
@@ -444,6 +440,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					}
 
 					int maxChunkSectionY = 0;
+
 					// Generate height map.
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, chunk->heightMap, regionMap, map->getRegionTerrainsMap());
 
@@ -451,12 +448,15 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					chunk->preGenerateChunkSections(3, maxChunkSectionY);
 
 					// Chunk is pre generated. add to generate queue
-					addGenerateWork(chunkXZ);
+					if (!map->isChunkOnEdge(chunkXZ))
+					{
+						addGenerateWork(chunkXZ);
+					}
 				}
 			}
 			else if (flag == GENERATE_WORK)
 			{
-				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
+				std::cout << "Gen Work (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 
 				// There must be a chunk. Chunk loader creates empty chunk.
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
@@ -478,33 +478,41 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						chunk->generate();
 
 						// we need mesh for newly generated chunk
-						addBuildMeshWork(chunkXZ);
+						//addBuildMeshWork(chunkXZ);
 
 						//auto e = Utility::Time::now();
 						//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 					}
+
+					addBuildMeshWork(chunkXZ);
 				}
 				// Else, chunk is nullptr
 			}
 			else if (flag == BUILD_MESH_WORK)
 			{
+				std::cout << "BuildMesh Work (" << chunkXZ.x << ", " << chunkXZ.y << ")...";
 				//auto s = Utility::Time::now();
 
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
+					if (chunk->isGenerated())
 					{
-						// There can be two cases. 
-						// 1. Chunk is newly generated and need mesh.
-						// 2. Chunk already has mesh but need to refresh
-						//auto s = Utility::Time::now();
-						meshGenerator->generateSingleChunkMesh(chunk.get(), map);
-						//auto e = Utility::Time::now();
-						//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+						auto mesh = chunk->getMesh();
+						if (mesh)
+						{
+							// There can be two cases. 
+							// 1. Chunk is newly generated and need mesh.
+							// 2. Chunk already has mesh but need to refresh
+							//auto s = Utility::Time::now();
+							meshGenerator->generateSingleChunkMesh(chunk.get(), map);
+							std::cout << "Done" << std::endl;
+							//auto e = Utility::Time::now();
+							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+						}
+						// Else, mesh is nullptr
 					}
-					// Else, mesh is nullptr
+					// Else, chunk is not generated
 				}
 				// Else, chunk is nullptr
 

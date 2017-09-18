@@ -209,7 +209,15 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 					{
 						// execute command
 						std::cout << "Execute command: " << curText << std::endl;
-						executeCommand(curText);
+						bool result = executeCommand(curText);
+						if (result)
+						{
+							std::cout << "Success." << std::endl;
+						}
+						else
+						{
+							std::cout << "Fail." << std::endl;
+						}
 						closeConsole();
 						return;
 					}
@@ -268,7 +276,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 	}
 }
 
-void Voxel::DebugConsole::executeCommand(const std::string & command)
+bool Voxel::DebugConsole::executeCommand(const std::string & command)
 {
 	std::string cmd = command;
 	std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
@@ -309,16 +317,14 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							float speed = std::stof(split.at(2));
 							player->setMovementSpeed(speed);
+							return true;
 						}
 						catch (...)
 						{
 							if (split.at(2) == "default")
 							{
 								player->setMovementSpeed(15.0f);
-							}
-							else
-							{
-								return;
+								return true;
 							}
 						}
 					}
@@ -336,7 +342,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						float y = 0;
@@ -346,7 +352,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						float z = 0;
@@ -356,10 +362,11 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						player->setPosition(glm::vec3(x, y, z));
+						return true;
 					}
 					else if (arg1 == "rotation" || arg1 == "rot")
 					{
@@ -370,7 +377,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						float y = 0;
@@ -380,7 +387,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						float z = 0;
@@ -390,10 +397,11 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						catch (...)
 						{
-							return;
+							return false;
 						}
 
 						player->setRotation(glm::vec3(x, y, z));
+						return true;
 					}
 				}
 			}
@@ -410,6 +418,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "fogenabled" || arg1 == "fog")
 					{
 						game->setFogEnabled(arg2Bool);
+						return true;
 					}
 				}
 			}
@@ -426,6 +435,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "rendervoronoi" || arg1 == "rv")
 					{
 						world->setRenderVoronoiMode(arg2Bool);
+						return true;
 					}
 				}
 			}
@@ -441,14 +451,17 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "renderchunks" || arg1 == "renderchunk" || arg1 == "rc")
 					{
 						chunkMap->setRenderChunksMode(arg2Bool);
+						return true;
 					}
 					else if (arg1 == "renderchunkborder" || arg1 == "rcb")
 					{
 						chunkMap->setRenderChunkBorderMode(arg2Bool);
+						return true;
 					}
 					else if (arg1 == "updatechunkmap" || arg1 == "ucm")
 					{
 						chunkMap->setUpdateChunkMapMode(arg2Bool);
+						return true;
 					}
 				}
 			}
@@ -465,16 +478,14 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							float speed = std::stof(split.at(2));
 							Camera::mainCamera->setSpeed(speed);
+							return true;
 						}
 						catch (...)
 						{
 							if (split.at(2) == "default")
 							{
 								Camera::mainCamera->setSpeed(15.0f);
-							}
-							else
-							{
-								return;
+								return true;
 							}
 						}
 					}
@@ -490,10 +501,7 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 							if (split.at(2) == "default")
 							{
 								Camera::mainCamera->setFovy(70.0f);
-							}
-							else
-							{
-								return;
+								return true;
 							}
 						}
 					}
@@ -501,6 +509,8 @@ void Voxel::DebugConsole::executeCommand(const std::string & command)
 			}
 		}
 	}
+
+	return false;
 }
 
 void Voxel::DebugConsole::render()

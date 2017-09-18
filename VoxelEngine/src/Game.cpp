@@ -216,6 +216,8 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 	program->setUniformVec4("fogColor", skybox->getColor());
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
+
+	skybox->setFogEnabled(false);
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -268,8 +270,10 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
+	//player->setPosition(glm::vec3(0, 200, 0));
 	//player->setPosition(glm::vec3(-270, 150, 200));
 	player->setRotation(glm::vec3(-90, 0, 0));
+	player->setRotation(glm::vec3(320, 270, 0));
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug

@@ -61,6 +61,10 @@ namespace Voxel
 		// Cache the terrain type for each region 
 		std::unordered_map<unsigned int, Terrain> regionTerrainsMap;
 
+		// Chunk map's min and max XZ coordinate
+		glm::ivec2 minXZ;
+		glm::ivec2 maxXZ;
+
 		// Chunk debug border draw
 		GLuint chunkBorderVao;
 		unsigned int chunkBorderLineSize;
@@ -78,20 +82,22 @@ namespace Voxel
 		GLuint blockOutlineVao;
 
 		// Move calls when player moves to new chunk
-		void moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
-		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+		void moveWest(ChunkWorkManager* wm);
+		void moveEast(ChunkWorkManager* wm);
+		void moveSouth(ChunkWorkManager* wm);
+		void moveNorth(ChunkWorkManager* wm);
 
 		// map modification
-		void addRowWest(std::vector<glm::ivec2>& chunksToLoad);
-		void addRowEast(std::vector<glm::ivec2>& chunksToLoad);
-		void addColSouth(std::vector<glm::ivec2>& chunksToLoad);
-		void addColNorth(std::vector<glm::ivec2>& chunksToLoad);
-		void removeRowWest(std::vector<glm::ivec2>& chunksToUnload);
-		void removeRowEast(std::vector<glm::ivec2>& chunksToUnload);
-		void removeColSouth(std::vector<glm::ivec2>& chunksToUnload);
-		void removeColNorth(std::vector<glm::ivec2>& chunksToUnload);
+		// add
+		void addRowWest(ChunkWorkManager* wm);
+		void addRowEast(ChunkWorkManager* wm);
+		void addColSouth(ChunkWorkManager* wm);
+		void addColNorth(ChunkWorkManager* wm);
+		// remove
+		void removeRowWest(ChunkWorkManager* wm);
+		void removeRowEast(ChunkWorkManager* wm);
+		void removeColSouth(ChunkWorkManager* wm);
+		void removeColNorth(ChunkWorkManager* wm);
 	public:
 		ChunkMap();
 		~ChunkMap();
@@ -160,6 +166,9 @@ namespace Voxel
 
 		// Get number of active chunks
 		int getActiveChunksCount();
+
+		// Check if chunk is on the edge of grid.
+		bool isChunkOnEdge(const glm::ivec2& chunkXZ);
 
 		// Update chunk map
 		bool update(const glm::vec3& playerPosition, ChunkWorkManager* workManager, const double time);

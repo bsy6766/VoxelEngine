@@ -55,7 +55,7 @@ namespace Voxel
 		UI::Image* commandInputField;
 		UI::Text* command;
 
-		void executeCommand(const std::string& command);
+		bool executeCommand(const std::string& command);
 	public:
 		DebugConsole();
 		~DebugConsole();
