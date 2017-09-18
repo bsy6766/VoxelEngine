@@ -21,7 +21,51 @@ ChunkWorkManager::ChunkWorkManager()
 	running.store(false);
 }
 
-void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate, const bool highPriority)
+void Voxel::ChunkWorkManager::addPreGenerateWork(const glm::ivec2 & coordinate, const bool highPriority)
+{	
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		preGenerateQueue.push_front(coordinate);
+	}
+	else
+	{
+		preGenerateQueue.push_back(coordinate);
+	}
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addPreGenerateWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
+{	
+	//auto start = Utility::Time::now();
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		for (auto xz : coordinates)
+		{
+			preGenerateQueue.push_front(xz);
+		}
+	}
+	else
+	{
+		for (auto xz : coordinates)
+		{
+			preGenerateQueue.push_back(xz);
+		}
+	}
+
+	//auto end = Utility::Time::now();
+	//std::cout << "addLoad() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addGenerateWork(const glm::ivec2 & coordinate, const bool highPriority)
 {
 	// Scope lock
 	std::unique_lock<std::mutex> lock(queueMutex);
@@ -38,7 +82,7 @@ void Voxel::ChunkWorkManager::addLoad(const glm::ivec2 & coordinate, const bool 
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::addLoads(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
+void Voxel::ChunkWorkManager::addGenerateWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority)
 {
 	//auto start = Utility::Time::now();
 	// Scope lock
@@ -246,7 +290,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			// wait if both queue are empty. Must be running.
-			while (running && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
+			while (running && preGenerateQueue.empty() && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
 			{
 				cv.wait(lock);
 			}
@@ -266,7 +310,15 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				unloadQueue.pop_front();
 				flag = UNLOAD_WORK;
 			}
-			// If there is nothing to unload, start to load
+			// If there is nothing to unload, start to load.
+			// First by pre-generating chunk
+			else if (!preGenerateQueue.empty())
+			{
+				chunkXZ = preGenerateQueue.front();
+				preGenerateQueue.pop_front();
+				flag = PRE_GENERATE_WORK;
+			}
+			// If there is nothing to pregenerate, generate chunk. (generates blocks)
 			else if (!generateQueue.empty())
 			{
 				chunkXZ = generateQueue.front();
@@ -315,115 +367,124 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				}
 				// Else, has no chunk
 			}
+			else if (flag == PRE_GENERATE_WORK)
+			{
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk)
+				{
+					// Get all block world position in XZ axises and find which region the are at
+					std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
+
+					const float step = 1.0f;	// Block size
+
+					float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
+					float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+
+					std::unordered_set<unsigned int> regionIDSet;
+					std::unordered_set<Terrain::Type> terrainTypeSet;
+
+					// iterate all blocks in x and z axis
+					for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
+					{
+						for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
+						{
+							glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
+
+							// First, check if block is in region that we found
+							unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
+
+							// convert to index
+							auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
+
+							// This method can't be fail. It will must find closest region unless block is out of boundary
+							regionMap.at(index) = regionID;
+
+							// step z.
+							z += step;
+
+							// Save region id in set. 
+							auto find_it = regionIDSet.find(regionID);
+							if (find_it == regionIDSet.end())
+							{
+								// New region ID
+								if (regionID == -1)
+								{
+									// block is out of boundary
+									map->setRegionTerrainType(-1, Terrain());
+								}
+								else
+								{
+									// block is not out of boundary. 
+									// Get terarin type of region
+									auto terrainType = world->getRegion(regionID)->getTerrainType();
+									// Save it
+									map->setRegionTerrainType(regionID, terrainType);
+									terrainTypeSet.emplace(terrainType.getType());
+								}
+
+								// Save region ID
+								regionIDSet.emplace(regionID);
+							}
+						}
+
+						// step x and reset z
+						x += step;
+						z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+					}
+
+					if (regionIDSet.size() == 1)
+					{
+						// There is only 1 region in this chunk.
+						chunk->setRegionMap(regionMap.front());
+					}
+					else
+					{
+						// Multiple region exists in this chunk. save region map to chunk
+						chunk->setRegionMap(regionMap);
+					}
+
+					int maxChunkSectionY = 0;
+					// Generate height map.
+					HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, chunk->heightMap, regionMap, map->getRegionTerrainsMap());
+
+					// Pre generate chunk sections
+					chunk->preGenerateChunkSections(3, maxChunkSectionY);
+
+					// Chunk is pre generated. add to generate queue
+					addGenerateWork(chunkXZ);
+				}
+			}
 			else if (flag == GENERATE_WORK)
 			{
 				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << "): Load" << std::endl;
 
 				// There must be a chunk. Chunk loader creates empty chunk.
-				bool hasChunk = map->hasChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (hasChunk)
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk)
 				{
-					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-					if (chunk)
+					if (!chunk->isGenerated())
 					{
-						if (!chunk->isGenerated())
+						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
+						//auto s = Utility::Time::now();
+
+						std::vector<std::vector<Chunk*>> nearByChunks;
+
+						if (chunk->hasMultipleRegion())
 						{
-							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
-							auto s = Utility::Time::now();
-
-							// My frist apporach here was getting all regions that chunk overlaps.
-							// Thought it would give small optimization, but this method can't tell if block is in which region if chunk is overlapped between valid and invalid regions
-							// So I'm going brute force here. There aren't much difference in performance with my machine, and not sure if I can bring better option
-							// Each chunk takes 1 ~ 2 ms to generate. (build: 1919)
-							
-							// Get all block world position in XZ axises and find which region the are at
-							std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
-
-							const float step = 1.0f;	// Block size
-
-							float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
-							float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
-
-							bool same = true;
-
-							std::unordered_set<unsigned int> regionIDSet;
-							std::unordered_set<Terrain::Type> terrainTypeSet;
-							std::unordered_map<unsigned int, Terrain> regionTerrains;
-
-							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
-							{
-								for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
-								{
-									glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
-
-									auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
-
-									// First, check if block is in region that we found
-									unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
-
-									// This method can't be fail. It will must find closest region unless block is out of boundary
-									regionMap.at(index) = regionID;
-
-									z += step;
-
-									auto find_it = regionIDSet.find(regionID);
-									if (find_it == regionIDSet.end())
-									{
-										if (regionID == -1)
-										{
-											regionTerrains.emplace(regionID, Terrain());
-										}
-										else
-										{
-											auto terrainType = world->getRegion(regionID)->getTerrainType();
-											regionTerrains.emplace(regionID, terrainType);
-											terrainTypeSet.emplace(terrainType.getType());
-										}
-
-										regionIDSet.emplace(regionID);
-									}
-								}
-
-								x += step;
-								z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
-							}
-
-							if (regionIDSet.size() == 1)
-							{
-								chunk->setRegionMap(regionMap.front());
-							}
-							else
-							{
-								// save region map to chunk
-								chunk->setRegionMap(regionMap);
-							}
-
-							int maxChunkSectionY = 0;
-							int minChunkSectionY = 0;
-
-							std::vector<std::vector<int>> heightMap;
-							
-							HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, minChunkSectionY, heightMap, regionMap, regionTerrains);
-
-							// If chunk has more than 1 terrain type, smooth it out
-							if (terrainTypeSet.size() > 1)
-							{
-								HeightMap::smoothHeightMap(heightMap);
-							}
-							
-							// All chunks starts from chunk section 3 because sea level starts at 33.
-							chunk->generate(heightMap, 3, maxChunkSectionY);
-
-							// we need mesh for newly generated chunk
-							addBuildMeshWork(chunkXZ);
-
-							auto e = Utility::Time::now();
-							std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+							HeightMap::smoothHeightMap(chunk->heightMap);
 						}
+
+						// All chunks starts from chunk section 3 because sea level starts at 33.
+						chunk->generate();
+
+						// we need mesh for newly generated chunk
+						addBuildMeshWork(chunkXZ);
+
+						//auto e = Utility::Time::now();
+						//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 					}
-					// Else, chunk is nullptr
 				}
-				// Else, has no chunk
+				// Else, chunk is nullptr
 			}
 			else if (flag == BUILD_MESH_WORK)
 			{

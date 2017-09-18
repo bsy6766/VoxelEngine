@@ -8,6 +8,7 @@
 #include <Block.h>
 #include <mutex>
 #include <Cube.h>
+#include <Terrain.h>
 #include <shared_ptr.hpp>
 #include <GL\glew.h>
 
@@ -57,6 +58,9 @@ namespace Voxel
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
 
+		// Cache the terrain type for each region 
+		std::unordered_map<unsigned int, Terrain> regionTerrainsMap;
+
 		// Chunk debug border draw
 		GLuint chunkBorderVao;
 		unsigned int chunkBorderLineSize;
@@ -78,15 +82,25 @@ namespace Voxel
 		void moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveSouth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
 		void moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime);
+
+		// map modification
+		void addRowWest(std::vector<glm::ivec2>& chunksToLoad);
+		void addRowEast(std::vector<glm::ivec2>& chunksToLoad);
+		void addColSouth(std::vector<glm::ivec2>& chunksToLoad);
+		void addColNorth(std::vector<glm::ivec2>& chunksToLoad);
+		void removeRowWest(std::vector<glm::ivec2>& chunksToUnload);
+		void removeRowEast(std::vector<glm::ivec2>& chunksToUnload);
+		void removeColSouth(std::vector<glm::ivec2>& chunksToUnload);
+		void removeColNorth(std::vector<glm::ivec2>& chunksToUnload);
 	public:
 		ChunkMap();
 		~ChunkMap();
 
 		// Initialize map data near by player based on player's last position and render distance
-		void initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
+		std::vector<glm::vec2> initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
 
 		// Initialize active chunks 
-		std::vector<glm::vec2> initActiveChunks(const int renderDistance);
+		void initActiveChunks(const int renderDistance);
 
 		// Initialzie chunk border lines
 		void initChunkBorderDebug(Program* program);
@@ -158,6 +172,10 @@ namespace Voxel
 		void setRenderChunksMode(const bool mode);
 		void setRenderBlockOutlineMode(const bool mode);
 		void setUpdateChunkMapMode(const bool mode);
+
+		// Set terrain type for region
+		void setRegionTerrainType(const unsigned int regionID, const Terrain& terrainType);
+		std::unordered_map<unsigned int, Terrain>& getRegionTerrainsMap();
 
 		// render chunks
 		void render();

@@ -298,7 +298,7 @@ void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap)
 	*/
 }
 
-void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
+void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
 {
 	int maxY = 0;
 	int minY = 10000;
@@ -362,9 +362,9 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 		j = 0;
 	}
 
-	/*
 	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
+	/*
 	//minY -= 16;
 
 	if (minY < 0)

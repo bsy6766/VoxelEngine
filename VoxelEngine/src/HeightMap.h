@@ -87,7 +87,7 @@ namespace Voxel
 		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
 		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap);
 
-		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
+		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
 		static void getHeightMapForColor(const glm::vec3& chunkPosition, std::vector<std::vector<float>>& colorMap);
 	};
 }

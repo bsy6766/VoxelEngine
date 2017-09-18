@@ -142,7 +142,7 @@ void Voxel::Game::init()
 
 	//Application::getInstance().getGLView()->setWindowedFullScreen(0);
 	//defaultCanvas->setSize(glm::vec2(1920, 1080));
-	//debugConsole->updateResolution(1920, 1080);
+	debugConsole->updateResolution(1920, 1080);
 }
 
 void Voxel::Game::release()
@@ -268,7 +268,7 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
-	player->setPosition(glm::vec3(-270, 150, 200));
+	//player->setPosition(glm::vec3(-270, 150, 200));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 
@@ -294,15 +294,19 @@ void Game::createChunkMap()
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
 	auto rd = Setting::getInstance().getRenderDistance();
-	chunkMap->initChunkNearPlayer(playerPosition, rd);
-	auto chunkCoordinates = chunkMap->initActiveChunks(rd);
+
+	// Initilize chunks near player based on render distance
+	auto chunkCoordinates = chunkMap->initChunkNearPlayer(playerPosition, rd);
+
+	// Initilize active chunks.
+	chunkMap->initActiveChunks(rd);
 
 	glm::vec2 p = chunkCoordinates.front();
 	std::sort(chunkCoordinates.begin(), chunkCoordinates.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
 	for (auto xz : chunkCoordinates)
 	{
-		chunkWorkManager->addLoad(xz);
+		chunkWorkManager->addPreGenerateWork(glm::ivec2(xz));
 	}
 
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
@@ -333,10 +337,15 @@ void Game::update(const float delta)
 
 	if (playerMoved || playerRotated)
 	{
+		auto playerPos = player->getPosition();
+
 		// If player either move or rotated, update frustum
-		Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
+		Camera::mainCamera->updateFrustum(playerPos, player->getOrientation(), 16);
 		// Also update raycast
 		updatePlayerRaycast();
+
+		debugConsole->updatePlayerPosition(playerPos);
+		debugConsole->updatePlayerRotation(player->getRotation());
 	}
 
 	if (playerMoved)
@@ -355,8 +364,6 @@ void Game::update(const float delta)
 			Biome biomeType = curRegion->getBiomeType();
 			debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 		}
-
-		debugConsole->updatePlayerPosition(playerPos);
 
 		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 		program->use(true);
@@ -822,10 +829,12 @@ void Voxel::Game::updatePlayerRaycast()
 	if (result.block != nullptr)
 	{
 		player->setLookingBlock(result.block, result.face);
+		debugConsole->setPlayerLookingAtVisibility(true);
 		debugConsole->updatePlayerLookingAt(result.block->getWorldCoordinate(), result.face);
 	}
 	else
 	{
+		debugConsole->setPlayerLookingAtVisibility(false);
 		player->setLookingBlock(nullptr, Cube::Face::NONE);
 	}
 }
@@ -892,11 +901,22 @@ void Game::render(const float delta)
 	// Light
 	program->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
 
+	// fog
+	if (skybox->isFogEnabled())
+	{
+		program->setUniformBool("fogEnabled", true);
+	}
+
 	// Render chunk. Doesn't need molde matrix for each chunk. All vertices are translated.
 	chunkMap->render();
 
 	// Render skybox
 	program->setUniformMat4("modelMat", player->getTranslationMat());
+
+	// turn off the fog with sky box
+	program->setUniformBool("fogEnabled", false);
+
+	// render skybox
 	skybox->render();
 	// --------------------------------------------------------------------------------------
 

@@ -30,9 +30,12 @@ namespace Voxel
 	private:
 		static const int IDLE_WORK = 0;
 		static const int UNLOAD_WORK = 1;
-		static const int GENERATE_WORK = 2;
-		static const int BUILD_MESH_WORK = 3;
+		static const int PRE_GENERATE_WORK = 2;
+		static const int GENERATE_WORK = 3;
+		static const int BUILD_MESH_WORK = 4;
 	private:
+		// Queue with chunk coordinate that nees to pre generate chunk datas(height map, region map, etc)
+		std::list<glm::ivec2> preGenerateQueue;
 		// Queue with chunk coordinate that needs to generate chunk
 		std::list<glm::ivec2> generateQueue;
 		// Queue with chunk coordinates that need to build mesh
@@ -64,9 +67,14 @@ namespace Voxel
 		~ChunkWorkManager() = default;
 
 		// Add single load work to load queue. locked by queueMutex
-		void addLoad(const glm::ivec2& coordinate, const bool highPriority = false);
+		void addPreGenerateWork(const glm::ivec2& coordinate, const bool highPriority = false);
 		// Add multiple load works to load queue. locked by queueMutex
-		void addLoads(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+		void addPreGenerateWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+
+		// Add single load work to generate queue. locked by queueMutex
+		void addGenerateWork(const glm::ivec2& coordinate, const bool highPriority = false);
+		// Add multiple load works to generate queue. locked by queueMutex
+		void addGenerateWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
 
 		// Add single build mesh work to build mesh queue. locked by queueMutex
 		void addBuildMeshWork(const glm::ivec2& coordinate, const bool highPriority = false);

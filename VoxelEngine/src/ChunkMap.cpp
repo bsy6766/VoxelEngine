@@ -44,7 +44,7 @@ Voxel::ChunkMap::~ChunkMap()
 	}
 }
 
-void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
+std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
 {
 	std::cout << "[ChunkMap] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
 
@@ -60,13 +60,17 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 	currentChunkPos.x = chunkX;
 	currentChunkPos.y = chunkZ;
 
-	// excluding the chunk where player stands
-	//auto rdFromCenter = renderDistance - 1;
+	int rd = renderDistance + 1;
+	//int rd = renderDistance;
 
-	int minX = chunkX - renderDistance;
-	int maxX = chunkX + renderDistance;
-	int minZ = chunkZ - renderDistance;
-	int maxZ = chunkZ + renderDistance;
+	int minX = chunkX - rd;
+	int maxX = chunkX + rd;
+	int minZ = chunkZ - rd;
+	int maxZ = chunkZ + rd;
+
+	// chunk coodinates that needs to be genreated
+	std::vector<glm::vec2> chunkCoordinates;
+	chunkCoordinates.push_back(glm::vec2(currentChunkPos));
 
 	for (int x = minX; x <= maxX; x++)
 	{
@@ -82,6 +86,14 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 
 				// Add to LUt
 				chunkLUT.emplace(coordinate);
+
+				// Don't add current chunk position to vector, because it's already added in front
+				if (x == currentChunkPos.x && z == currentChunkPos.y)
+				{
+					continue;
+				}
+
+				chunkCoordinates.push_back(glm::vec2(newChunk->getCoordinate()));
 			}
 			else
 			{
@@ -90,19 +102,18 @@ void Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, cons
 			}
 		}
 	}
+
+	return chunkCoordinates;
 }
 
-std::vector<glm::vec2> Voxel::ChunkMap::initActiveChunks(const int renderDistance)
+void Voxel::ChunkMap::initActiveChunks(const int renderDistance)
 {
-	int minX = currentChunkPos.x - renderDistance;
-	int maxX = currentChunkPos.x + renderDistance;
-	int minZ = currentChunkPos.y - renderDistance;
-	int maxZ = currentChunkPos.y + renderDistance;
+	int rd = renderDistance + 1;
 
-	// chunk coodinates that need mesh
-	std::vector<glm::vec2> chunkCoordinates;
-
-	chunkCoordinates.push_back(glm::vec2(currentChunkPos));
+	int minX = currentChunkPos.x - rd;
+	int maxX = currentChunkPos.x + rd;
+	int minZ = currentChunkPos.y - rd;
+	int maxZ = currentChunkPos.y + rd;
 
 	for (int x = minX; x <= maxX; x++)
 	{
@@ -118,19 +129,9 @@ std::vector<glm::vec2> Voxel::ChunkMap::initActiveChunks(const int renderDistanc
 				chunk->setActive(true);
 				chunk->setVisibility(true);
 				//chunk->updateTimestamp(time);
-
-				// Don't add current chunk position to vector, because it's already added in front
-				if (x == currentChunkPos.x && z == currentChunkPos.y)
-				{
-					continue;
-				}
-
-				chunkCoordinates.push_back(glm::vec2(chunk->getCoordinate()));
 			}
 		}
 	}
-
-	return chunkCoordinates;
 }
 
 void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
@@ -343,16 +344,6 @@ void Voxel::ChunkMap::initBlockOutline(Program* program)
 
 void ChunkMap::clear()
 {
-	/*
-	for (auto e : map)
-	{
-		if (e.second)
-		{
-			delete e.second;
-		}
-	}
-	*/
-
 	map.clear();
 }
 
@@ -1045,7 +1036,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		// Then find which row and col need to be added based on direction player moved.
 		// also find which row and col to pop aswell.
 		glm::ivec2 d = newChunkXZ - currentChunkPos;
-		std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")" << std::endl;
+		//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")" << std::endl;
 		currentChunkPos = newChunkXZ;
 
 		// Always modify x first. I think...that.. is.. better....right?
@@ -1068,7 +1059,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 											v
 		*/
 
-		auto start = Utility::Time::now();
+		//auto start = Utility::Time::now();
 
 		std::vector<glm::ivec2> chunksToUnload;		// Chunks to unload and release
 		std::vector<glm::ivec2> chunksToLoad;		// Chunks to load (map gen and mesh build)
@@ -1135,7 +1126,8 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		{
 			auto p = glm::vec2(newChunkXZ);
 			std::sort(chunksToLoad.begin(), chunksToLoad.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::abs(glm::distance(p, lhs)) < glm::abs(glm::distance(p, rhs)); });
-			workManager->addLoads(chunksToLoad);
+			//workManager->addGenerateWorks(chunksToLoad);
+			workManager->addPreGenerateWorks(chunksToLoad);
 			notify = true;
 		}
 
@@ -1152,8 +1144,8 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 			workManager->notify();
 		}
 
-		auto end = Utility::Time::now();
-		std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+		//auto end = Utility::Time::now();
+		//std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 
 		return true;
 	}
@@ -1164,23 +1156,10 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 void Voxel::ChunkMap::moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
 {
 	// Unload all the chunk in the back of the active chunk list
-	for (auto& chunkXZ : activeChunks.back())
-	{
-		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-		
-		chunk->setActive(false);
-		chunk->setVisibility(false);
-
-		chunksToUnload.push_back(glm::ivec2(chunkXZ.x, chunkXZ.y));
-	}
+	removeRowEast(chunksToUnload);
 
 	// Pop
 	activeChunks.pop_back();
-
-	// Get x from first list and -1 for new list to west (negative x)
-	int x = activeChunks.front().front().x - 1;
-	// Also get first z in list.
-	int zStart = activeChunks.back().front().y;
 
 	// Before add new list on front, rebuild mesh for current front
 	for (auto& chunkXZ : activeChunks.front())
@@ -1191,32 +1170,7 @@ void Voxel::ChunkMap::moveWest(std::vector<glm::ivec2>& chunksToUnload, std::vec
 		chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
 	}
 
-	// Add new list on front with empty chunks
-	activeChunks.push_front(std::list<glm::ivec2>());
-
-	// Add empty chunks
-	int lastZ = activeChunks.back().size() + zStart;
-	for (int z = zStart; z < lastZ; z++)
-	{
-		if (!hasChunkAtXZ(x, z))
-		{
-			generateEmptyChunk(x, z);
-		}
-	}
-
-	for (int z = zStart; z < lastZ; z++)
-	{
-		auto newChunk = getChunkAtXZ(x, z);
-
-		newChunk->setActive(true);
-		newChunk->setVisibility(true);
-		newChunk->updateTimestamp(curTime);
-
-		auto pos = glm::ivec2(x, z);
-		activeChunks.front().push_back(pos);
-
-		chunksToLoad.push_back(pos);
-	}
+	addRowWest(chunksToLoad);
 }
 
 void Voxel::ChunkMap::moveEast(std::vector<glm::ivec2>& chunksToUnload, std::vector<glm::ivec2>& chunksToLoad, std::vector<glm::ivec2>& chunksToReload, const double curTime)
@@ -1382,6 +1336,76 @@ void Voxel::ChunkMap::moveNorth(std::vector<glm::ivec2>& chunksToUnload, std::ve
 	}
 }
 
+void Voxel::ChunkMap::addRowWest(std::vector<glm::ivec2>& chunksToLoad)
+{
+	// Get x from first list and -1 for new list to west (negative x)
+	int x = activeChunks.front().front().x - 1;
+	// Also get first and last z in list.
+	int zStart = activeChunks.front().front().y;
+	int zEnd = activeChunks.front().back().y;
+
+	// Add new list on front with empty chunks
+	activeChunks.push_front(std::list<glm::ivec2>());
+
+	// Add empty chunks
+	//int zFirst = zStart - 1;
+	//int zLast = zEnd + 1;
+	int zFirst = zStart;
+	int zLast = zEnd;
+
+	// Generate empty chunk and add to pre load list
+	for (int z = zFirst; z <= zLast; z++)
+	{
+		if (!hasChunkAtXZ(x, z))
+		{
+			generateEmptyChunk(x, z);
+
+			chunksToLoad.push_back(glm::ivec2(x, z));
+		}
+	}
+
+	// Mark active chunks
+	for (int z = zStart; z <= zEnd; z++)
+	{
+		auto newChunk = getChunkAtXZ(x, z);
+
+		newChunk->setActive(true);
+		newChunk->setVisibility(true);
+		//newChunk->updateTimestamp(curTime);
+
+		activeChunks.front().push_back(glm::ivec2(x, z));
+	}
+}
+
+void Voxel::ChunkMap::removeRowWest(std::vector<glm::ivec2>& chunksToUnload)
+{
+
+}
+
+void Voxel::ChunkMap::removeRowEast(std::vector<glm::ivec2>& chunksToUnload)
+{
+	auto& backRow = activeChunks.back();
+
+	auto firstChunk = backRow.front();
+	auto lastChunk = backRow.back();
+
+	int x = firstChunk.x;
+	//int zStart = firstChunk.y - 1;
+	//int zEnd = firstChunk.y + 1;
+	int zStart = firstChunk.y;
+	int zEnd = lastChunk.y;
+
+	for (int z = zStart; z <= zEnd; z++)
+	{
+		std::shared_ptr<Chunk> chunk = getChunkAtXZ(x, z);
+
+		chunk->setActive(false);
+		chunk->setVisibility(false);
+
+		chunksToUnload.push_back(glm::ivec2(x, z));
+	}
+}
+
 int Voxel::ChunkMap::findVisibleChunk()
 {
 	int count = 0;
@@ -1423,6 +1447,19 @@ void Voxel::ChunkMap::setRenderBlockOutlineMode(const bool mode)
 void Voxel::ChunkMap::setUpdateChunkMapMode(const bool mode)
 {
 	updateChunksMode = mode;
+}
+
+void Voxel::ChunkMap::setRegionTerrainType(const unsigned int regionID, const Terrain & terrainType)
+{
+	if (regionTerrainsMap.find(regionID) == regionTerrainsMap.end())
+	{
+		regionTerrainsMap.emplace(regionID, terrainType);
+	}
+}
+
+std::unordered_map<unsigned int, Terrain>& Voxel::ChunkMap::getRegionTerrainsMap()
+{
+	return regionTerrainsMap;
 }
 
 void Voxel::ChunkMap::render()

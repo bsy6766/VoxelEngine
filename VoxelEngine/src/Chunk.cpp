@@ -30,11 +30,13 @@ bool Voxel::Chunk::canGenerate()
 		return false;
 	}
 
+	/*
 	if (chunkSections.empty() == false)
 	{
 		std::cout << "Chunk already has chunksections" << std::endl;
 		return false;
 	}
+	*/
 
 	return true;
 }
@@ -131,7 +133,7 @@ bool Chunk::init(const int x, const int z)
 	return true;
 }
 
-bool Voxel::Chunk::generate(const std::vector<std::vector<int>>& heightMap, const int minChunkSectionY, const int maxChunkSectionY)
+bool Voxel::Chunk::generate()
 {
 	assert(canGenerate());
 
@@ -139,29 +141,16 @@ bool Voxel::Chunk::generate(const std::vector<std::vector<int>>& heightMap, cons
 
 	HeightMap::getHeightMapForColor(position, colorMap);
 
-	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	for (auto chunkSection : chunkSections)
 	{
-		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > maxChunkSectionY || i < minChunkSectionY)
+		if (chunkSection != nullptr)
 		{
-			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
-		}
-		else
-		{
-			//std::cout << "++ chunksection: " << i << std::endl;
-			//auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition);
-			auto newChucnkSection = ChunkSection::create(position.x, i, position.z, worldPosition, regionMap, heightMap, colorMap);
-			if (newChucnkSection)
-			{
-				chunkSections.push_back(newChucnkSection);
-			}
-			else
-			{
-				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
-			}
+			chunkSection->init(regionMap, heightMap, colorMap);
 		}
 	}
+
+	regionMap.clear();
+	heightMap.clear();
 
 	generated.store(true);
 
@@ -394,6 +383,32 @@ bool Voxel::Chunk::generateWithRegionColor()
 	return true;
 }
 
+void Voxel::Chunk::preGenerateChunkSections(const int minY, const int maxY)
+{
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		// Temp. All blocks above chunk section y 3 will be air.
+		if (i > maxY || i < minY)
+		{
+			//std::cout << "+ chunksection: " << i << std::endl;
+			chunkSections.push_back(nullptr);
+		}
+		else
+		{
+			//std::cout << "++ chunksection: " << i << std::endl;
+			auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
+			if (newChucnkSection)
+			{
+				chunkSections.push_back(newChucnkSection);
+			}
+			else
+			{
+				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+			}
+		}
+	}
+}
+
 glm::ivec3 Chunk::getPosition()
 {
 	return position;
@@ -555,6 +570,11 @@ void Voxel::Chunk::setRegionMap(const std::vector<unsigned int>& regionIDs)
 bool Voxel::Chunk::isGenerated()
 {
 	return generated.load();
+}
+
+bool Voxel::Chunk::hasMultipleRegion()
+{
+	return regionMap.size() > 1;
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)

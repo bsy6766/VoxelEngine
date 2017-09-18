@@ -141,6 +141,57 @@ ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int
 	}
 }
 
+void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
+{
+	int yStart = position.y * Constant::CHUNK_SECTION_HEIGHT;
+
+	const int single = 1;
+	const int multiple = Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH;
+
+	blocks.clear();
+	blocks.resize(4096, nullptr);
+
+	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
+	{
+		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
+		{
+			int localY = 0;
+			int heightY = heightMap.at(blockX).at(blockZ);
+
+			if (yStart <= heightY)
+			{
+				int yEnd = yStart + Constant::CHUNK_SECTION_HEIGHT - 1;
+				if (yEnd > heightY)
+				{
+					yEnd = heightY;
+				}
+
+				for (int blockY = yStart; blockY <= yEnd; blockY++)
+				{
+					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
+					//newBlock->setColor(color);
+					blocks.at(localBlockXYZToIndex(blockX, localY, blockZ)) = newBlock;
+
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
+					localY++;
+
+					auto color = newBlock->getColor3() * colorMap.at(blockX).at(blockZ);
+					newBlock->setColor(color);
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+
+}
+
 bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	position = glm::ivec3(x, y, z);
@@ -216,7 +267,6 @@ bool Voxel::ChunkSection::initEmpty(const int x, const int y, const int z, const
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
 
 	return true;
 }
