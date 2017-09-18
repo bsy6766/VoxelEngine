@@ -216,7 +216,6 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 	program->setUniformVec4("fogColor", skybox->getColor());
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
-	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -269,7 +268,7 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
-	//player->setPosition(glm::vec3(-300, 500, 0));
+	player->setPosition(glm::vec3(-270, 150, 200));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	// Todo: load player's last direction
 
@@ -854,12 +853,12 @@ void Voxel::Game::checkUnloadedChunks()
 
 void Game::render(const float delta)
 {
-	glm::mat4 projMat = Camera::mainCamera->getProjection();
+	//glm::mat4 projMat = Camera::mainCamera->getProjection();
 	glm::mat4 worldMat = glm::mat4(1.0f);
 
 	auto& pm = ProgramManager::getInstance();
 
-	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 	program->use(true);
 
 	// ------------------------------ Render world ------------------------------------------
@@ -903,6 +902,8 @@ void Game::render(const float delta)
 
 	// ------------------------------ Render Lines ------------------------------------------
 	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	lineProgram->use(true);
+
 	lineProgram->setUniformMat4("worldMat", worldMat);
 
 	// render chunk border. Need model matrix
@@ -941,6 +942,7 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 	skybox->setFogEnabled(enabled);
 
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	program->use(true);
 	// fog
 	if (skybox->isFogEnabled())
 	{
@@ -951,4 +953,5 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 	{
 		program->setUniformBool("fogEnabled", false);
 	}
+	program->use(false);
 }
