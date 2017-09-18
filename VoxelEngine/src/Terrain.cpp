@@ -1,4 +1,5 @@
 #include "Terrain.h"
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -67,6 +68,26 @@ std::string Voxel::Terrain::terrainTypeToString(Voxel::Terrain::Type terrain, Vo
 std::string Voxel::Terrain::terrainTypeToString(Terrain terrainType)
 {
 	return terrainTypeToString(terrainType.type, terrainType.modifier);
+}
+
+void Voxel::Terrain::setTypeByBiome(Biome::Type biomeType)
+{
+	auto find_it = Terrain::biomeTerrainMap.find(biomeType);
+	if (find_it == Terrain::biomeTerrainMap.end())
+	{
+		throw std::runtime_error("Biome type doesn't exists: " + Biome::biomeTypeToString(biomeType));
+	}
+	else
+	{
+		auto& terrainTypeList = find_it->second;
+		
+		int randIndex = Utility::Random::randomInt(0, terrainTypeList.size() - 1);
+
+		setType(terrainTypeList.at(randIndex));
+
+		// For now, no modifier
+		modifier = Modifier::NONE;
+	}
 }
 
 void Voxel::Terrain::setType(Type type)

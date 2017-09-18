@@ -30,7 +30,8 @@ namespace Voxel
 			NONE = 0,
 			PLAIN,			// Flat terrain. No hills and mountains
 			HILLS,			// Few hills in flat terrain
-			MOUNTAINS,		// 
+			MOUNTAINS,		// Few mountinas
+			BORDER,
 		};
 
 		// Modifiers gives changes on world generation, gives more randomness to the game
@@ -58,6 +59,7 @@ namespace Voxel
 		static std::string terrainTypeToString(Terrain terrainType);
 
 		// getter
+		void setTypeByBiome(Biome::Type biomeType);
 		void setType(Type type);
 		Type getType() const;
 
