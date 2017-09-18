@@ -17,7 +17,7 @@ Skybox::Skybox()
 	, fogDistance(0)
 	, curFogDistance(0)
 	, fogAnimationSpeed(0.25f)
-	, fogEnabled(false)
+	, fogEnabled(true)
 {
 }
 
