@@ -107,6 +107,8 @@ namespace Voxel
 		void createChunkSectionAtY(const int y);
 		void deleteChunkSectionAtY(const int y);
 
+		int findMaxY();
+
 		// Render chunk
 		void render();
 

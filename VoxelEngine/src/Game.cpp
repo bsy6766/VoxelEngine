@@ -271,10 +271,11 @@ void Game::createPlayer()
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
 	//player->setPosition(glm::vec3(0, 200, 0));
-	player->setPosition(glm::vec3(-232, 150, 152));
+	player->setPosition(glm::vec3(665, 132, -85));
+	//player->setPosition(glm::vec3(681, 132, -85));
 	//player->setPosition(glm::vec3(-690, 150, 128));
 	player->setRotation(glm::vec3(-90, 0, 0));
-	player->setRotation(glm::vec3(320, 270, 0));
+	//player->setRotation(glm::vec3(320, 270, 0));
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug

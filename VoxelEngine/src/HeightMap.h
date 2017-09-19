@@ -26,6 +26,8 @@ namespace Voxel
 		float octave5Mul;
 		float octave6Mul;
 
+		float shift;
+		float amplify;
 		float redistribution;
 		float terrace;
 
@@ -33,7 +35,7 @@ namespace Voxel
 		bool applyTerrace;
 
 		NoisePreset();
-		NoisePreset(const float freq, const float octave1, const float octave2, const float octave3, const float octave4, const float octave5, const float octave6, const float octave1Mul, const float octave2Mul, const float octave3Mul, const float octave4Mul, const float octave5Mul, const float octave6Mul, const float redistribution, const float terrace, const bool applyRedist, const bool applyTerrace);
+		NoisePreset(const float freq, const float octave1, const float octave2, const float octave3, const float octave4, const float octave5, const float octave6, const float octave1Mul, const float octave2Mul, const float octave3Mul, const float octave4Mul, const float octave5Mul, const float octave6Mul, const float shift, const float amplify, const float redistribution, const float terrace, const bool applyRedist, const bool applyTerrace);
 	};
 
 	/**
@@ -84,10 +86,10 @@ namespace Voxel
 
 		static int getYFromHeightValue(const float value, const Terrain::Type type);
 
-		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
-		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap);
+		static int smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
+		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap, int& highestY);
 
-		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd, const int xLen, const int zLen);
+		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd, int& heighestY);
 		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const int xLen, const int zLen);
 
 		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);

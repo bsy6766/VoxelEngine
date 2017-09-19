@@ -365,7 +365,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
-			std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
+			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 			if (flag == UNLOAD_WORK)
 			{
 				//std::cout << "Unload" << std::endl;
@@ -452,16 +452,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 					}
 
-					if (regionIDSet.size() == 1)
-					{
-						// There is only 1 region in this chunk.
-						chunk->setRegionMap(regionMap.front());
-					}
-					else
-					{
-						// Multiple region exists in this chunk. save region map to chunk
-						chunk->setRegionMap(regionMap);
-					}
 
 					int maxChunkSectionY = 0;
 
@@ -469,9 +459,20 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, chunk->heightMap, regionMap, map->getRegionTerrainsMap());
 					chunk->heightMapOriginal = chunk->heightMap;
 
-					// Pre generate chunk sections
-					chunk->preGenerateChunkSections(3, maxChunkSectionY);
+					if (regionIDSet.size() == 1)
+					{
+						// There is only 1 region in this chunk.
+						chunk->setRegionMap(regionMap.front());
 
+						// Pre generate chunk sections
+						//chunk->preGenerateChunkSections(2, maxChunkSectionY);
+					}
+					else
+					{
+						// Multiple region exists in this chunk. save region map to chunk
+						chunk->setRegionMap(regionMap);
+					}
+					
 					// Chunk is pre generated. add to generate queue
 					if (!map->isChunkOnEdge(chunkXZ))
 					{
@@ -493,8 +494,14 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					{
 						//std::cout << "Smooth" << std::endl;
 
-						HeightMap::smoothHeightMap(chunk->heightMap);
+						int maxY = 0;
+						HeightMap::smoothHeightMap(chunk->heightMap, maxY);
 						chunk->smoothed = true;
+
+						//int maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
+
+						// Pre generate chunk sections
+						//chunk->preGenerateChunkSections(2, maxChunkSectionY);
 					}
 
 					if (!map->isChunkOnEdge(chunkXZ))
@@ -526,7 +533,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							const int cq21 = chunk->getQ21();
 							const int cq22 = chunk->getQ22();
 
-							const int diff = 3;
+							const int diff = 2;
 
 							auto& EChunk = nearByChunks.at(1).at(0);
 							if (EChunk)
@@ -599,7 +606,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								}
 							}
 
-							if (needSmooth >= 2)
+							if (needSmooth >= 1)
 							{
 								//std::cout << "Gen smooth" << std::endl;
 								const int q11 = nearByChunks.at(2).at(2)->getQ22();
@@ -607,36 +614,17 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								const int q21 = nearByChunks.at(2).at(0)->getQ12();
 								const int q22 = nearByChunks.at(0).at(0)->getQ11();
 
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, 16, 16);
-								/*
-								const int diffQ11 = glm::abs(cq11 - q11);
-								const int diffQ12 = glm::abs(cq12 - q12);
-								const int diffQ21 = glm::abs(cq21 - q21);
-								const int diffQ22 = glm::abs(cq22 - q22);
+								int heighestY = 0;
 
-								if (diffQ11 > 4 || diffQ12 > 4 || diffQ21 > 4 || diffQ22 > 4)
-								{
-									//HeightMap::smoothHeightMap(chunk->heightMap);
-								}
-								*/
+								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, heighestY);
+								//int maxChunkSectionY = (heighestY / Constant::CHUNK_SECTION_HEIGHT);
 
-								//HeightMap::smoothHeightMap(chunk->heightMap, q22, q12, q21, q11, 16, 16);
-								//HeightMap::smoothHeightMap(chunk->heightMap, q11, q12, q21, q22, 16, 16);
-								//HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, 16, 16);
-
-								/*
-								const int qCenter = chunk->heightMap.at(8).at(8);
-
-
-								HeightMap::smoothHelper(chunk->heightMap, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), nearByChunks.at(1).at(0)->heightMap.at(15).at(8), q22, 8, 8, 16, 16, 24, 24);
-								HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), q12, qCenter, nearByChunks.at(0).at(1)->heightMap.at(8).at(15), 0, 8, 8, 16, 24, 24);
-								HeightMap::smoothHelper(chunk->heightMap, nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, q21, nearByChunks.at(1).at(0)->heightMap.at(15).at(8), 8, 0, 16, 8, 24, 24);
-								HeightMap::smoothHelper(chunk->heightMap, q11, nearByChunks.at(1).at(2)->heightMap.at(0).at(8), nearByChunks.at(2).at(1)->heightMap.at(8).at(0), qCenter, 0, 0, 8, 8, 24, 24);
-
-								*/
-								//chunk->smoothed = true;
+								// Pre generate chunk sections
+								//chunk->preGenerateChunkSections(2, maxChunkSectionY);
 							}
 						}
+
+						chunk->preGenerateChunkSections(2, chunk->findMaxY());
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.
 						chunk->generate();

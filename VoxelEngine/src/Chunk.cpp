@@ -490,6 +490,23 @@ void Voxel::Chunk::deleteChunkSectionAtY(const int y)
 	}
 }
 
+int Voxel::Chunk::findMaxY()
+{
+	int max = 0;
+	for (auto& row : heightMap)
+	{
+		for (auto& val : row)
+		{
+			if (val > max)
+			{
+				max = val;
+			}
+		}
+	}
+
+	return max;
+}
+
 void Voxel::Chunk::render()
 {
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
