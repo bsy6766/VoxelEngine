@@ -220,7 +220,7 @@ bool Voxel::Chunk::generateWithBiomeTest()
 		for (int z = zStart; z < zEnd; z++)
 		{
 			// Get height 
-			float val = HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::DEBUG);
+			float val = HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::PLAIN);
 
 			// The lowest block level is 30. The range of terrain in y axis is 120 (30 
 			int y = (static_cast<int>(val * 60.0f) + 30);

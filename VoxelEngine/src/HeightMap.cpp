@@ -137,9 +137,6 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET pr
 	case PRESET::BORDER:
 		np = &HeightMap::BorderPreset;
 		break;
-	case PRESET::DEBUG:
-		np = &HeightMap::DebugPreset;
-		break;
 	case PRESET::NONE:
 	default:
 		return 0;

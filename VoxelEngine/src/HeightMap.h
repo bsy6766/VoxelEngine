@@ -51,8 +51,7 @@ namespace Voxel
 			PLAIN,			// Flat terrain. No hills and mountains
 			HILLS,			// Few hills in flat terrain
 			MOUNTAINS,		// 
-			BORDER,
-			DEBUG
+			BORDER
 		};
 	private:
 		HeightMap() = delete;
@@ -66,10 +65,7 @@ namespace Voxel
 		static const NoisePreset HillsPreset;
 		static const NoisePreset MountainsPreset;
 		static const NoisePreset BorderPreset;
-
-		// Custom for debug
-		static const NoisePreset DebugPreset;
-
+		
 		// Temperature preset
 		static const NoisePreset TemperaturePreset;
 		// Moisture preset
