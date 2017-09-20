@@ -1446,8 +1446,9 @@ void Voxel::ChunkMap::addRowWest(ChunkWorkManager* wm)
 
 		auto pos = glm::ivec2(x, z);
 		activeChunks.front().push_back(pos);
-		//chunksToGenerate.push_back(pos);
-		wm->addGenerateWork(pos);
+
+		//wm->addGenerateWork(pos);
+		wm->addPreGenerateWork(pos);
 	}
 }
 
@@ -1490,8 +1491,8 @@ void Voxel::ChunkMap::addRowEast(ChunkWorkManager * wm)
 		auto pos = glm::ivec2(x, z);
 		activeChunks.back().push_back(pos);
 
-		//chunksToLoad.push_back(pos);
-		wm->addGenerateWork(pos);
+		//wm->addGenerateWork(pos);
+		wm->addPreGenerateWork(pos);
 	}
 }
 
@@ -1532,7 +1533,8 @@ void Voxel::ChunkMap::addColSouth(ChunkWorkManager * wm)
 
 		row.push_back(pos);
 
-		wm->addGenerateWork(pos);
+		//wm->addGenerateWork(pos);
+		wm->addPreGenerateWork(pos);
 	}
 }
 
@@ -1573,7 +1575,8 @@ void Voxel::ChunkMap::addColNorth(ChunkWorkManager * wm)
 
 		row.push_front(pos);
 
-		wm->addGenerateWork(pos);
+		//wm->addGenerateWork(pos);
+		wm->addPreGenerateWork(pos);
 	}
 }
 

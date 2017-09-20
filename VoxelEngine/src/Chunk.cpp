@@ -146,7 +146,7 @@ bool Voxel::Chunk::generate()
 	{
 		if (chunkSection != nullptr)
 		{
-			chunkSection->init(regionMap, heightMap, colorMap);
+			chunkSection->init(regionMap, heightMap, plainHeightMap, colorMap);
 		}
 	}
 
@@ -582,6 +582,7 @@ void Voxel::Chunk::setRegionMap(const unsigned int regionID)
 
 void Voxel::Chunk::setRegionMap(const std::vector<unsigned int>& regionIDs)
 {
+	regionMap.clear();
 	regionMap = regionIDs;
 }
 
@@ -603,7 +604,7 @@ int Voxel::Chunk::getQ11()
 	}
 	else
 	{
-		return heightMapOriginal.front().front();
+		return heightMap.front().front();
 	}
 }
 
@@ -615,7 +616,7 @@ int Voxel::Chunk::getQ12()
 	}
 	else
 	{
-		return heightMapOriginal.front().back();
+		return heightMap.front().back();
 	}
 }
 
@@ -627,7 +628,7 @@ int Voxel::Chunk::getQ21()
 	}
 	else
 	{
-		return heightMapOriginal.back().front();
+		return heightMap.back().front();
 	}
 }
 
@@ -639,7 +640,7 @@ int Voxel::Chunk::getQ22()
 	}
 	else
 	{
-		return heightMapOriginal.back().back();
+		return heightMap.back().back();
 	}
 }
 

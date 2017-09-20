@@ -35,7 +35,7 @@ namespace Voxel
 		// 16 x 16 x 16 blocks. TODO: Consider using Octree.
 		std::vector<Block*> blocks;
 
-		void init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap);
+		void init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<int>>& plainHeightMap, const std::vector<std::vector<float>>& colorMap);
 		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
 		bool initWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);

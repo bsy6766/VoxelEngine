@@ -46,7 +46,10 @@ namespace Voxel
 
 		// Height map data for each block. Once chunk is generated, this will be cleared
 		std::vector<std::vector<int>> heightMap;
-		std::vector<std::vector<int>> heightMapOriginal;
+		//std::vector<std::vector<int>> heightMapOriginal;
+
+		// All chunks have plain heightMap;
+		std::vector<std::vector<int>> plainHeightMap;
 
 		bool smoothed;
 

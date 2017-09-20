@@ -55,14 +55,14 @@ NoisePreset::NoisePreset(const float freq, const float octave1, const float octa
 // Amplify = Boost the height map value by multiply.
 // Shift = Shift the height map value by addition. This is applied after amplification.
 
-const NoisePreset HeightMap::PlainPreset =			NoisePreset(0.03f, 1.0f, 0.5f, 0.4f, 0.3f, 0.2f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.5f, 31.0f, true, false);		// perfect plain terrain.
+const NoisePreset HeightMap::PlainPreset =			NoisePreset(0.015f, 1.0f, 0.5f, 0.4f, 0.3f, 0.2f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.5f, 31.0f, true, false);		// perfect plain terrain.
 
 const NoisePreset HeightMap::HillsPreset =			NoisePreset(0.07f, 1.0f, 0.5f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.5f, 31.0f, true, false);
 
-//const NoisePreset HeightMap::MountainsPreset = NoisePreset(0.1f, 1.0f, 0.6f, 0.5f, 0.2f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 1.5f, 31.0f, true, false);	// small many mountains next to each other
-const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.2f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 1.2f, 31.0f, true, false);
+//const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.1f, 1.0f, 0.6f, 0.5f, 0.2f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 1.5f, 31.0f, true, false);	// small many mountains next to each other
+const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.15f, 1.0f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 50.0f, 30.0f, 0.9f, 31.0f, true, true);
 
-const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f, 0.6f, 0.6f, 0.5f, 0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 50.0f, 2.0f, 31.0f, true, false);
+const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f, 1.0f, 0.6f, 0.5f, 0.7f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 60.0f, 2.0f, 31.0f, true, false);
 
 const NoisePreset HeightMap::DebugPreset =			NoisePreset(0.01f, 1.0f, 0.5f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 1.5f, 31.0f, true, false);
 
@@ -330,7 +330,7 @@ void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap,
 	*/
 }
 
-void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd, int& heighestY)
+void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd)
 {
 	// https://en.wikipedia.org/wiki/Bilinear_interpolation#Algorithm
 
@@ -342,7 +342,7 @@ void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, co
 	const float x2_1 = x2 - x1;
 	const float z2_1 = z2 - z1;
 
-	heighestY = 0;
+	//heighestY = 0;
 	
 	for (unsigned int x = xStart; x < xEnd; ++x)
 	{
@@ -361,10 +361,12 @@ void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, co
 
 			heightMap.at(x).at(z) = val;
 
+			/*
 			if (val > heighestY)
 			{
 				heighestY = val;
 			}
+			*/
 		}
 	}
 }
@@ -407,10 +409,10 @@ void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap,
 	}
 }
 
-void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition, int& maxChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
+void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains)
 {
-	int maxY = 0;
-	int minY = 10000;
+	//int maxY = 0;
+	//int minY = 10000;
 
 	int xEnd = Constant::CHUNK_SECTION_WIDTH;
 	int zEnd = Constant::CHUNK_SECTION_LENGTH;
@@ -442,6 +444,26 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 			// Get height 
 			float val = HeightMap::getNoise2D(nx, nz, terrain);
 
+			/*
+			if (terrain.getType() == Terrain::Type::PLAIN)
+			{
+				val = glm::round(val);
+			}
+			else
+			{
+				int rand = Utility::Random::randomInt100();
+
+				if (rand > 1)
+				{
+					val = glm::round(val);
+				}
+				else
+				{
+					val = glm::ceil(val);
+				}
+			}
+			*/
+
 			val = glm::round(val);
 
 			// The lowest block level is 30. The range of terrain in y axis is 120 (30 
@@ -449,6 +471,7 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 			int y = static_cast<int>(val);
 			heightMap.back().push_back(y);
 
+			/*
 			if (y > maxY)
 			{
 				maxY = y;
@@ -457,6 +480,7 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 			{
 				minY = y;
 			}
+			*/
 
 			nz += step;
 		}
@@ -464,7 +488,7 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 		nz = static_cast<float>(chunkPosition.z);
 	}
 
-	maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
+	//maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
 	/*
 	//minY -= 16;
@@ -484,6 +508,38 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 		minChunkSectionY = 0;
 	}
 	*/
+}
+
+void Voxel::HeightMap::generatePlainHeightMapForChunk(const glm::vec3 & chunkPosition, std::vector<std::vector<int>>& heightMap)
+{
+	int xEnd = Constant::CHUNK_SECTION_WIDTH;
+	int zEnd = Constant::CHUNK_SECTION_LENGTH;
+
+	float nx = static_cast<float>(chunkPosition.x);
+	float nz = static_cast<float>(chunkPosition.z);
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
+	heightMap.clear();
+
+	for (int x = 0; x < xEnd; x++)
+	{
+		heightMap.push_back(std::vector<int>());
+
+		for (int z = 0; z < zEnd; z++)
+		{
+			// Get height 
+			float val = HeightMap::getNoise2D(nx, nz, PRESET::PLAIN);
+
+			val = glm::round(val);
+
+			heightMap.back().push_back(static_cast<int>(val));
+
+			nz += step;
+		}
+
+		nx += step;
+		nz = static_cast<float>(chunkPosition.z);
+	}
 }
 
 void Voxel::HeightMap::getHeightMapForColor(const glm::vec3 & chunkPosition, std::vector<std::vector<float>>& colorMap)

@@ -89,10 +89,11 @@ namespace Voxel
 		static int smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
 		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap, int& highestY);
 
-		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd, int& heighestY);
+		static void smoothHelper(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
 		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const int xLen, const int zLen);
 
-		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, int& maxChunkSectionY, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
+		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
+		static void generatePlainHeightMapForChunk(const glm::vec3& chunkPosition, std::vector<std::vector<int>>& heightMap);
 		static void getHeightMapForColor(const glm::vec3& chunkPosition, std::vector<std::vector<float>>& colorMap);
 	};
 }

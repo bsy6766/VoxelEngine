@@ -453,11 +453,13 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					}
 
 
-					int maxChunkSectionY = 0;
+					//int maxChunkSectionY = 0;
 
 					// Generate height map.
-					HeightMap::generateHeightMapForChunk(chunk->getPosition(), maxChunkSectionY, chunk->heightMap, regionMap, map->getRegionTerrainsMap());
-					chunk->heightMapOriginal = chunk->heightMap;
+					HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
+					HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), chunk->plainHeightMap);
+					chunk->smoothed = false;
+					//chunk->heightMapOriginal = chunk->heightMap;
 
 					if (regionIDSet.size() == 1)
 					{
@@ -495,8 +497,33 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						//std::cout << "Smooth" << std::endl;
 
 						int maxY = 0;
-						HeightMap::smoothHeightMap(chunk->heightMap, maxY);
-						chunk->smoothed = true;
+
+						//HeightMap::smoothHeightMap(chunk->heightMap, maxY);
+
+						if (chunk->isActive())
+						{
+							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+
+							const int q11 = nearByChunks.at(2).at(2)->getQ22();
+							const int q12 = nearByChunks.at(0).at(2)->getQ21();
+							const int q21 = nearByChunks.at(2).at(0)->getQ12();
+							const int q22 = nearByChunks.at(0).at(0)->getQ11();
+
+							chunk->smoothed = true;
+
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16);
+
+							/*
+							// Need correct q11, q12, q21, q22
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 8, 8);
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 0, 16, 8);
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 8, 8, 16);
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 8, 16, 16);
+							*/
+						}
+
+						/*
+						*/
 
 						//int maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
 
@@ -523,6 +550,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 						//auto s = Utility::Time::now();
 
+
+
 						if (!chunk->smoothed)
 						{
 							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
@@ -533,7 +562,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							const int cq21 = chunk->getQ21();
 							const int cq22 = chunk->getQ22();
 
-							const int diff = 2;
+							const int diff = 3;
 
 							auto& EChunk = nearByChunks.at(1).at(0);
 							if (EChunk)
@@ -616,7 +645,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 								int heighestY = 0;
 
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16, heighestY);
+								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16);
 								//int maxChunkSectionY = (heighestY / Constant::CHUNK_SECTION_HEIGHT);
 
 								// Pre generate chunk sections
