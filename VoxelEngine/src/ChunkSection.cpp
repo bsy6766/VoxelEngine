@@ -7,6 +7,8 @@
 #include <Game.h>
 #include <World.h>
 #include <Region.h>
+#include <glm/gtx/compatibility.hpp>
+#include <glm/gtx/common.hpp>
 
 using namespace Voxel;
 
@@ -183,9 +185,25 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 						nonAirBlockSize++;
 					}
 
+					if ((heightY - blockY) > 2)
+					{
+						newBlock->setBlockID(Voxel::Block::BLOCK_ID::STONE);
+						newBlock->setColorU3(Color::STONE);
+					}
+
 					localY++;
 
-					auto color = newBlock->getColor3() * colorMap.at(blockX).at(blockZ);
+					glm::vec3 color = newBlock->getColor3();
+					glm::vec3 colorMix = Color::colorU3TocolorV3(Color::GRASS_MIX) * colorMap.at(blockX).at(blockZ);
+					color = glm::mix(color, colorMix, 0.5f);
+
+					if (blockY > 80)
+					{
+						int e = blockY - 80;
+						float ef = 1.0f - (static_cast<float>(e) / 30.0f);
+						color = glm::lerp(glm::vec3(0.6f), color, ef);
+					}
+
 					newBlock->setColor(color);
 				}
 			}

@@ -208,8 +208,8 @@ float Voxel::HeightMap::getColorNoise2D(const float x, const float z)
 	// 0 ~ 1.0f
 	val *= 0.5f;
 
-	float min = 0.5f;
-	float max = 1.0f;
+	float min = 0.2f;
+	float max = 0.8f;
 
 	float shiftedMin = min - min;
 	float shiftedMax = max - min;
@@ -566,10 +566,6 @@ void Voxel::HeightMap::getHeightMapForColor(const glm::vec3 & chunkPosition, std
 			float val = HeightMap::getColorNoise2D(nx, nz);
 
 			colorMap.back().push_back(val);
-
-			// Get temperature
-			//temperatureMap.back().push_back(HeightMap::getTemperatureNoise2D(nx, nz));
-			//moistureMap.back().push_back(HeightMap::getMoistureNosie2D(nx, nz));
 
 			nz += step;
 		}

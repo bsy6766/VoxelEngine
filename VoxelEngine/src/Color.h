@@ -28,6 +28,8 @@ namespace Voxel
 
 		// Block colors
 		const glm::uvec3 GRASS = glm::uvec3(54, 185, 41);
+		const glm::uvec3 GRASS_MIX = glm::uvec3(185, 210, 57);
+		const glm::uvec3 STONE = glm::uvec3(134, 134, 134);
 
 		// biome colors
 		const glm::uvec3 OCEAN = glm::uvec3(46, 59, 182);
