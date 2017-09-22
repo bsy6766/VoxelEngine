@@ -4,6 +4,7 @@
 #include <Color.h>
 #include <Biome.h>
 #include <Application.h>
+#include <HeightMap.h>
 #include <Game.h>
 #include <World.h>
 #include <Region.h>
@@ -143,7 +144,7 @@ ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int
 	}
 }
 
-void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<int>>& plainHeightMap, const std::vector<std::vector<float>>& colorMap)
+void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	int yStart = position.y * Constant::CHUNK_SECTION_HEIGHT;
 
@@ -153,18 +154,26 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 	blocks.clear();
 	blocks.resize(4096, nullptr);
 
+	float nx = static_cast<float>(position.x);
+	float nz = static_cast<float>(position.z);
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
 	for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 	{
 		for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_WIDTH; blockZ++)
 		{
 			int localY = 0;
 			int heightY = heightMap.at(blockX).at(blockZ);
-			int plainHeightY = plainHeightMap.at(blockX).at(blockZ);
+			int plainHeightY = static_cast<int>(glm::round(HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::PLAIN)));
+
+			nz += step;
 
 			if (heightY < plainHeightY)
 			{
 				heightY = plainHeightY;
 			}
+
+
 
 			if (yStart <= heightY)
 			{
@@ -180,18 +189,11 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 					//newBlock->setColor(color);
 					blocks.at(localBlockXYZToIndex(blockX, localY, blockZ)) = newBlock;
 
-					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
-					{
-						nonAirBlockSize++;
-					}
-
 					if ((heightY - blockY) > 2)
 					{
 						newBlock->setBlockID(Voxel::Block::BLOCK_ID::STONE);
 						newBlock->setColorU3(Color::STONE);
 					}
-
-					localY++;
 
 					glm::vec3 color = newBlock->getColor3();
 					glm::vec3 colorMix = Color::colorU3TocolorV3(Color::GRASS_MIX) * colorMap.at(blockX).at(blockZ);
@@ -205,13 +207,20 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 					}
 
 					newBlock->setColor(color);
+
+					localY++;
+
+					if (newBlock->getBlockID() != Block::BLOCK_ID::AIR)
+					{
+						nonAirBlockSize++;
+					}
+
 				}
 			}
-			else
-			{
-				continue;
-			}
 		}
+
+		nx += step;
+		nz = static_cast<float>(position.z);
 	}
 
 }
@@ -729,7 +738,12 @@ void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, cons
 
 				nonAirBlockSize--;
 			}
-			// Else, can't modify block.
+			else
+			{
+				blocks.at(index)->setBlockID(blockID);
+
+				nonAirBlockSize++;
+			}
 		}
 	}
 	else

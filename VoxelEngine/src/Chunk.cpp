@@ -146,7 +146,7 @@ bool Voxel::Chunk::generate()
 	{
 		if (chunkSection != nullptr)
 		{
-			chunkSection->init(regionMap, heightMap, plainHeightMap, colorMap);
+			chunkSection->init(regionMap, heightMap, colorMap);
 		}
 	}
 
@@ -386,6 +386,8 @@ bool Voxel::Chunk::generateWithRegionColor()
 
 void Voxel::Chunk::preGenerateChunkSections(const int minY, const int maxY)
 {
+	assert(chunkSections.empty());
+
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		// Temp. All blocks above chunk section y 3 will be air.
@@ -598,50 +600,22 @@ bool Voxel::Chunk::hasMultipleRegion()
 
 int Voxel::Chunk::getQ11()
 {
-	if (smoothed)
-	{
-		return heightMap.front().front();
-	}
-	else
-	{
-		return heightMap.front().front();
-	}
+	return heightMap.front().front();
 }
 
 int Voxel::Chunk::getQ12()
 {
-	if (smoothed)
-	{
-		return heightMap.front().back();
-	}
-	else
-	{
-		return heightMap.front().back();
-	}
+	return heightMap.front().back();
 }
 
 int Voxel::Chunk::getQ21()
 {
-	if (smoothed)
-	{
-		return heightMap.back().front();
-	}
-	else
-	{
-		return heightMap.back().front();
-	}
+	return heightMap.back().front();
 }
 
 int Voxel::Chunk::getQ22()
 {
-	if (smoothed)
-	{
-		return heightMap.back().back();
-	}
-	else
-	{
-		return heightMap.back().back();
-	}
+	return heightMap.back().back();
 }
 
 bool Voxel::Chunk::isSmoothed()

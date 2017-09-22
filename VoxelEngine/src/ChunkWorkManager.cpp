@@ -166,50 +166,6 @@ void Voxel::ChunkWorkManager::addBuildMeshWorks(const std::vector<glm::ivec2>& c
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::addUnload(const glm::ivec2 & coordinate)
-{
-	// Scope lock
-	std::unique_lock<std::mutex> lock(queueMutex);
-
-	unloadQueue.push_back(coordinate);
-	generateQueue.remove(coordinate);
-
-	cv.notify_one();
-}
-
-void Voxel::ChunkWorkManager::addUnloads(const std::vector<glm::ivec2>& coordinates)
-{
-	//auto start = Utility::Time::now();
-	// Scope lock
-	std::unique_lock<std::mutex> lock(queueMutex);
-
-	std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> lut(coordinates.begin(), coordinates.end());
-
-	for (auto xz : coordinates)
-	{
-		unloadQueue.push_back(xz);
-	}
-
-	auto it = generateQueue.begin();
-	for (; it != generateQueue.end();)
-	{
-		auto find_it = lut.find(*it);
-		if (find_it != lut.end())
-		{
-			it = generateQueue.erase(it);
-		}
-		else
-		{
-			it++;
-		}
-	}
-
-	//auto end = Utility::Time::now();
-	//std::cout << "addUnload() took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
-
-	//cv.notify_one();
-}
-
 void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
 {
 	// Scope lock
@@ -226,18 +182,18 @@ void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
 
 	std::vector<glm::vec2> loadQueueFloat;
 
-	for (auto xz : generateQueue)
+	for (auto xz : preGenerateQueue)
 	{
 		loadQueueFloat.push_back(glm::vec2(xz));
 	}
 
 	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
-	generateQueue.clear();
+	preGenerateQueue.clear();
 
 	for (auto xz : loadQueueFloat)
 	{
-		generateQueue.push_back(glm::ivec2(xz));
+		preGenerateQueue.push_back(glm::ivec2(xz));
 	}
 }
 
@@ -307,7 +263,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			// wait if both queue are empty. Must be running.
-			while (running && preGenerateQueue.empty() && smoothQueue.empty() && generateQueue.empty() && unloadQueue.empty() && buildMeshQueue.empty())
+			while (running && preGenerateQueue.empty() && smoothQueue.empty() && generateQueue.empty() && buildMeshQueue.empty())
 			{
 				cv.wait(lock);
 			}
@@ -320,16 +276,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				break;
 			}
 
-			// Unloading goes first
-			if (!unloadQueue.empty())
-			{
-				chunkXZ = unloadQueue.front();
-				unloadQueue.pop_front();
-				flag = UNLOAD_WORK;
-			}
-			// If there is nothing to unload, start to load.
-			// First by pre-generating chunk
-			else if (!preGenerateQueue.empty())
+			// In order of preGen > smooth > gen > build mesh
+			if (!preGenerateQueue.empty())
 			{
 				chunkXZ = preGenerateQueue.front();
 				preGenerateQueue.pop_front();
@@ -365,28 +313,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
-			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
-			if (flag == UNLOAD_WORK)
-			{
-				//std::cout << "Unload" << std::endl;
-
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Clear buffer. 
-						mesh->clearBuffers();
-
-						// Let main thread to relase it
-						addFinishedQueue(chunkXZ);
-					}
-					// Else, mesh is nullptr
-				}
-				// Else, chunk is nullptr
-			}
-			else if (flag == PRE_GENERATE_WORK)
+			if (flag == PRE_GENERATE_WORK)
 			{
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
@@ -452,34 +379,21 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 					}
 
-
-					//int maxChunkSectionY = 0;
-
 					// Generate height map.
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
-					HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), chunk->plainHeightMap);
 					chunk->smoothed = false;
-					//chunk->heightMapOriginal = chunk->heightMap;
 
 					if (regionIDSet.size() == 1)
 					{
 						// There is only 1 region in this chunk.
 						chunk->setRegionMap(regionMap.front());
-
-						// Pre generate chunk sections
-						//chunk->preGenerateChunkSections(2, maxChunkSectionY);
 					}
 					else
 					{
 						// Multiple region exists in this chunk. save region map to chunk
 						chunk->setRegionMap(regionMap);
 					}
-					
-					// Chunk is pre generated. add to generate queue
-					if (!map->isChunkOnEdge(chunkXZ))
-					{
-						//addGenerateWork(chunkXZ);
-					}
+
 					addSmoothWork(chunkXZ);
 				}
 			}
@@ -495,11 +409,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					if (chunk->hasMultipleRegion())
 					{
 						//std::cout << "Smooth" << std::endl;
-
-						int maxY = 0;
-
-						//HeightMap::smoothHeightMap(chunk->heightMap, maxY);
-
 						if (chunk->isActive())
 						{
 							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
@@ -521,14 +430,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 8, 16, 16);
 							*/
 						}
-
-						/*
-						*/
-
-						//int maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
-
-						// Pre generate chunk sections
-						//chunk->preGenerateChunkSections(2, maxChunkSectionY);
 					}
 
 					if (!map->isChunkOnEdge(chunkXZ))
@@ -550,8 +451,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
 						//auto s = Utility::Time::now();
 
-
-
 						if (!chunk->smoothed)
 						{
 							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
@@ -562,7 +461,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							const int cq21 = chunk->getQ21();
 							const int cq22 = chunk->getQ22();
 
-							const int diff = 3;
+							const int diff = 2;
 
 							auto& EChunk = nearByChunks.at(1).at(0);
 							if (EChunk)
@@ -643,29 +542,42 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								const int q21 = nearByChunks.at(2).at(0)->getQ12();
 								const int q22 = nearByChunks.at(0).at(0)->getQ11();
 
-								int heighestY = 0;
-
 								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16);
-								//int maxChunkSectionY = (heighestY / Constant::CHUNK_SECTION_HEIGHT);
-
-								// Pre generate chunk sections
-								//chunk->preGenerateChunkSections(2, maxChunkSectionY);
 							}
 						}
 
-						chunk->preGenerateChunkSections(2, chunk->findMaxY());
+						chunk->preGenerateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.
 						chunk->generate();
 
-						// we need mesh for newly generated chunk
-						//addBuildMeshWork(chunkXZ);
+						int rand = Utility::Random::randomInt100();
+
+						int treeChance = 0;
+						if (rand < 5)
+						{
+							// test tree
+							glm::ivec2 treePos = HeightMap::getTreePosition(chunk->getPosition());
+							int treeY = chunk->heightMap.at(treePos.x).at(treePos.y);
+
+							int chunkSectionY = treeY / Constant::CHUNK_SECTION_HEIGHT;
+
+							auto treeBlockLocalPos = glm::ivec3(treePos.x, treeY % Constant::CHUNK_SECTION_HEIGHT, treePos.y);
+
+							//std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
+
+							auto chunkSection = chunk->getChunkSectionAtY(chunkSectionY);
+							if (chunkSection)
+							{
+								chunkSection->setBlockAt(treeBlockLocalPos, Block::BLOCK_ID::OAK_WOOD);
+							}
+						}
+
+						addBuildMeshWork(chunkXZ);
 
 						//auto e = Utility::Time::now();
 						//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 					}
-
-					addBuildMeshWork(chunkXZ);
 				}
 				// Else, chunk is nullptr
 			}
@@ -776,8 +688,10 @@ void Voxel::ChunkWorkManager::joinThread()
 		//std::cout << "Waiting to thread join..." << std::endl;
 		// Scope lock
 		std::unique_lock<std::mutex> lock(queueMutex);
+		preGenerateQueue.clear();
 		generateQueue.clear();
-		unloadQueue.clear();
+		smoothQueue.clear();
+		buildMeshQueue.clear();
 	}
 
 	cv.notify_one();

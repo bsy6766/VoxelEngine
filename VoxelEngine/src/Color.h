@@ -3,6 +3,7 @@
 
 #include <glm\glm.hpp>
 #include <Utility.h>
+#include <Block.h>
 
 namespace Voxel
 {
@@ -30,6 +31,7 @@ namespace Voxel
 		const glm::uvec3 GRASS = glm::uvec3(54, 185, 41);
 		const glm::uvec3 GRASS_MIX = glm::uvec3(185, 210, 57);
 		const glm::uvec3 STONE = glm::uvec3(134, 134, 134);
+		const glm::uvec3 OAK_WOOD = glm::uvec3(76, 50, 18);
 
 		// biome colors
 		const glm::uvec3 OCEAN = glm::uvec3(46, 59, 182);
@@ -72,6 +74,28 @@ namespace Voxel
 		static inline glm::vec3 colorU3TocolorV3(const glm::uvec3& color)
 		{
 			return glm::vec3(static_cast<float>(color.r) / 255.0f, static_cast<float>(color.g) / 255.0f, static_cast<float>(color.b) / 255.0f);
+		}
+
+		static inline glm::uvec3 getColorU3FromBlockID(const Block::BLOCK_ID blockID)
+		{
+			glm::uvec3 color;
+
+			switch (blockID)
+			{
+			case Block::BLOCK_ID::GRASS:
+				color = Color::GRASS;
+				break;
+			case Block::BLOCK_ID::STONE:
+				color = Color::STONE;
+				break;
+			case Block::BLOCK_ID::OAK_WOOD:
+				color = Color::OAK_WOOD;
+				break;
+			default:
+				break;
+			}
+
+			return color;
 		}
 
 		static inline glm::uvec3 getDifficultyColor(const int difficulty)

@@ -29,7 +29,7 @@ namespace Voxel
 	{
 	private:
 		static const int IDLE_WORK = 0;
-		static const int UNLOAD_WORK = 1;
+		//static const int UNLOAD_WORK = 1;
 		static const int PRE_GENERATE_WORK = 2;
 		static const int GENERATE_WORK = 3;
 		static const int BUILD_MESH_WORK = 4;
@@ -42,8 +42,6 @@ namespace Voxel
 		std::list<glm::ivec2> generateQueue;
 		// Queue with chunk coordinates that need to build mesh
 		std::list<glm::ivec2> buildMeshQueue;
-		// Queue with chunk coordinate that needs to get unloaded.
-		std::list<glm::ivec2> unloadQueue;
 		// Queue with chunk coordinate that needs to get unloaded by main thread.
 		std::list<glm::ivec2> unloadFinishedQueue;
 
@@ -84,11 +82,6 @@ namespace Voxel
 		void addBuildMeshWork(const glm::ivec2& coordinate, const bool highPriority = false);
 		// Add mutliple build mesh works to unload queue. locked by queueMutex
 		void addBuildMeshWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
-
-		// Add single unload work to unload queue. locked by queueMutex
-		void addUnload(const glm::ivec2& coordinate);
-		// Add mutliple unload works to unload queue. locked by queueMutex
-		void addUnloads(const std::vector<glm::ivec2>& coordinates);
 
 		// sort load queue based on chunk position that player is on. Locked by queueMutex
 		void sortLoadQueue(const glm::vec3& playerPosition);

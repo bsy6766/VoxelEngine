@@ -707,9 +707,9 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 	return 3;
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face & faceDir, ChunkWorkManager* workManager)
+void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const Cube::Face & faceDir, ChunkWorkManager* workManager)
 {
-	glm::ivec3 targetPos = blockPos;
+	glm::ivec3 targetPos = blockWorldCoordinate;
 	
 	switch (faceDir)
 	{
@@ -741,10 +741,20 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 		return;
 	}
 
+	placeBlockAt(targetPos, blockID, workManager);
+}
+
+void Voxel::ChunkMap::placeBlockAtLocal(const glm::ivec3 & blockLocalPos, const Block::BLOCK_ID blockID, ChunkWorkManager * wm)
+{
+
+}
+
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm)
+{
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
 
-	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(targetPos.x, targetPos.y, targetPos.z), blockLocalPos, chunkSectionPos);
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockWorldCoordinate, blockLocalPos, chunkSectionPos);
 
 	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 
@@ -768,17 +778,13 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 
 				assert(chunkSection != nullptr);
 
-				chunkSection->setBlockAt(blockLocalPos, Block::BLOCK_ID::GRASS);
+				chunkSection->setBlockAt(blockLocalPos, blockID);
 
-				//meshGenerator->generateSingleChunkMesh(chunk, this);
-
-				//std::cout << "Placing block at chunk: " << Utility::Log::vec3ToStr(chunkSectionPos) << std::endl;
-				//std::cout << "Block pos = " << Utility::Log::vec3ToStr(targetPos) << std::endl;
-				//std::cout << "Block local pos = " << Utility::Log::vec3ToStr(blockLocalPos) << std::endl;
-			
-				std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
-
-				workManager->addBuildMeshWorks(refreshList, true);
+				if (wm)
+				{
+					std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+					wm->addBuildMeshWorks(refreshList, true);
+				}
 			}
 		}
 		// Else, chunk is nullptr.
@@ -791,12 +797,12 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockPos, const Cube::Face
 	}
 }
 
-void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockPos, ChunkWorkManager* workManager)
+void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockWorldCoordinate, ChunkWorkManager* workManager)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
 
-	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockPos, blockLocalPos, chunkSectionPos);
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockWorldCoordinate, blockLocalPos, chunkSectionPos);
 
 	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 
@@ -1140,11 +1146,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		*/
 
 		//auto start = Utility::Time::now();
-
-		std::vector<glm::ivec2> chunksToUnload;		// Chunks to unload and release
-		std::vector<glm::ivec2> chunksToLoad;		// Chunks to load (map gen and mesh build)
-		std::vector<glm::ivec2> chunksToReload;		// Chunks to reload (rebuild mesh)
-
+		
 		if (d.x != 0)
 		{
 			// Run move function as much as chunk distance
@@ -1193,36 +1195,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		}
 		// Else, didn't move in Z axis
 
-		bool notify = false;
-		// Unload has highest priority
-		if (!chunksToUnload.empty())
-		{
-			workManager->addUnloads(chunksToUnload);
-			notify = true;
-		}
-
-		// Load has second priority
-		if (!chunksToLoad.empty())
-		{
-			auto p = glm::vec2(newChunkXZ);
-			std::sort(chunksToLoad.begin(), chunksToLoad.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::abs(glm::distance(p, lhs)) < glm::abs(glm::distance(p, rhs)); });
-			//workManager->addGenerateWorks(chunksToLoad);
-			workManager->addPreGenerateWorks(chunksToLoad);
-			notify = true;
-		}
-
-		// Rebuilding mesh isn't important unless player is build mode. 
-		// but we are rebuilding mesh that is far away from, so it has lowest priority
-		if (!chunksToReload.empty())
-		{
-			workManager->addBuildMeshWorks(chunksToReload);
-			notify = true;
-		}
-
-		if (notify)
-		{
-			workManager->notify();
-		}
+		workManager->notify();
 
 		//auto end = Utility::Time::now();
 		//std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -1322,58 +1295,6 @@ void Voxel::ChunkMap::moveSouth(ChunkWorkManager* wm)
 
 	minXZ.y += 1;
 	maxXZ.y += 1;
-
-	/*
-	// Get z. This is the new z coordinate that we will add to active chunk list
-	int z = activeChunks.front().back().y + 1;
-	//std::cout << "new z = " << z << std::endl;
-
-	// Iterate through active chunks and unload all the chunks in front of sub list
-	for (auto& chunksZ : activeChunks)
-	{
-		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunksZ.front().x, chunksZ.front().y);
-
-		chunk->setActive(false);
-		chunk->setVisibility(false);
-
-		auto pos = chunk->getPosition();
-		//std::cout << "Deactivating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-		chunksToUnload.push_back(glm::ivec2(pos.x, pos.z));
-		chunksZ.pop_front();
-	}
-
-	// Iterate through active chunks and add generate new chunk.
-	for (auto& chunksZ : activeChunks)
-	{
-		int curX = chunksZ.front().x;
-
-		if (!hasChunkAtXZ(curX, z))
-		{
-			// map doesn't have chunk. create empty
-			generateEmptyChunk(curX, z);
-		}
-		// We need to generate chunk first because thread will be able to access new chunk while building a mesh, which results weired wall of mesh 
-	}
-
-	for (auto& chunksZ : activeChunks)
-	{
-		// Before we add new chunk on back, we need to refresh current one
-		auto curPos = chunksZ.back();
-		chunksToReload.push_back(glm::ivec2(curPos.x, curPos.y));
-
-		// get chunk
-		auto newChunk = getChunkAtXZ(curPos.x, z);
-		newChunk->setActive(true);
-		newChunk->setVisibility(true);
-		newChunk->updateTimestamp(curTime);
-
-		auto pos = glm::ivec2(curPos.x, z);
-		chunksZ.push_back(pos);
-
-		//std::cout << "Activating chunk at (" << pos.x << ", " << pos.z << ")" << std::endl;
-		chunksToLoad.push_back(pos);
-	}
-	*/
 }
 
 void Voxel::ChunkMap::moveNorth(ChunkWorkManager* wm)
@@ -1603,8 +1524,6 @@ void Voxel::ChunkMap::removeRowWest(ChunkWorkManager* wm)
 		}
 
 		wm->addFinishedQueue(glm::ivec2(x, z));
-
-		//chunksToUnload.push_back(glm::ivec2(x, z));
 	}
 
 	// Also deactivate first row on active chunk
@@ -1648,8 +1567,6 @@ void Voxel::ChunkMap::removeRowEast(ChunkWorkManager* wm)
 		}
 
 		wm->addFinishedQueue(glm::ivec2(x, z));
-
-		//chunksToUnload.push_back(glm::ivec2(x, z));
 	}
 
 	// Also deactivate last row on active chunk

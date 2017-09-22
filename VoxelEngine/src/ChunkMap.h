@@ -152,9 +152,13 @@ namespace Voxel
 		// Retruns 3 if chunk doesn't exsits.
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 
-		// place block at face direction
-		void placeBlockAt(const glm::ivec3& blockPos, const Cube::Face& faceDir, ChunkWorkManager* workManager);
-		void removeBlockAt(const glm::ivec3& blockPos, ChunkWorkManager* workManager);
+		// Place block at block local coordinate
+		void placeBlockAtLocal(const glm::ivec3& blockLocalPos, const Block::BLOCK_ID blockID, ChunkWorkManager* wm);
+		// Place block at block world coordinate.
+		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager* wm);
+		// place block at face direction. BlockPos is world coordinate
+		void placeBlockFromFace(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, const Cube::Face& faceDir, ChunkWorkManager* workManager);
+		void removeBlockAt(const glm::ivec3& blockWorldCoordinate, ChunkWorkManager* workManager);
 		
 		// From rayStart to rayEnd, visit all blocks
 		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);

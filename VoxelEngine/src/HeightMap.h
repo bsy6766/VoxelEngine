@@ -51,20 +51,24 @@ namespace Voxel
 			PLAIN,			// Flat terrain. No hills and mountains
 			HILLS,			// Few hills in flat terrain
 			MOUNTAINS,		// 
-			BORDER
+			BORDER,
+			TREE
 		};
 	private:
 		HeightMap() = delete;
 		~HeightMap() = delete;
 
 		// Returns value in range 0.0f ~ 2.0f
-		static float getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z);
+		static float getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z, const bool normalize = false);
 	public:
 		// Terrain presets
 		static const NoisePreset PlainPreset;
 		static const NoisePreset HillsPreset;
 		static const NoisePreset MountainsPreset;
 		static const NoisePreset BorderPreset;
+
+		// Tree preset. We use high frequency with high amplitude. 
+		static const NoisePreset TreePositionPreset;
 		
 		// Temperature preset
 		static const NoisePreset TemperaturePreset;
@@ -74,8 +78,8 @@ namespace Voxel
 		static const NoisePreset ColorPreset;
 
 		// Get noise 2d. Return noise value between 0 and 2.
-		static float getNoise2D(const float x, const float z, const PRESET preset);
-		static float getNoise2D(const float x, const float z, const Terrain& terrain);
+		static float getNoise2D(const float x, const float z, const PRESET preset, const bool normalize = false);
+		static float getNoise2D(const float x, const float z, const Terrain& terrain, const bool normalize = false);
 		static float getTemperatureNoise2D(const float x, const float z);
 		static float getMoistureNosie2D(const float x, const float z);
 		static float getColorNoise2D(const float x, const float z);
@@ -91,6 +95,8 @@ namespace Voxel
 		static void generateHeightMapForChunk(const glm::vec3& chunkPosition, std::vector<std::vector<int>>& heightMap, const std::vector<unsigned int>& regionMap, const std::unordered_map<unsigned int, Terrain>& regionTerrains);
 		static void generatePlainHeightMapForChunk(const glm::vec3& chunkPosition, std::vector<std::vector<int>>& heightMap);
 		static void getHeightMapForColor(const glm::vec3& chunkPosition, std::vector<std::vector<float>>& colorMap);
+
+		static glm::ivec2 getTreePosition(const glm::vec3& chunkPosition);
 	};
 }
 

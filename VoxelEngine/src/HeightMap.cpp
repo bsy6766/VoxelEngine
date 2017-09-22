@@ -64,11 +64,16 @@ const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.15f, 1.0f, 0.2f, 0
 
 const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f, 1.0f, 0.6f, 0.5f, 0.7f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 60.0f, 2.0f, 31.0f, true, false);
 
+const NoisePreset HeightMap::TreePositionPreset =	NoisePreset(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 200.0f, 1.0f, 4.0f, false, false);
+
+// for biome
 const NoisePreset HeightMap::TemperaturePreset =	NoisePreset(0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
 const NoisePreset HeightMap::MoisturePreset =		NoisePreset(0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
+
+// for color mixing & blending
 const NoisePreset HeightMap::ColorPreset =			NoisePreset(0.15f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
 
-float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z)
+float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z, const bool normalize)
 {
 	float val = 0;
 
@@ -84,6 +89,12 @@ float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noi
 
 	// Now val should be in range of -1 ~ 1. Add 1 to make it in range of 0 ~ 2
 	val += 1.0f;
+
+	if (normalize)
+	{
+		// Fake normalize. Multiply 0.5f to make range of 0 ~ 1
+		val *= 0.5f;
+	}
 
 	// Just in case if val is still 0, make it 0
 	if (val < 0)
@@ -101,7 +112,7 @@ float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noi
 	// terrace
 	if (np->applyTerrace)
 	{
-		val = glm::round(val * np->terrace) / np->terrace;
+		val = glm::floor(val * np->terrace) / np->terrace;
 	}
 
 	//val = glm::clamp(val, 0.0f, 2.0f);
@@ -117,7 +128,7 @@ float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noi
 	return val;
 }
 
-float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET preset)
+float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET preset, const bool normalize)
 {
 	const NoisePreset * np = nullptr;
 
@@ -137,6 +148,9 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET pr
 	case PRESET::BORDER:
 		np = &HeightMap::BorderPreset;
 		break;
+	case PRESET::TREE:
+		np = &HeightMap::TreePositionPreset;
+		break;
 	case PRESET::NONE:
 	default:
 		return 0;
@@ -148,7 +162,7 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET pr
 	return val;
 }
 
-float Voxel::HeightMap::getNoise2D(const float x, const float z, const Terrain & terrain)
+float Voxel::HeightMap::getNoise2D(const float x, const float z, const Terrain & terrain, const bool normalize)
 {
 	const NoisePreset * np = nullptr;
 
@@ -369,9 +383,9 @@ void Voxel::HeightMap::smoothHelper(std::vector<std::vector<int>>& heightMap, co
 void Voxel::HeightMap::smoothHeightMap(std::vector<std::vector<int>>& heightMap, const int q11, const int q12, const int q21, const int q22, const int xLen, const int zLen)
 {
 	float x1 = 0;
-	float x2 = xLen;
+	float x2 = static_cast<float>(xLen);
 	float z1 = 0;
-	float z2 = zLen;
+	float z2 = static_cast<float>(zLen);
 
 	const float x2_1 = x2 - x1;
 	const float z2_1 = z2 - z1;
@@ -412,8 +426,8 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 	int xEnd = Constant::CHUNK_SECTION_WIDTH;
 	int zEnd = Constant::CHUNK_SECTION_LENGTH;
 
-	float nx = static_cast<float>(chunkPosition.x);
-	float nz = static_cast<float>(chunkPosition.z);
+	float nx = chunkPosition.x;
+	float nz = chunkPosition.z;
 	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
 
 	heightMap.clear();
@@ -479,8 +493,9 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 
 			nz += step;
 		}
+
 		nx += step;
-		nz = static_cast<float>(chunkPosition.z);
+		nz = chunkPosition.z;
 	}
 
 	//maxChunkSectionY = (maxY / Constant::CHUNK_SECTION_HEIGHT);
@@ -545,8 +560,8 @@ void Voxel::HeightMap::getHeightMapForColor(const glm::vec3 & chunkPosition, std
 	int xEnd = xStart + Constant::CHUNK_SECTION_WIDTH;
 	int zEnd = zStart + Constant::CHUNK_SECTION_LENGTH;
 
-	float nx = static_cast<float>(chunkPosition.x);
-	float nz = static_cast<float>(chunkPosition.z);
+	float nx = chunkPosition.x;
+	float nz = chunkPosition.z;
 	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
 
 	colorMap.clear();
@@ -565,6 +580,40 @@ void Voxel::HeightMap::getHeightMapForColor(const glm::vec3 & chunkPosition, std
 			nz += step;
 		}
 		nx += step;
-		nz = static_cast<float>(chunkPosition.z);
+		nz = chunkPosition.z;
 	}
+}
+
+glm::ivec2 Voxel::HeightMap::getTreePosition(const glm::vec3 & chunkPosition)
+{
+	float nx = chunkPosition.x;
+	float nz = chunkPosition.z;
+	const float step = 1.0f / Constant::CHUNK_BORDER_SIZE;
+
+	float max = 0;
+	glm::ivec2 localPos;
+
+	const int xEnd = Constant::CHUNK_SECTION_WIDTH;
+	const int zEnd = Constant::CHUNK_SECTION_LENGTH;
+
+	for (int x = 0; x < xEnd; x++)
+	{
+		for (int z = 0; z < zEnd; z++)
+		{
+			float val = glm::round(HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::TREE));
+
+			if (val > max)
+			{
+				max = val;
+				localPos = glm::ivec2(x, z);
+			}
+
+			nz += step;
+		}
+
+		nx += step;
+		nz = chunkPosition.z;
+	}
+
+	return localPos;
 }

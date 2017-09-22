@@ -38,22 +38,15 @@ namespace Voxel
 
 		// Border & range
 		AABB boundingBox;
-
-		// chunk map datas. These vectors will be cleared once chunk is generated.
-
+		
 		// region data for each block
 		std::vector<unsigned int> regionMap;
 
 		// Height map data for each block. Once chunk is generated, this will be cleared
 		std::vector<std::vector<int>> heightMap;
-		//std::vector<std::vector<int>> heightMapOriginal;
 
-		// All chunks have plain heightMap;
-		std::vector<std::vector<int>> plainHeightMap;
-
+		// true if height map is smoothed
 		bool smoothed;
-
-		// End of chunk map datas....
 
 		// active state. Only active chunk can be queried and gets updated
 		bool active;

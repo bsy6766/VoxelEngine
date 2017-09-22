@@ -140,7 +140,7 @@ void Voxel::Game::init()
 
 	TextureManager::getInstance().print();
 
-	//Application::getInstance().getGLView()->setWindowedFullScreen(0);
+	Application::getInstance().getGLView()->setWindowedFullScreen(1);
 	//defaultCanvas->setSize(glm::vec2(1920, 1080));
 	//debugConsole->updateResolution(1920, 1080);
 }
@@ -270,8 +270,8 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
-	//player->setPosition(glm::vec3(0, 200, 0));
-	player->setPosition(glm::vec3(-570, 100, 457));
+	player->setPosition(glm::vec3(0, 300, 0));
+	//player->setPosition(glm::vec3(-570, 100, 457));
 	//player->setPosition(glm::vec3(665, 132, -85));
 	//player->setPosition(glm::vec3(2965, 132, -292));
 	//player->setPosition(glm::vec3(681, 132, -85));
@@ -279,7 +279,7 @@ void Game::createPlayer()
 	//player->setPosition(glm::vec3(-690, 150, 128));
 	player->setRotation(glm::vec3(-90, 0, 0));
 	//player->setRotation(glm::vec3(320, 270, 0));
-	player->setRotation(glm::vec3(287, 113, 0));
+	//player->setRotation(glm::vec3(287, 113, 0));
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug
@@ -751,7 +751,7 @@ void Voxel::Game::updateMouseClickInput()
 			{
 				auto lookingBlock = player->getLookingBlock();
 				auto blockPos = player->getLookingBlock()->getWorldCoordinate();
-				chunkMap->placeBlockAt(blockPos, player->getLookingFace(), chunkWorkManager);
+				chunkMap->placeBlockFromFace(blockPos, Block::BLOCK_ID::GRASS, player->getLookingFace(), chunkWorkManager);
 				updatePlayerRaycast();
 			}
 		}
