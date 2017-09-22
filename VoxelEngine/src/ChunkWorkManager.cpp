@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <Color.h>
 #include <HeightMap.h>
+#include <TreeBuilder.h>
 
 using namespace Voxel;
 
@@ -77,6 +78,23 @@ void Voxel::ChunkWorkManager::addSmoothWork(const glm::ivec2 & coordinate, const
 	else
 	{
 		smoothQueue.push_back(coordinate);
+	}
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addStructureWork(const glm::ivec2 & coordinate, const bool highPriority)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		addStructureQueue.push_front(coordinate);
+	}
+	else
+	{
+		addStructureQueue.push_back(coordinate);
 	}
 
 	cv.notify_one();
@@ -166,11 +184,12 @@ void Voxel::ChunkWorkManager::addBuildMeshWorks(const std::vector<glm::ivec2>& c
 	cv.notify_one();
 }
 
-void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
+void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2& currentChunkXZ)
 {
 	// Scope lock
-	std::unique_lock<std::mutex> lock(queueMutex);
+	//std::unique_lock<std::mutex> lock(queueMutex);
 
+	/*
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
@@ -178,22 +197,23 @@ void Voxel::ChunkWorkManager::sortLoadQueue(const glm::vec3 & playerPosition)
 	if (playerPosition.x < 0) chunkX -= 1;
 	if (playerPosition.z < 0) chunkZ -= 1;
 
-	glm::vec2 p = glm::vec2(chunkX, chunkZ);
+	*/
+	glm::vec2 p = glm::vec2(currentChunkXZ);
 
 	std::vector<glm::vec2> loadQueueFloat;
 
-	for (auto xz : preGenerateQueue)
+	for (auto xz : buildMeshQueue)
 	{
 		loadQueueFloat.push_back(glm::vec2(xz));
 	}
 
 	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
-	preGenerateQueue.clear();
+	buildMeshQueue.clear();
 
 	for (auto xz : loadQueueFloat)
 	{
-		preGenerateQueue.push_back(glm::ivec2(xz));
+		buildMeshQueue.push_back(glm::ivec2(xz));
 	}
 }
 
@@ -256,14 +276,14 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 		}
 
 		glm::ivec2 chunkXZ;
-		int flag = IDLE_WORK;
+		WorkType workType = WorkType::IDLE;
 
 		{
 			// Scope lock
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			// wait if both queue are empty. Must be running.
-			while (running && preGenerateQueue.empty() && smoothQueue.empty() && generateQueue.empty() && buildMeshQueue.empty())
+			while (running && preGenerateQueue.empty() && addStructureQueue.empty() && smoothQueue.empty() && generateQueue.empty() && buildMeshQueue.empty())
 			{
 				cv.wait(lock);
 			}
@@ -281,27 +301,38 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			{
 				chunkXZ = preGenerateQueue.front();
 				preGenerateQueue.pop_front();
-				flag = PRE_GENERATE_WORK;
+				workType = WorkType::PRE_GENERATE;
 			}
 			else if (!smoothQueue.empty())
 			{
 				chunkXZ = smoothQueue.front();
 				smoothQueue.pop_front();
-				flag = SMOOTH_WORK;
+				workType = WorkType::SMOOTH;
 			}
 			// If there is nothing to pregenerate, generate chunk. (generates blocks)
 			else if (!generateQueue.empty())
 			{
 				chunkXZ = generateQueue.front();
 				generateQueue.pop_front();
-				flag = GENERATE_WORK;
+				workType = WorkType::GENERATE;
+			}
+			else if (!addStructureQueue.empty())
+			{
+				chunkXZ = addStructureQueue.front();
+				addStructureQueue.pop_front();
+				workType = WorkType::ADD_STRUCTURE;
+
+				if (addStructureQueue.empty())
+				{
+					sortBuildMeshQueue(map->getCurrentChunkXZ());
+				}
 			}
 			// If there is nothing to generate, start to build mesh
 			else if (!buildMeshQueue.empty())
 			{
 				chunkXZ = buildMeshQueue.front();
 				buildMeshQueue.pop_front();
-				flag = BUILD_MESH_WORK;
+				workType = WorkType::BUILD_MESH;
 			}
 			//Else, flag is 0. 
 			else
@@ -313,7 +344,9 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
-			if (flag == PRE_GENERATE_WORK)
+			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
+
+			if (workType == WorkType::PRE_GENERATE)
 			{
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
@@ -397,7 +430,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					addSmoothWork(chunkXZ);
 				}
 			}
-			else if (flag == SMOOTH_WORK)
+			else if (workType == WorkType::SMOOTH)
 			{
 				// There must be a chunk. Chunk loader creates empty chunk.
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
@@ -438,7 +471,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					}
 				}
 			}
-			else if (flag == GENERATE_WORK)
+			else if (workType == WorkType::GENERATE)
 			{
 				// There must be a chunk. Chunk loader creates empty chunk.
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
@@ -556,29 +589,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						int treeChance = 50;
 						if (rand < treeChance)
 						{
-							// test tree
-							glm::ivec2 treePos = HeightMap::getTreePosition(chunk->getPosition());
-							//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
-
-							// Don't spawn tree at the edge of chunk. 
-							//treePos = glm::clamp(treePos, 5, 11);
-
-							int treeY = chunk->heightMap.at(treePos.x).at(treePos.y);
-
-							int chunkSectionY = treeY / Constant::CHUNK_SECTION_HEIGHT;
-
-							auto treeBlockLocalPos = glm::ivec3(treePos.x, treeY % Constant::CHUNK_SECTION_HEIGHT, treePos.y);
-
-							//std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
-
-							auto chunkSection = chunk->getChunkSectionAtY(chunkSectionY);
-							if (chunkSection)
-							{
-								chunkSection->setBlockAt(treeBlockLocalPos, Block::BLOCK_ID::OAK_WOOD);
-							}
+							addStructureWork(chunkXZ);
 						}
-
-						addBuildMeshWork(chunkXZ);
+						else
+						{
+							addBuildMeshWork(chunkXZ);
+						}
 
 						//auto e = Utility::Time::now();
 						//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
@@ -586,7 +602,32 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				}
 				// Else, chunk is nullptr
 			}
-			else if (flag == BUILD_MESH_WORK)
+			else if (workType == WorkType::ADD_STRUCTURE)
+			{
+				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+				if (chunk && chunk->isActive())
+				{
+					// test tree
+					glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
+					glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
+
+					// Don't spawn tree at the edge of chunk. 
+					//treePos = glm::clamp(treePos, 5, 11);
+
+					int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y);
+
+					int chunkSectionY = treeY / Constant::CHUNK_SECTION_HEIGHT;
+
+					auto treeBlockLocalPos = glm::ivec3(treeLocalPos.x, treeY % Constant::CHUNK_SECTION_HEIGHT, treeLocalPos.y);
+
+					std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
+
+					TreeBuilder::createTree(Tree::Type::OAK, Tree::TrunkHeight::SMALL, Tree::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY + 1);
+
+					addBuildMeshWork(chunkXZ);
+				}
+			}
+			else if (workType == WorkType::BUILD_MESH)
 			{
 				//std::cout << "BuildMesh";
 				//auto s = Utility::Time::now();

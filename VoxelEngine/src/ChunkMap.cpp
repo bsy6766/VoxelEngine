@@ -744,11 +744,6 @@ void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate
 	placeBlockAt(targetPos, blockID, workManager);
 }
 
-void Voxel::ChunkMap::placeBlockAtLocal(const glm::ivec3 & blockLocalPos, const Block::BLOCK_ID blockID, ChunkWorkManager * wm)
-{
-
-}
-
 void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm)
 {
 	glm::ivec3 blockLocalPos;
@@ -1742,6 +1737,11 @@ void Voxel::ChunkMap::setRegionTerrainType(const unsigned int regionID, const Te
 std::unordered_map<unsigned int, Terrain>& Voxel::ChunkMap::getRegionTerrainsMap()
 {
 	return regionTerrainsMap;
+}
+
+glm::ivec2 Voxel::ChunkMap::getCurrentChunkXZ()
+{
+	return currentChunkPos;
 }
 
 void Voxel::ChunkMap::render()

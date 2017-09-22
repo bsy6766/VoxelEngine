@@ -300,6 +300,7 @@ bool Voxel::ChunkSection::initEmpty(const int x, const int y, const int z, const
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
 	blocks.clear();
+	blocks.resize(4096, nullptr);
 
 	return true;
 }

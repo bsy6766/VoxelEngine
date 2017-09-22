@@ -28,20 +28,28 @@ namespace Voxel
 	class ChunkWorkManager
 	{
 	private:
-		static const int IDLE_WORK = 0;
-		//static const int UNLOAD_WORK = 1;
-		static const int PRE_GENERATE_WORK = 2;
-		static const int GENERATE_WORK = 3;
-		static const int BUILD_MESH_WORK = 4;
-		static const int SMOOTH_WORK = 5;
+		enum class WorkType
+		{
+			IDLE = 0,
+			UNLOAD,
+			PRE_GENERATE,
+			SMOOTH,
+			GENERATE,
+			ADD_STRUCTURE,
+			BUILD_MESH
+		};
 	private:
 		// Queue with chunk coordinate that nees to pre generate chunk datas(height map, region map, etc)
 		std::list<glm::ivec2> preGenerateQueue;
+		// Queue with chunk coordinate that needs to smooth height map
 		std::list<glm::ivec2> smoothQueue;
 		// Queue with chunk coordinate that needs to generate chunk
 		std::list<glm::ivec2> generateQueue;
+		// Queue with chunk coordinate that needs to add structure to chunk
+		std::list<glm::ivec2> addStructureQueue;
 		// Queue with chunk coordinates that need to build mesh
 		std::list<glm::ivec2> buildMeshQueue;
+
 		// Queue with chunk coordinate that needs to get unloaded by main thread.
 		std::list<glm::ivec2> unloadFinishedQueue;
 
@@ -72,6 +80,7 @@ namespace Voxel
 		void addPreGenerateWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
 
 		void addSmoothWork(const glm::ivec2& coordinate, const bool highPriority = false);
+		void addStructureWork(const glm::ivec2& coordinate, const bool highPriority = false);
 
 		// Add single load work to generate queue. locked by queueMutex
 		void addGenerateWork(const glm::ivec2& coordinate, const bool highPriority = false);
@@ -84,7 +93,8 @@ namespace Voxel
 		void addBuildMeshWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
 
 		// sort load queue based on chunk position that player is on. Locked by queueMutex
-		void sortLoadQueue(const glm::vec3& playerPosition);
+		//void sortBuildMeshQueue(const glm::vec3& playerPosition);
+		void sortBuildMeshQueue(const glm::ivec2& currentChunkXZ);
 
 		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);

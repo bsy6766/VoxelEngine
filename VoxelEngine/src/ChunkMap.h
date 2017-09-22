@@ -152,8 +152,6 @@ namespace Voxel
 		// Retruns 3 if chunk doesn't exsits.
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 
-		// Place block at block local coordinate
-		void placeBlockAtLocal(const glm::ivec3& blockLocalPos, const Block::BLOCK_ID blockID, ChunkWorkManager* wm);
 		// Place block at block world coordinate.
 		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager* wm);
 		// place block at face direction. BlockPos is world coordinate
@@ -191,6 +189,9 @@ namespace Voxel
 		// Set terrain type for region
 		void setRegionTerrainType(const unsigned int regionID, const Terrain& terrainType);
 		std::unordered_map<unsigned int, Terrain>& getRegionTerrainsMap();
+			
+		// Get current chunk xz pos
+		glm::ivec2 getCurrentChunkXZ();
 
 		// render chunks
 		void render();

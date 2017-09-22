@@ -829,7 +829,7 @@ void Voxel::Game::updateChunks()
 	//Whenever player moved, sort the load queue again 
 	if (updated)
 	{
-		chunkWorkManager->sortLoadQueue(player->getPosition());
+		//chunkWorkManager->sortBuildMeshQueue(player->getPosition());
 	}
 }
 
