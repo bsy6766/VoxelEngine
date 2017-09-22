@@ -553,14 +553,15 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 						int rand = Utility::Random::randomInt100();
 
-						int treeChance = 5;
+						int treeChance = 50;
 						if (rand < treeChance)
 						{
 							// test tree
 							glm::ivec2 treePos = HeightMap::getTreePosition(chunk->getPosition());
+							//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
 
 							// Don't spawn tree at the edge of chunk. 
-							treePos = glm::clamp(treePos, 1, 15);
+							//treePos = glm::clamp(treePos, 5, 11);
 
 							int treeY = chunk->heightMap.at(treePos.x).at(treePos.y);
 
