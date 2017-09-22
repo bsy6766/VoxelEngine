@@ -620,7 +620,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					auto treeBlockLocalPos = glm::ivec3(treeLocalPos.x, treeY % Constant::CHUNK_SECTION_HEIGHT, treeLocalPos.y);
 
-					std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
+					//std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
 
 					TreeBuilder::createTree(Tree::Type::OAK, Tree::TrunkHeight::SMALL, Tree::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY + 1);
 

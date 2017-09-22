@@ -154,5 +154,12 @@ void Voxel::TreeBuilder::createTree(const Tree::Type type, const Tree::TrunkHeig
 			p3.y++;
 			p4.y++;
 		}
+
+		p1.y -= 11;
+		p2.y -= 11;
+		p3.y -= 11;
+		p4.y -= 11;
+
+		// add root
 	}
 }
