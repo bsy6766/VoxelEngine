@@ -2,6 +2,7 @@
 #include <glm\glm.hpp>
 #include <ChunkUtil.h>
 #include <ChunkMap.h>
+#include <Utility.h>
 
 using namespace Voxel;
 
@@ -126,23 +127,28 @@ void Voxel::TreeBuilder::createTree(const Tree::Type type, const Tree::TrunkHeig
 	//  build trunk and root.
 	if (w == Tree::TrunkWidth::SMALL)
 	{
-		int height = 0;
+		int trunkHeight = 0;
 
 		if (h == Tree::TrunkHeight::SMALL)
 		{
-			height = 10;
+			trunkHeight = 10;
 		}
 
-		auto p1 = glm::ivec3(treeLocalPos.x, topY, treeLocalPos.y);
+		auto pivot = glm::ivec3(treeLocalPos.x, topY, treeLocalPos.y);
 		
-		p1.x += (chunkXZ.x * Constant::CHUNK_SECTION_WIDTH);
-		p1.z += (chunkXZ.y * Constant::CHUNK_SECTION_LENGTH);
+		pivot.x += (chunkXZ.x * Constant::CHUNK_SECTION_WIDTH);
+		pivot.z += (chunkXZ.y * Constant::CHUNK_SECTION_LENGTH);
 
-		auto p2 = glm::ivec3(p1.x + 1, topY, p1.z);
-		auto p3 = glm::ivec3(p1.x, topY, p1.z + 1);
-		auto p4 = glm::ivec3(p1.x + 1, topY, p1.z + 1);
+		// Start from bottom 10 to make sure it renders trunk even it's on steep mountain
+		int trunkY = topY - 10;
 
-		for (int i = 0; i < height; i++)
+		auto p1 = glm::ivec3(pivot.x, trunkY, pivot.z);
+		auto p2 = glm::ivec3(p1.x + 1, trunkY, p1.z);
+		auto p3 = glm::ivec3(p1.x, trunkY, p1.z + 1);
+		auto p4 = glm::ivec3(p1.x + 1, trunkY, p1.z + 1);
+		trunkHeight += 10;
+
+		for (int i = 0; i < trunkHeight; i++)
 		{
 			chunkMap->placeBlockAt(p1, Block::BLOCK_ID::OAK_WOOD, nullptr);
 			chunkMap->placeBlockAt(p2, Block::BLOCK_ID::OAK_WOOD, nullptr);
@@ -155,11 +161,94 @@ void Voxel::TreeBuilder::createTree(const Tree::Type type, const Tree::TrunkHeig
 			p4.y++;
 		}
 
-		p1.y -= 11;
-		p2.y -= 11;
-		p3.y -= 11;
-		p4.y -= 11;
-
 		// add root
+		int rand = Utility::Random::randomInt100();
+		int rootHeight = 0;
+		int y = pivot.y;
+
+		if (rand < 50)
+		{
+			// root is visible. 
+			y += 1;
+			rootHeight = 7;
+		}
+		else
+		{
+			y -= 2;
+			rootHeight = 5;
+		}
+
+		std::vector<glm::ivec3> rootPos =
+		{
+			glm::ivec3(p1.x, y, p1.z - 1),
+			glm::ivec3(p2.x, y, p2.z - 1),
+			glm::ivec3(p2.x + 1, y, p2.z),
+			glm::ivec3(p4.x + 1, y, p4.z),
+			glm::ivec3(p4.x, y ,p4.z + 1),
+			glm::ivec3(p3.x, y, p3.z + 1),
+			glm::ivec3(p3.x - 1, y, p3.z),
+			glm::ivec3(p1.x - 1, y, p1.z)
+		};
+
+
+		for (int i = 0; i < rootHeight; i++)
+		{
+			for (auto& rp : rootPos)
+			{
+				if (rp.y == y)
+				{
+					if (Utility::Random::randomInt100() < 50)
+					{
+						rp.y--;
+						continue;
+					}
+				}
+				chunkMap->placeBlockAt(rp, Block::BLOCK_ID::OAK_WOOD, nullptr);
+
+				rp.y--;
+			}
+		}
+
+		// add branch
+
+		// add leaves
+		auto l1 = glm::ivec3(p1.x, p1.y + 3, p1.z);
+
+		int leavesWidth = 5;
+		int leavesHeight = 3;
+		int leavesLength = 3;
+		
+		float aa = static_cast<float>(leavesWidth * leavesWidth);
+		float bb = static_cast<float>(leavesHeight * leavesHeight);
+		float cc = static_cast<float>(leavesLength * leavesLength);
+
+		float aabbcc = aa * bb * cc;
+
+		int xStart = -leavesWidth ;
+		int yStart = -leavesHeight;
+		int zStart = -leavesLength;
+
+		int xEnd = leavesWidth;
+		int yEnd = leavesHeight;
+		int zEnd = leavesLength;
+
+		for (int x = xStart; x <= xEnd; x++)
+		{
+			float xx = glm::abs(static_cast<float>(x * x));
+			for (int z = zStart; z <= zEnd; z++)
+			{
+				float zz = glm::abs(static_cast<float>(z * z));
+				for (int y = yStart; y <= yEnd; y++)
+				{
+					float yy = glm::abs(static_cast<float>(y * y));
+					float val = (xx * bb * cc) + (yy * aa * cc) + (zz * aa * bb);
+					if (val <= aabbcc)
+					{
+						auto lp = l1 + glm::ivec3(x, y, z);
+						chunkMap->placeBlockAt(lp, Block::BLOCK_ID::OAK_LEAVES, nullptr);
+					}
+				}
+			}
+		}
 	}
 }

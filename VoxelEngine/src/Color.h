@@ -32,6 +32,7 @@ namespace Voxel
 		const glm::uvec3 GRASS_MIX = glm::uvec3(185, 210, 57);
 		const glm::uvec3 STONE = glm::uvec3(134, 134, 134);
 		const glm::uvec3 OAK_WOOD = glm::uvec3(76, 50, 18);
+		const glm::uvec3 OAK_LEAVES = glm::uvec3(8, 122, 0);
 
 		// biome colors
 		const glm::uvec3 OCEAN = glm::uvec3(46, 59, 182);
@@ -90,6 +91,9 @@ namespace Voxel
 				break;
 			case Block::BLOCK_ID::OAK_WOOD:
 				color = Color::OAK_WOOD;
+				break;
+			case Block::BLOCK_ID::OAK_LEAVES:
+				color = Color::OAK_LEAVES;
 				break;
 			default:
 				break;
