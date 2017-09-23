@@ -639,7 +639,10 @@ void Voxel::DebugConsole::updatePlayerLookingAt(const glm::ivec3 & lookingAt, co
 
 void Voxel::DebugConsole::setPlayerLookingAtVisibility(const bool visibility)
 {
-	playerLookingAt->setVisibility(visibility);
+	if (debugOutputVisibility)
+	{
+		playerLookingAt->setVisibility(visibility);
+	}
 }
 
 void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total)
