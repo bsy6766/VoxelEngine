@@ -61,8 +61,12 @@ namespace Voxel
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);
-		void setBlockAt(const glm::ivec3& localCoordinate, const Block::BLOCK_ID blockID);
-		void setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID);
+		void setBlockAt(const glm::ivec3& localCoordinate, const Block::BLOCK_ID blockID, const bool overwrite = true);
+		void setBlockAt(const glm::ivec3& localCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3& color, const bool overwrite = true);
+		void setBlockAt(const glm::ivec3& localCoordinate, const Block::BLOCK_ID blockID, const glm::vec3& color, const bool overwrite = true);
+		void setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const bool overwrite = true);
+		void setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const glm::uvec3& color, const bool overwrite = true);
+		void setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const glm::vec3& color, const bool overwrite = true);
 
 		// Get world position of chunk. Center of chunk.
 		glm::vec3 getWorldPosition();

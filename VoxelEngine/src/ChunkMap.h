@@ -153,7 +153,9 @@ namespace Voxel
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 
 		// Place block at block world coordinate.
-		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager* wm);
+		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager* wm, const bool overwrite = true);
+		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3& color, ChunkWorkManager* wm, const bool overwrite = true);
+		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3& color, ChunkWorkManager* wm, const bool overwrite = true);
 		// place block at face direction. BlockPos is world coordinate
 		void placeBlockFromFace(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, const Cube::Face& faceDir, ChunkWorkManager* workManager);
 		void removeBlockAt(const glm::ivec3& blockWorldCoordinate, ChunkWorkManager* workManager);

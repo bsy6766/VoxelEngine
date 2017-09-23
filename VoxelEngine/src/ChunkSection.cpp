@@ -173,8 +173,6 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 				heightY = plainHeightY;
 			}
 
-
-
 			if (yStart <= heightY)
 			{
 				int yEnd = yStart + Constant::CHUNK_SECTION_HEIGHT - 1;
@@ -194,10 +192,15 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 						newBlock->setBlockID(Voxel::Block::BLOCK_ID::STONE);
 						newBlock->setColorU3(Color::STONE);
 					}
+					else
+					{
+						newBlock->setBlockID(Voxel::Block::BLOCK_ID::GRASS);
+						newBlock->setColorU3(Color::GRASS);
+					}
 
 					glm::vec3 color = newBlock->getColor3();
-					glm::vec3 colorMix = Color::colorU3TocolorV3(Color::GRASS_MIX) * colorMap.at(blockX).at(blockZ);
-					color = glm::mix(color, colorMix, 0.5f);
+					glm::vec3 colorMix = Color::colorU3TocolorV3(Color::GRASS_MIX);
+					color = glm::mix(color, colorMix, 0.5f) * colorMap.at(blockX).at(blockZ);
 
 					if (blockY > 80)
 					{
@@ -705,12 +708,22 @@ Block * Voxel::ChunkSection::getBlockAt(const int x, const int y, const int z)
 	}
 }
 
-void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const Block::BLOCK_ID blockID)
+void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const Block::BLOCK_ID blockID, const bool overwrite)
 {
-	setBlockAt(localCoordinate.x, localCoordinate.y, localCoordinate.z, blockID);
+	setBlockAt(localCoordinate.x, localCoordinate.y, localCoordinate.z, blockID, overwrite);
 }
 
-void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID)
+void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, const bool overwrite)
+{
+	setBlockAt(localCoordinate.x, localCoordinate.y, localCoordinate.z, blockID, color, overwrite);
+}
+
+void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, const bool overwrite)
+{
+	setBlockAt(localCoordinate.x, localCoordinate.y, localCoordinate.z, blockID, color, overwrite);
+}
+
+void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const bool overwrite)
 {
 	unsigned int index = localBlockXYZToIndex(x, y, z);
 	if (index >= 0 && index < blocks.size())
@@ -741,9 +754,127 @@ void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, cons
 			}
 			else
 			{
+				// setting block.
+				if (overwrite)
+				{
+					if (blocks.at(index)->getBlockID() == Block::BLOCK_ID::AIR)
+					{
+						// cur block is air
+						nonAirBlockSize++;
+					}
+
+					// overwrite existing block
+					blocks.at(index)->setBlockID(blockID);
+
+				}
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const glm::uvec3 & color, const bool overwrite)
+{
+	unsigned int index = localBlockXYZToIndex(x, y, z);
+	if (index >= 0 && index < blocks.size())
+	{
+		if (blocks.at(index) == nullptr)
+		{
+			// Block doesn't exists
+			if (blockID != Block::BLOCK_ID::AIR)
+			{
+				// Block isn't air
+				blocks.at(index) = Block::create(glm::ivec3(x, y, z), position);
 				blocks.at(index)->setBlockID(blockID);
+				blocks.at(index)->setColorU3(color);
 
 				nonAirBlockSize++;
+			}
+			// Else, block is air. do nothing
+		}
+		else
+		{
+			// Block already exists
+			if (blockID == Block::BLOCK_ID::AIR)
+			{
+				// Remove block
+				delete blocks.at(index);
+				blocks.at(index) = nullptr;
+
+				nonAirBlockSize--;
+			}
+			else
+			{
+				// setting block.
+				if (overwrite)
+				{
+					if (blocks.at(index)->getBlockID() == Block::BLOCK_ID::AIR)
+					{
+						// cur block is air
+						nonAirBlockSize++;
+					}
+
+					// overwrite existing block
+					blocks.at(index)->setBlockID(blockID);
+					blocks.at(index)->setColorU3(color);
+				}
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const glm::vec3 & color, const bool overwrite)
+{
+	unsigned int index = localBlockXYZToIndex(x, y, z);
+	if (index >= 0 && index < blocks.size())
+	{
+		if (blocks.at(index) == nullptr)
+		{
+			// Block doesn't exists
+			if (blockID != Block::BLOCK_ID::AIR)
+			{
+				// Block isn't air
+				blocks.at(index) = Block::create(glm::ivec3(x, y, z), position);
+				blocks.at(index)->setBlockID(blockID);
+				blocks.at(index)->setColor(color);
+
+				nonAirBlockSize++;
+			}
+			// Else, block is air. do nothing
+		}
+		else
+		{
+			// Block already exists
+			if (blockID == Block::BLOCK_ID::AIR)
+			{
+				// Remove block
+				delete blocks.at(index);
+				blocks.at(index) = nullptr;
+
+				nonAirBlockSize--;
+			}
+			else
+			{
+				// setting block.
+				if (overwrite)
+				{
+					if (blocks.at(index)->getBlockID() == Block::BLOCK_ID::AIR)
+					{
+						// cur block is air
+						nonAirBlockSize++;
+					}
+
+					// overwrite existing block
+					blocks.at(index)->setBlockID(blockID);
+					blocks.at(index)->setColor(color);
+				}
 			}
 		}
 	}

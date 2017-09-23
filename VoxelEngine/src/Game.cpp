@@ -140,7 +140,7 @@ void Voxel::Game::init()
 
 	TextureManager::getInstance().print();
 
-	Application::getInstance().getGLView()->setWindowedFullScreen(1);
+	//Application::getInstance().getGLView()->setWindowedFullScreen(1);
 	//defaultCanvas->setSize(glm::vec2(1920, 1080));
 	//debugConsole->updateResolution(1920, 1080);
 }
@@ -270,7 +270,7 @@ void Game::createPlayer()
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init(glm::vec3(randX, 90.0f, randZ));
 	player->setPosition(glm::vec3(0, 100, 0));
-	player->setPosition(glm::vec3(0, 300, 0));
+	//player->setPosition(glm::vec3(0, 300, 0));
 	//player->setPosition(glm::vec3(-570, 100, 457));
 	//player->setPosition(glm::vec3(665, 132, -85));
 	//player->setPosition(glm::vec3(2965, 132, -292));

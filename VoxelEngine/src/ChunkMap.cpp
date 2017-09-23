@@ -744,7 +744,7 @@ void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate
 	placeBlockAt(targetPos, blockID, workManager);
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm, const bool overwrite)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -773,7 +773,103 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 
 				assert(chunkSection != nullptr);
 
-				chunkSection->setBlockAt(blockLocalPos, blockID);
+				chunkSection->setBlockAt(blockLocalPos, blockID, overwrite);
+
+				if (wm)
+				{
+					std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+					wm->addBuildMeshWorks(refreshList, true);
+				}
+			}
+		}
+		// Else, chunk is nullptr.
+	}
+	else
+	{
+		// Player is impossible to place block where chunk doesn't exists.
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		return;
+	}
+}
+
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, ChunkWorkManager * wm, const bool overwrite)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockWorldCoordinate, blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+
+	if (hasChunk)
+	{
+		// target chunk
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+		if (chunk)
+		{
+			if (chunk->isActive())
+			{
+				// chunk is active. Only can place block at active chunk
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+				if (chunkSection == nullptr)
+				{
+					chunk->createChunkSectionAtY(chunkSectionPos.y);
+				}
+
+				chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+
+				assert(chunkSection != nullptr);
+
+				chunkSection->setBlockAt(blockLocalPos, blockID, color, overwrite);
+
+				if (wm)
+				{
+					std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+					wm->addBuildMeshWorks(refreshList, true);
+				}
+			}
+		}
+		// Else, chunk is nullptr.
+	}
+	else
+	{
+		// Player is impossible to place block where chunk doesn't exists.
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		return;
+	}
+}
+
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, ChunkWorkManager * wm, const bool overwrite)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(blockWorldCoordinate, blockLocalPos, chunkSectionPos);
+
+	bool hasChunk = this->hasChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+
+	if (hasChunk)
+	{
+		// target chunk
+		auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+		if (chunk)
+		{
+			if (chunk->isActive())
+			{
+				// chunk is active. Only can place block at active chunk
+				// target chunk section
+				auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+				if (chunkSection == nullptr)
+				{
+					chunk->createChunkSectionAtY(chunkSectionPos.y);
+				}
+
+				chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
+
+				assert(chunkSection != nullptr);
+
+				chunkSection->setBlockAt(blockLocalPos, blockID, color, overwrite);
 
 				if (wm)
 				{

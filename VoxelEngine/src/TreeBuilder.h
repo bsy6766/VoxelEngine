@@ -8,15 +8,15 @@ namespace Voxel
 {
 	class ChunkMap;
 
-	class Tree
+	class TreeBuilder
 	{
-		friend class TreeBuilder;
 	public:
 		// Type of tree.
-		enum class Type
+		enum class TreeType
 		{
 			OAK = 0,
-			SPRUCE
+			SPRUCE,
+			BIRCH
 		};
 
 		// Height of tree
@@ -38,31 +38,13 @@ namespace Voxel
 			LARGE,
 			MEGA
 		};
-		
-	private:
-		Tree();
 
-		Type type;
-		TrunkHeight height;
-		TrunkWidth width;
-		
-		bool init(Type type, TrunkHeight height, TrunkWidth width);
-
-		void buildRoot();
-		void buildTrunk();
-
-		unsigned int xyzToIndex(const int x, const int y, const int z);
-	public:
-		~Tree();
-	};
-
-	class TreeBuilder
-	{
 	private:
 		TreeBuilder() = delete;
+
+		static void createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY);
 	public:
-		static Tree* createOakTree(const Tree::TrunkHeight h, const Tree::TrunkWidth w);
-		static void createTree(const Tree::Type type, const Tree::TrunkHeight h, const Tree::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalPos, const int topY);
+		static void createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY);
 
 		~TreeBuilder() = delete;
 	};

@@ -609,20 +609,14 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				{
 					// test tree
 					glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
-					glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
+					//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
 
 					// Don't spawn tree at the edge of chunk. 
 					//treePos = glm::clamp(treePos, 5, 11);
 
-					int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y);
-
-					int chunkSectionY = treeY / Constant::CHUNK_SECTION_HEIGHT;
-
-					auto treeBlockLocalPos = glm::ivec3(treeLocalPos.x, treeY % Constant::CHUNK_SECTION_HEIGHT, treeLocalPos.y);
-
-					//std::cout << "Tree pos: " << Utility::Log::vec2ToStr(treeBlockLocalPos) << std::endl;
-
-					TreeBuilder::createTree(Tree::Type::OAK, Tree::TrunkHeight::SMALL, Tree::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY + 1);
+					int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
+					
+					TreeBuilder::createTree(TreeBuilder::TreeType::OAK, TreeBuilder::TrunkHeight::SMALL, TreeBuilder::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY);
 
 					addBuildMeshWork(chunkXZ);
 				}
