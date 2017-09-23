@@ -1109,7 +1109,7 @@ std::vector<float> Voxel::Cube::getColors4WithShade(const Face face, const glm::
 	}
 }
 
-void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, const std::vector<unsigned int>& shadowWeight, std::vector<float>& colors)
+void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, const std::vector<unsigned int>& shadeWeight, std::vector<float>& colors)
 {
 	if (face == Cube::Face::NONE)
 	{
@@ -1123,8 +1123,9 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
 
 			// 0, 1, 2, 3
-			// index 0 (3, 4, 5)
-			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+
+			// index 0 (3, 4, 18)
+			float count0 = static_cast<float>(shadeWeight.at(3) + shadeWeight.at(4) + shadeWeight.at(18));
 			float colorMod0 = count0 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod0);
@@ -1132,8 +1133,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod0);
 			colors.push_back(color.a);
 
-			// index 1 (11, 12, 13)
-			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			// index 1 (11, 12, 18)
+			float count1 = static_cast<float>(shadeWeight.at(11) + shadeWeight.at(12) + shadeWeight.at(18));
 			float colorMod1 = count1 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod1);
@@ -1141,8 +1142,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod1);
 			colors.push_back(color.a);
 
-			// index 2 (1, 2, 3)
-			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+			// index 2 (2, 3, 17)
+			float count2 = static_cast<float>(shadeWeight.at(2) + shadeWeight.at(3) + shadeWeight.at(17));
 			float colorMod2 = count2 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod2);
@@ -1150,8 +1151,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod2);
 			colors.push_back(color.a);
 
-			// index 3 (9, 10, 11)
-			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			// index 3 (10, 11, 17)
+			float count3 = static_cast<float>(shadeWeight.at(10) + shadeWeight.at(11) + shadeWeight.at(17));
 			float colorMod3 = count3 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod3);
@@ -1165,8 +1166,9 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
 
 			// 4, 5, 0, 1
-			// index 4 (5, 6, 7)
-			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+
+			// index 4 (5, 6, 19)
+			float count4 = static_cast<float>(shadeWeight.at(5) + shadeWeight.at(6) + shadeWeight.at(19));
 			float colorMod4 = count4 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod4);
@@ -1174,8 +1176,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod4);
 			colors.push_back(color.a);
 
-			// index 5 (13, 14, 15)
-			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			// index 5 (13, 14, 19)
+			float count5 = static_cast<float>(shadeWeight.at(13) + shadeWeight.at(14) + shadeWeight.at(19));
 			float colorMod5 = count5 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod5);
@@ -1183,8 +1185,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod5);
 			colors.push_back(color.a);
 
-			// index 0 (3, 4, 5)
-			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+			// index 0 (4, 5, 18)
+			float count0 = static_cast<float>(shadeWeight.at(4) + shadeWeight.at(5) + shadeWeight.at(18));
 			float colorMod0 = count0 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod0);
@@ -1192,8 +1194,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod0);
 			colors.push_back(color.a);
 
-			// index 1 (11, 12, 13)
-			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			// index 1 (12, 13, 18)
+			float count1 = static_cast<float>(shadeWeight.at(12) + shadeWeight.at(13) + shadeWeight.at(18));
 			float colorMod1 = count1 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod1);
@@ -1207,8 +1209,9 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			glm::vec3 sideColor = color * FrontAndBackShadeRatio;
 
 			// 6, 7, 4, 5
-			// index 6 (1, 0, 7)
-			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+
+			// index 6 (0, 7, 16)
+			float count6 = static_cast<float>(shadeWeight.at(0) + shadeWeight.at(7) + shadeWeight.at(16));
 			float colorMod6 = count6 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod6);
@@ -1216,8 +1219,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod6);
 			colors.push_back(color.a);
 
-			// index 7 (9, 8, 15)
-			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			// index 7 (8, 15, 16)
+			float count7 = static_cast<float>(shadeWeight.at(8) + shadeWeight.at(15) + shadeWeight.at(16));
 			float colorMod7 = count7 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod7);
@@ -1225,8 +1228,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod7);
 			colors.push_back(color.a);
 
-			// index 4 (5, 6, 7)
-			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+			// index 4 (6, 7, 19)
+			float count4 = static_cast<float>(shadeWeight.at(6) + shadeWeight.at(7) + shadeWeight.at(19));
 			float colorMod4 = count4 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod4);
@@ -1234,8 +1237,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod4);
 			colors.push_back(color.a);
 
-			// index 5 (13, 14, 15)
-			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			// index 5 (14, 15, 19)
+			float count5 = static_cast<float>(shadeWeight.at(14) + shadeWeight.at(15) + shadeWeight.at(19));
 			float colorMod5 = count5 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod5);
@@ -1249,8 +1252,9 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			glm::vec3 sideColor = color * LeftAndRightShadeRatio;
 
 			//2, 3, 6, 7
-			// index 2 (1, 2, 3)
-			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+
+			// index 2 (1, 2, 17)
+			float count2 = static_cast<float>(shadeWeight.at(1) + shadeWeight.at(2) + shadeWeight.at(17));
 			float colorMod2 = count2 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod2);
@@ -1258,8 +1262,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod2);
 			colors.push_back(color.a);
 
-			// index 3 (9, 10, 11)
-			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			// index 3 (9, 10, 17)
+			float count3 = static_cast<float>(shadeWeight.at(9) + shadeWeight.at(10) + shadeWeight.at(17));
 			float colorMod3 = count3 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod3);
@@ -1267,8 +1271,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod3);
 			colors.push_back(color.a);
 
-			// index 6 (1, 0, 7)
-			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+			// index 6 (1, 0, 16)
+			float count6 = static_cast<float>(shadeWeight.at(1) + shadeWeight.at(0) + shadeWeight.at(16));
 			float colorMod6 = count6 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod6);
@@ -1276,8 +1280,8 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(sideColor.b - colorMod6);
 			colors.push_back(color.a);
 
-			// index 7 (9, 8, 15)
-			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			// index 7 (9, 8, 16)
+			float count7 = static_cast<float>(shadeWeight.at(9) + shadeWeight.at(8) + shadeWeight.at(16));
 			float colorMod7 = count7 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod7);
@@ -1293,7 +1297,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			// 1, 5, 3, 7
 
 			// index 1 (11, 12, 13)
-			float count1 = static_cast<float>(shadowWeight.at(11) + shadowWeight.at(12) + shadowWeight.at(13));
+			float count1 = static_cast<float>(shadeWeight.at(11) + shadeWeight.at(12) + shadeWeight.at(13));
 			float colorMod1 = count1 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod1);
@@ -1302,7 +1306,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 5 (13, 14, 15)
-			float count5 = static_cast<float>(shadowWeight.at(13) + shadowWeight.at(14) + shadowWeight.at(15));
+			float count5 = static_cast<float>(shadeWeight.at(13) + shadeWeight.at(14) + shadeWeight.at(15));
 			float colorMod5 = count5 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod5);
@@ -1311,7 +1315,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 3 (9, 10, 11)
-			float count3 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(10) + shadowWeight.at(11));
+			float count3 = static_cast<float>(shadeWeight.at(9) + shadeWeight.at(10) + shadeWeight.at(11));
 			float colorMod3 = count3 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod3);
@@ -1320,7 +1324,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 7 (9, 8, 15)
-			float count7 = static_cast<float>(shadowWeight.at(9) + shadowWeight.at(8) + shadowWeight.at(15));
+			float count7 = static_cast<float>(shadeWeight.at(9) + shadeWeight.at(8) + shadeWeight.at(15));
 			float colorMod7 = count7 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod7);
@@ -1335,7 +1339,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 
 			// 0, 4, 2, 6
 			// index 0 (3, 4, 5)
-			float count0 = static_cast<float>(shadowWeight.at(3) + shadowWeight.at(4) + shadowWeight.at(5));
+			float count0 = static_cast<float>(shadeWeight.at(3) + shadeWeight.at(4) + shadeWeight.at(5));
 			float colorMod0 = count0 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod0);
@@ -1344,7 +1348,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 4 (5, 6, 7)
-			float count4 = static_cast<float>(shadowWeight.at(5) + shadowWeight.at(6) + shadowWeight.at(7));
+			float count4 = static_cast<float>(shadeWeight.at(5) + shadeWeight.at(6) + shadeWeight.at(7));
 			float colorMod4 = count4 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod4);
@@ -1353,7 +1357,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 2 (1, 2, 3)
-			float count2 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(2) + shadowWeight.at(3));
+			float count2 = static_cast<float>(shadeWeight.at(1) + shadeWeight.at(2) + shadeWeight.at(3));
 			float colorMod2 = count2 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod2);
@@ -1362,7 +1366,7 @@ void Voxel::Cube::getColors4WithShade(const Face face, const glm::vec4 & color, 
 			colors.push_back(color.a);
 
 			// index 6 (1, 0, 7)
-			float count6 = static_cast<float>(shadowWeight.at(1) + shadowWeight.at(0) + shadowWeight.at(7));
+			float count6 = static_cast<float>(shadeWeight.at(1) + shadeWeight.at(0) + shadeWeight.at(7));
 			float colorMod6 = count6 * ShadePower;
 
 			colors.push_back(sideColor.r - colorMod6);

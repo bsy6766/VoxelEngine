@@ -82,7 +82,7 @@ namespace Voxel
 		static std::vector<float> getColors4WithDefaultShade(const Face& face, const glm::vec4& color);
 		static void getColors4WithDefaultShade(const Face& face, const glm::vec4& color, std::vector<float>& colors);
 		static std::vector<float> getColors4WithShade(const Face face, const glm::vec4& color, const std::vector<unsigned int>& shadowWeight);
-		static void getColors4WithShade(const Face face, const glm::vec4& color, const std::vector<unsigned int>& shadowWeight, std::vector<float>& colors);
+		static void getColors4WithShade(const Face face, const glm::vec4& color, const std::vector<unsigned int>& shadeWeight, std::vector<float>& colors);
 		// Get cube indices
 		static std::vector<unsigned int> getIndices(Face face, const int cubeOffset);
 		static void getIndices(Face face, const int cubeOffset, std::vector<unsigned int>& indices);
