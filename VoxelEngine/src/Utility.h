@@ -119,10 +119,16 @@ namespace Voxel
 				return dist(generator);
 			}
 
-			static inline float random_minus_1_1()
+			static inline float random_float_minus_1_1()
 			{
 				int rand = randomInt(0, 1);
 				return rand == 0 ? 1.0f : -1.0f;
+			}
+
+			static inline int random_int_minus_1_1()
+			{
+				int rand = randomInt(0, 1);
+				return rand == 0 ? 1 : -1;
 			}
 
 			static inline void init()

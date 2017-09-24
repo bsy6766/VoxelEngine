@@ -62,25 +62,26 @@ void Voxel::DebugConsole::init()
 
 	debugCanvas->addImage("cmdInputField", commandInputField, 0);
 
-	commandHistoryBg = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.225f));
+	commandHistoryBg = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.45f));
 	commandHistoryBg->setCanvasPivot(glm::vec2(0, -0.5f));
 	commandHistoryBg->setPivot(glm::vec2(0, -0.5f));
-	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 100.0f));
+	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 85.0f));
 	commandHistoryBg->setVisibility(false);
 
 	debugCanvas->addImage("commandHistoryBg", commandHistoryBg, 0);
 
-	command = UI::Text::create(DefaultCommandInputText, glm::vec2(5.0f, 5.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 128);
+	command = UI::Text::create(DefaultCommandInputText, glm::vec2(5.0f, 15.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 128);
 	command->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	command->setPivot(glm::vec2(-0.5f, -0.5f));
+	command->setPivot(glm::vec2(-0.5f, 0.5f));
 	command->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
 	command->setVisibility(false);
 
 	debugCanvas->addText("command", command, 0);
 
-	commandHistorys = UI::Text::create("empty", glm::vec2(5.0f, 195.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 1024);
+	commandHistorys = UI::Text::create("_", glm::vec2(5.0f, 23.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 1024);
+	commandHistorys->setText("");
 	commandHistorys->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	commandHistorys->setPivot(glm::vec2(-0.5f, 0.5f));
+	commandHistorys->setPivot(glm::vec2(-0.5f, -0.5f));
 	commandHistorys->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
 	commandHistorys->setVisibility(false);
 
@@ -138,7 +139,7 @@ void Voxel::DebugConsole::init()
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
 
-	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -143.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -145.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	playerRotation->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setVisibility(false);
@@ -168,7 +169,7 @@ void Voxel::DebugConsole::init()
 	biome->setVisibility(false);
 	debugCanvas->addText("biome", biome, 0);
 
-	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -231.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -229.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	region->setPivot(glm::vec2(-0.5f, 0.5f));
 	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	region->setVisibility(false);
@@ -598,18 +599,19 @@ void Voxel::DebugConsole::updateCommandHistory()
 {
 	if (executedCommandHistory.size() > 10)
 	{
-		executedCommandHistory.pop_back();
+		executedCommandHistory.pop_front();
 	}
 
 	std::string historyStr = "";
 
 	unsigned int index = 0;
+	auto size = executedCommandHistory.size();
 
 	for (auto& cmdStr : executedCommandHistory)
 	{
 		historyStr += cmdStr;
 
-		if (index < 9)
+		if (index < (size - 1))
 		{
 			historyStr += "\n";
 		}

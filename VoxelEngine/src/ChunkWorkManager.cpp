@@ -586,7 +586,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 						int rand = Utility::Random::randomInt100();
 
-						int treeChance = 50;
+						int treeChance = 70;
 						if (rand < treeChance)
 						{
 							addStructureWork(chunkXZ);
@@ -616,7 +616,27 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
 					
-					TreeBuilder::createTree(TreeBuilder::TreeType::OAK, TreeBuilder::TrunkHeight::SMALL, TreeBuilder::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY);
+					TreeBuilder::TrunkHeight trunkHeight;
+
+					int hRand = Utility::Random::randomInt100();
+					if (hRand > 65)
+					{
+						trunkHeight = TreeBuilder::TrunkHeight::LARGE;
+					}
+					else if (hRand <= 65 && hRand > 33)
+					{
+						trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
+					}
+					else if (hRand <= 33)
+					{
+						trunkHeight = TreeBuilder::TrunkHeight::LARGE;
+					}
+
+					//auto treeStart = Utility::Time::now();
+					TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, TreeBuilder::TrunkWidth::SMALL, map, chunkXZ, treeLocalPos, treeY);
+					//auto treeEnd = Utility::Time::now();
+
+					//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;
 
 					addBuildMeshWork(chunkXZ);
 				}

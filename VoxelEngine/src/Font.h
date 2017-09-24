@@ -91,6 +91,8 @@ namespace Voxel
 
 		// Simply compares the size of outline. If 0, no outline supported
 		bool isOutlineEnabled();
+
+		int getSize();
 	};
 }
 

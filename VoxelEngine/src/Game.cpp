@@ -188,8 +188,8 @@ void Voxel::Game::initRandoms()
 
 void Voxel::Game::initUI()
 {
-	FontManager::getInstance().addFont("MunroSmall.ttf", 20);
-	FontManager::getInstance().addFont("MunroSmall.ttf", 20, 2);
+	FontManager::getInstance().addFont("Pixel.ttf", 10);
+	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
 	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
 
 	// cursor

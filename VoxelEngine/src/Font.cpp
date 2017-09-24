@@ -206,9 +206,9 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 			whitespaceHeight = glyph.height;
 		}
 
-		if (glyph.height > customLineSpace)
+		if ((size + glyph.botY) > customLineSpace)
 		{
-			customLineSpace = glyph.height;
+			customLineSpace = (size + glyph.botY);
 		}
 
 		// get next X.
@@ -315,4 +315,9 @@ void Voxel::Font::bind()
 bool Voxel::Font::isOutlineEnabled()
 {
 	return outlineSize != 0;
+}
+
+int Voxel::Font::getSize()
+{
+	return size;
 }

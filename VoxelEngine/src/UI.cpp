@@ -396,8 +396,12 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 			}
 		}
 
-		totalHeight -= lineSpace;
 		lineGap -= lineGapHeight;
+
+		if (split.size() == 1)
+		{
+			lineGap = 0;
+		}
 
 		// Make max width and height even number because this is UI(?)
 		if (maxWidth % 2 == 1)
@@ -418,12 +422,12 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 		this->updateMatrix();
 
-
 		// Pen position. Also called as origin or base line in y pos.
 		std::vector<glm::vec2> penPositions;
 		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
 		float curY = boxMax.y;
-		curY -= lineSizes.front().maxBearingY;
+		//curY -= lineSizes.front().maxBearingY;
+		curY -= font->getSize();
 		// Iterate line sizes to find out each line's pen position from origin
 		for (auto lineSize : lineSizes)
 		{
@@ -452,7 +456,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 			penPositions.push_back(penPos);
 			// Update y to next line
 			// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
-			curY -= lineSpace;
+			curY -= (lineSpace + lineGapHeight);
 			// As I said, customizing for MunroSmall
 			//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
 		}
@@ -955,6 +959,8 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvas
 	if (!visible) return;
 	if (indicesSize == 0) return;
 	if (!loaded) return;
+
+	if (text.empty()) return;
 
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
@@ -1539,7 +1545,7 @@ void Voxel::UI::Canvas::render()
 
 	uiMat = Camera::mainCamera->getScreenSpaceMatrix();
 
-	for (auto text : texts)
+	for (auto& text : texts)
 	{
 		bool outlined = (text.second)->isOutlined();
 		if (outlined)
