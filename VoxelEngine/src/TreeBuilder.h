@@ -42,7 +42,10 @@ namespace Voxel
 	private:
 		TreeBuilder() = delete;
 
+		static void addTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight);
+		static void addOakLeaves(ChunkMap* map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos);
 		static void addOakLeave(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos);
+		static void addOakBranch(ChunkMap* map, std::vector<glm::ivec3>& p, const int branchBaseY);
 		
 		static void createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY);
 	public:

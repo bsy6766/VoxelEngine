@@ -49,128 +49,74 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 	pivot.z += (chunkXZ.y * Constant::CHUNK_SECTION_LENGTH);
 
 	//  build trunk and root.
+	/*
+		p4 p3
+		p2 p1
+	*/
+
+	// Start from bottom 10 to make sure it renders trunk even it's on steep mountain
+	int trunkY = pivot.y - 10;
+
+	std::vector<glm::ivec3> p = 
+	{
+		pivot,
+		glm::ivec3(pivot.x, pivot.y, pivot.z),			// p1
+		glm::ivec3(pivot.x + 1, pivot.y, pivot.z),		// p2
+		glm::ivec3(pivot.x, pivot.y, pivot.z + 1),		// p3
+		glm::ivec3(pivot.x + 1, pivot.y, pivot.z + 1),	// p4
+	};
+
+	// Add more blocks around bottom of trunk
+	auto oakWoodColor = Color::colorU3TocolorV3(Color::OAK_WOOD);
+	auto colorStep = oakWoodColor * 0.025f;
+
+	oakWoodColor = oakWoodColor - (colorStep * (static_cast<float>(trunkHeight) * 0.5f));
+
+	auto trunkBottomColor = oakWoodColor;
+
+	p.push_back(glm::ivec3(p.at(1).x, pivot.y, p.at(1).z - 1));		// p5
+	p.push_back(glm::ivec3(p.at(2).x, pivot.y, p.at(2).z - 1));		// p6
+	p.push_back(glm::ivec3(p.at(2).x + 1, pivot.y, p.at(2).z));		// p7
+	p.push_back(glm::ivec3(p.at(4).x + 1, pivot.y, p.at(4).z));		// p8
+	p.push_back(glm::ivec3(p.at(4).x, pivot.y, p.at(4).z + 1));		// p9
+	p.push_back(glm::ivec3(p.at(3).x, pivot.y, p.at(3).z + 1));		// p10
+	p.push_back(glm::ivec3(p.at(3).x - 1, pivot.y, p.at(3).z));		// p11
+	p.push_back(glm::ivec3(p.at(1).x - 1, pivot.y, p.at(1).z));		// p12
+
+	p.push_back(glm::ivec3(p.at(5).x, pivot.y, p.at(5).z - 1));		// p13
+	p.push_back(glm::ivec3(p.at(6).x, pivot.y, p.at(6).z - 1));		// p14
+	p.push_back(glm::ivec3(p.at(7).x + 1, pivot.y, p.at(7).z));		// p15
+	p.push_back(glm::ivec3(p.at(8).x + 1, pivot.y, p.at(8).z));		// p16
+	p.push_back(glm::ivec3(p.at(9).x, pivot.y, p.at(9).z + 1));		// p17
+	p.push_back(glm::ivec3(p.at(10).x, pivot.y, p.at(10).z + 1));		// p18
+	p.push_back(glm::ivec3(p.at(11).x - 1, pivot.y, p.at(11).z));		// p19
+	p.push_back(glm::ivec3(p.at(12).x - 1, pivot.y, p.at(12).z));		// p20
+
+	p.push_back(glm::ivec3(p.at(1).x - 1, pivot.y, p.at(1).z - 1));	// p21
+	p.push_back(glm::ivec3(p.at(2).x + 1, pivot.y, p.at(2).z - 1));	// p22
+	p.push_back(glm::ivec3(p.at(4).x + 1, pivot.y, p.at(4).z + 1));	// p23
+	p.push_back(glm::ivec3(p.at(3).x - 1, pivot.y, p.at(3).z + 1));	// p24
+
+	int tRand = Utility::Random::randomInt(0, 3);
+
 	if (w == TreeBuilder::TrunkWidth::SMALL)
 	{
-		// Start from bottom 10 to make sure it renders trunk even it's on steep mountain
-		int trunkY = pivot.y - 10;
-
-		/*
-			p4 p3
-			p2 p1
-		*/
-		auto p1 = glm::ivec3(pivot.x, trunkY, pivot.z);
-		auto p2 = glm::ivec3(p1.x + 1, trunkY, p1.z);
-		auto p3 = glm::ivec3(p1.x, trunkY, p1.z + 1);
-		auto p4 = glm::ivec3(p1.x + 1, trunkY, p1.z + 1);
-
-		int size = trunkHeight + 10;
-		int sizeHalf = size / 2;
-
-		auto oakWoodColor = Color::colorU3TocolorV3(Color::OAK_WOOD);
-		auto colorStep = oakWoodColor * 0.025f;
-
-		oakWoodColor = oakWoodColor - (colorStep * (static_cast<float>(trunkHeight) * 0.5f));
-
-		auto trunkBottomColor = oakWoodColor;
-
-		/*
-		glm::ivec3 offset = glm::ivec3(0);
-		int offsetIndex = 10 + (trunkHeight / 2);
-
-		if (h == TreeBuilder::TrunkHeight::LARGE)
+		for (int i = 1; i <= 4; ++i)
 		{
-			offset = glm::ivec3(1, 0, 0);
-		}
-		*/
-		
-
-		for (int i = 0; i < size; i++)
-		{
-			if (i >= 10)
-			{
-				if (i <= 17)
-				{
-					oakWoodColor += colorStep;
-				}
-				else
-				{
-					oakWoodColor -= colorStep;
-				}
-
-				oakWoodColor = glm::clamp(oakWoodColor, 0.0f, 1.0f);
-			}
-
-			/*
-			if (i >= offsetIndex)
-			{
-
-				chunkMap->placeBlockAt(p1 + offset, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p2 + offset, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p3 + offset, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p4 + offset, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-			}
-			else
-			{
-				chunkMap->placeBlockAt(p1, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p2, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p3, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-				chunkMap->placeBlockAt(p4, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-			}
-			*/
-
-			chunkMap->placeBlockAt(p1, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-			chunkMap->placeBlockAt(p2, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-			chunkMap->placeBlockAt(p3, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-			chunkMap->placeBlockAt(p4, Block::BLOCK_ID::OAK_WOOD, oakWoodColor, nullptr, true);
-
-			p1.y++;
-			p2.y++;
-			p3.y++;
-			p4.y++;
+			p.at(i).y = trunkY;
 		}
 
+		addTrunk(chunkMap, p, oakWoodColor, colorStep, 1, 4, trunkHeight);
 
-		// Add more blocks around bottom of trunk
-		int trunkBotY = pivot.y;
+		for (int i = 1; i <= 4; ++i)
+		{
+			p.at(i).y = pivot.y;
+		}
 
-		p1.y = trunkBotY;
-		p2.y = trunkBotY;
-		p3.y = trunkBotY;
-		p4.y = trunkBotY;
-
-		auto p5 = glm::ivec3(p1.x, trunkBotY, p1.z - 1);
-		auto p6 = glm::ivec3(p2.x, trunkBotY, p2.z - 1);
-		auto p7 = glm::ivec3(p2.x + 1, trunkBotY, p2.z);
-		auto p8 = glm::ivec3(p4.x + 1, trunkBotY, p4.z);
-		auto p9 = glm::ivec3(p4.x, trunkBotY, p4.z + 1);
-		auto p10 = glm::ivec3(p3.x, trunkBotY, p3.z + 1);
-		auto p11 = glm::ivec3(p3.x - 1, trunkBotY, p3.z);
-		auto p12 = glm::ivec3(p1.x - 1, trunkBotY, p1.z);
-
-		auto p13 = glm::ivec3(p5.x, trunkBotY, p5.z - 1);
-		auto p14 = glm::ivec3(p6.x, trunkBotY, p6.z - 1);
-		auto p15 = glm::ivec3(p7.x + 1, trunkBotY, p7.z);
-		auto p16 = glm::ivec3(p8.x + 1, trunkBotY, p8.z);
-		auto p17 = glm::ivec3(p9.x, trunkBotY, p9.z + 1);
-		auto p18 = glm::ivec3(p10.x, trunkBotY, p10.z + 1);
-		auto p19 = glm::ivec3(p11.x - 1, trunkBotY, p11.z);
-		auto p20 = glm::ivec3(p12.x - 1, trunkBotY, p12.z);
-
-		auto p21 = glm::ivec3(p1.x - 1, trunkBotY, p1.z - 1);
-		auto p22 = glm::ivec3(p2.x + 1, trunkBotY, p2.z - 1);
-		auto p23 = glm::ivec3(p4.x + 1, trunkBotY, p4.z + 1);
-		auto p24 = glm::ivec3(p3.x - 1, trunkBotY, p3.z + 1);
-
-		chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-		chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-		int tRand = Utility::Random::randomInt(0, 3);
+		for (int i = 1; i <= 12; ++i)
+		{
+			chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+		}
 
 		if (tRand == 0)
 		{
@@ -193,42 +139,18 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 						p14 p13
 			*/
 
+			for (int i = 1; i <= 12; ++i)
+			{
+				p.at(i).y++;
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y--;
+			}
 
-			p5.y++;
-			p6.y++;
-			p7.y++;
-			p8.y++;
-			p9.y++;
-			p10.y++;
-			p11.y++;
-			p12.y++;
+			for (int i = 13; i <= 20; i++)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+			}
 
-			chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-			p5.y--;
-			p6.y--;
-			p7.y--;
-			p8.y--;
-			p9.y--;
-			p10.y--;
-			p11.y--;
-			p12.y--;
-
-			chunkMap->placeBlockAt(p13, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p14, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p15, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p16, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p17, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p18, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p19, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p20, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
 		}
 		else if (tRand == 2)
 		{
@@ -240,79 +162,28 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 					p22	p6  p5  p21
 						p14 p13
 			*/
-			p5.y++;
-			p6.y++;
-			p7.y++;
-			p8.y++;
-			p9.y++;
-			p10.y++;
-			p11.y++;
-			p12.y++;
 
-			chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+			for (int i = 1; i <= 12; ++i)
+			{
+				p.at(i).y++;
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y++;
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y -= 2;
+			}
 
-			p5.y++;
-			p6.y++;
-			p7.y++;
-			p8.y++;
-			p9.y++;
-			p10.y++;
-			p11.y++;
-			p12.y++;
+			for (int i = 13; i <= 20; i++)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+			}
 
-			chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-			p5.y -= 2;
-			p6.y -= 2;
-			p7.y -= 2;
-			p8.y -= 2;
-			p9.y -= 2;
-			p10.y -= 2;
-			p11.y -= 2;
-			p12.y -= 2;
-
-			chunkMap->placeBlockAt(p13, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p14, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p15, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p16, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p17, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p18, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p19, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p20, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-			chunkMap->placeBlockAt(p21, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p22, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p23, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p24, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-			p21.y++;
-			p22.y++;
-			p23.y++;
-			p24.y++;
-
-			chunkMap->placeBlockAt(p21, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p22, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p23, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-			chunkMap->placeBlockAt(p24, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-			p21.y--;
-			p22.y--;
-			p23.y--;
-			p24.y--;
+			for (int i = 21; i <= 24; i++)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y++;
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y--;
+			}
 		}
 		// Else, tRand is 3. No additioanl block around bttom of trunk
 
@@ -327,91 +198,18 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 					p14 p13
 		*/
 
-		p1.y--;
-		p2.y--;
-		p3.y--;
-		p4.y--;
-
-		p5.y--;
-		p6.y--;
-		p7.y--;
-		p8.y--;
-		p9.y--;
-		p10.y--;
-		p11.y--;
-		p12.y--;
-
-		p13.y--;
-		p14.y--;
-		p15.y--;
-		p16.y--;
-		p17.y--;
-		p18.y--;
-		p19.y--;
-		p20.y--;
-
-		p21.y--;
-		p22.y--;
-		p23.y--;
-		p24.y--;
+		for (unsigned int i = 1; i <= 24; i++)
+		{
+			p.at(i).y--;
+		}
 
 		for (int i = 0; i < rootHeight; i++)
 		{
-			chunkMap->placeBlockAt(p1, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p2, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p3, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p4, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-
-			chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-
-			chunkMap->placeBlockAt(p13, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p14, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p15, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p16, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p17, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p18, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p19, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p20, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-
-			chunkMap->placeBlockAt(p21, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p22, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p23, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-			chunkMap->placeBlockAt(p24, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
-
-			p1.y--;
-			p2.y--;
-			p3.y--;
-			p4.y--;
-
-			p5.y--;
-			p6.y--;
-			p7.y--;
-			p8.y--;
-			p9.y--;
-			p10.y--;
-			p11.y--;
-			p12.y--;
-
-			p13.y--;
-			p14.y--;
-			p15.y--;
-			p16.y--;
-			p17.y--;
-			p18.y--;
-			p19.y--;
-			p20.y--;
-
-			p21.y--;
-			p22.y--;
-			p23.y--;
-			p24.y--;
+			for (unsigned int i = 1; i <= 24; i++)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
+				p.at(i).y--;
+			}
 		}
 
 		// add main leave above trunk
@@ -420,189 +218,235 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 		int leavesLength = Utility::Random::randomInt(8, 10);
 
 		//auto l1 = glm::ivec3(p1.x, pivot.y + trunkHeight + (leavesHeight / 2), p1.z);
-		auto l1 = glm::ivec3(p1.x, pivot.y + trunkHeight + 2, p1.z);
+		auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-		int mlRand = Utility::Random::randomInt100();
-		if (mlRand < 50)
-		{
-			addOakLeave(chunkMap, leavesWidth, leavesHeight, leavesLength, l1);
-		}
-		else
-		{
-			l1.x -= 1;
-			l1.y -= 2;
-			addOakLeave(chunkMap, leavesWidth, leavesHeight / 3 * 2, leavesLength, l1);
-
-			l1.x += 1;
-			l1.z += Utility::Random::randomInt(3, 4) * Utility::Random::random_int_minus_1_1();
-			l1.y += 3;
-			addOakLeave(chunkMap, leavesWidth, leavesHeight / 3 * 2, leavesLength, l1);
-		}
-
-		// Add additional leaves near main leaves
-		int totalSideLeaves = Utility::Random::randomInt(1, 3);
-
-		for (int i = 0; i < totalSideLeaves; i++)
-		{
-			int sideLeavesWidth = Utility::Random::randomInt(3, 4);
-			int sideLeavesHeight = Utility::Random::randomInt(2, 3);
-			int sideLeavesLength = Utility::Random::randomInt(3, 4);
-
-			int x = 0;
-			int y = 0;
-			int z = 0;
-
-			glm::ivec3 pos(0);
-
-			if (mlRand)
-			{
-				x = Utility::Random::randomInt(leavesWidth / 2, (leavesWidth / 4) * 3) * Utility::Random::random_int_minus_1_1();
-				y = Utility::Random::randomInt(0, leavesHeight / 2);
-				z = Utility::Random::randomInt(leavesLength / 2, (leavesLength / 4) * 3) * Utility::Random::random_int_minus_1_1();
-				pos = glm::ivec3(x, y, z) + l1;
-			}
-			else
-			{
-				x = Utility::Random::randomInt((leavesWidth / 4), leavesWidth / 2) * Utility::Random::random_int_minus_1_1();
-				y = Utility::Random::randomInt(0, leavesHeight / 2);
-				z = Utility::Random::randomInt((leavesLength / 4) * 3, leavesWidth / 2) * Utility::Random::random_int_minus_1_1();
-				pos = glm::ivec3(x, y, z) + l1;
-			}
-
-			addOakLeave(chunkMap, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, pos);
-		}
+		addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1);
 
 		// Add more blocks around top of trunk, below the leaves
 		{
 			int newY = pivot.y + trunkHeight;		
 			
-			p5.y = newY;
-			p6.y = newY;
-			p7.y = newY;
-			p8.y = newY;
-			p9.y = newY;
-			p10.y = newY;
-			p11.y = newY;
-			p12.y = newY;
+			for (int i = 5; i <= 12; ++i)
+			{
+				p.at(i).y = newY;
+			}
 
 			for (int i = 0; i < 7; i++)
 			{
-				chunkMap->placeBlockAt(p5, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p6, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p7, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p8, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p9, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p10, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p11, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(p12, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-				p5.y--;
-				p6.y--;
-				p7.y--;
-				p8.y--;
-				p9.y--;
-				p10.y--;
-				p11.y--;
-				p12.y--;
+				for (int i = 5; i <= 12; ++i)
+				{
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+					p.at(i).y--;
+				}
 			}
 		}
 
-		// add branch
-		int totalBranch = Utility::Random::randomInt(1, 4);
-		/*
-					p17 p18
-					p9  p10 
-			p16 p8  p4  p3  p11 p19
-			p15 p7  p2  p1  p12 p20
-					p6  p5
-					p14 p13
-		*/
-
-		if (totalBranch)
-		{
-			// one branch
-			int branchY = pivot.y + trunkHeight + 2 - 3 - leavesHeight - Utility::Random::randomInt(1, 2);
-
-			auto b1 = glm::ivec3(0);
-			auto b2 = glm::ivec3(0);
-			
-			int randDir = Utility::Random::randomInt(0, 3);
-
-			if (randDir == 0)
-			{
-				b1 = p11;
-				b2 = p12;
-			}
-			else if (randDir == 1)
-			{
-				b1 = p9;
-				b2 = p10;
-			}
-			else if (randDir == 2)
-			{
-				b1 = p7;
-				b2 = p8;
-			}
-			else
-			{
-				b1 = p5;
-				b2 = p6;
-			}
-
-			b1.y = branchY;
-			b2.y = branchY;
-
-			for (int i = 0; i < 4; i++)
-			{
-				chunkMap->placeBlockAt(b1, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-				chunkMap->placeBlockAt(b2, Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
-
-				if (randDir == 0)
-				{
-					b1.x--;
-					b2.x--;
-				}
-				else if (randDir == 1)
-				{
-					b1.z++;
-					b2.z++;
-				}
-				else if (randDir == 2)
-				{
-					b1.x++;
-					b2.x++;
-				}
-				else
-				{
-					b1.z--;
-					b2.z--;
-				}
-				
-				b1.y++;
-				b2.y++;
-			}
-
-			int branchLeaveWidth = Utility::Random::randomInt(2, 3);
-			int branchLeavesHeight = Utility::Random::randomInt(1, 2);
-			int branchLeavesLength = Utility::Random::randomInt(2, 3);
-
-			b1.y + (branchLeavesHeight / 2);
-			
-			addOakLeave(chunkMap, branchLeaveWidth, branchLeavesHeight, branchLeavesLength, b1);
-		}
-		else if (totalBranch == 2)
-		{
-			int branchY1 = pivot.y + trunkHeight + 2 - 3 - leavesHeight - Utility::Random::randomInt(1, 2);
-			int branchY2 = pivot.y + trunkHeight + 2 - 3 - leavesHeight - Utility::Random::randomInt(1, 2);
-
-			auto b1 = glm::ivec3(0);
-			auto b2 = glm::ivec3(0);
-			auto b3 = glm::ivec3(0);
-			auto b4 = glm::ivec3(0);
-		}
+		addOakBranch(chunkMap, p, pivot.y + trunkHeight + 2 - 3 - leavesHeight);
 	}
 	else if (w == TreeBuilder::TrunkWidth::MEDIUM)
 	{
+		// Start from bottom 10 to make sure it renders trunk even it's on steep mountain
+		int trunkY = pivot.y - 10;
+		
+		/*
+						p33 p34
+					p32	p17 p18 p35
+				p31	p23	p9  p10 p24 p36
+			p30	p16 p8  p4  p3  p11 p19 p37
+			p29	p15 p7  p2  p1  p12 p20 p38
+				p28	p22	p6  p5  p21 p39
+					p27	p14 p13 p40
+						p26 p25
+		*/
+
+		for (int i = 1; i <= 12; ++i)
+		{
+			p.at(i).y = trunkY;
+		}
+		
+		addTrunk(chunkMap, p, oakWoodColor, colorStep, 1, 12, trunkHeight);
+
+		for (int i = 1; i <= 12; ++i)
+		{
+			p.at(i).y = pivot.y;
+		}
+
+		for (int i = 13; i <= 24; ++i)
+		{
+			chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+		}
+
+		p.push_back(glm::ivec3(p.at(13).x, pivot.y, p.at(13).z - 1));	// p25
+		p.push_back(glm::ivec3(p.at(14).x, pivot.y, p.at(14).z - 1));	// p26
+		p.push_back(glm::ivec3(p.at(22).x, pivot.y, p.at(22).z - 1));	// p27
+		p.push_back(glm::ivec3(p.at(15).x, pivot.y, p.at(15).z - 1));	// p28
+		p.push_back(glm::ivec3(p.at(15).x + 1, pivot.y, p.at(15).z));	// p29
+		p.push_back(glm::ivec3(p.at(16).x + 1, pivot.y, p.at(16).z));	// p30
+		p.push_back(glm::ivec3(p.at(16).x, pivot.y, p.at(16).z + 1));	// p31
+		p.push_back(glm::ivec3(p.at(23).x, pivot.y, p.at(23).z + 1));	// p32
+		p.push_back(glm::ivec3(p.at(17).x, pivot.y, p.at(17).z + 1));	// p33
+		p.push_back(glm::ivec3(p.at(18).x, pivot.y, p.at(18).z + 1));	// p34
+		p.push_back(glm::ivec3(p.at(24).x, pivot.y, p.at(24).z + 1));	// p35
+		p.push_back(glm::ivec3(p.at(19).x, pivot.y, p.at(19).z + 1));	// p36
+		p.push_back(glm::ivec3(p.at(19).x - 1, pivot.y, p.at(19).z));	// p37
+		p.push_back(glm::ivec3(p.at(20).x - 1, pivot.y, p.at(20).z));	// p38
+		p.push_back(glm::ivec3(p.at(20).x, pivot.y, p.at(20).z - 1));	// p39
+		p.push_back(glm::ivec3(p.at(21).x, pivot.y, p.at(21).z - 1));	// p40
+
+		if (tRand == 0)
+		{
+			/*
+						p17 p18
+					p23	p9  p10 p24
+				p16 p8  p4  p3  p11 p19
+				p15 p7  p2  p1  p12 p20
+					p22	p6  p5  p21
+						p14 p13
+			*/
+			// done
+		}
+		else
+		{
+			for (int i = 13; i <= 24; ++i)
+			{
+				p.at(i).y++;
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+				p.at(i).y--;
+			}
+
+			for (int i = 25; i <= 40; ++i)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+			}
+
+			if (tRand == 1)
+			{
+				// done
+			}
+			else if (tRand == 2)
+			{
+				for (int i = 21; i <= 24; ++i)
+				{
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, true);
+					p.at(i).y -= 2;
+				}
+			}
+		}
+
+		int rootHeight = 10;
+
+		for (unsigned int i = 1; i <= 40; i++)
+		{
+			p.at(i).y--;
+		}
+
+		for (int i = 0; i < rootHeight; i++)
+		{
+			for (unsigned int i = 1; i <= 40; i++)
+			{
+				chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, trunkBottomColor, nullptr, false);
+				p.at(i).y--;
+			}
+		}
+
+		// add main leave above trunk
+		int leavesWidth = Utility::Random::randomInt(12, 14);
+		int leavesHeight = Utility::Random::randomInt(6, 8);
+		int leavesLength = Utility::Random::randomInt(12, 14);
+
+		auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
+
+		addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1);
+	}
+}
+
+void Voxel::TreeBuilder::addTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight)
+{
+	int size = trunkHeight + 10;
+	int sizeHalf = size / 2;
+	
+	auto indexMid = 10 + (trunkHeight / 2);
+
+	for (int i = 0; i < size; i++)
+	{
+		if (i >= 10)
+		{
+			if (i <= indexMid)
+			{
+				color += colorStep;
+			}
+			else
+			{
+				color -= colorStep;
+			}
+
+			color = glm::clamp(color, 0.0f, 1.0f);
+		}
+
+		for (int i = pStart; i <= pEnd; i++)
+		{
+			map->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, color, nullptr, true);
+
+			p.at(i).y++;
+		}
+	}
+}
+
+void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos)
+{
+	int mlRand = Utility::Random::randomInt100();
+	auto l1 = pos;
+
+	if (mlRand < 50)
+	{
+		addOakLeave(map, w, h, l, l1);
+	}
+	else
+	{
+		l1.x -= 1;
+		l1.y -= 2;
+		addOakLeave(map, w, h / 3 * 2, l, l1);
+
+		l1.x += 1;
+		l1.z += Utility::Random::randomInt(3, 4) * Utility::Random::random_int_minus_1_1();
+		l1.y += 3;
+		addOakLeave(map, w, h / 3 * 2, l, l1);
+	}
+
+	// Add additional leaves near main leaves
+	int totalSideLeaves = Utility::Random::randomInt(1, 3);
+
+	for (int i = 0; i < totalSideLeaves; i++)
+	{
+		int sideLeavesWidth = Utility::Random::randomInt(3, 4);
+		int sideLeavesHeight = Utility::Random::randomInt(2, 3);
+		int sideLeavesLength = Utility::Random::randomInt(3, 4);
+
+		int x = 0;
+		int y = 0;
+		int z = 0;
+
+		glm::ivec3 sidePos(0);
+
+		if (mlRand)
+		{
+			x = Utility::Random::randomInt(w / 2, (w / 4) * 3) * Utility::Random::random_int_minus_1_1();
+			y = Utility::Random::randomInt(0, h / 2);
+			z = Utility::Random::randomInt(l / 2, (l / 4) * 3) * Utility::Random::random_int_minus_1_1();
+			sidePos = glm::ivec3(x, y, z) + l1;
+		}
+		else
+		{
+			x = Utility::Random::randomInt((w / 4), w / 2) * Utility::Random::random_int_minus_1_1();
+			y = Utility::Random::randomInt(0, h / 2);
+			z = Utility::Random::randomInt((l / 4) * 3, l / 2) * Utility::Random::random_int_minus_1_1();
+			sidePos = glm::ivec3(x, y, z) + l1;
+		}
+
+		addOakLeave(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos);
 	}
 }
 
@@ -658,6 +502,10 @@ void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, c
 
 	auto leaveColor = Color::colorU3TocolorV3(Color::OAK_LEAVES);
 	auto leaveColorStep = leaveColor * 0.05f;
+	if (Utility::Random::randomInt100() < 50)
+	{
+		leaveColor += (leaveColor * (Utility::Random::random_float_minus_1_1() * Utility::Random::randomReal<float>(0.0f, 0.05f)));
+	}
 
 	leaveColor -= (leaveColorStep * (static_cast<float>(h)));
 
@@ -702,5 +550,95 @@ void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, c
 
 		leaveColor += leaveColorStep;
 		leaveColor = glm::clamp(leaveColor, 0.0f, 1.0f);
+	}
+}
+
+void Voxel::TreeBuilder::addOakBranch(ChunkMap * map, std::vector<glm::ivec3>& p, const int branchBaseY)
+{
+	// add branch
+	int totalBranch = Utility::Random::randomInt(1, 4);
+	/*
+				p17 p18
+				p9  p10 
+		p16 p8  p4  p3  p11 p19
+		p15 p7  p2  p1  p12 p20
+				p6  p5
+				p14 p13
+	*/
+
+	if (totalBranch)
+	{
+		// one branch
+		int branchY = branchBaseY - Utility::Random::randomInt(1, 2);
+
+		auto b1 = glm::ivec3(0);
+		auto b2 = glm::ivec3(0);
+			
+		int randDir = Utility::Random::randomInt(0, 3);
+
+		if (randDir == 0)
+		{
+			b1 = p.at(11);
+			b2 = p.at(12);
+		}
+		else if (randDir == 1)
+		{
+			b1 = p.at(9);
+			b2 = p.at(10);
+		}
+		else if (randDir == 2)
+		{
+			b1 = p.at(7);
+			b2 = p.at(8);
+		}
+		else
+		{
+			b1 = p.at(5);
+			b2 = p.at(6);
+		}
+
+		b1.y = branchY;
+		b2.y = branchY;
+
+		for (int i = 0; i < 4; i++)
+		{
+			map->placeBlockAt(b1, Block::BLOCK_ID::OAK_WOOD, Color::OAK_WOOD, nullptr, true);
+			map->placeBlockAt(b2, Block::BLOCK_ID::OAK_WOOD, Color::OAK_WOOD, nullptr, true);
+
+			if (randDir == 0)
+			{
+				b1.x--;
+				b2.x--;
+			}
+			else if (randDir == 1)
+			{
+				b1.z++;
+				b2.z++;
+			}
+			else if (randDir == 2)
+			{
+				b1.x++;
+				b2.x++;
+			}
+			else
+			{
+				b1.z--;
+				b2.z--;
+			}
+				
+			b1.y++;
+			b2.y++;
+		}
+
+		int branchLeaveWidth = Utility::Random::randomInt(2, 3);
+		int branchLeavesHeight = Utility::Random::randomInt(1, 2);
+		int branchLeavesLength = Utility::Random::randomInt(2, 3);
+
+		b1.y += (branchLeavesHeight / 2);
+			
+		addOakLeave(map, branchLeaveWidth, branchLeavesHeight, branchLeavesLength, b1);
+	}
+	else if (totalBranch == 2)
+	{
 	}
 }
