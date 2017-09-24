@@ -90,8 +90,6 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	// Set font size. Larger size = Higher font texture
 	FT_Set_Pixel_Sizes(face, 0, size);
 
-	linespace = (face->height >> 6);
-
 	FT_GlyphSlot glyphSlot = face->glyph;
 
 	unsigned int widthSum = 0;
@@ -176,6 +174,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 	int whitespaceHeight = 0;
 
+	int customLineSpace = 0;
+
 	for (size_t i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
@@ -204,6 +204,11 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		if (whitespaceHeight < glyph.height)
 		{
 			whitespaceHeight = glyph.height;
+		}
+
+		if (glyph.height > customLineSpace)
+		{
+			customLineSpace = glyph.height;
 		}
 
 		// get next X.
@@ -249,6 +254,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		// advance by paddings
 		x += static_cast<float>(widthPadding + outlineSize);
 	}
+
+
+	//linespace = (face->height >> 6);
+	linespace = customLineSpace;
 
 	glyphMap[' '].height = whitespaceHeight;
 

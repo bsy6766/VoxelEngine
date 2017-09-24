@@ -31,7 +31,7 @@ Voxel::UI::UINode::UINode()
 void Voxel::UI::UINode::updateMatrix()
 {
 	// Move to pos, move by pivot, then scale
-	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * size * -1.0f, 0)), glm::vec3(scale, 1));
+	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * size * scale * -1.0f, 0)), glm::vec3(scale, 1));
 }
 
 void Voxel::UI::UINode::setCanvasPivot(const glm::vec2 & pivot)
@@ -199,7 +199,14 @@ void Voxel::UI::Text::setText(const std::string & text)
 				else
 				{
 					this->text = text;
-					buildMesh(true);
+					if (vao)
+					{
+						buildMesh(true);
+					}
+					else
+					{
+						buildMesh(false);
+					}
 				}
 			}
 		}
@@ -235,7 +242,6 @@ glm::vec4 Voxel::UI::Text::getOutlineColor()
 void Voxel::UI::Text::clear()
 {
 	text = "";
-
 }
 
 Voxel::UI::Text::~Text()
@@ -324,6 +330,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 		int lineGap = 0;
 		int lineGapHeight = 2 + static_cast<int>(outlineSize);
+		int lineSpace = font->getLineSpace();
 
 		// Iterate per line. Find the maximum width and height
 		for (auto& line : split)
@@ -371,9 +378,9 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
 				// I'm going to customize just for MunroSmall. 
-				totalHeight += lineSizes.back().maxBearingY;
+				//totalHeight += lineSizes.back().maxBearingY;
 				lineGap += lineGapHeight;
-				//totalHeight += font->getLineSpace();
+				totalHeight += lineSpace;
 			}
 			else
 			{
@@ -383,11 +390,14 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
 				// I'm going to customize just for MunroSmall. 
-				totalHeight += (maxBearingY + maxBotY);
+				//totalHeight += (maxBearingY + maxBotY);
 				lineGap += lineGapHeight;
-				//totalHeight += font->getLineSpace();
+				totalHeight += lineSpace;
 			}
 		}
+
+		totalHeight -= lineSpace;
+		lineGap -= lineGapHeight;
 
 		// Make max width and height even number because this is UI(?)
 		if (maxWidth % 2 == 1)
@@ -401,8 +411,8 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		}
 
 		// Set size of Text object. Ignore last line's line gap
-		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * -0.5f);
-		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * 0.5f);
+		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap)) * -0.5f);
+		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap)) * 0.5f);
 
 		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
 
@@ -412,7 +422,8 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		// Pen position. Also called as origin or base line in y pos.
 		std::vector<glm::vec2> penPositions;
 		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
-		float curY = static_cast<float>(totalHeight + (lineGap - lineGapHeight)) * 0.5f;
+		float curY = boxMax.y;
+		curY -= lineSizes.front().maxBearingY;
 		// Iterate line sizes to find out each line's pen position from origin
 		for (auto lineSize : lineSizes)
 		{
@@ -434,14 +445,16 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 			}
 
 			// Y works same for same
-			penPos.y = curY - lineSize.maxBearingY;
+			//penPos.y = curY - lineSize.maxBearingY;
+			penPos.y = curY;
+			//penPos.y = curY - lineSpace;
 			// add pen position
 			penPositions.push_back(penPos);
 			// Update y to next line
 			// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
-			//curY -= font->getLineSpace();
+			curY -= lineSpace;
 			// As I said, customizing for MunroSmall
-			curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
+			//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
 		}
 
 		// We have pen position for each line. Iterate line and build vertices based on 

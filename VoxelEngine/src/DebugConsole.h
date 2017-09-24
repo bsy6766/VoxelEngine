@@ -4,6 +4,7 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <string>
+#include <list>
 #include <glm\glm.hpp>
 #include <Cube.h>
 
@@ -53,9 +54,14 @@ namespace Voxel
 		UI::Text* region;
 
 		UI::Image* commandInputField;
+		UI::Image* commandHistoryBg;
 		UI::Text* command;
+		UI::Text* commandHistorys;
+
+		std::list<std::string> executedCommandHistory;
 
 		bool executeCommand(const std::string& command);
+		void updateCommandHistory();
 	public:
 		DebugConsole();
 		~DebugConsole();

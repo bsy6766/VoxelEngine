@@ -54,20 +54,37 @@ void Voxel::DebugConsole::init()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 
-	commandInputField = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0, 10.0f), glm::vec4(1, 1, 1, 0.45f));
+	commandInputField = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.225f));
+	commandInputField->setPivot(glm::vec2(0, -0.5f));
 	commandInputField->setCanvasPivot(glm::vec2(0, -0.5f));
 	commandInputField->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
 	commandInputField->setVisibility(false);
 
 	debugCanvas->addImage("cmdInputField", commandInputField, 0);
 
-	command = UI::Text::create(DefaultCommandInputText, glm::vec2(5.0f, 5.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 100);
+	commandHistoryBg = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.225f));
+	commandHistoryBg->setCanvasPivot(glm::vec2(0, -0.5f));
+	commandHistoryBg->setPivot(glm::vec2(0, -0.5f));
+	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 100.0f));
+	commandHistoryBg->setVisibility(false);
+
+	debugCanvas->addImage("commandHistoryBg", commandHistoryBg, 0);
+
+	command = UI::Text::create(DefaultCommandInputText, glm::vec2(5.0f, 5.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 128);
 	command->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	command->setPivot(glm::vec2(-0.5f, -0.5f));
 	command->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
 	command->setVisibility(false);
 
 	debugCanvas->addText("command", command, 0);
+
+	commandHistorys = UI::Text::create("empty", glm::vec2(5.0f, 195.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 1024);
+	commandHistorys->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	commandHistorys->setPivot(glm::vec2(-0.5f, 0.5f));
+	commandHistorys->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
+	commandHistorys->setVisibility(false);
+
+	debugCanvas->addText("commandHistorys", commandHistorys, 0);
 
 	auto glview = Application::getInstance().getGLView();
 
@@ -109,49 +126,49 @@ void Voxel::DebugConsole::init()
 	vsyncMode->setVisibility(false);
 	debugCanvas->addText("vsyncMode", vsyncMode, 0);
 
-	hardwardInfo = UI::Text::createWithOutline("CPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion, glm::vec2(5.0f, -65.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	hardwardInfo = UI::Text::createWithOutline("CPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion, glm::vec2(5.0f, -61.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	hardwardInfo->setPivot(glm::vec2(-0.5f, 0.5f));
 	hardwardInfo->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	hardwardInfo->setVisibility(false);
 	debugCanvas->addText("hardwardInfo", hardwardInfo, 0);
 
-	playerPosition = UI::Text::createWithOutline("player position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -149.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerPosition = UI::Text::createWithOutline("player position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -131.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
 	debugCanvas->addText("playerPosition", playerPosition, 0);
 
-	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -163.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -143.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	playerRotation->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setVisibility(false);
 	debugCanvas->addText("playerRotation", playerRotation, 0);
 
-	playerChunkPosition = UI::Text::createWithOutline("player chunk position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -181.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerChunkPosition = UI::Text::createWithOutline("player chunk position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -159.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerChunkPosition->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setVisibility(false);
 	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
 
-	playerLookingAt = UI::Text::createWithOutline("player looking at: 000000, 000000, 000000 Face (front)", glm::vec2(5.0f, -197.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerLookingAt = UI::Text::createWithOutline("player looking at: 000000, 000000, 000000 Face (front)", glm::vec2(5.0f, -173.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -223.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
+	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -201.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
 	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
 
-	biome = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -255.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	biome = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -215.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	biome->setPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	biome->setVisibility(false);
 	debugCanvas->addText("biome", biome, 0);
 
-	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -289.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -231.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	region->setPivot(glm::vec2(-0.5f, 0.5f));
 	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	region->setVisibility(false);
@@ -161,7 +178,9 @@ void Voxel::DebugConsole::init()
 void Voxel::DebugConsole::openConsole()
 {
 	commandInputField->setVisibility(true);
+	commandHistoryBg->setVisibility(true);
 	command->setVisibility(true);
+	commandHistorys->setVisibility(true);
 	openingConsole = true;
 
 	InputHandler::getInstance().setBufferMode(true);
@@ -170,8 +189,10 @@ void Voxel::DebugConsole::openConsole()
 void Voxel::DebugConsole::closeConsole()
 {
 	commandInputField->setVisibility(false);
+	commandHistoryBg->setVisibility(false);
 	command->setVisibility(false);
 	command->setText(DefaultCommandInputText);
+	commandHistorys->setVisibility(false);
 	openingConsole = false;
 
 	InputHandler::getInstance().setBufferMode(false);
@@ -213,6 +234,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 						if (result)
 						{
 							std::cout << "Success." << std::endl;
+							updateCommandHistory();
 						}
 						else
 						{
@@ -317,6 +339,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							float speed = std::stof(split.at(2));
 							player->setMovementSpeed(speed);
+							executedCommandHistory.push_back("Set player speed to " + split.at(2));
 							return true;
 						}
 						catch (...)
@@ -324,6 +347,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							if (split.at(2) == "default")
 							{
 								player->setMovementSpeed(15.0f);
+								executedCommandHistory.push_back("Set player speed to default (15)");
 								return true;
 							}
 						}
@@ -366,6 +390,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 
 						player->setPosition(glm::vec3(x, y, z));
+						executedCommandHistory.push_back("Set player position to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
 						return true;
 					}
 					else if (arg1 == "rotation" || arg1 == "rot")
@@ -401,6 +426,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 
 						player->setRotation(glm::vec3(x, y, z));
+						executedCommandHistory.push_back("Set player rotation to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
 						return true;
 					}
 				}
@@ -418,6 +444,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "fogenabled" || arg1 == "fog")
 					{
 						game->setFogEnabled(arg2Bool);
+						if (arg2Bool)
+						{
+							executedCommandHistory.push_back("Enabled fog");
+						}
+						else
+						{
+							executedCommandHistory.push_back("Disabled fog");
+						}
 						return true;
 					}
 				}
@@ -435,6 +469,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "rendervoronoi" || arg1 == "rv")
 					{
 						world->setRenderVoronoiMode(arg2Bool);
+						if (arg2Bool)
+						{
+							executedCommandHistory.push_back("Enabled voronoi render mode");
+						}
+						else
+						{
+							executedCommandHistory.push_back("Disabled voronoi render mode");
+						}
 						return true;
 					}
 				}
@@ -448,20 +490,55 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 					bool arg2Bool = arg2 == "true" ? true : false;
 
-					if (arg1 == "renderchunks" || arg1 == "renderchunk" || arg1 == "rc")
-					{
-						chunkMap->setRenderChunksMode(arg2Bool);
-						return true;
-					}
-					else if (arg1 == "renderchunkborder" || arg1 == "rcb")
-					{
-						chunkMap->setRenderChunkBorderMode(arg2Bool);
-						return true;
-					}
-					else if (arg1 == "updatechunkmap" || arg1 == "ucm")
+					if (arg1 == "update" || arg1 == "u")
 					{
 						chunkMap->setUpdateChunkMapMode(arg2Bool);
+						if (arg2Bool)
+						{
+							executedCommandHistory.push_back("Enabled chunk update");
+						}
+						else
+						{
+							executedCommandHistory.push_back("Disabled chunk update");
+						}
 						return true;
+					}
+				}
+				else if (size == 4)
+				{
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+
+					bool arg3Bool = split.at(3) == "true" ? true : false;
+
+					if (arg1 == "render" || arg1 == "r")
+					{
+						if (arg2 == "chunk" || arg2 == "c")
+						{
+							chunkMap->setRenderChunksMode(arg3Bool);
+							if (arg3Bool)
+							{
+								executedCommandHistory.push_back("Enabled chunk rendering");
+							}
+							else
+							{
+								executedCommandHistory.push_back("Disabled chunk rendering");
+							}
+							return true;
+						}
+						else if (arg2 == "chunkborder" || arg2 == "cb")
+						{
+							chunkMap->setRenderChunkBorderMode(arg3Bool);
+							if (arg3Bool)
+							{
+								executedCommandHistory.push_back("Enabled chunk border rendering");
+							}
+							else
+							{
+								executedCommandHistory.push_back("Disabled chunk border rendering");
+							}
+							return true;
+						}
 					}
 				}
 			}
@@ -478,6 +555,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							float speed = std::stof(split.at(2));
 							Camera::mainCamera->setSpeed(speed);
+							executedCommandHistory.push_back("Set camera speed to " + split.at(2));
 							return true;
 						}
 						catch (...)
@@ -485,6 +563,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							if (split.at(2) == "default")
 							{
 								Camera::mainCamera->setSpeed(15.0f);
+								executedCommandHistory.push_back("Set camera speed to default (15)");
 								return true;
 							}
 						}
@@ -495,12 +574,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							float fovy = std::stof(split.at(2));
 							Camera::mainCamera->setFovy(fovy);
+							executedCommandHistory.push_back("Set camera fovy to " + split.at(2));
 						}
 						catch (...)
 						{
 							if (split.at(2) == "default")
 							{
 								Camera::mainCamera->setFovy(70.0f);
+								executedCommandHistory.push_back("Set camera fovy to default (70)");
 								return true;
 							}
 						}
@@ -511,6 +592,34 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 	}
 
 	return false;
+}
+
+void Voxel::DebugConsole::updateCommandHistory()
+{
+	if (executedCommandHistory.size() > 10)
+	{
+		executedCommandHistory.pop_back();
+	}
+
+	std::string historyStr = "";
+
+	unsigned int index = 0;
+
+	for (auto& cmdStr : executedCommandHistory)
+	{
+		historyStr += cmdStr;
+
+		if (index < 9)
+		{
+			historyStr += "\n";
+		}
+
+		std::cout << "ch: " << cmdStr << std::endl;
+
+		index++;
+	}
+
+	commandHistorys->setText(historyStr);
 }
 
 void Voxel::DebugConsole::render()
@@ -564,6 +673,7 @@ void Voxel::DebugConsole::updateResolution(int width, int height)
 	resolutionNumber->setText("resolution: " + std::to_string(width) + ", " + std::to_string(height));
 
 	commandInputField->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 10.0f));
+	commandHistoryBg->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 100.0f));
 }
 
 void Voxel::DebugConsole::updateVsync(bool vsync)
