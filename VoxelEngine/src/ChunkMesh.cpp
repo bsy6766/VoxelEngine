@@ -150,15 +150,23 @@ void Voxel::ChunkMesh::markAsUpdated()
 	renderable.store(false);
 }
 
-void ChunkMesh::bind()
+bool ChunkMesh::bind()
 {
-	glBindVertexArray(vao);
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void ChunkMesh::render()
 {
+	assert(indicesSize > 0);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-	//glDrawElements(GL_TRIANGLES, 3 + offset, GL_UNSIGNED_INT, 0);
 }
 
 void ChunkMesh::unbind()
