@@ -7,7 +7,7 @@
 namespace Voxel
 {
 	class ChunkMap;
-
+	
 	class TreeBuilder
 	{
 	public:
@@ -42,7 +42,7 @@ namespace Voxel
 	private:
 		TreeBuilder() = delete;
 
-		static void addTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight);
+		static void addTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY);
 		static void addOakLeaves(ChunkMap* map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos);
 		static void addOakLeave(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos);
 		static void addOakBranch(ChunkMap* map, std::vector<glm::ivec3>& p, const int branchBaseY);
