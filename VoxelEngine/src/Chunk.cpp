@@ -127,6 +127,8 @@ bool Chunk::init(const int x, const int z)
 	boundingBox.center = min + (size * 0.5f);
 	boundingBox.size = size;
 
+	chunkSections = std::vector<ChunkSection*>(Constant::TOTAL_CHUNK_SECTION_PER_CHUNK, nullptr);
+
 	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
 
 	//auto end = Utility::Time::now();
@@ -168,7 +170,8 @@ bool Voxel::Chunk::generateSingleSection()
 		if (i > 1)
 		{
 			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
+			//chunkSections.push_back(nullptr);
+			continue;
 		}
 		else
 		{
@@ -176,7 +179,8 @@ bool Voxel::Chunk::generateSingleSection()
 			auto newChucnkSection = ChunkSection::createWithFill(position.x, i, position.z, worldPosition);
 			if (newChucnkSection)
 			{
-				chunkSections.push_back(newChucnkSection);
+				//chunkSections.push_back(newChucnkSection);
+				chunkSections.at(i) = newChucnkSection;
 			}
 			else
 			{
@@ -296,7 +300,8 @@ bool Voxel::Chunk::generateWithBiomeTest()
 		if (i > heighestChunkSection || i < lowestChunkSection)
 		{
 			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
+			//chunkSections.push_back(nullptr);
+			continue;
 		}
 		else
 		{
@@ -305,7 +310,7 @@ bool Voxel::Chunk::generateWithBiomeTest()
 			auto newChucnkSection = ChunkSection::createWithValues(position.x, i, position.z, worldPosition, elevationMap, temperatureMap, moistureMap);
 			if (newChucnkSection)
 			{
-				chunkSections.push_back(newChucnkSection);
+				chunkSections.at(i) = newChucnkSection;
 			}
 			else
 			{
@@ -330,7 +335,8 @@ bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 		if (i > 1)
 		{
 			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
+			//chunkSections.push_back(nullptr);
+			continue;
 		}
 		else
 		{
@@ -338,7 +344,7 @@ bool Voxel::Chunk::generateWithColor(const glm::uvec3 & color)
 			auto newChucnkSection = ChunkSection::createWithColor(position.x, i, position.z, worldPosition, color);
 			if (newChucnkSection)
 			{
-				chunkSections.push_back(newChucnkSection);
+				chunkSections.at(i) = newChucnkSection;
 			}
 			else
 			{
@@ -362,7 +368,8 @@ bool Voxel::Chunk::generateWithRegionColor()
 		if (i > 1)
 		{
 			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
+			//chunkSections.push_back(nullptr);
+			continue;
 		}
 		else
 		{
@@ -370,7 +377,7 @@ bool Voxel::Chunk::generateWithRegionColor()
 			auto newChucnkSection = ChunkSection::createWithRegionColor(position.x, i, position.z, worldPosition, regionMap);
 			if (newChucnkSection)
 			{
-				chunkSections.push_back(newChucnkSection);
+				chunkSections.at(i) = newChucnkSection;
 			}
 			else
 			{
@@ -386,27 +393,52 @@ bool Voxel::Chunk::generateWithRegionColor()
 
 void Voxel::Chunk::preGenerateChunkSections(const int minY, const int maxY)
 {
-	assert(chunkSections.empty());
-
-	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	if (chunkSections.empty())
 	{
-		// Temp. All blocks above chunk section y 3 will be air.
-		if (i > maxY || i < minY)
+		for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 		{
-			//std::cout << "+ chunksection: " << i << std::endl;
-			chunkSections.push_back(nullptr);
-		}
-		else
-		{
-			//std::cout << "++ chunksection: " << i << std::endl;
-			auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
-			if (newChucnkSection)
+			// Temp. All blocks above chunk section y 3 will be air.
+			if (i > maxY || i < minY)
 			{
-				chunkSections.push_back(newChucnkSection);
+				//std::cout << "+ chunksection: " << i << std::endl;
+				chunkSections.push_back(nullptr);
 			}
 			else
 			{
-				throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+				//std::cout << "++ chunksection: " << i << std::endl;
+				auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
+				if (newChucnkSection)
+				{
+					chunkSections.push_back(newChucnkSection);
+				}
+				else
+				{
+					throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+		{
+			// Temp. All blocks above chunk section y 3 will be air.
+			if (i > maxY || i < minY)
+			{
+				continue;
+			}
+			else
+			{
+				//std::cout << "++ chunksection: " << i << std::endl;
+				auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
+				if (newChucnkSection)
+				{
+					chunkSections.at(i) = newChucnkSection;
+				}
+				else
+				{
+					throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+				}
 			}
 		}
 	}
@@ -518,8 +550,15 @@ void Voxel::Chunk::render()
 		if (chunkMesh->isRenderable())
 		{
 			// Ready to render
-			chunkMesh->bind();
-			chunkMesh->render();
+			bool result = chunkMesh->bind();
+			if (result)
+			{
+				chunkMesh->render();
+			}
+			else
+			{
+				assert(false);
+			}
 		}
 		else
 		{
@@ -530,7 +569,15 @@ void Voxel::Chunk::render()
 			}
 
 			// Now ready to render
-			chunkMesh->bind();
+			bool result = chunkMesh->bind();
+			if (result)
+			{
+				chunkMesh->render();
+			}
+			else
+			{
+				assert(false);
+			}
 			chunkMesh->render();
 		}
 	}
