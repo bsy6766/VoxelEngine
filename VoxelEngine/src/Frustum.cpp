@@ -262,24 +262,31 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 		chunkBorderPoints.at(0).x = chunkSectionMin.x;
 		chunkBorderPoints.at(0).y = chunkSectionMin.y;
 		chunkBorderPoints.at(0).z = chunkSectionMin.z;
+
 		chunkBorderPoints.at(1).x = chunkSectionMin.x;
 		chunkBorderPoints.at(1).y = chunkSectionMin.y;
 		chunkBorderPoints.at(1).z = chunkSectionMax.z;
+
 		chunkBorderPoints.at(2).x = chunkSectionMax.x;
 		chunkBorderPoints.at(2).y = chunkSectionMin.y;
 		chunkBorderPoints.at(2).z = chunkSectionMin.z;
+
 		chunkBorderPoints.at(3).x = chunkSectionMax.x;
 		chunkBorderPoints.at(3).y = chunkSectionMin.y;
 		chunkBorderPoints.at(3).z = chunkSectionMax.z;
+
 		chunkBorderPoints.at(4).x = chunkSectionMin.x;
 		chunkBorderPoints.at(4).y = chunkSectionMax.y;
 		chunkBorderPoints.at(4).z = chunkSectionMin.z;
+
 		chunkBorderPoints.at(5).x = chunkSectionMin.x;
 		chunkBorderPoints.at(5).y = chunkSectionMax.y;
 		chunkBorderPoints.at(5).z = chunkSectionMax.z;
+
 		chunkBorderPoints.at(6).x = chunkSectionMax.x;
 		chunkBorderPoints.at(6).y = chunkSectionMax.y;
 		chunkBorderPoints.at(6).z = chunkSectionMin.z;
+
 		chunkBorderPoints.at(7).x = chunkSectionMax.x;
 		chunkBorderPoints.at(7).y = chunkSectionMax.y;
 		chunkBorderPoints.at(7).z = chunkSectionMax.z;

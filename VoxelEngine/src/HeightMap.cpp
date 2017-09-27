@@ -50,19 +50,21 @@ NoisePreset::NoisePreset(const float freq, const float octave1, const float octa
 {}
 
 
+const float HeightMap::freqScale = Constant::CHUNK_BORDER_SIZE / 16.0f;
+
 // Frequency = Zoom in & out. Lower the value, it streches (zoom in) the height map. Higher the value, it shrinks (zoom out) the height map. 
 // Redistribution = Lower value pushes middle elevation towards up. Higher values push middle elevation towards down.
 // Amplify = Boost the height map value by multiply.
 // Shift = Shift the height map value by addition. This is applied after amplification.
 
-const NoisePreset HeightMap::PlainPreset =			NoisePreset(0.019f, 1.0f, 0.5f, 0.4f, 0.3f, 0.2f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.5f, 31.0f, true, false);		// perfect plain terrain.
+const NoisePreset HeightMap::PlainPreset =			NoisePreset(0.019f * HeightMap::freqScale, 1.0f, 0.5f, 0.4f, 0.3f, 0.2f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.5f, 31.0f, true, false);		// perfect plain terrain.
 
-const NoisePreset HeightMap::HillsPreset =			NoisePreset(0.08f, 1.0f, 0.8f, 0.7f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.7f, 31.0f, true, false);		// Some small hills
+const NoisePreset HeightMap::HillsPreset =			NoisePreset(0.08f * HeightMap::freqScale, 1.0f, 0.8f, 0.7f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 0.7f, 31.0f, true, false);		// Some small hills
 
 //const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.1f, 1.0f, 0.6f, 0.5f, 0.2f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 1.5f, 31.0f, true, false);	// small many mountains next to each other
-const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.15f, 1.0f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 50.0f, 30.0f, 0.9f, 31.0f, true, true);		// some small mountains
+const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.15f * HeightMap::freqScale, 1.0f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 50.0f, 30.0f, 0.9f, 31.0f, true, true);		// some small mountains
 
-const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f, 1.0f, 0.6f, 0.5f, 0.7f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 60.0f, 2.0f, 31.0f, true, false);
+const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f * HeightMap::freqScale, 1.0f, 0.6f, 0.5f, 0.7f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 60.0f, 2.0f, 31.0f, true, false);
 
 const NoisePreset HeightMap::TreePositionPreset =	NoisePreset(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 200.0f, 1.0f, 4.0f, false, false);
 
@@ -71,7 +73,7 @@ const NoisePreset HeightMap::TemperaturePreset =	NoisePreset(0.05f, 1.0f, 0.0f, 
 const NoisePreset HeightMap::MoisturePreset =		NoisePreset(0.05f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
 
 // for color mixing & blending
-const NoisePreset HeightMap::ColorPreset =			NoisePreset(0.15f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
+const NoisePreset HeightMap::ColorPreset =			NoisePreset(0.15f * HeightMap::freqScale, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 1.0f, 1.0f, 0.0f, false, false);
 
 float Voxel::HeightMap::getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z, const bool normalize)
 {

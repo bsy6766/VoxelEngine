@@ -152,7 +152,7 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 	const int multiple = Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH;
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
+	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	float nx = static_cast<float>(position.x);
 	float nz = static_cast<float>(position.z);
@@ -243,7 +243,7 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	//auto color = Color::getRandomColor();
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
+	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
 	//auto color = Color::getRandomColor();
@@ -303,7 +303,7 @@ bool Voxel::ChunkSection::initEmpty(const int x, const int y, const int z, const
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
+	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	return true;
 }
@@ -362,7 +362,7 @@ bool Voxel::ChunkSection::initWithHeightMap(const int x, const int y, const int 
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
+	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	/*
 	// Log: Day 19. Attempted to create only 5 blocks below the hieght map.
@@ -481,7 +481,7 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
 	blocks.clear();
-	blocks.resize(4096, nullptr);
+	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	int yStart = y * Constant::CHUNK_SECTION_HEIGHT;
 	//auto color = Color::getRandomColor();

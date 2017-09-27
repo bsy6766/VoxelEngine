@@ -4,6 +4,7 @@ uniform vec3 playerPosition;
 uniform float fogDistance;
 uniform vec4 fogColor;
 uniform bool fogEnabled;
+uniform float chunkBorderSize;
 
 // Directional light. Only 1 directional light exists
 // uniform vec3 directionalVector;
@@ -82,7 +83,7 @@ void main()
 		float dist = abs(distance(playerPosition, worldCoord.xyz));
 		if(dist > fogDistance)
 		{
-			float fogRatio = (dist - fogDistance) / 16.0f;
+			float fogRatio = (dist - fogDistance) / chunkBorderSize;
 			if(fogRatio > 1.0f)
 			{
 				fogRatio = 1.0f;

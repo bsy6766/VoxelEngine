@@ -7,37 +7,19 @@ namespace Voxel
 {
 	namespace Constant
 	{
-		const static int CHUNK_SECTION_HEIGHT = 16;
-		const static int CHUNK_SECTION_WIDTH = 16;
-		const static int CHUNK_SECTION_LENGTH = 16;
-		const static unsigned int TOTAL_BLOCKS = 4096;
-		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 16;
+		const static int CHUNK_SECTION_HEIGHT = 32;
+		const static int CHUNK_SECTION_WIDTH = 32;
+		const static int CHUNK_SECTION_LENGTH = 32;
+		const static unsigned int TOTAL_BLOCKS = CHUNK_SECTION_WIDTH * CHUNK_SECTION_LENGTH * CHUNK_SECTION_HEIGHT;
+		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 8;
 		const static int HEIGHEST_BLOCK_Y = TOTAL_CHUNK_SECTION_PER_CHUNK * CHUNK_SECTION_HEIGHT;
-		const static float CHUNK_BORDER_SIZE = 16.0f;
+		const static float CHUNK_BORDER_SIZE = 32.0f;
 		const static float CHUNK_BORDER_SIZE_HALF = CHUNK_BORDER_SIZE * 0.5f;
-		const static int SPAWN_CHUNK_DISTANCE = 2;
-		const static float CHUNK_RANGE = 14.0f;
-	}
-
-	namespace Direction
-	{
-		// East = positive X
-		// West = negative X
-		// South = positive Z
-		// North = negative Z
-		const static glm::vec3 EAST = glm::vec3(1, 0, 0);
-		const static glm::vec3 WEST = glm::vec3(-1, 0, 0);
-		const static glm::vec3 SOUTH = glm::vec3(0, 0, 1);
-		const static glm::vec3 NORTH = glm::vec3(0, 0, -1);
+		const static float CHUNK_RANGE = CHUNK_BORDER_SIZE - 2.0f;
 	}
 
 	namespace Math
 	{
-		static glm::ivec3 worldPosToBlockWorldCoordinate(const glm::vec3& position)
-		{
-			return glm::ivec3(position / 16.0f);
-		}
-
 		static glm::vec3 chunkXZToWorldPosition(const glm::ivec2& chunkXZ)
 		{
 			float x = static_cast<float>(chunkXZ.x);

@@ -216,6 +216,7 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 	program->setUniformVec4("fogColor", skybox->getColor());
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
+	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
 
 	skybox->setFogEnabled(false);
 }

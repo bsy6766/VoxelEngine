@@ -110,9 +110,9 @@ bool Chunk::init(const int x, const int z)
 	position = glm::ivec3(x, 0, z);
 
 	// calculate position. Size of each block is 1.0f. There are total 16 x 16 (256) blocks in XZ space.
-	worldPosition.x = 16.0f * (static_cast<float>(x) + 0.5f);
+	worldPosition.x = Constant::CHUNK_BORDER_SIZE * (static_cast<float>(x) + 0.5f);
 	worldPosition.y = 0;
-	worldPosition.z = 16.0f * (static_cast<float>(z) + 0.5f);
+	worldPosition.z = Constant::CHUNK_BORDER_SIZE * (static_cast<float>(z) + 0.5f);
 
 	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
 

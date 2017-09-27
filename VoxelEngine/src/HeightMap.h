@@ -61,6 +61,7 @@ namespace Voxel
 		// Returns value in range 0.0f ~ 2.0f
 		static float getNoise(const NoisePreset* np, Noise::SimplexNoise* noisePtr, const float x, const float z, const bool normalize = false);
 	public:
+		static const float freqScale;
 		// Terrain presets
 		static const NoisePreset PlainPreset;
 		static const NoisePreset HillsPreset;

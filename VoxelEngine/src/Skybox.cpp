@@ -32,8 +32,7 @@ Skybox::~Skybox()
 void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 {
 	// 3 times than render distance. making sure it renders everthing.
-	auto range = renderDistance * 6;
-	std::vector<float> vertices = Cube::getVertices(static_cast<float>(range * 16));
+	std::vector<float> vertices = Cube::getVertices(static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE);
 	
 	std::vector<float> colors;
 	auto len = vertices.size();

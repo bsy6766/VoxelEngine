@@ -6,6 +6,7 @@
 #include <ChunkUtil.h>
 #include <ProgramManager.h>
 #include <Program.h>
+#include <Setting.h>
 
 using namespace Voxel;
 using namespace glm;
@@ -110,7 +111,7 @@ glm::mat4 Voxel::Camera::getScreenSpaceMatrix()
 
 void Voxel::Camera::initDebugFrustumLines()
 {
-	this->frustum->initDebugLines(fovy, fovx, nears, 8.0f * 16.0f);
+	this->frustum->initDebugLines(fovy, fovx, nears, static_cast<float>(Setting::getInstance().getRenderDistance()) * Constant::CHUNK_BORDER_SIZE);
 }
 
 mat4 Camera::getProjection()

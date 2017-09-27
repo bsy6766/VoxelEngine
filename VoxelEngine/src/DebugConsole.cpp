@@ -341,9 +341,9 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							try
 							{
-								float speed = std::stof(split.at(2));
+								float speed = std::stof(split.at(3));
 								player->setMovementSpeed(speed);
-								executedCommandHistory.push_back("Set player speed to " + split.at(2));
+								executedCommandHistory.push_back("Set player speed to " + split.at(3));
 								return true;
 							}
 							catch (...)
@@ -363,10 +363,10 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							try
 							{
-								float speed = std::stof(split.at(2));
+								float speed = std::stof(split.at(3));
 								float curSpeed = player->getMovementSpeed();
 								player->setMovementSpeed(speed + curSpeed);
-								executedCommandHistory.push_back("Added player speed by " + split.at(2));
+								executedCommandHistory.push_back("Added player speed by " + split.at(3));
 								return true;
 							}
 							catch (...)

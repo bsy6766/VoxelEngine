@@ -522,9 +522,9 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 			}
 
 			// add main leave above trunk
-			int leavesWidth = Utility::Random::randomInt(14, 14);
+			int leavesWidth = Utility::Random::randomInt(14, 16);
 			int leavesHeight = Utility::Random::randomInt(8, 10);
-			int leavesLength = Utility::Random::randomInt(14, 14);
+			int leavesLength = Utility::Random::randomInt(14, 16);
 
 			auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 

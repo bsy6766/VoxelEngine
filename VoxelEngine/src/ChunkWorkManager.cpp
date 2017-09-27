@@ -453,7 +453,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 							chunk->smoothed = true;
 
-							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16);
+							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
 
 							/*
 							// Need correct q11, q12, q21, q22
@@ -494,7 +494,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							const int cq21 = chunk->getQ21();
 							const int cq22 = chunk->getQ22();
 
-							const int diff = 2;
+							const int diff = 3;
 
 							auto& EChunk = nearByChunks.at(1).at(0);
 							if (EChunk)
@@ -575,11 +575,11 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								const int q21 = nearByChunks.at(2).at(0)->getQ12();
 								const int q22 = nearByChunks.at(0).at(0)->getQ11();
 
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 16, 16);
+								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
 							}
 						}
 
-						chunk->preGenerateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
+						chunk->preGenerateChunkSections(1, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.
 						chunk->generate();
