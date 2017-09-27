@@ -331,104 +331,205 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 		{
 			if (commandStr == "player")
 			{
-				if (size == 3)
+				if (size == 4)
 				{
 					auto arg1 = split.at(1);
-					if (arg1 == "speed")
+					auto arg2 = split.at(2);
+					if (arg1 == "set")
 					{
-						try
+						if (arg2 == "speed")
 						{
-							float speed = std::stof(split.at(2));
-							player->setMovementSpeed(speed);
-							executedCommandHistory.push_back("Set player speed to " + split.at(2));
-							return true;
-						}
-						catch (...)
-						{
-							if (split.at(2) == "default")
+							try
 							{
-								player->setMovementSpeed(15.0f);
-								executedCommandHistory.push_back("Set player speed to default (15)");
+								float speed = std::stof(split.at(2));
+								player->setMovementSpeed(speed);
+								executedCommandHistory.push_back("Set player speed to " + split.at(2));
 								return true;
+							}
+							catch (...)
+							{
+								if (split.at(2) == "default")
+								{
+									player->setMovementSpeed(15.0f);
+									executedCommandHistory.push_back("Set player speed to default (15)");
+									return true;
+								}
+							}
+						}
+					}
+					else if (arg1 == "add")
+					{
+						if (arg2 == "speed")
+						{
+							try
+							{
+								float speed = std::stof(split.at(2));
+								float curSpeed = player->getMovementSpeed();
+								player->setMovementSpeed(speed + curSpeed);
+								executedCommandHistory.push_back("Added player speed by " + split.at(2));
+								return true;
+							}
+							catch (...)
+							{
+								// do nothing
 							}
 						}
 					}
 				}
-				else if (size == 5)
+				else if (size == 6)
 				{
 					//player position x y z
 					auto arg1 = split.at(1);
-					if (arg1 == "position" || arg1 == "pos")
+					auto arg2 = split.at(2);
+					if (arg1 == "set")
 					{
-						float x = 0;
-						try
+						if (arg2 == "position" || arg2 == "pos")
 						{
-							x = std::stof(split.at(2));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						float y = 0;
-						try
-						{
-							y = std::stof(split.at(3));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						float z = 0;
-						try
-						{
-							z = std::stof(split.at(4));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						player->setPosition(glm::vec3(x, y, z));
-						executedCommandHistory.push_back("Set player position to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
-						return true;
+							player->setPosition(glm::vec3(x, y, z));
+							executedCommandHistory.push_back("Set player position to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
+							return true;
+						}
+						else if (arg2 == "rotation" || arg2 == "rot")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							player->setRotation(glm::vec3(x, y, z));
+							executedCommandHistory.push_back("Set player rotation to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
+							return true;
+						}
 					}
-					else if (arg1 == "rotation" || arg1 == "rot")
+					else if (arg1 == "add")
 					{
-						float x = 0;
-						try
+						if (arg2 == "position" || arg2 == "pos")
 						{
-							x = std::stof(split.at(2));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						float y = 0;
-						try
-						{
-							y = std::stof(split.at(3));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						float z = 0;
-						try
-						{
-							z = std::stof(split.at(4));
-						}
-						catch (...)
-						{
-							return false;
-						}
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
 
-						player->setRotation(glm::vec3(x, y, z));
-						executedCommandHistory.push_back("Set player rotation to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
-						return true;
+							player->setPosition(glm::vec3(x, y, z) + player->getPosition());
+							executedCommandHistory.push_back("Added player position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							return true;
+						}
+						else if (arg2 == "rotation" || arg2 == "rot")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							player->setRotation(glm::vec3(x, y, z) + player->getRotation());
+							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							return true;
+						}
 					}
 				}
 			}
