@@ -455,20 +455,6 @@ std::vector<std::vector<std::shared_ptr<Chunk>>> Voxel::ChunkMap::getNearByChunk
 	return nearBy;
 }
 
-void Voxel::ChunkMap::generateChunk(const int x, const int z)
-{
-	// for sake, just check one more time
-	if (!hasChunkAtXZ(x, z))
-	{
-		std::unique_lock<std::mutex> lock(mapMutex);
-		Chunk* newChunk = Chunk::create(x, z);
-		map.emplace(glm::ivec2(x, z), newChunk);
-
-		// Add to LUt
-		chunkLUT.emplace(glm::ivec2(x, z));
-	}
-}
-
 void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
 {
 	// for sake, just check one more time

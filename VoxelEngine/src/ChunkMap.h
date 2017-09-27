@@ -125,10 +125,7 @@ namespace Voxel
 		std::shared_ptr<Chunk> getChunkAtXZ(int x, int z);
 
 		std::vector<std::vector<std::shared_ptr<Chunk>>> getNearByChunks(const glm::ivec2& chunkXZ);
-
-		// Generate chunk with specific coordinate
-		void generateChunk(const int x, const int z);
-
+		
 		// Generate empty chunk. 
 		void generateEmptyChunk(const int x, const int z);
 
