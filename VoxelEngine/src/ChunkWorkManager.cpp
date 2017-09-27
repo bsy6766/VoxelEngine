@@ -632,6 +632,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						trunkHeight = TreeBuilder::TrunkHeight::LARGE;
 					}
 
+					// Get tree width. 
 					TreeBuilder::TrunkWidth trunkWidth;
 
 					int wRand = Utility::Random::randomInt100();
@@ -645,8 +646,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					}
 					else if (wRand <= 33)
 					{
-						//trunkWidth = TreeBuilder::TrunkWidth::LARGE;
-						trunkWidth = TreeBuilder::TrunkWidth::SMALL;
+						trunkWidth = TreeBuilder::TrunkWidth::LARGE;
 					}
 
 					//auto treeStart = Utility::Time::now();

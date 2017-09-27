@@ -19,11 +19,16 @@ namespace Voxel
 	*	@class Chunk Mesh Manager.
 	*	@brief Manages chunk mesh generation. 
 	*	
-	*	This class manages chunks that need a mesh to be generated.
-	*	Main thread will add chunk coordinate that needs mesh,
-	*	then mesh bulder thread will grab one (FIFO) coordinate
-	*	and generate mesh.
-	*	When it's finish, thread will mark chunk as loaded. 
+	*	Steps
+	*	1) PreGenerate chunk
+	*	- Find which region the chunk is at.
+	*	- Generate height map
+	*	2) Smooth 
+	*	- If chunk is in multiple regions, interplate the height map based on nearby chunk's height
+	*	3) Generate
+	*	- Initialize chunk sections
+	*	- Add blocks based on height map
+	*	
 	*/
 	class ChunkWorkManager
 	{
