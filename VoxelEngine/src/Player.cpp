@@ -247,9 +247,18 @@ bool Voxel::Player::didRotateThisFrame()
 	return rotated;
 }
 
-void Voxel::Player::setMovementSpeed(const float speed)
+void Voxel::Player::setMovementSpeed(float speed)
 {
+	if (speed < 0)
+	{
+		speed = 0;
+	}
 	this->movementSpeed = speed;
+}
+
+float Voxel::Player::getMovementSpeed()
+{
+	return movementSpeed;
 }
 
 glm::vec3 Voxel::Player::getDirection()
@@ -377,22 +386,7 @@ void Voxel::Player::addRotationX(const float x)
 	
 	// Angle x range: 0~90, 360 ~ 270
 	wrapAngle(rotation.x);
-
-	if (rotation.x < 180.0f)
-	{
-		if (rotation.x > 90.0f)
-		{
-			rotation.x = 90.0f;
-		}
-	}
-	else if (rotation.x >= 180.0f)
-	{
-		if (rotation.x < 270.0f)
-		{
-			rotation.x = 270.0f;
-		}
-	}
-
+	wrapAngleX();
 	//std::cout << "x = " << rotation.x << std::endl;
 
 	updateViewMatrix();
@@ -419,9 +413,37 @@ void Player::wrapAngle(float& axis)
 	else if (axis >= 360.0f) axis -= 360.0f;
 }
 
+void Voxel::Player::wrapAngle()
+{
+	wrapAngle(rotation.x);
+	wrapAngle(rotation.y);
+	wrapAngle(rotation.z);
+}
+
+void Voxel::Player::wrapAngleX()
+{
+	if (rotation.x < 180.0f)
+	{
+		if (rotation.x > 90.0f)
+		{
+			rotation.x = 90.0f;
+		}
+	}
+	else if (rotation.x >= 180.0f)
+	{
+		if (rotation.x < 270.0f)
+		{
+			rotation.x = 270.0f;
+		}
+	}
+}
+
 void Voxel::Player::setRotation(const glm::vec3 & newRotation)
 {
 	rotation = newRotation;
+
+	wrapAngle();
+
 	updateViewMatrix();
 	updateDirMatrix();
 	updateDirection();

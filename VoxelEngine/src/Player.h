@@ -53,6 +53,8 @@ namespace Voxel
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
 		void wrapAngle(float& axis);
+		void wrapAngle();
+		void wrapAngleX();
 
 		// temp
 		GLuint yLineVao;
@@ -112,7 +114,8 @@ namespace Voxel
 		bool didRotateThisFrame();
 
 		// Set player movementspeed
-		void setMovementSpeed(const float speed);
+		void setMovementSpeed(float speed);
+		float getMovementSpeed();
 
 		// Get direction of player
 		glm::vec3 getDirection();
