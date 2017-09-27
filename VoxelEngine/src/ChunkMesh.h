@@ -44,7 +44,7 @@ namespace Voxel
 		void initBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& normals, const std::vector<unsigned int>& indices);
 		void loadBuffer(Program* program);
 
-		void bind();
+		bool bind();
 		void render();
 		void unbind();
 
