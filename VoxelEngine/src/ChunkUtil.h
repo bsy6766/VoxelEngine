@@ -7,13 +7,13 @@ namespace Voxel
 {
 	namespace Constant
 	{
-		const static int CHUNK_SECTION_HEIGHT = 32;
-		const static int CHUNK_SECTION_WIDTH = 32;
-		const static int CHUNK_SECTION_LENGTH = 32;
+		const static int CHUNK_SECTION_HEIGHT = 16;
+		const static int CHUNK_SECTION_WIDTH = 16;
+		const static int CHUNK_SECTION_LENGTH = 16;
 		const static unsigned int TOTAL_BLOCKS = CHUNK_SECTION_WIDTH * CHUNK_SECTION_LENGTH * CHUNK_SECTION_HEIGHT;
-		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 8;
+		const static unsigned int TOTAL_CHUNK_SECTION_PER_CHUNK = 16;
 		const static int HEIGHEST_BLOCK_Y = TOTAL_CHUNK_SECTION_PER_CHUNK * CHUNK_SECTION_HEIGHT;
-		const static float CHUNK_BORDER_SIZE = 32.0f;
+		const static float CHUNK_BORDER_SIZE = 16.0f;
 		const static float CHUNK_BORDER_SIZE_HALF = CHUNK_BORDER_SIZE * 0.5f;
 		const static float CHUNK_RANGE = CHUNK_BORDER_SIZE - 2.0f;
 	}
