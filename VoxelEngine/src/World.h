@@ -66,9 +66,12 @@ namespace Voxel
 		Voronoi::Diagram* getVoronoi();
 
 		// Find region that contains the bounding box and return the region(Cell) id. If success, returns true. Else, false.
+		/*
 		bool findRegionWithAABB(const AABB& boundingBox, unsigned int& regionID) const;
 		void findAllRegionsWithAABB(const AABB& boundingBox, std::vector<unsigned int>& regionIDs);
 		bool findFirstRegionHasPoint(const glm::vec2& point, unsigned int& regionID);
+		*/
+
 		unsigned int findClosestRegionToPoint(const glm::vec2& point);
 
 		// Get retion
@@ -78,8 +81,10 @@ namespace Voxel
 		int getRegionDifficulty(const unsigned int regionID);
 
 		// Check if point is in region
+		/*
 		bool isPointInRegion(const unsigned int regionID, const glm::vec2& point);
 		bool isPointInRegionNeighbor(const unsigned int regionID, const glm::vec2& point, unsigned int& neighborID);
+		*/
 
 		// set biome theme
 		void setTemperature(float min, float max);

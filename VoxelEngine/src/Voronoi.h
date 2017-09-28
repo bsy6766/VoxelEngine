@@ -9,6 +9,7 @@
 #include <boost\polygon\voronoi.hpp>
 #include <boost\polygon\segment_data.hpp>
 #include <GL\glew.h>
+#include <memory>
 
 using namespace boost::polygon;
 
@@ -44,13 +45,11 @@ namespace Voxel
 			glm::vec2 getStart();
 			glm::vec2 getEnd();
 
-			bool equal(const Edge* edge);
+			bool equal(const Edge* edge) const;
 			void setOwner(Cell* cell);
-			Cell* getOwner();
 			void setCoOwner(Cell* cell);
 			Cell* getCoOwner();
 		};
-
 		/**
 		*	@class Site
 		*	@brief A vec2 point in voronoi diagram
@@ -90,7 +89,7 @@ namespace Voxel
 			// Position of cell in x and z axis
 			Site* site;
 			// List if edges that forms the cell
-			std::vector<Edge*> edges;
+			std::vector<std::shared_ptr<Edge>> edges;
 			// Number id
 			unsigned int ID;
 			// True if cell is valid. For now, its only for debugging
@@ -112,7 +111,7 @@ namespace Voxel
 			void setSite(Site* site);
 			void setValidation(const bool valid);
 			bool isValid();
-			std::vector<Edge*>& getEdges();
+			std::vector<std::shared_ptr<Edge>>& getEdges();
 			void addNeighbor(Cell* cell);
 			std::list<Cell*>& getNeighbors();
 			unsigned int getNeighborSize();
@@ -168,8 +167,8 @@ namespace Voxel
 			// Build undirected graph between cells
 			unsigned int xzToIndex(const int x, const int z, const int w);
 			bool inRange(const unsigned int index);
-			void checkNeighborCell(std::vector<Edge*>& edges, Cell* curCell, const unsigned int index);
-			bool isConnected(std::vector<Edge*>& edges, Cell* neighborCell);
+			void checkNeighborCell(const std::vector<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index);
+			bool isConnected(const std::vector<std::shared_ptr<Edge>>& edges, Cell* neighborCell);
 
 			// For debug rendering
 			GLuint vao;
@@ -181,9 +180,9 @@ namespace Voxel
 			GLuint graphLineVao;
 			unsigned int graphLineSize;
 
-			// void merge duplicate edges
-			void mergeDuplicatedEdges();
-
+			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
+			void makeEdgesNoisy();
+			
 			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
 			glm::vec2 retrivePoint(const CellType& cell);
@@ -200,6 +199,8 @@ namespace Voxel
 			void randomizeCells(const int w, const int l);
 			// Build graph based on cells.
 			void buildGraph(const int w, const int l);
+			// Remove duplicated edges
+			void removeDuplicatedEdges();
 			// Intialize debug lines of diagram
 			void initDebugDiagram();
 

@@ -60,9 +60,9 @@ namespace Voxel
 		// Random color
 		static inline glm::vec3 getRandomColor()
 		{
-			return glm::vec3(Utility::Random::randomReal(0.5f, 1.0f), 
-							Utility::Random::randomReal(0.5f, 1.0f), 
-							Utility::Random::randomReal(0.5f, 1.0f));
+			return glm::vec3(Utility::Random::randomReal(0.4f, 0.7f), 
+							Utility::Random::randomReal(0.4f, 0.7f), 
+							Utility::Random::randomReal(0.4f, 0.7f));
 		}
 
 		static inline glm::uvec3 getRandomColor255()

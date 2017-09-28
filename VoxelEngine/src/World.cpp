@@ -69,6 +69,7 @@ Voronoi::Diagram * Voxel::World::getVoronoi()
 	return vd;
 }
 
+/*
 bool Voxel::World::findRegionWithAABB(const AABB & boundingBox, unsigned int & regionID) const
 {
 	std::vector<glm::vec2> vertices;
@@ -164,6 +165,7 @@ bool Voxel::World::findFirstRegionHasPoint(const glm::vec2 & point, unsigned int
 
 	return false;
 }
+*/
 
 unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
 {
@@ -221,6 +223,7 @@ int Voxel::World::getRegionDifficulty(const unsigned int regionID)
 	}
 }
 
+/*
 bool Voxel::World::isPointInRegion(const unsigned int regionID, const glm::vec2& point)
 {
 	auto region = getRegion(regionID);
@@ -246,6 +249,7 @@ bool Voxel::World::isPointInRegionNeighbor(const unsigned int regionID, const gl
 		return false;
 	}
 }
+*/
 
 void Voxel::World::setTemperature(float min, float max)
 {
@@ -483,6 +487,7 @@ void Voxel::World::initVoronoi()
 	vd->buildCells(minBound, maxBound);
 	vd->buildGraph(gridWidth, gridLength);
 	vd->randomizeCells(gridWidth, gridLength);
+	vd->removeDuplicatedEdges();
 }
 
 void Voxel::World::initVoronoiDebug()

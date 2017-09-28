@@ -566,19 +566,24 @@ void Voxel::Chunk::render()
 			if (chunkMesh->isBufferLoadable())
 			{
 				chunkMesh->loadBuffer(program);
-			}
 
-			// Now ready to render
-			bool result = chunkMesh->bind();
-			if (result)
-			{
+				// Now ready to render
+				bool result = chunkMesh->bind();
+				if (result)
+				{
+					chunkMesh->render();
+				}
+				else
+				{
+					assert(false);
+				}
 				chunkMesh->render();
 			}
 			else
 			{
-				assert(false);
+				// Not renderable, buffer not ready.
+				return;
 			}
-			chunkMesh->render();
 		}
 	}
 	// Doens't have chunk mesh. should be error

@@ -273,7 +273,7 @@ void Game::createPlayer()
 	player->setPosition(glm::vec3(0, 100, 0));
 	//player->setPosition(glm::vec3(0, 300, 0));
 	//player->setPosition(glm::vec3(-570, 100, 457));
-	player->setPosition(glm::vec3(665, 132, -85));
+	//player->setPosition(glm::vec3(665, 132, -85));
 	//player->setPosition(glm::vec3(2965, 132, -292));
 	//player->setPosition(glm::vec3(681, 132, -85));
 	//player->setPosition(glm::vec3(539, 160, 11));
