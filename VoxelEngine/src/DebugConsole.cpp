@@ -717,7 +717,7 @@ void Voxel::DebugConsole::updateCommandHistory()
 			historyStr += "\n";
 		}
 
-		std::cout << "ch: " << cmdStr << std::endl;
+		//std::cout << "ch: " << cmdStr << std::endl;
 
 		index++;
 	}
