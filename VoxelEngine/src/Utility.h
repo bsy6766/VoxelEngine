@@ -232,6 +232,45 @@ namespace Voxel
 				return glm::to_string(val);
 			}
 		}
+
+		namespace Polygon
+		{
+			static bool isPointInPolygon(const std::vector<glm::vec2>& polygon, const glm::vec2& point)
+			{
+				int nvert = static_cast<int>(polygon.size());
+
+				int i, j, c = 0;
+
+				for (i = 0, j = nvert - 1; i < nvert; j = i++)
+				{
+					if (((polygon.at(i).y > point.y) != (polygon.at(j).y > point.y)) && (point.x < (polygon.at(j).x - polygon.at(i).x) * (point.y - polygon.at(i).y) / (polygon.at(j).y - polygon.at(i).y) + polygon.at(i).x))
+						c = !c;
+				}
+
+				if (c)
+				{
+					return true;
+				}
+				else
+				{
+					for (int i = 0; i < nvert - 1; i++)
+					{
+						if (glm::distance(polygon.at(i), point) + glm::distance(polygon.at(i + 1), point) == glm::distance(polygon.at(i), polygon.at(i + 1)))
+						{
+							return true;
+						}
+					}
+
+					if (glm::distance(polygon.front(), point) + glm::distance(polygon.back(), point) == glm::distance(polygon.front(), polygon.back()))
+					{
+						return true;
+					}
+
+				}
+
+				return false;
+			}
+		}
 	}
 }
 

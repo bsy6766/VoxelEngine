@@ -235,7 +235,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, co
 	std::vector<boost::polygon::point_data<int>> points;
 
 	this->scale = 1.0f;
-	this->debugScale = 1.0f;
+	this->debugScale = 0.1f;
 
 	sitePositions.clear();
 	siteTypes.clear();
@@ -1076,10 +1076,6 @@ void Voxel::Voronoi::Diagram::findShortestPathFromSrc(const unsigned int src, st
 			}
 		}
 	}
-
-	std::vector<unsigned int> path;
-
-	// Iterate over
 }
 
 bool Voxel::Voronoi::Diagram::isPointInBoundary(const glm::vec2 & point)
@@ -1576,6 +1572,10 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
 							continue;
 						}
 
+						auto d = glm::abs(glm::distance(e0, e1));
+
+						int level = static_cast<int>(d / 150.0f * this->scale);
+
 						// mark as visited
 						visited.push_back(edgeData());
 						// Add start of edge to points
@@ -1584,7 +1584,7 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
 						visited.back().edgePtr = edge;
 
 						// Make shared edge noisy
-						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, 4, 4);
+						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, level, level);
 						// add end of edge
 						visited.back().points.push_back(edge->getEnd());
 					}
@@ -1692,11 +1692,25 @@ void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::ve
 	}
 	else
 	{
-		division = 0.5f;
+		division = Utility::Random::randomInt(0, 1) ? Utility::Random::randomReal<float>(0.55f, 0.6f) : Utility::Random::randomReal<float>(0.4f, 0.45f);
+		//division = 0.5f;
 	}
 
 	auto cd = c1 - c0;
 	auto cMid = c0 + (cd * division);
+
+	if (startLevel == level)
+	{
+		// Need to check if cMid is in polygon
+		std::vector<glm::vec2> points = { e0, c0, e1, c1 };
+
+		bool inPolygon = Utility::Polygon::isPointInPolygon(points, cMid);
+		if (!inPolygon)
+		{
+			points.clear();
+			return;
+		}
+	}
 
 	//auto ed = e1 - e0;
 	//auto eMid = e0 + (ed * division);

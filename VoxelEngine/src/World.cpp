@@ -704,6 +704,9 @@ void Voxel::World::rebuildRegions()
 	regions.clear();
 
 	initRegions();
+	initRegionDifficulty();
+	initRegionBiome();
+	initRegionTerrain();
 }
 
 void Voxel::World::render()
