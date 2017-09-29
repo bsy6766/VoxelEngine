@@ -73,6 +73,8 @@ namespace Voxel
 		*/
 
 		unsigned int findClosestRegionToPoint(const glm::vec2& point);
+		unsigned int findRegionHasPoint(const glm::vec2& point);
+		bool isPointInBoundary(const glm::vec2& point);
 
 		// Get retion
 		Region* getRegion(const unsigned int regionID);

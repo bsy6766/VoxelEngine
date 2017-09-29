@@ -348,6 +348,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 			if (workType == WorkType::PRE_GENERATE)
 			{
+				//auto start = Utility::Time::now();
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
@@ -371,7 +372,38 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
 
 							// First, check if block is in region that we found
-							unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
+							//unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
+							bool inBoundary = world->isPointInBoundary(blockXZPos);
+							unsigned int regionID = -1;
+							
+							if (inBoundary)
+							{
+								//regionID = world->findRegionHasPoint(blockXZPos);
+								// find closest region
+								unsigned int closestRegionID = world->findClosestRegionToPoint(blockXZPos);
+								// get the region
+								auto region = world->getRegion(closestRegionID);
+
+								// Check if closest region has block 
+								if (region->isPointIsInRegion(blockXZPos))
+								{
+									// found
+									regionID = closestRegionID;
+								}
+								else
+								{
+									// Nope, check if neighbor regions has block
+									if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
+									{
+										// found
+									}
+									else
+									{
+										// hmm
+										assert(false);
+									}
+								}
+							}
 
 							// convert to index
 							auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
@@ -387,19 +419,27 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							if (find_it == regionIDSet.end())
 							{
 								// New region ID
-								if (regionID == -1)
+								if (inBoundary)
 								{
-									// block is out of boundary
-									map->setRegionTerrainType(-1, Terrain());
+									if (regionID == -1)
+									{
+										// Failed to find region
+										assert(false);
+									}
+									else
+									{
+										// block is not out of boundary. 
+										// Get terarin type of region
+										auto terrainType = world->getRegion(regionID)->getTerrainType();
+										// Save it
+										map->setRegionTerrainType(regionID, terrainType);
+										terrainTypeSet.emplace(terrainType.getType());
+									}
 								}
 								else
 								{
-									// block is not out of boundary. 
-									// Get terarin type of region
-									auto terrainType = world->getRegion(regionID)->getTerrainType();
-									// Save it
-									map->setRegionTerrainType(regionID, terrainType);
-									terrainTypeSet.emplace(terrainType.getType());
+									// block is out of boundary
+									map->setRegionTerrainType(-1, Terrain());
 								}
 
 								// Save region ID
@@ -414,6 +454,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					// Generate height map.
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
+					HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), chunk->plainHeightMap);
 					chunk->smoothed = false;
 
 					if (regionIDSet.size() == 1)
@@ -429,6 +470,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					addSmoothWork(chunkXZ);
 				}
+				//auto end = Utility::Time::now();
+				//std::cout << "pg t: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 			}
 			else if (workType == WorkType::SMOOTH)
 			{
@@ -452,7 +495,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							const int q22 = nearByChunks.at(0).at(0)->getQ11();
 
 							chunk->smoothed = true;
-
 							HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
 
 							/*
@@ -579,7 +621,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							}
 						}
 
-						chunk->preGenerateChunkSections(1, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
+						chunk->preGenerateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
 
 						// All chunks starts from chunk section 3 because sea level starts at 33.
 						chunk->generate();
@@ -650,7 +692,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					}
 
 					//auto treeStart = Utility::Time::now();
-					TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY);
+					//TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY);
 					//auto treeEnd = Utility::Time::now();
 
 					//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;

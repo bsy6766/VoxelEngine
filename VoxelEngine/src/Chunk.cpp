@@ -148,7 +148,7 @@ bool Voxel::Chunk::generate()
 	{
 		if (chunkSection != nullptr)
 		{
-			chunkSection->init(regionMap, heightMap, colorMap);
+			chunkSection->init(regionMap, heightMap, plainHeightMap, colorMap);
 		}
 	}
 
@@ -538,6 +538,17 @@ int Voxel::Chunk::findMaxY()
 		}
 	}
 
+	for (auto& row : plainHeightMap)
+	{
+		for (auto& val : row)
+		{
+			if (val > max)
+			{
+				max = val;
+			}
+		}
+	}
+
 	return max;
 }
 
@@ -678,4 +689,31 @@ bool Voxel::Chunk::isSmoothed()
 void Voxel::Chunk::updateTimestamp(const double timestamp)
 {
 	this->timestamp = timestamp;
+}
+
+void Voxel::Chunk::print()
+{
+	std::cout << "Chunk (" << position.x << ", " << position.z << ") info." << std::endl;
+	std::cout << "World position = " << Utility::Log::vec3ToStr(worldPosition) << std::endl;
+	std::cout << "Active: " << (active ? "True" : "False") << std::endl;
+	std::cout << "Visible: " << (visible ? "True" : "False") << std::endl;
+	std::cout << "Generated: " << (generated.load() ? "True" : "False") << std::endl;
+	if (regionMap.size() == 1)
+	{
+		std::cout << "Region: " << regionMap.front() << std::endl;
+	}
+	else
+	{
+		int c = 0;
+		for (auto i : regionMap)
+		{
+			std::cout << i << " ";
+			c++;
+			if (c >= 16)
+			{
+				std::cout << std::endl;
+				c = 0;
+			}
+		}
+	}
 }

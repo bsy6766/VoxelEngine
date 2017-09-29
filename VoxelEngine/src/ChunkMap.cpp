@@ -1875,3 +1875,9 @@ void Voxel::ChunkMap::renderBlockOutline(Program * lineProgram, const glm::vec3&
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 	}
 }
+
+void Voxel::ChunkMap::printCurrentChunk()
+{
+	auto chunk = getChunkAtXZ(currentChunkPos.x, currentChunkPos.y);
+	chunk->print();
+}

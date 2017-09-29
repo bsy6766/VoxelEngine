@@ -230,6 +230,19 @@ bool Voxel::Region::isCellValid()
 	return cell->isValid();
 }
 
+std::vector<unsigned int> Voxel::Region::getNeighborRegionIDList()
+{
+	auto& nCells = cell->getNeighbors();
+	std::vector<unsigned int> ids;
+
+	for (auto nc : nCells)
+	{
+		ids.push_back(nc->getRegion()->getID());
+	}
+
+	return ids;
+}
+
 unsigned int Voxel::Region::getID()
 {
 	return cell->getID();

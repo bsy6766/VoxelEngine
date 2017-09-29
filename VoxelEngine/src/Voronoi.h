@@ -37,6 +37,8 @@ namespace Voxel
 			Cell* owner;
 			// Cell that shares this edge
 			Cell* coOwner;
+
+			// bool 
 		public:
 			Edge() = delete;
 			Edge(const glm::vec2& start, const glm::vec2& end);
@@ -47,6 +49,7 @@ namespace Voxel
 
 			bool equal(const Edge* edge) const;
 			void setOwner(Cell* cell);
+			Cell* getOwner();
 			void setCoOwner(Cell* cell);
 			Cell* getCoOwner();
 		};
@@ -89,7 +92,7 @@ namespace Voxel
 			// Position of cell in x and z axis
 			Site* site;
 			// List if edges that forms the cell
-			std::vector<std::shared_ptr<Edge>> edges;
+			std::list<std::shared_ptr<Edge>> edges;
 			// Number id
 			unsigned int ID;
 			// True if cell is valid. For now, its only for debugging
@@ -111,7 +114,7 @@ namespace Voxel
 			void setSite(Site* site);
 			void setValidation(const bool valid);
 			bool isValid();
-			std::vector<std::shared_ptr<Edge>>& getEdges();
+			std::list<std::shared_ptr<Edge>>& getEdges();
 			void addNeighbor(Cell* cell);
 			std::list<Cell*>& getNeighbors();
 			unsigned int getNeighborSize();
@@ -145,7 +148,7 @@ namespace Voxel
 			boost::polygon::voronoi_diagram<double> vd;
 
 			// List of cells. key equals to cell's ID that made from boost
-			std::unordered_map<unsigned int, Cell*> cells;
+			std::map<unsigned int, Cell*> cells;
 			// Set of all edges
 			std::unordered_set<Edge*> edges;
 
@@ -167,8 +170,8 @@ namespace Voxel
 			// Build undirected graph between cells
 			unsigned int xzToIndex(const int x, const int z, const int w);
 			bool inRange(const unsigned int index);
-			void checkNeighborCell(const std::vector<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index);
-			bool isConnected(const std::vector<std::shared_ptr<Edge>>& edges, Cell* neighborCell);
+			void checkNeighborCell(const std::list<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index);
+			bool isConnected(const std::list<std::shared_ptr<Edge>>& edges, Cell* neighborCell);
 
 			// For debug rendering
 			GLuint vao;
@@ -180,8 +183,15 @@ namespace Voxel
 			GLuint graphLineVao;
 			unsigned int graphLineSize;
 
-			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
-			void makeEdgesNoisy();
+			/**
+			*	helper recursion function for noisy edge
+			*	@param [in] e0 Start vertex of edge
+			*	@param [in] e1 End vertex of edge
+			*	@param [in] c0 Owner cell position of edge
+			*	@param [in] c1 CoOwner cell position of edge
+			*	@param level A level of recursion.
+			*/
+			void buildNoisyEdge(const glm::vec2& e0, const glm::vec2& e1, const glm::vec2& c0, const glm::vec2& c1, std::vector<glm::vec2>& points, int level, const int startLevel);
 			
 			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
@@ -192,20 +202,25 @@ namespace Voxel
 
 			// Construct voronoi diagram based on random sites
 			//void construct(const std::vector<glm::ivec2>& randomSites);
-			void construct(const std::vector<Site>& randomSites);
+			void construct(const std::vector<Site>& randomSites, const float minBound, const float maxBound);
+			// Relax voronoi diagram by using Lloyd's relaxation algorithm
+			std::vector<Site> relax();
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
-			void buildCells(const float minBound, const float maxBound);
+			void buildCells(boost::polygon::voronoi_diagram<double>& vd);
 			// Randomize cells by removing cells
 			void randomizeCells(const int w, const int l);
 			// Build graph based on cells.
 			void buildGraph(const int w, const int l);
 			// Remove duplicated edges
 			void removeDuplicatedEdges();
+			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
+			void makeEdgesNoisy();
+			void makeSharedEdgesNoisy();
 			// Intialize debug lines of diagram
 			void initDebugDiagram();
 
 			// get cells
-			std::unordered_map<unsigned int, Cell*>& getCells();
+			std::map<unsigned int, Cell*>& getCells();
 
 			// Find shortest path from src to all cell using dijkstra
 			void findShortestPathFromSrc(const unsigned int src, std::vector<float>& dist, std::vector<unsigned int>& prevPath);

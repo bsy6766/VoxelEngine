@@ -22,6 +22,11 @@ World::World()
 
 World::~World()
 {
+	if (vd)
+	{
+		delete vd;
+	}
+
 	for (auto& e : regions)
 	{
 		if (e.second)
@@ -31,11 +36,6 @@ World::~World()
 	}
 
 	regions.clear();
-
-	if (vd)
-	{
-		delete vd;
-	}
 }
 
 
@@ -195,6 +195,28 @@ unsigned int Voxel::World::findClosestRegionToPoint(const glm::vec2 & point)
 	{
 		return -1;
 	}
+}
+
+unsigned int Voxel::World::findRegionHasPoint(const glm::vec2 & point)
+{
+	unsigned int regionID = -1;
+
+	for (auto& e : regions)
+	{
+		auto region = e.second;
+
+		if (region->isPointIsInRegion(point))
+		{
+			return e.first;
+		}
+	}
+
+	return regionID;
+}
+
+bool Voxel::World::isPointInBoundary(const glm::vec2 & point)
+{
+	return vd->isPointInBoundary(point);
 }
 
 Region * Voxel::World::getRegion(const unsigned int regionID)
@@ -478,16 +500,23 @@ void Voxel::World::initVoronoi()
 		pos.x -= interval;
 	}
 
-	vd = new Voronoi::Diagram();
-	vd->construct(points);
-
 	const float minBound = static_cast<float>(xPos * interval * -1);
 	const float maxBound = static_cast<float>(xPos * interval);
 
-	vd->buildCells(minBound, maxBound);
+	vd = new Voronoi::Diagram();
+	vd->construct(points, minBound, maxBound);
+
+	//points = vd->relax();
+	//vd->construct(points, minBound, maxBound);
+	//points = vd->relax();
+	//vd->construct(points, minBound, maxBound);
+	//vd->buildCells(minBound, maxBound);
+
 	vd->buildGraph(gridWidth, gridLength);
 	vd->randomizeCells(gridWidth, gridLength);
-	vd->removeDuplicatedEdges();
+	//vd->removeDuplicatedEdges();
+	//vd->makeEdgesNoisy();
+	vd->makeSharedEdgesNoisy();
 }
 
 void Voxel::World::initVoronoiDebug()

@@ -200,6 +200,9 @@ namespace Voxel
 
 		// render block outline
 		void renderBlockOutline(Program* lineProgram, const glm::vec3& blockPosition);
+
+		// debug print
+		void printCurrentChunk();
 	};
 }
 

@@ -144,7 +144,7 @@ ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int
 	}
 }
 
-void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
+void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<int>>& plainHeightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	int yStart = position.y * Constant::CHUNK_SECTION_HEIGHT;
 
@@ -164,7 +164,7 @@ void Voxel::ChunkSection::init(const std::vector<unsigned int>& regionMap, const
 		{
 			int localY = 0;
 			int heightY = heightMap.at(blockX).at(blockZ);
-			int plainHeightY = static_cast<int>(glm::round(HeightMap::getNoise2D(nx, nz, HeightMap::PRESET::PLAIN)));
+			int plainHeightY = plainHeightMap.at(blockX).at(blockZ);
 
 			nz += step;
 

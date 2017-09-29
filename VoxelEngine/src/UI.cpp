@@ -1174,11 +1174,12 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+	//============= find error here
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-
+	//========================
 	glBindVertexArray(0);
 
 	this->boxMin = glm::vec2(vertices.at(6), vertices.at(7));

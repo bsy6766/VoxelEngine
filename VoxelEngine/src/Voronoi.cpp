@@ -15,7 +15,9 @@ Voxel::Voronoi::Edge::Edge(const glm::vec2& start, const glm::vec2& end)
 	, end(end)
 	, owner(nullptr)
 	, coOwner(nullptr)
-{}
+{
+	//std::cout << "edge dist = " << glm::abs(glm::distance(start, end)) << std::endl;
+}
 
 glm::vec2 Voxel::Voronoi::Edge::getStart()
 {
@@ -46,6 +48,11 @@ bool Voxel::Voronoi::Edge::equal(const Edge * edge) const
 void Voxel::Voronoi::Edge::setOwner(Cell * cell)
 {
 	this->owner = cell;
+}
+
+Cell * Voxel::Voronoi::Edge::getOwner()
+{
+	return owner;
 }
 
 void Voxel::Voronoi::Edge::setCoOwner(Cell * cell)
@@ -110,7 +117,7 @@ bool Voxel::Voronoi::Cell::isValid()
 	return valid;
 }
 
-std::vector<std::shared_ptr<Edge>>& Voxel::Voronoi::Cell::getEdges()
+std::list<std::shared_ptr<Edge>>& Voxel::Voronoi::Cell::getEdges()
 {
 	return edges;
 }
@@ -219,7 +226,7 @@ Voxel::Voronoi::Diagram::~Diagram()
 	}
 }
 
-void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
+void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, const float minBound, const float maxBound)
 {
 	auto start = Utility::Time::now();
 
@@ -228,7 +235,14 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 	std::vector<boost::polygon::point_data<int>> points;
 
 	this->scale = 1.0f;
-	this->debugScale = 0.05f;
+	this->debugScale = 1.0f;
+
+	sitePositions.clear();
+	siteTypes.clear();
+
+	// save bound
+	this->minBound = minBound * this->scale;
+	this->maxBound = maxBound * this->scale;
 
 	for (auto site : randomSites)
 	{
@@ -242,21 +256,104 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites)
 		points.push_back(boost::polygon::point_data<int>(x, z));
 	}
 
-	// Construct voronoi diagram
+	vd.clear();
 	boost::polygon::construct_voronoi(points.begin(), points.end(), &vd);
 
+	buildCells(vd);
+		
 	auto end = Utility::Time::now();
 
 	std::cout << "Voronoi construction took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::buildCells(const float minBound, const float maxBound)
+std::vector<Site> Voxel::Voronoi::Diagram::relax()
+{
+	std::vector<Site> relaxedSites;
+
+	for (auto& entry : cells)
+	{
+		auto cell = entry.second;
+
+		if (cell->isValid())
+		{
+			auto& edges = cell->getEdges();
+
+			std::vector<glm::vec2> points;
+			points.push_back(edges.front()->getStart());
+			
+			for (auto& edge : edges)
+			{
+				points.push_back(edge->getEnd());
+			}
+
+			glm::vec2 centroid(0);
+
+			float signedArea = 0.0f;
+			float x0 = 0.0f;
+			float y0 = 0.0f;
+			float x1 = 0.0f;
+			float y1 = 0.0f;
+			float a = 0.0f;
+
+			auto size = points.size();
+
+			unsigned int i = 0;
+			for (i = 0; i < size - 1; i++)
+			{
+				x0 = points[i].x;
+				y0 = points[i].y;
+				x1 = points[i + 1].x;
+				y1 = points[i + 1].y;
+				a = x0*y1 - x1*y0;
+				signedArea += a;
+				centroid.x += (x0 + x1)*a;
+				centroid.y += (y0 + y1)*a;
+			}
+
+			x0 = points[i].x;
+			y0 = points[i].y;
+			x1 = points[0].x;
+			y1 = points[0].y;
+			a = x0 * y1 - x1 * y0;
+			signedArea += a;
+			centroid.x += (x0 + x1) * a;
+			centroid.y += (y0 + y1) * a;
+
+			signedArea *= 0.5f;
+			centroid.x /= (6.0f * signedArea);
+			centroid.y /= (6.0f * signedArea);
+
+			relaxedSites.push_back(Site(centroid, cell->getSiteType()));
+		}
+		else
+		{
+			relaxedSites.push_back(Site(cell->getSitePosition(), cell->getSiteType()));
+		}
+	}
+
+	std::reverse(relaxedSites.begin(), relaxedSites.end());
+
+	return relaxedSites;
+}
+
+void Voxel::Voronoi::Diagram::buildCells(boost::polygon::voronoi_diagram<double>& vd)
 {
 	auto start = Utility::Time::now();
 
-	// save bound
-	this->minBound = minBound * this->scale;
-	this->maxBound = maxBound * this->scale;
+	totalValidCells = 0;
+
+	if (cells.empty() == false)
+	{
+		for (auto cell : cells)
+		{
+			if (cell.second)
+			{
+				delete cell.second;
+			}
+		}
+
+		cells.clear();
+	}
 
 	// Iterate cells. Ignore all the cells that contains infinite edge
 	for (auto it = vd.cells().begin(); it != vd.cells().end(); ++it)
@@ -485,6 +582,10 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 					index++;
 					//std::cout << "Success!" << std::endl;
 				}
+			}
+			else
+			{
+				index++;
 			}
 		}
 	}
@@ -913,7 +1014,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram()
 	graphLineSize = graphBuffer.size() / 7;
 }
 
-std::unordered_map<unsigned int, Cell*>& Voxel::Voronoi::Diagram::getCells()
+std::map<unsigned int, Cell*>& Voxel::Voronoi::Diagram::getCells()
 {
 	return cells;
 }
@@ -1019,44 +1120,32 @@ void Voxel::Voronoi::Diagram::buildGraph(const int w, const int l)
 			{
 				// Check if cell is valid
 				auto& cell = find_it->second;
+				auto cellID = cell->getID();
 				auto& edges = cell->getEdges();
 
 				if (cell->isValid())
 				{
-					// Check all 8 adjacent cells. 
+					// Check all 24 adjacent cells (d == 2)
+					int xStart = x - 2;
+					int zStart = z - 2;
+					int xEnd = x + 2;
+					int zEnd = z + 2;
 
-					// top
-					auto topIndex = xzToIndex(x - 1, z, w);
-					checkNeighborCell(edges, cell, topIndex);
-
-					// bottom
-					auto botIndex = xzToIndex(x + 1, z, w);
-					checkNeighborCell(edges, cell, botIndex);
-
-					// left top
-					auto leftTopIndex = xzToIndex(x - 1, z - 1, w);
-					checkNeighborCell(edges, cell, leftTopIndex);
-
-					// left
-					auto leftIndex = xzToIndex(x, z - 1, w);
-					checkNeighborCell(edges, cell, leftIndex);
-
-					// left bottom
-					auto leftBotIndex = xzToIndex(x + 1, z - 1, w);
-					checkNeighborCell(edges, cell, leftBotIndex);
-
-					// right top
-					auto rightTopIndex = xzToIndex(x - 1, z + 1, w);
-					checkNeighborCell(edges, cell, rightTopIndex);
-
-					// right
-					auto rightIndex = xzToIndex(x, z + 1, w);
-					checkNeighborCell(edges, cell, rightIndex);
-
-					// right bottom
-					auto rightBotIndex = xzToIndex(x + 1, z + 1, w);
-					checkNeighborCell(edges, cell, rightBotIndex);
-
+					for (int cX = xStart; cX <= xEnd; cX++)
+					{
+						for (int cZ = zStart; cZ <= zEnd; cZ++)
+						{
+							if (cX == x && cZ == z)
+							{
+								continue;
+							}
+							else
+							{
+								auto cIndex = xzToIndex(cX, cZ, w);
+								checkNeighborCell(edges, cell, cIndex);
+							}
+						}
+					}
 				}
 				else
 				{
@@ -1130,13 +1219,12 @@ void Voxel::Voronoi::Diagram::removeDuplicatedEdges()
 				visited.push_back(edge.get());
 				auto& coOwnerEdges = coOwner->getEdges();
 				auto size = coOwnerEdges.size();
-				for (unsigned int i = 0; i < size; i++)
-				{
-					if (coOwnerEdges.at(i)->equal(edge.get()))
-					{
-						coOwnerEdges.at(i) = nullptr;
 
-						coOwnerEdges.at(i) = edge;
+				for (auto& cEdge : coOwnerEdges)
+				{
+					if (cEdge->equal(edge.get()))
+					{
+						cEdge = edge;
 					}
 				}
 			}
@@ -1197,11 +1285,12 @@ bool Voxel::Voronoi::Diagram::inRange(const unsigned int index)
 	return (index >= 0) && (index < cells.size());
 }
 
-void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index)
+void Voxel::Voronoi::Diagram::checkNeighborCell(const std::list<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index)
 {
 	if (inRange(index))
 	{
 		auto nCell = cells.find(index)->second;
+		auto nCellID = nCell->getID();
 		if (isConnected(edges, nCell))
 		{
 			curCell->addNeighbor(nCell);
@@ -1209,7 +1298,7 @@ void Voxel::Voronoi::Diagram::checkNeighborCell(const std::vector<std::shared_pt
 	}
 }
 
-bool Voxel::Voronoi::Diagram::isConnected(const std::vector<std::shared_ptr<Edge>>& edges, Cell* neighborCell)
+bool Voxel::Voronoi::Diagram::isConnected(const std::list<std::shared_ptr<Edge>>& edges, Cell* neighborCell)
 {
 	if (neighborCell->isValid())
 	{
@@ -1232,6 +1321,403 @@ bool Voxel::Voronoi::Diagram::isConnected(const std::vector<std::shared_ptr<Edge
 
 void Voxel::Voronoi::Diagram::makeEdgesNoisy()
 {
+	auto start = Utility::Time::now();
+	struct CellPair
+	{
+		unsigned int c0ID;
+		unsigned int c1ID;
+
+		std::vector<glm::vec2> points;
+	};
+
+	std::vector<CellPair> visited;
+	
+	// iterate all cells
+	for (auto& entry : cells)
+	{
+		auto cell = entry.second;
+		// Only for valid cell
+		if (cell->isValid())
+		{
+			// Get all edges
+			auto& edges = cell->getEdges();
+			auto cellID = cell->getID();
+
+			// iterate edges
+			for (auto& edge : edges)
+			{
+				// Check coOwner
+				auto coOwner = edge->getCoOwner();
+				if (coOwner)
+				{
+					// shared edge. Check if this edge is already visited
+					bool skip = false;
+					auto coOwnerId = coOwner->getID();
+
+					if (coOwnerId == cellID)
+					{
+						continue;
+					}
+
+					for (auto& pair : visited)
+					{
+						// check cell id
+						if ((pair.c0ID == cellID && pair.c1ID == coOwnerId) || (pair.c0ID == coOwnerId && pair.c1ID == cellID))
+						{
+							// Already visited
+							skip = true;
+							break;
+						}
+					}
+
+					if (skip)
+					{
+						// skip already visited
+						continue;
+					}
+					else
+					{
+						auto e0 = edge->getStart();
+						auto e1 = edge->getEnd();
+
+						if (glm::abs(glm::distance(e0, e1)) < (200.0f * this->scale))
+						{
+							continue;
+						}
+
+						// mark as visited
+						visited.push_back({ cellID, coOwnerId });
+						// Add start of edge to points
+						visited.back().points.push_back(edge->getStart());
+
+						// Make shared edge noisy
+						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, 3, 3);
+						// add end of edge
+						visited.back().points.push_back(edge->getEnd());
+					}
+				}
+				else
+				{
+					// This edge is not shared
+					continue;
+				}
+			}
+		}
+	}
+	
+	// iterate through visited edge.
+	for (auto& pair : visited)
+	{
+		// get cells
+		auto find_c0 = cells.find(pair.c0ID);
+		auto find_c1 = cells.find(pair.c1ID);
+		if (find_c0 == cells.end() || find_c1 == cells.end())
+		{
+			// cells not found
+			continue;
+		}
+		else
+		{
+			auto owner = find_c0->second;
+			auto coOwner = find_c1->second;
+
+			// get ids
+			auto cellID = owner->getID();
+			auto coOwnerID = coOwner->getID();
+
+			// check ptr
+			if (owner && coOwner)
+			{
+				// get edges
+				auto& ownerEdges = owner->getEdges();
+				auto& coOwnerEdges = coOwner->getEdges();
+
+				// iterators
+				auto oEdge_it = ownerEdges.begin();
+				auto cEdge_it = coOwnerEdges.begin();
+
+				// Iterate through edges and find shared edge. remove the share edge
+				for (; oEdge_it != ownerEdges.end();)
+				{
+					auto edgeCoOwner = (*oEdge_it)->getCoOwner();
+					if (edgeCoOwner)
+					{
+						if (edgeCoOwner->getID() == coOwnerID)
+						{
+							oEdge_it = ownerEdges.erase(oEdge_it);
+							break;
+						}
+					}
+
+					oEdge_it++;
+				}
+
+				for (; cEdge_it != coOwnerEdges.end();)
+				{
+					auto edgeCoOwner = (*cEdge_it)->getCoOwner();
+					if (edgeCoOwner)
+					{
+						if (edgeCoOwner->getID() == cellID)
+						{
+							cEdge_it = coOwnerEdges.erase(cEdge_it);
+							break;
+						}
+					}
+
+					cEdge_it++;
+				}
+
+				if (cEdge_it == coOwnerEdges.end())
+				{
+					cEdge_it = coOwnerEdges.begin();
+					for (; cEdge_it != coOwnerEdges.end();)
+					{
+						auto edgeCoOwner = (*cEdge_it)->getOwner();
+						if (edgeCoOwner)
+						{
+							if (edgeCoOwner->getID() == cellID)
+							{
+								cEdge_it = coOwnerEdges.erase(cEdge_it);
+								break;
+							}
+						}
+
+						cEdge_it++;
+					}
+				}
+
+				auto size = pair.points.size() - 1;
+				for (unsigned int i = 0; i < size; i++)
+				{
+					Edge* newEdge = new Edge(pair.points.at(i), pair.points.at(i + 1));
+					newEdge->setOwner(owner);
+					newEdge->setCoOwner(coOwner);
+
+					std::shared_ptr<Edge> ptr(newEdge);
+
+					ownerEdges.insert(oEdge_it, ptr);
+					coOwnerEdges.insert(cEdge_it, ptr);
+				}
+			}
+		}
+	}
+	auto end = Utility::Time::now();
+
+	std::cout << "Edge noise took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
+{
+	auto start = Utility::Time::now();
+	struct edgeData
+	{
+		std::shared_ptr<Edge> edgePtr;
+
+		std::vector<glm::vec2> points;
+
+		bool equal(const unsigned int c0ID, const unsigned int c1ID)
+		{
+			return (edgePtr->getOwner()->getID() == c0ID && edgePtr->getCoOwner()->getID() == c1ID) || (edgePtr->getOwner()->getID() == c1ID && edgePtr->getCoOwner()->getID() == c0ID);
+		}
+	};
+
+	std::vector<edgeData> visited;
+
+	// iterate all cells. Find all shared edge and record the nosiy points
+	for (auto& entry : cells)
+	{
+		auto cell = entry.second;
+		// Only for valid cell
+		if (cell->isValid())
+		{
+			// Get all edges
+			auto& edges = cell->getEdges();
+			auto cellID = cell->getID();
+
+			// iterate edges
+			for (auto& edge : edges)
+			{
+				// Check coOwner
+				auto coOwner = edge->getCoOwner();
+				if (coOwner)
+				{
+					// shared edge. Check if this edge is already visited
+					bool skip = false;
+					auto coOwnerId = coOwner->getID();
+
+					if (coOwnerId == cellID)
+					{
+						continue;
+					}
+
+					for (auto& pair : visited)
+					{
+						// check cell id
+						if(pair.equal(cellID, coOwnerId))
+						{
+							// Already visited
+							skip = true;
+							break;
+						}
+					}
+
+					if (skip)
+					{
+						// skip already visited
+						continue;
+					}
+					else
+					{
+						auto e0 = edge->getStart();
+						auto e1 = edge->getEnd();
+
+						if (glm::abs(glm::distance(e0, e1)) < (200.0f * this->scale))
+						{
+							continue;
+						}
+
+						// mark as visited
+						visited.push_back(edgeData());
+						// Add start of edge to points
+						visited.back().points.push_back(edge->getStart());
+						// Add edge
+						visited.back().edgePtr = edge;
+
+						// Make shared edge noisy
+						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, 4, 4);
+						// add end of edge
+						visited.back().points.push_back(edge->getEnd());
+					}
+				}
+				else
+				{
+					// This edge is not shared
+					continue;
+				}
+			}
+		}
+	}
+
+	// iterate through visited edge.
+	for (auto& pair : visited)
+	{
+		auto owner = pair.edgePtr->getOwner();
+		auto coOwner = pair.edgePtr->getCoOwner();
+
+		// get ids
+		auto ownerID = owner->getID();
+		auto coOwnerID = coOwner->getID();
+
+		if (owner && coOwner)
+		{
+			auto& oEdges = owner->getEdges();
+			auto& cEdges = coOwner->getEdges();
+
+			// iterators
+			auto oEdge_it = oEdges.begin();
+			auto cEdge_it = cEdges.begin();
+
+			for (; oEdge_it != oEdges.end();)
+			{
+				auto edgeCoOwner = (*oEdge_it)->getCoOwner();
+				if (edgeCoOwner)
+				{
+					if (edgeCoOwner->getID() == coOwnerID)
+					{
+						oEdge_it = oEdges.erase(oEdge_it);
+						break;
+					}
+				}
+
+				oEdge_it++;
+			}
+
+			auto size = pair.points.size() - 1;
+			for (unsigned int i = 0; i < size; i++)
+			{
+				Edge* newEdge = new Edge(pair.points.at(i), pair.points.at(i + 1));
+				newEdge->setOwner(owner);
+				newEdge->setCoOwner(coOwner);
+
+				std::shared_ptr<Edge> ptr(newEdge);
+
+				oEdges.insert(oEdge_it, ptr);
+			}
+
+			for (; cEdge_it != cEdges.end();)
+			{
+				auto edgeCoOwner = (*cEdge_it)->getCoOwner();
+				if (edgeCoOwner)
+				{
+					if (edgeCoOwner->getID() == ownerID)
+					{
+						cEdge_it = cEdges.erase(cEdge_it);
+						break;
+					}
+				}
+
+				cEdge_it++;
+			}
+
+			std::vector<glm::vec2> reversedPoints = pair.points;
+			std::reverse(reversedPoints.begin(), reversedPoints.end());
+
+			auto reversedSize = reversedPoints.size() - 1;
+			for (unsigned int i = 0; i < reversedSize; i++)
+			{
+				Edge* newEdge = new Edge(reversedPoints.at(i), reversedPoints.at(i + 1));
+				newEdge->setOwner(coOwner);
+				newEdge->setCoOwner(owner);
+
+				std::shared_ptr<Edge> ptr(newEdge);
+
+				cEdges.insert(cEdge_it, ptr);
+			}
+
+		}
+	}
+
+	auto end = Utility::Time::now();
+
+	std::cout << "Edge noise took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
+
+void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::vec2 & e1, const glm::vec2 & c0, const glm::vec2 & c1, std::vector<glm::vec2>& points, int level, const int startLevel)
+{
+	auto division = 0.0f;
+	
+	if (startLevel == level)
+	{
+		division = Utility::Random::randomInt(0, 1) ? Utility::Random::randomReal<float>(0.6f, 0.7f) : Utility::Random::randomReal<float>(0.3f, 0.4f);
+	}
+	else
+	{
+		division = 0.5f;
+	}
+
+	auto cd = c1 - c0;
+	auto cMid = c0 + (cd * division);
+
+	//auto ed = e1 - e0;
+	//auto eMid = e0 + (ed * division);
+
+	if (level != 0)
+	{
+		auto e0c0Mid = (c0 + e0) * 0.5f;
+		auto e1c0Mid = (c0 + e1) * 0.5f;
+		auto e0c1Mid = (c1 + e0) * 0.5f;
+		auto e1c1Mid = (c1 + e1) * 0.5f;
+
+		// left
+		buildNoisyEdge(e0, cMid, e0c0Mid, e0c1Mid, points, level - 1, startLevel);
+
+		// right
+		buildNoisyEdge(cMid, e1, e1c0Mid, e1c1Mid, points, level - 1, startLevel);
+	}
+	else
+	{
+		points.push_back(cMid);
+	}
 }
 
 void Voxel::Voronoi::Diagram::clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound)

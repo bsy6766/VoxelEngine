@@ -74,6 +74,8 @@ namespace Voxel
 		// Cehck if region's cell is valid
 		bool isCellValid();
 
+		std::vector<unsigned int> getNeighborRegionIDList();
+
 		// Get cell id
 		unsigned int getID();
 	};

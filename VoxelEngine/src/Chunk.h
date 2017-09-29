@@ -44,6 +44,7 @@ namespace Voxel
 
 		// Height map data for each block. Once chunk is generated, this will be cleared
 		std::vector<std::vector<int>> heightMap;
+		std::vector<std::vector<int>> plainHeightMap;
 
 		// true if height map is smoothed
 		bool smoothed;
@@ -148,6 +149,8 @@ namespace Voxel
 
 		// Update chunk's last activated timestamp
 		void updateTimestamp(const double timestamp);
+
+		void print();
 	};
 
 }
