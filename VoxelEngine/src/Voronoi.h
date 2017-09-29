@@ -178,8 +178,10 @@ namespace Voxel
 			unsigned int size;
 			GLuint fillVao;
 			unsigned int fillSize;
-			GLuint lineVao;
-			unsigned int lineSize;
+			GLuint borderVao;
+			unsigned int borderSize;
+			GLuint posPinVao;
+			unsigned int posPinSize;
 			GLuint graphLineVao;
 			unsigned int graphLineSize;
 
@@ -214,10 +216,9 @@ namespace Voxel
 			// Remove duplicated edges
 			void removeDuplicatedEdges();
 			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
-			void makeEdgesNoisy();
 			void makeSharedEdgesNoisy();
 			// Intialize debug lines of diagram
-			void initDebugDiagram();
+			void initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border);
 
 			// get cells
 			std::map<unsigned int, Cell*>& getCells();
@@ -233,7 +234,7 @@ namespace Voxel
 			float getMaxBound();
 
 			// render the diagram
-			void render(const bool edges, const bool fill, const bool pin, const bool graph);
+			void render();
 		};
 	}
 }

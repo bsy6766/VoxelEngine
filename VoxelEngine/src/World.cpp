@@ -523,7 +523,7 @@ void Voxel::World::initVoronoiDebug()
 {
 	if (vd)
 	{
-		vd->initDebugDiagram();
+		vd->initDebugDiagram(/*shared edges*/true, /*omitted cells*/true, /*pos pin*/true, /*graph*/true, /*fill*/false, /*infinite edges*/true, /*border*/true);
 	}
 }
 
@@ -718,6 +718,6 @@ void Voxel::World::renderVoronoi(Program* program)
 	if (renderVoronoiMode)
 	{
 		program->setUniformMat4("modelMat", glm::mat4(1.0f));
-		vd->render(true, false, true, false);
+		vd->render();
 	}
 }

@@ -165,6 +165,11 @@ Biome Voxel::Region::getBiomeType()
 void Voxel::Region::initTerrainType()
 {
 	terrainType.setTypeByBiome(this->biomeType.getType());
+
+	if (cell->isValid())
+	{
+		std::cout << "Setting region #" << cell->getID() << " terrain: " << Terrain::terrainTypeToString(terrainType) << std::endl;
+	}
 }
 
 void Voxel::Region::initTerrainType(Terrain::Type type)
