@@ -595,25 +595,42 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 			{
 				if (size == 3)
 				{
-					// game mode bool
+					// world arg1 arg2
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
 
 					bool arg2Bool = arg2 == "true" ? true : false;
 
-					if (arg1 == "rendervoronoi" || arg1 == "rv")
+					if (arg1 == "voronoi" || arg1 == "v")
 					{
-						world->setRenderVoronoiMode(arg2Bool);
-						if (arg2Bool)
+						if (arg2 == "rebuild" || arg2 == "rb")
 						{
-							executedCommandHistory.push_back("Enabled voronoi render mode");
+							world->rebuildWorldMap();
+							return true;
 						}
-						else
+					}
+				}
+				else if (size == 4)
+				{
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+					bool mode = split.at(3) == "true" ? true : false;
+					if (arg1 == "voronoi" || arg1 == "v")
+					{
+						if (arg2 == "render" || arg2 == "r")
 						{
-							executedCommandHistory.push_back("Disabled voronoi render mode");
+							world->setRenderVoronoiMode(mode);
+							if (mode)
+							{
+								executedCommandHistory.push_back("Enabled voronoi render mode");
+							}
+							else
+							{
+								executedCommandHistory.push_back("Disabled voronoi render mode");
+							}
+							lastCommand = command;
+							return true;
 						}
-						lastCommand = command;
-						return true;
 					}
 				}
 			}
