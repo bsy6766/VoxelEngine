@@ -221,66 +221,91 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 		{
 			auto size = strCpy.size();
 
-			if (size >= 20)
+			if (size >= 17)
 			{
 				{
-					// Check for enter
-					std::string token = strCpy.substr(0, 21);
+					// Check for up 
+					std::string token = strCpy.substr(0, 18);
 					//std::cout << "Token: " << token << std::endl;
-					if (token == "VOXEL_GLFW_KEY_ENTER")
+					if (token == "VOXEL_GLFW_KEY_UP")
 					{
-						// execute command
-						std::cout << "Execute command: " << curText << std::endl;
-						bool result = executeCommand(curText);
-						if (result)
-						{
-							std::cout << "Success." << std::endl;
-							updateCommandHistory();
-						}
-						else
-						{
-							std::cout << "Fail." << std::endl;
-						}
-						closeConsole();
-						return;
-					}
-				}
+						// repeat last command
+						curText = lastCommand;
 
-				if (size >= 24)
-				{
-					// Check for back space
-					std::string token = strCpy.substr(0, 25);
-					//std::cout << "Token: " << token << std::endl;
-
-					if (token == "VOXEL_GLFW_KEY_BACKSPACE")
-					{
-						//std::cout << "Backspace" << std::endl;
-
-						auto curSize = curText.size();
-						if (curSize == 0)
-						{
-							// do nothing
-						}
-						else if (curSize == 1)
-						{
-							curText = DefaultCommandInputText;
-						}
-						else
-						{
-							curText = curText.substr(0, curSize - 1);
-						}
-
-						if (size == 24)
+						if (size == 17)
 						{
 							strCpy.clear();
-
-							//std::cout << "strcpy = " << strCpy << std::endl;
 							break;
 						}
 						else
 						{
-							strCpy = strCpy.substr(25);
+							strCpy = strCpy.substr(18);
 							continue;
+						}
+					}
+				}
+
+				if (size >= 20)
+				{
+					{
+						// Check for enter
+						std::string token = strCpy.substr(0, 21);
+						//std::cout << "Token: " << token << std::endl;
+						if (token == "VOXEL_GLFW_KEY_ENTER")
+						{
+							// execute command
+							std::cout << "Execute command: " << curText << std::endl;
+							bool result = executeCommand(curText);
+							if (result)
+							{
+								std::cout << "Success." << std::endl;
+								updateCommandHistory();
+							}
+							else
+							{
+								std::cout << "Fail." << std::endl;
+							}
+							closeConsole();
+							return;
+						}
+					}
+
+					if (size >= 24)
+					{
+						// Check for back space
+						std::string token = strCpy.substr(0, 25);
+						//std::cout << "Token: " << token << std::endl;
+
+						if (token == "VOXEL_GLFW_KEY_BACKSPACE")
+						{
+							//std::cout << "Backspace" << std::endl;
+
+							auto curSize = curText.size();
+							if (curSize == 0)
+							{
+								// do nothing
+							}
+							else if (curSize == 1)
+							{
+								curText = DefaultCommandInputText;
+							}
+							else
+							{
+								curText = curText.substr(0, curSize - 1);
+							}
+
+							if (size == 24)
+							{
+								strCpy.clear();
+
+								//std::cout << "strcpy = " << strCpy << std::endl;
+								break;
+							}
+							else
+							{
+								strCpy = strCpy.substr(25);
+								continue;
+							}
 						}
 					}
 				}
@@ -344,6 +369,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								float speed = std::stof(split.at(3));
 								player->setMovementSpeed(speed);
 								executedCommandHistory.push_back("Set player speed to " + split.at(3));
+								lastCommand = command;
 								return true;
 							}
 							catch (...)
@@ -352,6 +378,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								{
 									player->setMovementSpeed(15.0f);
 									executedCommandHistory.push_back("Set player speed to default (15)");
+									lastCommand = command;
 									return true;
 								}
 							}
@@ -367,6 +394,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								float curSpeed = player->getMovementSpeed();
 								player->setMovementSpeed(speed + curSpeed);
 								executedCommandHistory.push_back("Added player speed by " + split.at(3));
+								lastCommand = command;
 								return true;
 							}
 							catch (...)
@@ -417,6 +445,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setPosition(glm::vec3(x, y, z));
 							executedCommandHistory.push_back("Set player position to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -453,6 +482,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setRotation(glm::vec3(x, y, z));
 							executedCommandHistory.push_back("Set player rotation to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
+							lastCommand = command;
 							return true;
 						}
 					}
@@ -492,6 +522,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setPosition(glm::vec3(x, y, z) + player->getPosition());
 							executedCommandHistory.push_back("Added player position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -528,6 +559,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setRotation(glm::vec3(x, y, z) + player->getRotation());
 							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
 							return true;
 						}
 					}
@@ -554,6 +586,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled fog");
 						}
+						lastCommand = command;
 						return true;
 					}
 				}
@@ -579,13 +612,23 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled voronoi render mode");
 						}
+						lastCommand = command;
 						return true;
 					}
 				}
 			}
 			else if (commandStr == "chunkmap" || commandStr == "cm")
 			{
-				if (size == 3)
+				if (size == 2)
+				{
+					auto arg1 = split.at(1);
+					if (arg1 == "print" || arg1 == "p")
+					{
+						chunkMap->printCurrentChunk();
+						return true;
+					}
+				}
+				else if (size == 3)
 				{
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
@@ -603,6 +646,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled chunk update");
 						}
+						lastCommand = command;
 						return true;
 					}
 				}
@@ -611,10 +655,10 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
 
-					bool arg3Bool = split.at(3) == "true" ? true : false;
-
 					if (arg1 == "render" || arg1 == "r")
 					{
+						bool arg3Bool = split.at(3) == "true" ? true : false;
+
 						if (arg2 == "chunk" || arg2 == "c")
 						{
 							chunkMap->setRenderChunksMode(arg3Bool);
@@ -626,6 +670,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								executedCommandHistory.push_back("Disabled chunk rendering");
 							}
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "chunkborder" || arg2 == "cb")
@@ -639,8 +684,33 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								executedCommandHistory.push_back("Disabled chunk border rendering");
 							}
+							lastCommand = command;
 							return true;
 						}
+					}
+					else if (arg1 == "print" || arg1 == "p")
+					{
+						int x = 0;
+						try
+						{
+							x = std::stoi(split.at(2));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						int y = 0;
+						try
+						{
+							y = std::stoi(split.at(3));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						//chunkMap->printChunk(x, z);
 					}
 				}
 			}
@@ -658,6 +728,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							float speed = std::stof(split.at(2));
 							Camera::mainCamera->setSpeed(speed);
 							executedCommandHistory.push_back("Set camera speed to " + split.at(2));
+							lastCommand = command;
 							return true;
 						}
 						catch (...)
@@ -666,6 +737,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								Camera::mainCamera->setSpeed(15.0f);
 								executedCommandHistory.push_back("Set camera speed to default (15)");
+								lastCommand = command;
 								return true;
 							}
 						}
@@ -677,6 +749,8 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							float fovy = std::stof(split.at(2));
 							Camera::mainCamera->setFovy(fovy);
 							executedCommandHistory.push_back("Set camera fovy to " + split.at(2));
+							lastCommand = command;
+							return true;
 						}
 						catch (...)
 						{
@@ -684,6 +758,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								Camera::mainCamera->setFovy(70.0f);
 								executedCommandHistory.push_back("Set camera fovy to default (70)");
+								lastCommand = command;
 								return true;
 							}
 						}

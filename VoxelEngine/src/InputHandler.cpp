@@ -363,6 +363,10 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 	{
 		return "VOXEL_GLFW_KEY_ENTER";
 	}
+	else if (key == GLFW_KEY_UP)
+	{
+		return "VOXEL_GLFW_KEY_UP";
+	}
 	else if (key >= 65 && key <= 90)
 	{
 		// GLFW key is same as ascii. However, it doesn't support shifted keys.

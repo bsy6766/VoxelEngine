@@ -59,6 +59,7 @@ namespace Voxel
 		UI::Text* commandHistorys;
 
 		std::list<std::string> executedCommandHistory;
+		std::string lastCommand;
 
 		bool executeCommand(const std::string& command);
 		void updateCommandHistory();
