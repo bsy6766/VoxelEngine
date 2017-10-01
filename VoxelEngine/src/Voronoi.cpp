@@ -545,6 +545,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 				bool skip = false;
 
 				// Check neighbor cells
+				bool hasOmittedNeighbor = false;
 				for (auto nc : neighborCells)
 				{
 					// only valid. BORDER and OMITTED can still be neighbor
@@ -568,7 +569,14 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 						if (validCount <= 1)
 						{
 							skip = true;
-							break;
+							//break;
+						}
+					}
+					else
+					{
+						if (nc->getSiteType() == Site::Type::OMITTED)
+						{
+							hasOmittedNeighbor = true;
 						}
 					}
 				}
@@ -581,6 +589,18 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 				}
 				else
 				{
+					if (hasOmittedNeighbor)
+					{
+						int rand = Utility::Random::randomInt100();
+						if (rand < 50)
+						{
+							index++;
+							continue;
+						}
+					}
+
+					/*
+					// Note: Now we keep all the data. Don't remove neighbor.
 					// This cell can be removed. Iterate neighbor cells again and remove form their neighbor list
 					auto cellID = cell->getID();
 					// iterate through neighbor cells 
@@ -596,23 +616,21 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 							{
 								// Found the matching cell. remove from neighbor
 								// Make sure to reset coowner for sharing edges
-								auto& edges = nc->getEdges();
+								//auto& edges = nc->getEdges();
 
-								/*
-								for (auto& e : edges)
-								{
-									auto coOwner = e->getCoOwner();
-									if (coOwner)
-									{
-										if (coOwner->getID() == cellID)
-										{
-											//std::cout << "Removing from cowoner" << std::endl;
-											e->setCoOwner(nullptr);
-											break;
-										}
-									}
-								}
-								*/
+								//for (auto& e : edges)
+								//{
+								//	auto coOwner = e->getCoOwner();
+								//	if (coOwner)
+								//	{
+								//		if (coOwner->getID() == cellID)
+								//		{
+								//			//std::cout << "Removing from cowoner" << std::endl;
+								//			e->setCoOwner(nullptr);
+								//			break;
+								//		}
+								//	}
+								//}
 
 								nnc.erase(it);
 								break;
@@ -623,6 +641,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 							}
 						}
 					}
+					*/
 
 					cell->setValidation(false);
 					//cell->clearEdges();
