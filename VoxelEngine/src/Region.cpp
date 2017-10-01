@@ -172,10 +172,10 @@ void Voxel::Region::initTerrainType()
 	}
 }
 
-void Voxel::Region::initTerrainType(Terrain::Type type)
+void Voxel::Region::initTerrainType(Voxel::TerrainType type)
 {
 	terrainType.setType(type);
-	terrainType.setModifier(Terrain::Modifier::MEGA);
+	//terrainType.setModifier(Voxel::TerrainModifier::MEGA);
 }
 
 Terrain Voxel::Region::getTerrainType()

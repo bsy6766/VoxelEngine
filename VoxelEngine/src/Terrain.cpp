@@ -4,39 +4,41 @@
 using namespace Voxel;
 
 
-const std::unordered_map<Biome::Type, std::vector<Terrain::Type>> Terrain::biomeTerrainMap = 
+const std::unordered_map<Voxel::BiomeType, std::vector<Voxel::TerrainType>> Terrain::biomeTerrainMap = 
 {
-	{ Biome::Type::WOODS,{ Terrain::Type::PLAIN, Terrain::Type::HILLS } },
-	{ Biome::Type::TAIGA,{ Terrain::Type::PLAIN, Terrain::Type::HILLS } },
-	{ Biome::Type::FOREST,{ Terrain::Type::PLAIN, Terrain::Type::HILLS, Terrain::Type::MOUNTAINS } },
+	{ Voxel::BiomeType::WOODS,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS } },
+	{ Voxel::BiomeType::TAIGA,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS } },
+	{ Voxel::BiomeType::FOREST,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS, Voxel::TerrainType::MOUNTAINS } },
 };
 
-const std::unordered_map<Terrain::Type, std::vector<Terrain::Modifier>> Terrain::TerrainModifierMap = 
+/*
+const std::unordered_map<Voxel::TerrainType, std::vector<Voxel::TerrainModifier>> Terrain::TerrainModifierMap = 
 {
-	{ Terrain::Type::PLAIN,{ Terrain::Modifier::NONE } },
-	{ Terrain::Type::HILLS,{ Terrain::Modifier::MEDIUM, Terrain::Modifier::LARGE } },
-	{ Terrain::Type::MOUNTAINS,{ Terrain::Modifier::LARGE, Terrain::Modifier::MEGA } },
+	{ Voxel::TerrainType::PLAIN,{ Voxel::TerrainModifier::NONE } },
+	{ Voxel::TerrainType::HILLS,{ Voxel::TerrainModifier::MEDIUM, Voxel::TerrainModifier::LARGE } },
+	{ Voxel::TerrainType::MOUNTAINS,{ Voxel::TerrainModifier::LARGE, Voxel::TerrainModifier::MEGA } },
 };
 
+*/
 
 Voxel::Terrain::Terrain()
-	: type(Type::NONE)
-	, modifier(Modifier::NONE)
+	: type(Voxel::TerrainType::NONE)
+	//, modifier(Modifier::NONE)
 {}
 
-std::string Voxel::Terrain::terrainTypeToString(Voxel::Terrain::Type terrain, Voxel::Terrain::Modifier modifier)
+std::string Voxel::Terrain::terrainTypeToString(Voxel::TerrainType terrain, Voxel::TerrainModifier modifier)
 {
 	std::string terrainStr;
 
 	switch (terrain)
 	{
-	case Voxel::Terrain::Type::PLAIN:
+	case Voxel::TerrainType::PLAIN:
 		terrainStr = "PLAIN";
 		break;
-	case Voxel::Terrain::Type::HILLS:
+	case Voxel::TerrainType::HILLS:
 		terrainStr = "HILLS";
 		break;
-	case Voxel::Terrain::Type::MOUNTAINS:
+	case Voxel::TerrainType::MOUNTAINS:
 		terrainStr = "MOUNTAINS";
 		break;
 	default:
@@ -44,17 +46,18 @@ std::string Voxel::Terrain::terrainTypeToString(Voxel::Terrain::Type terrain, Vo
 		break;
 	}
 
+	/*
 	switch (modifier)
 	{
-	case Voxel::Terrain::Modifier::NONE:
+	case Voxel::Voxel::TerrainModifier::NONE:
 		break;
-	case Voxel::Terrain::Modifier::MEDIUM:
+	case Voxel::Voxel::TerrainModifier::MEDIUM:
 		terrainStr += " M";
 		break;
-	case Voxel::Terrain::Modifier::LARGE:
+	case Voxel::Voxel::TerrainModifier::LARGE:
 		terrainStr += " L";
 		break;
-	case Voxel::Terrain::Modifier::MEGA:
+	case Voxel::Voxel::TerrainModifier::MEGA:
 		terrainStr += " MEGA";
 		break;
 	default:
@@ -62,6 +65,7 @@ std::string Voxel::Terrain::terrainTypeToString(Voxel::Terrain::Type terrain, Vo
 		break;
 	}
 
+	*/
 	return terrainStr;
 }
 
@@ -70,7 +74,7 @@ std::string Voxel::Terrain::terrainTypeToString(Terrain terrainType)
 	return terrainTypeToString(terrainType.type, terrainType.modifier);
 }
 
-void Voxel::Terrain::setTypeByBiome(Biome::Type biomeType)
+void Voxel::Terrain::setTypeByBiome(Voxel::BiomeType biomeType)
 {
 	auto find_it = Terrain::biomeTerrainMap.find(biomeType);
 	if (find_it == Terrain::biomeTerrainMap.end())
@@ -86,26 +90,29 @@ void Voxel::Terrain::setTypeByBiome(Biome::Type biomeType)
 		setType(terrainTypeList.at(randIndex));
 
 		// For now, no modifier
-		modifier = Modifier::NONE;
+		modifier = Voxel::TerrainModifier::NONE;
 	}
 }
 
-void Voxel::Terrain::setType(Type type)
+void Voxel::Terrain::setType(Voxel::TerrainType type)
 {
 	this->type = type;
 }
 
-Voxel::Terrain::Type Voxel::Terrain::getType() const
+Voxel::TerrainType Voxel::Terrain::getType() const
 {
 	return this->type;
 }
 
+/*
 void Voxel::Terrain::setModifier(Modifier modifier)
 {
 	this->modifier = modifier;
 }
 
-Voxel::Terrain::Modifier Voxel::Terrain::getModifier()
+Voxel::Voxel::TerrainModifier Voxel::Terrain::getModifier()
 {
 	return this->modifier;
 }
+
+*/

@@ -3,24 +3,22 @@
 
 using namespace Voxel;
 
-const float Biome::COLD = 0.5f;
-const float Biome::WARM = 1.0f;
-const float Biome::HOT = 1.5f;
-
+/*
 const std::unordered_map<Biome::Type, std::vector<Biome::Vegitation>> Biome::vegitationMap =
 {
-	{Biome::Type::WOODS, {Biome::Vegitation::OAK_TREE}},
+	{Biome::Type::WOODS, {Biome::Vegitation::OAK_TREE, Biome::Vegitation::LOW_GRASS}},
 	{Biome::Type::FOREST, {Biome::Vegitation::OAK_TREE, Biome::Vegitation::BIRCH_TREE, Biome::Vegitation::SPRUCE_TREE}},		// Forest can have any type of trees except jungle tree
 	{Biome::Type::TAIGA, {Biome::Vegitation::SPRUCE_TREE}}
 };
+*/
 
 Voxel::Biome::Biome()
 	: temperature(0)
 	, moisture(0)
-	, type(Type::NONE)
+	, type(Voxel::BiomeType::NONE)
 {}
 
-Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float elevation)
+Voxel::BiomeType Voxel::Biome::getBiomeType(float temperature, float moisture, float elevation)
 {
 	// can't be negative
 	if (moisture < 0) moisture = 0;
@@ -69,7 +67,7 @@ Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float 
 	{
 		// Freezing
 		// Always tundra
-		return Type::TUNDRA;
+		return Voxel::BiomeType::TUNDRA;
 	}
 	else if (temperature > 0.5f && temperature <= 1.0f)
 	{
@@ -86,7 +84,7 @@ Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float 
 		}
 		*/
 		// Taiga
-		return Type::TAIGA;
+		return Voxel::BiomeType::TAIGA;
 	}
 	else if (temperature > 1.0f && temperature <= 1.5f)
 	{
@@ -98,32 +96,32 @@ Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float 
 			{
 				// Still hot
 				// Desert
-				return Type::DESERT;
+				return Voxel::BiomeType::DESERT;
 			}
 			else
 			{
 				// Not so hot as desert. Some plants can live.
 				// Grass Desert
-				return Type::GRASS_DESERT;
+				return Voxel::BiomeType::GRASS_DESERT;
 			}
 		}
 		else if (moisture > 0.5f && moisture <= 1.0f)
 		{
 			// Warm and some moisture.
 			// Woods
-			return Type::WOODS;
+			return Voxel::BiomeType::WOODS;
 		}
 		else if (moisture > 1.0f && moisture <= 1.5f)
 		{
 			// Warm and little humid
 			// Forest
-			return Type::FOREST;
+			return Voxel::BiomeType::FOREST;
 		}
 		else if (moisture > 1.5f)
 		{
 			// Warm and humid
 			// Swamp
-			return Type::SWAMP;
+			return Voxel::BiomeType::SWAMP;
 		}
 	}
 	else if (temperature > 1.5f)
@@ -133,71 +131,71 @@ Biome::Type Voxel::Biome::getBiomeType(float temperature, float moisture, float 
 		{
 			// Hot and none or few moisture.
 			// Desert
-			return Type::DESERT;
+			return Voxel::BiomeType::DESERT;
 		}
 		else if (moisture > 0.5f && moisture <= 1.0f)
 		{
 			// Hot and some moisture.
 			// Savanna
-			return Type::SAVANNA;
+			return Voxel::BiomeType::SAVANNA;
 		}
 		else if (moisture > 1.0f && moisture <= 1.5f)
 		{
 			// Hot and little humid
 			// Seasonla forest
-			return Type::SEASONAL_FOREST;
+			return Voxel::BiomeType::SEASONAL_FOREST;
 		}
 		else if (moisture > 1.5f)
 		{
 			// Hot and humid
 			// Rain forest
-			return Type::RAIN_FOREST;
+			return Voxel::BiomeType::RAIN_FOREST;
 		}
 	}
 
 	// Error. Can't get biome
 	std::cout << "[Biome] Error. Wasn't able to find biome with t: " << temperature << ", m: " << moisture << ", e: " << elevation << std::endl;
-	return Type::ERROR;
+	return Voxel::BiomeType::ERROR;
 }
 
-std::string Voxel::Biome::biomeTypeToString(Type type)
+std::string Voxel::Biome::biomeTypeToString(Voxel::BiomeType type)
 {
 	switch (type)
 	{
-	case Voxel::Biome::Type::OCEAN:
+	case Voxel::BiomeType::OCEAN:
 		return "OCEAN";
 		break;
-	case Voxel::Biome::Type::TUNDRA:
+	case Voxel::BiomeType::TUNDRA:
 		return "TUNDRA";
 		break;
-	case Voxel::Biome::Type::GRASS_DESERT:
+	case Voxel::BiomeType::GRASS_DESERT:
 		return "GRASS DESERT";
 		break;
-	case Voxel::Biome::Type::TAIGA:
+	case Voxel::BiomeType::TAIGA:
 		return "TAIGA";
 		break;
-	case Voxel::Biome::Type::DESERT:
+	case Voxel::BiomeType::DESERT:
 		return "DESERT";
 		break;
-	case Voxel::Biome::Type::WOODS:
+	case Voxel::BiomeType::WOODS:
 		return "WOODS";
 		break;
-	case Voxel::Biome::Type::FOREST:
+	case Voxel::BiomeType::FOREST:
 		return "FOREST";
 		break;
-	case Voxel::Biome::Type::SWAMP:
+	case Voxel::BiomeType::SWAMP:
 		return "SWAMP";
 		break;
-	case Voxel::Biome::Type::SAVANNA:
+	case Voxel::BiomeType::SAVANNA:
 		return "SAVANNA";
 		break;
-	case Voxel::Biome::Type::SEASONAL_FOREST:
+	case Voxel::BiomeType::SEASONAL_FOREST:
 		return "SEASONAL FOREST";
 		break;
-	case Voxel::Biome::Type::RAIN_FOREST:
+	case Voxel::BiomeType::RAIN_FOREST:
 		return "RAIN FOREST";
 		break;
-	case Voxel::Biome::Type::ERROR:
+	case Voxel::BiomeType::ERROR:
 	default:
 		break;
 	}
@@ -218,7 +216,7 @@ void Voxel::Biome::setType(const float temperature, const float moisture)
 	this->type = getBiomeType(temperature, moisture, 0);
 }
 
-Biome::Type Voxel::Biome::getType()
+::Voxel::BiomeType Voxel::Biome::getType()
 {
 	return this->type;
 }

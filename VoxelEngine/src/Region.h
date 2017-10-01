@@ -63,7 +63,7 @@ namespace Voxel
 
 		// init terrain type
 		void initTerrainType();
-		void initTerrainType(Terrain::Type type);
+		void initTerrainType(Voxel::TerrainType type);
 		Terrain getTerrainType();
 
 		// Check if point is in cell's edges (polygon)

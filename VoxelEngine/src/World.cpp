@@ -675,7 +675,7 @@ void Voxel::World::initRegionTerrain()
 		}
 		else
 		{
-			region->initTerrainType(Terrain::Type::BORDER);
+			region->initTerrainType(Voxel::TerrainType::BORDER);
 		}
 	}
 }

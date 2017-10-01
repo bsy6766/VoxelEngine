@@ -508,41 +508,41 @@ bool Voxel::ChunkSection::initWithValues(const int x, const int y, const int z, 
 					auto newBlock = Block::create(glm::ivec3(blockX, localY, blockZ), position);
 
 					auto biome = Biome::getBiomeType(tMap.at(blockX).at(blockZ), mMap.at(blockX).at(blockZ), e);
-					if (biome != Biome::Type::ERROR)
+					if (biome != Voxel::BiomeType::ERROR)
 					{
 						switch (biome)
 						{
-						case Voxel::Biome::Type::OCEAN:
+						case Voxel::BiomeType::OCEAN:
 							newBlock->setColorU3(Color::OCEAN);
 							break;
-						case Voxel::Biome::Type::TUNDRA:
+						case Voxel::BiomeType::TUNDRA:
 							newBlock->setColorU3(Color::TUNDRA);
 							break;
-						case Voxel::Biome::Type::GRASS_DESERT:
+						case Voxel::BiomeType::GRASS_DESERT:
 							newBlock->setColorU3(Color::GRASS_DESERT);
 							break;
-						case Voxel::Biome::Type::TAIGA:
+						case Voxel::BiomeType::TAIGA:
 							newBlock->setColorU3(Color::TAIGA);
 							break;
-						case Voxel::Biome::Type::DESERT:
+						case Voxel::BiomeType::DESERT:
 							newBlock->setColorU3(Color::DESERT);
 							break;
-						case Voxel::Biome::Type::WOODS:
+						case Voxel::BiomeType::WOODS:
 							newBlock->setColorU3(Color::WOODS);
 							break;
-						case Voxel::Biome::Type::FOREST:
+						case Voxel::BiomeType::FOREST:
 							newBlock->setColorU3(Color::FOREST);
 							break;
-						case Voxel::Biome::Type::SWAMP:
+						case Voxel::BiomeType::SWAMP:
 							newBlock->setColorU3(Color::SWAMP);
 							break;
-						case Voxel::Biome::Type::SAVANNA:
+						case Voxel::BiomeType::SAVANNA:
 							newBlock->setColorU3(Color::SAVANNA);
 							break;
-						case Voxel::Biome::Type::SEASONAL_FOREST:
+						case Voxel::BiomeType::SEASONAL_FOREST:
 							newBlock->setColorU3(Color::SEASONAL_FOREST);
 							break;
-						case Voxel::Biome::Type::RAIN_FOREST:
+						case Voxel::BiomeType::RAIN_FOREST:
 							newBlock->setColorU3(Color::RAIN_FOREST);
 							break;
 						default:

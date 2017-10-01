@@ -362,7 +362,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
 
 					std::unordered_set<unsigned int> regionIDSet;
-					std::unordered_set<Terrain::Type> terrainTypeSet;
+					std::unordered_set<Voxel::TerrainType> terrainTypeSet;
 
 					// iterate all blocks in x and z axis
 					for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)

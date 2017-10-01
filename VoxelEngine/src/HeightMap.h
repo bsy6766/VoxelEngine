@@ -85,7 +85,7 @@ namespace Voxel
 		static float getMoistureNosie2D(const float x, const float z);
 		static float getColorNoise2D(const float x, const float z);
 
-		static int getYFromHeightValue(const float value, const Terrain::Type type);
+		static int getYFromHeightValue(const float value, const Voxel::TerrainType type);
 
 		static int smoothHelper(std::vector<std::vector<int>>& heightMap, const unsigned int xStart, const unsigned int zStart, const unsigned int xEnd, const unsigned int zEnd);
 		static void smoothHeightMap(std::vector<std::vector<int>>& heightMap, int& highestY);

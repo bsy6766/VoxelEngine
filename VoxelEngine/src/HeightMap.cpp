@@ -172,19 +172,19 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const Terrain &
 
 	switch (terrain.getType())
 	{
-	case Terrain::Type::PLAIN:
+	case Voxel::TerrainType::PLAIN:
 		np = &HeightMap::PlainPreset;
 		break;
-	case Terrain::Type::HILLS:
+	case Voxel::TerrainType::HILLS:
 		np = &HeightMap::HillsPreset;
 		break;
-	case Terrain::Type::MOUNTAINS:
+	case Voxel::TerrainType::MOUNTAINS:
 		np = &HeightMap::MountainsPreset;
 		break;
-	case Terrain::Type::BORDER:
+	case Voxel::TerrainType::BORDER:
 		np = &HeightMap::BorderPreset;
 		break;
-	case Terrain::Type::NONE:
+	case Voxel::TerrainType::NONE:
 	default:
 		return 0;
 		break;
@@ -230,20 +230,20 @@ float Voxel::HeightMap::getColorNoise2D(const float x, const float z)
 	return newVal + min;
 }
 
-int Voxel::HeightMap::getYFromHeightValue(const float value, const Terrain::Type type)
+int Voxel::HeightMap::getYFromHeightValue(const float value, const Voxel::TerrainType type)
 {
 	int y = 0;
 
 	switch (type)
 	{
-	case Terrain::Type::PLAIN:
-	case Terrain::Type::HILLS:
+	case Voxel::TerrainType::PLAIN:
+	case Voxel::TerrainType::HILLS:
 		y = static_cast<int>(value * 30.0f) + 33;	//33 = lowest sea level
 		break;
-	case Terrain::Type::MOUNTAINS:
+	case Voxel::TerrainType::MOUNTAINS:
 		y = static_cast<int>(value * 35.0f) + 33;
 		break;
-	case Terrain::Type::BORDER:
+	case Voxel::TerrainType::BORDER:
 		y = static_cast<int>(value * 50.0f) + 80;
 		break;
 	default:
@@ -456,7 +456,7 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 			float val = HeightMap::getNoise2D(nx, nz, terrain);
 
 			/*
-			if (terrain.getType() == Terrain::Type::PLAIN)
+			if (terrain.getType() == Voxel::TerrainType::PLAIN)
 			{
 				val = glm::round(val);
 			}

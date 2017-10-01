@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <Biome.h>
+#include <TerrainType.h>
 
 namespace Voxel
 {
@@ -24,48 +25,29 @@ namespace Voxel
 	class Terrain
 	{
 	public:
-		// Default terrains. 
-		enum class Type
-		{
-			NONE = 0,
-			PLAIN,			// Flat terrain. No hills and mountains
-			HILLS,			// Few hills in flat terrain
-			MOUNTAINS,		// Few mountinas
-			BORDER,
-		};
-
-		// Modifiers gives changes on world generation, gives more randomness to the game
-		enum class Modifier
-		{
-			NONE = 0,		// Defult terrain
-			MEDIUM,			// Few variation 
-			LARGE,			// Some variation
-			MEGA			// Large variation
-		};
-
-		Type type;
-		Modifier modifier;
+		Voxel::TerrainType type;
+		Voxel::TerrainModifier modifier;
 	public:
 		Terrain();
 		~Terrain() = default;
 
 		// Stores possible terrains for each biome
-		static const std::unordered_map<Biome::Type, std::vector<Type>> biomeTerrainMap;
+		static const std::unordered_map<Voxel::BiomeType, std::vector<Voxel::TerrainType>> biomeTerrainMap;
 		// Stores possible terrain modifer for terrain type
-		static const std::unordered_map<Type, std::vector<Modifier>> TerrainModifierMap;
+		//static const std::unordered_map<Type, std::vector<Modifier>> TerrainModifierMap;
 
 		// Get terrain type to string
-		static std::string terrainTypeToString(Type terrain, Modifier modifier);
+		static std::string terrainTypeToString(Voxel::TerrainType terrain, Voxel::TerrainModifier modifier);
 		static std::string terrainTypeToString(Terrain terrainType);
 
 		// getter
-		void setTypeByBiome(Biome::Type biomeType);
-		void setType(Type type);
-		Type getType() const;
+		void setTypeByBiome(Voxel::BiomeType biomeType);
+		void setType(Voxel::TerrainType type);
+		Voxel::TerrainType getType() const;
 
 		// setter
-		void setModifier(Modifier modifier);
-		Modifier getModifier();
+		//void setModifier(Modifier modifier);
+		//Modifier getModifier();
 	};
 }
 
