@@ -356,6 +356,48 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 		{
 			if (commandStr == "player")
 			{
+				if (size == 3)
+				{
+					auto arg1 = split.at(1);
+					if (arg1 == "viewmode" || arg1 == "vm")
+					{
+						auto arg2 = split.at(2);
+						int mode = -1;
+
+						if (arg2 == "fps")
+						{
+							mode = 0;
+						}
+						else if (arg2 == "tps")
+						{
+							mode = 1;
+						}
+
+						if (mode == -1)
+						{
+							try
+							{
+								mode = std::stoi(arg2);
+							}
+							catch (...)
+							{
+								return false;
+							}
+						}
+
+						if (mode >= 0 && mode <= 1)
+						{
+							player->setViewMode(mode);
+							executedCommandHistory.push_back("Set player view mode to " + std::string((mode == 0) ? "First person view" : "Third person view"));
+							lastCommand = command;
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
 				if (size == 4)
 				{
 					auto arg1 = split.at(1);
