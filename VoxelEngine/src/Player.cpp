@@ -42,10 +42,9 @@ Player::~Player()
 	}
 }
 
-void Voxel::Player::init(const glm::vec3 & position)
+void Voxel::Player::init()
 {
 	// Todo: load player info from save file
-	this->position = position;
 	this->direction = glm::vec3(0, 0, -1);
 	// can reach up to 5 blocks from position
 	this->rayRange = 5.0f;

@@ -69,6 +69,9 @@ namespace Voxel
 
 		// True if work manager is running. Else, false. 
 		std::atomic<bool> running;
+
+		// True if first initialization is done (ignores build mesh)
+		std::atomic<bool> firstInitDone;
 		
 		// Condition variable that makes thread to wait if main thread is busy or there is no work to do
 		std::condition_variable cv;
@@ -110,6 +113,8 @@ namespace Voxel
 
 		// Creates the thread. Make sure you call once after run.
 		void createThreads(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world, const int coreCount);
+
+		bool isFirstInitDone();
 
 		// notify condition variable
 		void notify();

@@ -20,6 +20,7 @@ using namespace Voxel;
 ChunkWorkManager::ChunkWorkManager()
 {
 	running.store(false);
+	firstInitDone.store(false);
 }
 
 void Voxel::ChunkWorkManager::addPreGenerateWork(const glm::ivec2 & coordinate, const bool highPriority)
@@ -325,6 +326,10 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				if (addStructureQueue.empty())
 				{
 					sortBuildMeshQueue(map->getCurrentChunkXZ());
+					if (firstInitDone.load() == false)
+					{
+						firstInitDone.store(true);
+					}
 				}
 			}
 			// If there is nothing to generate, start to build mesh
@@ -783,6 +788,11 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* m
 			workerThreads.push_back(std::thread(&ChunkWorkManager::work, this, map, meshGenerator, world));
 		}
 	}
+}
+
+bool Voxel::ChunkWorkManager::isFirstInitDone()
+{
+	return firstInitDone.load();
 }
 
 void Voxel::ChunkWorkManager::notify()

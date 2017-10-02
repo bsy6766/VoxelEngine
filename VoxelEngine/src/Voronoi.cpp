@@ -246,7 +246,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, co
 	std::vector<boost::polygon::point_data<int>> points;
 
 	this->scale = 1.0f;
-	this->debugScale = 0.1f;
+	this->debugScale = 1.0f;
 
 	sitePositions.clear();
 	siteTypes.clear();

@@ -39,6 +39,12 @@ namespace Voxel
 			IDLE = 0,
 			CURSOR_MODE,
 		};
+
+		enum class LoadingState
+		{
+			INITIALIZING = 0,
+			FINISHED,
+		};
 	private:
 		// Camera modes
 		bool cameraMode;
@@ -47,7 +53,9 @@ namespace Voxel
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
+		// States
 		GameState gameState;
+		LoadingState loadingState;
 		
 		// World
 		World* world;
@@ -66,8 +74,9 @@ namespace Voxel
 		// Calendar
 		Calendar* calendar;
 
-		// Default UI canvas
+		// UI canvases
 		UI::Canvas* defaultCanvas;
+		UI::Canvas* loadingCanvas;
 
 		// cursor
 		UI::Cursor* cursor;
@@ -136,6 +145,8 @@ namespace Voxel
 		void updateInput(const float delta);
 
 		void render(const float delta);
+		void renderGameWorld(const float delta);
+		void renderLoadingScreen(const float delta);
 
 		// debug console function
 		void setFogEnabled(const bool enabled);

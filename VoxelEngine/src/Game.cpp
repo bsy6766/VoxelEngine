@@ -63,6 +63,7 @@ Game::Game()
 	, skybox(nullptr)
 	, calendar(nullptr)
 	, gameState(GameState::IDLE)
+	, loadingState(LoadingState::INITIALIZING)
 {
 	// init instances
 	init();
@@ -190,7 +191,8 @@ void Voxel::Game::initUI()
 {
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
 	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
-	defaultCanvas = UI::Canvas::create(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0));
+	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+	defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
 
 	// cursor
 	cursor = UI::Cursor::create();
@@ -204,6 +206,20 @@ void Voxel::Game::initUI()
 	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
 	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
 	defaultCanvas->addText("timeLabel", timeLabel, 0);
+
+	// loading canvas
+	loadingCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+
+	// Add bg
+	auto bg = UI::Image::createFromSpriteSheet("UISpriteSheet", "1x1.png", glm::vec2(0), glm::vec4(1));
+	bg->setScale(resolution);
+	loadingCanvas->addImage("bg", bg, 0);
+
+	// Add loading label
+	auto loadingLabel = UI::Image::createFromSpriteSheet("UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f), glm::vec4(1));
+	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
+	loadingLabel->setCanvasPivot(glm::vec2(0.5f, -0.5f));
+	loadingCanvas->addImage("loadingLabel", loadingLabel, 1);
 }
 
 void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
@@ -218,7 +234,7 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
 	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
 
-	skybox->setFogEnabled(false);
+	skybox->setFogEnabled(true);
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -264,13 +280,9 @@ World * Voxel::Game::getWorld()
 
 void Game::createPlayer()
 {
-	// Initialize player. Pick random spot in region (0, 0). 
-	// Range is 150 ~ 300, we don't want player to spawn in edge of region. 
-	float randX = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
-	float randZ = static_cast<float>(Utility::Random::randomInt(150, 300)) + 0.5f;
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
-	player->init(glm::vec3(randX, 90.0f, randZ));
-	player->setPosition(glm::vec3(0, 800, 0));
+	player->init();
+	//player->setPosition(glm::vec3(0, 800, 0));
 	//player->setPosition(glm::vec3(0, 300, 0));
 	//player->setPosition(glm::vec3(-570, 100, 457));
 	//player->setPosition(glm::vec3(665, 132, -85));
@@ -280,7 +292,7 @@ void Game::createPlayer()
 	//player->setPosition(glm::vec3(681, 132, -85));
 	//player->setPosition(glm::vec3(539, 160, 11));
 	//player->setPosition(glm::vec3(-690, 150, 128));
-	player->setRotation(glm::vec3(-90, 0, 0));
+	//player->setRotation(glm::vec3(-90, 0, 0));
 	//player->setRotation(glm::vec3(320, 270, 0));
 	//player->setRotation(glm::vec3(287, 113, 0));
 	// Todo: load player's last direction
@@ -324,7 +336,10 @@ void Game::createChunkMap()
 
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
 
+	// for debug
 	chunkMap->initChunkBorderDebug(program);
+
+	// block outline
 	chunkMap->initBlockOutline(program);
 
 	auto end = Utility::Time::now();
@@ -336,68 +351,95 @@ void Voxel::Game::createWorld()
 	world->setTemperature(0.5f, 1.5f);
 	world->setMoisture(0.5f, 1.5f);
 	world->init(10, 10);
+
+	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
+	auto randX = Utility::Random::randomReal<float>(startingRegionSitePos.x - 100.0f, startingRegionSitePos.x + 100.0f);
+	auto randZ = Utility::Random::randomReal<float>(startingRegionSitePos.y - 100.0f, startingRegionSitePos.y + 100.0f);
+
+	player->setPosition(glm::vec3(randX, 0, randZ));
 }
 
 void Game::update(const float delta)
 {
-	checkUnloadedChunks();
-
-	bool playerMoved = player->didMoveThisFrame();
-	bool playerRotated = player->didRotateThisFrame();
-
-	// After updating frustum, run frustum culling to find visible chunk
-	int totalVisible = chunkMap->findVisibleChunk();
-
-	if (playerMoved || playerRotated)
+	if (loadingState == LoadingState::INITIALIZING)
 	{
-		auto playerPos = player->getPosition();
-
-		// If player either move or rotated, update frustum
-		Camera::mainCamera->updateFrustum(playerPos, player->getOrientation(), 16);
-		// Also update raycast
-		updatePlayerRaycast();
-
-		debugConsole->updatePlayerPosition(playerPos);
-		debugConsole->updatePlayerRotation(player->getRotation());
-	}
-
-	if (playerMoved)
-	{
-		// if player moved, update chunk
-		updateChunks();
-
-		auto playerPos = player->getPosition();
-
-		bool regionChanged = world->updatePlayerPos(playerPos);
-
-		if (regionChanged)
+		if (chunkWorkManager->isFirstInitDone())
 		{
-			Region* curRegion = world->getCurrentRegion();
-			debugConsole->updateRegion(curRegion->getID());
-			Biome biomeType = curRegion->getBiomeType();
-			debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
+			loadingState = LoadingState::FINISHED;
+
+			// get top y at player position
+			auto playerPosition = player->getPosition();
+			float topY = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.5f;
+			playerPosition.y = topY;
+
+			player->setPosition(playerPosition);
+
+		}
+	}
+	else
+	{
+		checkUnloadedChunks();
+
+		bool playerMoved = player->didMoveThisFrame();
+		bool playerRotated = player->didRotateThisFrame();
+
+		// After updating frustum, run frustum culling to find visible chunk
+		int totalVisible = chunkMap->findVisibleChunk();
+
+		if (playerMoved || playerRotated)
+		{
+			auto playerPos = player->getPosition();
+
+			// If player either move or rotated, update frustum
+			Camera::mainCamera->updateFrustum(playerPos, player->getOrientation(), 16);
+			// Also update raycast
+			updatePlayerRaycast();
+
+			debugConsole->updatePlayerPosition(playerPos);
+			debugConsole->updatePlayerRotation(player->getRotation());
 		}
 
-		auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
-		program->use(true);
-		program->setUniformVec3("playerPosition", playerPos);
+		if (playerMoved)
+		{
+			// if player moved, update chunk
+			updateChunks();
+
+			auto playerPos = player->getPosition();
+
+			bool regionChanged = world->updatePlayerPos(playerPos);
+
+			if (regionChanged)
+			{
+				Region* curRegion = world->getCurrentRegion();
+				debugConsole->updateRegion(curRegion->getID());
+				Biome biomeType = curRegion->getBiomeType();
+				debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
+			}
+
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+			program->use(true);
+			program->setUniformVec3("playerPosition", playerPos);
+		}
+
+		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());
+
+		player->update();
+		skybox->update(delta);
+
+		calendar->update(delta);
+		defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 	}
-
-	debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());
-
-	player->update();
-	skybox->update(delta);
-
-	calendar->update(delta);
-	defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 }
 
 void Voxel::Game::updateInput(const float delta)
 {
-	updateKeyboardInput(delta);
-	updateMouseMoveInput(delta);
-	updateMouseClickInput();
-	updateControllerInput(delta);
+	if (loadingState == LoadingState::FINISHED)
+	{
+		updateKeyboardInput(delta);
+		updateMouseMoveInput(delta);
+		updateMouseClickInput();
+		updateControllerInput(delta);
+	}
 }
 
 glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -654,17 +696,6 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		Camera::mainCamera->setPosition(player->getPosition());
 	}
-
-	if (input->getKeyDown(GLFW_KEY_KP_1, true))
-	{
-		Camera::mainCamera->setFovy(Camera::mainCamera->getFovy() + 5.0f);
-		std::cout << "fovy = " << Camera::mainCamera->getFovy() << std::endl;
-	}
-	if (input->getKeyDown(GLFW_KEY_KP_2, true))
-	{
-		Camera::mainCamera->setFovy(Camera::mainCamera->getFovy() - 5.0f);
-		std::cout << "fovy = " << Camera::mainCamera->getFovy() << std::endl;
-	}
 }
 
 void Voxel::Game::updateMouseMoveInput(const float delta)
@@ -875,13 +906,27 @@ void Voxel::Game::checkUnloadedChunks()
 
 void Game::render(const float delta)
 {
-	//glm::mat4 projMat = Camera::mainCamera->getProjection();
-	glm::mat4 worldMat = glm::mat4(1.0f);
+	if (loadingState == LoadingState::INITIALIZING)
+	{
+		renderLoadingScreen(delta);
+	}
+	else
+	{
+		renderGameWorld(delta);
+	}
+	
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
 
+void Voxel::Game::renderGameWorld(const float delta)
+{
 	auto& pm = ProgramManager::getInstance();
 
 	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
 	program->use(true);
+
+	glm::mat4 worldMat = glm::mat4(1.0f);
 
 	// ------------------------------ Render world ------------------------------------------
 	// Get world view matrix based on mode
@@ -965,9 +1010,15 @@ void Game::render(const float delta)
 
 	cursor->render();
 	// --------------------------------------------------------------------------------------
+}
 
-	glBindVertexArray(0);
-	glUseProgram(0);
+void Voxel::Game::renderLoadingScreen(const float delta)
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
+
+	// Render UIs
+	loadingCanvas->render();
 }
 
 void Voxel::Game::setFogEnabled(const bool enabled)

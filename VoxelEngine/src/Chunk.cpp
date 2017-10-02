@@ -686,6 +686,20 @@ bool Voxel::Chunk::isSmoothed()
 	return smoothed;
 }
 
+int Voxel::Chunk::getTopY(const int x, const int z)
+{
+	int val = heightMap.at(x).at(z);
+	int pVal = plainHeightMap.at(x).at(z);
+	if (val < pVal)
+	{
+		return pVal;
+	}
+	else
+	{
+		return val;
+	}
+}
+
 void Voxel::Chunk::updateTimestamp(const double timestamp)
 {
 	this->timestamp = timestamp;

@@ -192,6 +192,9 @@ namespace Voxel
 		// Get current chunk xz pos
 		glm::ivec2 getCurrentChunkXZ();
 
+		// Get top y at 
+		int getTopYAt(const glm::vec2& position);
+
 		// render chunks
 		void render();
 

@@ -1826,6 +1826,24 @@ glm::ivec2 Voxel::ChunkMap::getCurrentChunkXZ()
 	return currentChunkPos;
 }
 
+int Voxel::ChunkMap::getTopYAt(const glm::vec2 & position)
+{
+	glm::ivec3 blockLocalPos;
+	glm::ivec3 chunkSectionPos;
+
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(position.x, 0, position.y), blockLocalPos, chunkSectionPos);
+
+	auto chunk = getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
+	if (chunk)
+	{
+		return chunk->getTopY(blockLocalPos.x, blockLocalPos.z);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 void Voxel::ChunkMap::render()
 {
 	if (renderChunksMode)

@@ -67,7 +67,7 @@ namespace Voxel
 
 		// Initialize player. 
 		// Todo: read from save data
-		void init(const glm::vec3& position);
+		void init();
 
 		// Debug
 		void initYLine();
