@@ -19,6 +19,7 @@ namespace Voxel
 	class Skybox;
 	class Calendar;
 	class World;
+	class Physics;
 
 	namespace UI
 	{
@@ -64,6 +65,9 @@ namespace Voxel
 		ChunkMap* chunkMap;
 		ChunkMeshGenerator* chunkMeshGenerator;
 		ChunkWorkManager* chunkWorkManager;
+
+		// physics
+		Physics* physics;
 
 		// Player
 		Player* player;

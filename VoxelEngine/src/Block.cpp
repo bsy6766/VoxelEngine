@@ -142,7 +142,7 @@ void Voxel::Block::setBlockID(const BLOCK_ID blockID)
 	setColorU3(Color::getColorU3FromBlockID(blockID));
 }
 
-AABB Voxel::Block::getAABB()
+Geometry::AABB Voxel::Block::getAABB()
 {
-	return AABB(this->getWorldPosition(), glm::vec3(1.0f));
+	return Geometry::AABB(this->getWorldPosition(), glm::vec3(1.0f));
 }

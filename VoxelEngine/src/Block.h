@@ -2,7 +2,7 @@
 #define BLOCK_H
 
 #include <glm\glm.hpp>
-#include <Physics.h>
+#include <Geometry.h>
 
 namespace Voxel
 {
@@ -79,7 +79,7 @@ namespace Voxel
 		void setBlockID(const BLOCK_ID blockID);
 
 		// Get AABB
-		AABB getAABB();
+		Geometry::AABB getAABB();
 	};
 }
 

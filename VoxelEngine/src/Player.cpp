@@ -22,6 +22,8 @@ Player::Player()
 	, rayRange(0)
 	, lookingBlock(nullptr)
 	, lookingFace(Cube::Face::NONE)
+	, fallDistance(0)
+	, onGround(false)
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
@@ -268,6 +270,7 @@ void Voxel::Player::setFly(const bool mode)
 glm::mat4 Voxel::Player::getViewMatrix()
 {
 	return glm::translate(viewMatrix, -position);
+	//return glm::translate(glm::translate(viewMatrix, -position), glm::vec3(0, 0, 10.0f));
 }
 
 /*
@@ -331,6 +334,25 @@ float Voxel::Player::getMovementSpeed()
 	return movementSpeed;
 }
 
+float Voxel::Player::getFallDistance()
+{
+	return fallDistance;
+}
+
+bool Voxel::Player::isOnGround()
+{
+	return onGround;
+}
+
+void Voxel::Player::setOnGround(const bool onGround)
+{
+	this->onGround = onGround;
+
+	// take fall damage
+
+	fallDistance = 0.0f;
+}
+
 glm::vec3 Voxel::Player::getDirection()
 {
 	return direction;
@@ -367,9 +389,9 @@ Cube::Face Voxel::Player::getLookingFace()
 	return lookingFace;
 }
 
-AABB Voxel::Player::getBoundingBox()
+Geometry::AABB Voxel::Player::getBoundingBox()
 {
-	return AABB(glm::vec3(position.x, position.y + 1.0f, position.z), glm::vec3(1.0f, 2.0f, 1.0f));
+	return Geometry::AABB(glm::vec3(position.x, position.y + 1.0f, position.z), glm::vec3(1.0f, 2.0f, 1.0f));
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)

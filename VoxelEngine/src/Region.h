@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include <Physics.h>
+#include <Geometry.h>
 #include <Biome.h>
 #include <Terrain.h>
 
@@ -38,7 +38,7 @@ namespace Voxel
 		Terrain terrainType;
 
 		// AABB
-		AABB boundingBox;
+		Geometry::AABB boundingBox;
 
 		void initBoundingBox();
 	public:

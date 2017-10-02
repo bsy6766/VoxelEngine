@@ -4,7 +4,7 @@
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <Cube.h>
-#include <Physics.h>
+#include <Geometry.h>
 
 namespace Voxel
 {
@@ -46,6 +46,11 @@ namespace Voxel
 		// True if player moved or rotated this frame
 		bool moved;
 		bool rotated;
+
+		// The amount of distant that player fell. Higher the number, higher the fall damage.
+		float fallDistance;
+		// True if player is standing on block. Else, it's falling
+		bool onGround;
 
 		// Block that player is looking at
 		Block* lookingBlock;
@@ -120,6 +125,11 @@ namespace Voxel
 		void setMovementSpeed(float speed);
 		float getMovementSpeed();
 
+		// Add fall tick
+		float getFallDistance();
+		bool isOnGround();
+		void setOnGround(const bool onGround);
+
 		// Get direction of player
 		glm::vec3 getDirection();
 		// Get ray range of player
@@ -134,7 +144,7 @@ namespace Voxel
 		Block* getLookingBlock();
 		Cube::Face getLookingFace();
 
-		AABB getBoundingBox();
+		Geometry::AABB getBoundingBox();
 	};
 }
 

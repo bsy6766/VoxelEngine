@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <ChunkUtil.h>
 #include <Block.h>
+#include <Geometry.h>
 #include <mutex>
 #include <Cube.h>
 #include <Terrain.h>
@@ -161,8 +162,8 @@ namespace Voxel
 		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
 
 		// Check which face of block(cube) did ray hit
-		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const AABB& blockAABB);
-		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Triangle& tri, glm::vec3& intersectingPoint);
+		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
+		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::Triangle& tri, glm::vec3& intersectingPoint);
 
 		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);

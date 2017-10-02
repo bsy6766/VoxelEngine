@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <Voronoi.h>
-#include <Physics.h>
 
 namespace Voxel
 {

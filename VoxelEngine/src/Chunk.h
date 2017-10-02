@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm\glm.hpp>
 #include <atomic>
-#include <Physics.h>
+#include <Geometry.h>
 
 namespace Voxel
 {
@@ -37,7 +37,7 @@ namespace Voxel
 		ChunkMesh* chunkMesh;
 
 		// Border & range
-		AABB boundingBox;
+		Geometry::AABB boundingBox;
 		
 		// region data for each block
 		std::vector<unsigned int> regionMap;
@@ -126,7 +126,7 @@ namespace Voxel
 		ChunkMesh* getMesh();
 
 		// Get bounding Box
-		AABB getBoundingBox();
+		Geometry::AABB getBoundingBox();
 
 		// Set all block region data
 		void setRegionMap(const unsigned int regionID);

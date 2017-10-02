@@ -12,6 +12,8 @@
 #include <Biome.h>
 #include <Terrain.h>
 
+#include <Physics.h>
+
 #include <Setting.h>
 
 #include <InputHandler.h>
@@ -108,6 +110,9 @@ void Voxel::Game::init()
 	chunkMeshGenerator = new ChunkMeshGenerator();
 	chunkWorkManager = new ChunkWorkManager();
 
+	// init physics
+	physics = new Physics();
+
 	// player
 	player = new Player();
 
@@ -157,6 +162,8 @@ void Voxel::Game::release()
 	if (chunkMap) delete chunkMap;
 	if (chunkMeshGenerator) delete chunkMeshGenerator;
 	if (chunkWorkManager) delete chunkWorkManager;
+
+	if (physics) delete physics;
 
 	if (player)	delete player;
 

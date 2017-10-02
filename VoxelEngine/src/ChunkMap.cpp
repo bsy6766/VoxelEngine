@@ -4,7 +4,7 @@
 #include <ChunkSection.h>
 #include <iostream>
 #include <Utility.h>
-#include <Physics.h>
+#include <Geometry.h>
 #include <ChunkWorkManager.h>
 #include <Voronoi.h>
 #include <Camera.h>
@@ -1002,7 +1002,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const g
 	return result;
 }
 
-Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const AABB & blockAABB)
+Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
 {
 	// Check if ray hits each triangle of cube. 
 
@@ -1072,7 +1072,7 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 //             0 =  disjoint (no intersect)
 //             1 =  intersect in unique point I1
 //             2 =  are in the same plane
-int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Triangle & tri, glm::vec3 & intersectingPoint)
+int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::Triangle & tri, glm::vec3 & intersectingPoint)
 {
 	glm::vec3    u, v, n;              // triangle vectors
 	glm::vec3    dir, w0, w;           // ray vectors
