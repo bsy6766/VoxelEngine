@@ -14,6 +14,8 @@ namespace Voxel
 		BORDER,
 	};
 
+
+
 	// Modifiers gives changes on world generation, gives more randomness to the game
 	enum class TerrainModifier
 	{
