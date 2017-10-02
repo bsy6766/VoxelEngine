@@ -4,6 +4,7 @@
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <Cube.h>
+#include <Physics.h>
 
 namespace Voxel
 {
@@ -56,9 +57,10 @@ namespace Voxel
 		void wrapAngle();
 		void wrapAngleX();
 
-		// temp
+		// For debug
 		GLuint yLineVao;
 		GLuint rayVao;
+		GLuint boundingBoxVao;
 	public:
 		Player();
 		~Player();
@@ -72,6 +74,7 @@ namespace Voxel
 		// Debug
 		void initYLine();
 		void initRayLine();
+		void initBoundingBoxLine();
 
 		glm::vec3 getPosition();
 		void setPosition(const glm::vec3& newPosition);
@@ -130,6 +133,8 @@ namespace Voxel
 		bool isLookingAtBlock();
 		Block* getLookingBlock();
 		Cube::Face getLookingFace();
+
+		AABB getBoundingBox();
 	};
 }
 

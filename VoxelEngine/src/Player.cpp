@@ -25,6 +25,7 @@ Player::Player()
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
+	, boundingBoxVao(0)
 {
 
 }
@@ -115,14 +116,84 @@ void Voxel::Player::initRayLine()
 	GLint colorLoc = program->getAttribLocation("color");
 	// vert
 	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), nullptr);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
 	// color
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
 
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &rayVbo);
+}
+
+void Voxel::Player::initBoundingBoxLine()
+{	
+	// Generate vertex array object
+	glGenVertexArrays(1, &boundingBoxVao);
+	// Bind it
+	glBindVertexArray(boundingBoxVao);
+
+	// Generate buffer object
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	auto min = glm::vec3(-0.5f, 0, -0.5f);
+	auto max = glm::vec3(0.5f, 2.0f, 0.5f);
+
+	// color = yellow
+	GLfloat box[] = 
+	{
+		// bottom square
+		min.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, min.z, 0, 1, 1, 1,
+		
+		// top square
+		min.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, min.z, 0, 1, 1, 1,
+
+		// 4 vertical lines
+		min.x, min.y, min.z, 0, 1, 1, 1,
+		min.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
+
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7* sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
 }
 
 void Player::moveFoward(const float delta)
@@ -296,6 +367,11 @@ Cube::Face Voxel::Player::getLookingFace()
 	return lookingFace;
 }
 
+AABB Voxel::Player::getBoundingBox()
+{
+	return AABB(glm::vec3(position.x, position.y + 1.0f, position.z), glm::vec3(1.0f, 2.0f, 1.0f));
+}
+
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;
@@ -365,6 +441,13 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 
 		lineProgram->setUniformMat4("modelMat", rayMat);
 		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	if (boundingBoxVao)
+	{
+		glBindVertexArray(boundingBoxVao);
+		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
+		glDrawArrays(GL_LINES, 0, 24);
 	}
 }
 

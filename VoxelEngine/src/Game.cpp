@@ -308,6 +308,7 @@ void Game::createPlayer()
 	// for debug
 	//player->initYLine();
 	//player->initRayLine();
+	player->initBoundingBoxLine();
 }
 
 void Game::createChunkMap()
