@@ -6,6 +6,7 @@
 #include <Utility.h>
 #include <ProgramManager.h>
 #include <Program.h>
+#include <glm/gtx/transform.hpp>
 
 using namespace Voxel;
 
@@ -17,6 +18,7 @@ float FrustumPlane::distanceToPoint(const glm::vec3& point)
 
 Frustum::Frustum()
 	: vao(0)
+	, projection(1.0f)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -142,8 +144,25 @@ void Voxel::Frustum::initDebugLines(const float fovy, const float fovx, const fl
 	glDeleteBuffers(1, &ibo);
 }
 
+void Voxel::Frustum::updateProjection(const float fovy, const float aspect, const float near, const float far)
+{
+	this->projection = glm::perspective(glm::radians(fovy), aspect, near, far);
+}
+
 void Frustum::update(const glm::mat4& MVP)
-{    // left
+{    
+	updateFrustumPlanes(MVP);
+}
+
+void Voxel::Frustum::update(const glm::vec3 & playerPosition, const glm::mat4 & playerOrientation)
+{
+	auto MVP = glm::translate(projection * playerOrientation, -playerPosition);
+	updateFrustumPlanes(MVP);
+}
+
+void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & MVP)
+{
+	// left
 	planes.at(FrustumPlane::Face::LEFT).normal.x = MVP[0][3] + MVP[0][0];
 	planes.at(FrustumPlane::Face::LEFT).normal.y = MVP[1][3] + MVP[1][0];
 	planes.at(FrustumPlane::Face::LEFT).normal.z = MVP[2][3] + MVP[2][0];

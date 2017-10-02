@@ -103,9 +103,6 @@ namespace Voxel
 		// Print camera info
 		void print();
 
-		// Update frustum
-		void updateFrustum(const glm::vec3& playerPosition, const glm::mat4& playerOrientation, const int renderDistance);
-
 		// Get frustum instance
 		Frustum* getFrustum();
 

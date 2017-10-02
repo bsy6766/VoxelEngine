@@ -43,15 +43,21 @@ namespace Voxel
 		// All 6 planes. 
 		std::vector<FrustumPlane> planes;
 
+		// projection
+		glm::mat4 projection;
+
 		GLuint vao;
-		
 	public:
 		Frustum();
 		~Frustum();
 
 		void initDebugLines(const float fovy, const float fovx, const float near, const float far);
 
+		void updateProjection(const float fovy, const float aspect, const float near, const float far);
+
 		void update(const glm::mat4& MVP);
+		void update(const glm::vec3& playerPosition, const glm::mat4& playerOrientation);
+		void updateFrustumPlanes(const glm::mat4& MVP);
 		bool isChunkBorderInFrustum(Chunk* chunk);
 
 		void render(const glm::mat4& modelMat, Program* prog);
