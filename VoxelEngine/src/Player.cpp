@@ -389,6 +389,11 @@ void Voxel::Player::setViewMode(const int mode)
 	}
 }
 
+Player::ViewMode Voxel::Player::getViewMode()
+{
+	return viewMode;
+}
+
 void Voxel::Player::setLookingBlock(Block* block, const Cube::Face& face)
 {
 	lookingBlock = block;

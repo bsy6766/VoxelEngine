@@ -152,7 +152,7 @@ namespace Voxel
 		glm::vec3 getRayEnd();
 
 		void setViewMode(const int mode);
-
+		ViewMode getViewMode();
 
 		void setLookingBlock(Block* block, const Cube::Face& face);
 		// Check if player is looking at block

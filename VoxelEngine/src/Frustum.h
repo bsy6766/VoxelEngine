@@ -55,7 +55,7 @@ namespace Voxel
 
 		void updateProjection(const float fovy, const float aspect, const float near, const float far);
 
-		void update(const glm::mat4& MVP);
+		void update(const glm::mat4& playerVP);
 		void update(const glm::vec3& playerPosition, const glm::mat4& playerOrientation);
 		void updateFrustumPlanes(const glm::mat4& MVP);
 		bool isChunkBorderInFrustum(Chunk* chunk);

@@ -403,7 +403,16 @@ void Game::update(const float delta)
 			auto playerPos = player->getPosition();
 
 			// If player either move or rotated, update frustum
-			Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
+			auto playerViewMode = player->getViewMode();
+			if (playerViewMode == Player::ViewMode::FIRST_PERSON_VIEW)
+			{
+				//Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
+				Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+			}
+			else if(playerViewMode == Player::ViewMode::THIRD_PERSON_VIEW)
+			{
+				Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+			}
 			// Also update raycast
 			updatePlayerRaycast();
 

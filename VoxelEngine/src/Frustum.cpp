@@ -149,8 +149,9 @@ void Voxel::Frustum::updateProjection(const float fovy, const float aspect, cons
 	this->projection = glm::perspective(glm::radians(fovy), aspect, near, far);
 }
 
-void Frustum::update(const glm::mat4& MVP)
+void Frustum::update(const glm::mat4& playerVP)
 {    
+	auto MVP = projection * playerVP;
 	updateFrustumPlanes(MVP);
 }
 
