@@ -24,6 +24,9 @@ Player::Player()
 	, lookingFace(Cube::Face::NONE)
 	, fallDistance(0)
 	, onGround(false)
+	, cameraDistance(10.0f)
+	, cameraAngleX(0)
+	, viewMode(ViewMode::FIRST_PERSON_VIEW)
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
@@ -269,8 +272,14 @@ void Voxel::Player::setFly(const bool mode)
 
 glm::mat4 Voxel::Player::getViewMatrix()
 {
-	return glm::translate(viewMatrix, -position);
-	//return glm::translate(glm::translate(viewMatrix, -position), glm::vec3(0, 0, 10.0f));
+	if (viewMode == ViewMode::FIRST_PERSON_VIEW)
+	{
+		return glm::translate(viewMatrix, -position);
+	}
+	else
+	{
+		return  glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistance)), glm::radians(-cameraAngleX), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -position);
+	}
 }
 
 /*
@@ -366,6 +375,18 @@ float Voxel::Player::getRange()
 glm::vec3 Voxel::Player::getRayEnd()
 {
 	return position + (direction * rayRange);
+}
+
+void Voxel::Player::setViewMode(const int mode)
+{
+	if (mode == 0)
+	{
+		viewMode = ViewMode::FIRST_PERSON_VIEW;
+	}
+	else if (mode == 1)
+	{
+		viewMode = ViewMode::THIRD_PERSON_VIEW;
+	}
 }
 
 void Voxel::Player::setLookingBlock(Block* block, const Cube::Face& face)
@@ -488,11 +509,15 @@ void Voxel::Player::addRotationX(const float x)
 {
 	rotation.x += x * rotationSpeed;
 	
-	// Angle x range: 0~90, 360 ~ 270
+	// angle x range: 0 ~ 360
 	wrapAngle(rotation.x);
+	// Angle x range: 0~90, 360 ~ 270
 	wrapAngleX();
-	//std::cout << "x = " << rotation.x << std::endl;
 
+	cameraAngleX += x * rotationSpeed;
+	wrapAngle(cameraAngleX);
+	wrapCameraAngleX();
+	
 	updateViewMatrix();
 	updateDirMatrix();
 	updateDirection();
@@ -501,10 +526,11 @@ void Voxel::Player::addRotationX(const float x)
 
 void Voxel::Player::addRotationY(const float y)
 {
-	//std::cout << "y = " << y << std::endl;
 	rotation.y += y * rotationSpeed;
 
+	// angle y range: 0 ~ 360
 	wrapAngle(rotation.y);
+
 	updateViewMatrix();
 	updateDirMatrix();
 	updateDirection();
@@ -538,6 +564,24 @@ void Voxel::Player::wrapAngleX()
 		if (rotation.x < 270.0f)
 		{
 			rotation.x = 270.0f;
+		}
+	}
+}
+
+void Voxel::Player::wrapCameraAngleX()
+{
+	if (cameraAngleX < 180.0f)
+	{
+		if (cameraAngleX > 90.0f)
+		{
+			cameraAngleX = 90.0f;
+		}
+	}
+	else if (cameraAngleX >= 180.0f)
+	{
+		if (cameraAngleX < 270.0f)
+		{
+			cameraAngleX = 270.0f;
 		}
 	}
 }

@@ -22,6 +22,12 @@ namespace Voxel
 	*/
 	class Player
 	{
+	public:
+		enum class ViewMode
+		{
+			FIRST_PERSON_VIEW = 0,
+			THIRD_PERSON_VIEW
+		};
 	private:
 		// World position of player
 		glm::vec3 position;
@@ -32,6 +38,9 @@ namespace Voxel
 		// Range in blocks that player can reach from position
 		float rayRange;
 
+		// view mode
+		ViewMode viewMode;
+
 		// Matrix
 		glm::mat4 viewMatrix;
 		glm::mat4 dirMatrix;
@@ -39,6 +48,10 @@ namespace Voxel
 		// speed
 		float movementSpeed;
 		float rotationSpeed;
+
+		// player's camera
+		float cameraDistance;
+		float cameraAngleX;
 
 		// True if player can fly
 		bool fly;
@@ -61,6 +74,7 @@ namespace Voxel
 		void wrapAngle(float& axis);
 		void wrapAngle();
 		void wrapAngleX();
+		void wrapCameraAngleX();
 
 		// For debug
 		GLuint yLineVao;
@@ -136,6 +150,8 @@ namespace Voxel
 		float getRange();
 		// Get end point of player's raycast
 		glm::vec3 getRayEnd();
+
+		void setViewMode(const int mode);
 
 
 		void setLookingBlock(Block* block, const Cube::Face& face);

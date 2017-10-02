@@ -20,6 +20,7 @@ namespace Voxel
 	class Calendar;
 	class World;
 	class Physics;
+	class Setting;
 
 	namespace UI
 	{
@@ -77,6 +78,9 @@ namespace Voxel
 
 		// Calendar
 		Calendar* calendar;
+		
+		// Setting instance ptr
+		Setting* settingPtr;
 
 		// UI canvases
 		UI::Canvas* defaultCanvas;

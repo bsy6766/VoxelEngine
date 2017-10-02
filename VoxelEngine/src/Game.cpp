@@ -61,9 +61,11 @@ Game::Game()
 	, cameraControlMode(false)
 	, chunkWorkManager(nullptr)
 	, defaultCanvas(nullptr)
+	, loadingCanvas(nullptr)
 	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
+	, settingPtr(nullptr)
 	, gameState(GameState::IDLE)
 	, loadingState(LoadingState::INITIALIZING)
 {
@@ -93,6 +95,8 @@ void Voxel::Game::init()
 {
 	// Init random first
 	initRandoms();
+
+	settingPtr = &Setting::getInstance();
 
 	// init spritesheet
 	initSpriteSheets();
@@ -233,7 +237,7 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 {
 	skybox = new Skybox();
 	// Always set skybox with max render distance
-	skybox->init(skyColor, Setting::getInstance().getRenderDistance());
+	skybox->init(skyColor, settingPtr->getRenderDistance());
 
 	program->setUniformVec3("playerPosition", player->getPosition());
 	program->setUniformFloat("fogDistance", skybox->getFogDistance());
@@ -309,12 +313,12 @@ void Game::createPlayer()
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
-	Camera::mainCamera->updateFrustum(player->getPosition(), player->getOrientation(), 16);
+	Camera::mainCamera->getFrustum()->update(player->getPosition(), player->getOrientation());
 	Camera::mainCamera->setSpeed(100.0f);
 
 	// for debug
 	//player->initYLine();
-	//player->initRayLine();
+	player->initRayLine(); 
 	player->initBoundingBoxLine();
 }
 
@@ -326,7 +330,7 @@ void Game::createChunkMap()
 	// create chunks for region -1 ~ 1.
 	// For now, test with 0, 0
 	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	auto rd = Setting::getInstance().getRenderDistance();
+	auto rd = settingPtr->getRenderDistance();
 
 	// Initilize chunks near player based on render distance
 	auto chunkCoordinates = chunkMap->initChunkNearPlayer(playerPosition, rd);
@@ -399,7 +403,7 @@ void Game::update(const float delta)
 			auto playerPos = player->getPosition();
 
 			// If player either move or rotated, update frustum
-			Camera::mainCamera->updateFrustum(playerPos, player->getOrientation(), 16);
+			Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
 			// Also update raycast
 			updatePlayerRaycast();
 
