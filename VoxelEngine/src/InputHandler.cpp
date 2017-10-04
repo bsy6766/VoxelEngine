@@ -401,6 +401,10 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 		// whitespace
 		return " ";
 	}
+	else if (key == GLFW_KEY_PERIOD)
+	{
+		return ".";
+	}
 	else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
 	{
 		if (mod & GLFW_MOD_SHIFT)
