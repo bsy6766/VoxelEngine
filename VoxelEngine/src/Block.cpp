@@ -90,6 +90,20 @@ bool Voxel::Block::isEmpty()
 	}
 }
 
+bool Voxel::Block::isCollidable()
+{
+	if (id == BLOCK_ID::AIR)
+	{
+		return false;
+	}
+	else
+	{
+		// for now, everything is collidable.
+		// todo, give exceptions (like flower, lowgrass, etc)
+		return true;
+	}
+}
+
 void Voxel::Block::setColor(const glm::vec3 & color)
 {
 	r = static_cast<unsigned char>(color.r * 255.0f);
@@ -142,7 +156,7 @@ void Voxel::Block::setBlockID(const BLOCK_ID blockID)
 	setColorU3(Color::getColorU3FromBlockID(blockID));
 }
 
-Geometry::AABB Voxel::Block::getAABB()
+Geometry::AABB Voxel::Block::getBoundingBox()
 {
 	return Geometry::AABB(this->getWorldPosition(), glm::vec3(1.0f));
 }

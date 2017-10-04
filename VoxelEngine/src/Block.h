@@ -56,6 +56,9 @@ namespace Voxel
 
 		// Check if block is empty. Empty means it's air
 		bool isEmpty();
+		
+		// Cehck if block is collidable 
+		bool isCollidable();
 
 		// Set color of block (0 ~ 1)
 		void setColor(const glm::vec3& color);
@@ -79,7 +82,7 @@ namespace Voxel
 		void setBlockID(const BLOCK_ID blockID);
 
 		// Get AABB
-		Geometry::AABB getAABB();
+		Geometry::AABB getBoundingBox();
 	};
 }
 
