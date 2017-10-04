@@ -22,6 +22,8 @@ namespace Voxel
 	*/
 	class Player
 	{
+	private:
+		static const float MaxCameraDistance;
 	public:
 		enum class ViewMode
 		{
@@ -31,8 +33,12 @@ namespace Voxel
 	private:
 		// World position of player
 		glm::vec3 position;
+		// Next position of player (for physics and smooth movement)
+		glm::vec3 nextPosition;
 		// player's rotation angle in degree
 		glm::vec3 rotation;
+		// For smooth rotation
+		glm::vec3 nextRotation;
 		// direction vector of player
 		glm::vec3 direction;
 		// Range in blocks that player can reach from position
@@ -51,7 +57,7 @@ namespace Voxel
 
 		// player's camera
 		float cameraDistance;
-		float cameraAngleX;
+		float cameraDistanceTarget;
 
 		// True if player can fly
 		bool fly;
@@ -60,6 +66,8 @@ namespace Voxel
 		bool moved;
 		bool rotated;
 
+		// The amount of duration that player fell
+		float fallDuration;
 		// The amount of distant that player fell. Higher the number, higher the fall damage.
 		float fallDistance;
 		// True if player is standing on block. Else, it's falling
@@ -74,7 +82,7 @@ namespace Voxel
 		void wrapAngle(float& axis);
 		void wrapAngle();
 		void wrapAngleX();
-		void wrapCameraAngleX();
+		void wrapNextAngleX();
 
 		// For debug
 		GLuint yLineVao;
@@ -96,7 +104,9 @@ namespace Voxel
 		void initBoundingBoxLine();
 
 		glm::vec3 getPosition();
-		void setPosition(const glm::vec3& newPosition);
+		void setPosition(const glm::vec3& newPosition, const bool smoothMovement);
+
+		glm::vec3 getNextPosition();
 
 		void addRotationX(const float x);
 		void addRotationY(const float y);
@@ -119,7 +129,7 @@ namespace Voxel
 		void updateDirMatrix();
 		void updateDirection();
 
-		void update();
+		void update(const float delta);
 		void renderDebugLines(Program* lineProgram);
 
 		//glm::mat4 getVP(const glm::mat4& projection);
@@ -141,8 +151,13 @@ namespace Voxel
 
 		// Add fall tick
 		float getFallDistance();
+		void setFallDistance(const float dist);
+		float getFallDuration();
+		void setFallDuration(float time);
 		bool isOnGround();
 		void setOnGround(const bool onGround);
+
+		bool isFlying();
 
 		// Get direction of player
 		glm::vec3 getDirection();
@@ -153,6 +168,9 @@ namespace Voxel
 
 		void setViewMode(const int mode);
 		ViewMode getViewMode();
+
+		void zoomInCamera();
+		void zoomOutCamera();
 
 		void setLookingBlock(Block* block, const Cube::Face& face);
 		// Check if player is looking at block
