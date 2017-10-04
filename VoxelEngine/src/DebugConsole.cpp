@@ -157,7 +157,7 @@ void Voxel::DebugConsole::init()
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -201.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
+	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -201.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
@@ -1008,9 +1008,9 @@ void Voxel::DebugConsole::setPlayerLookingAtVisibility(const bool visibility)
 	}
 }
 
-void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total)
+void Voxel::DebugConsole::updateChunkNumbers(const int visible, const int active, const int total, const std::string& workOrder)
 {
-	chunkNumbers->setText("chunks: " + std::to_string(visible) + " / " + std::to_string(active) + " / " + std::to_string(total));
+	chunkNumbers->setText("chunks: " + std::to_string(visible) + " / " + std::to_string(active) + " / " + std::to_string(total) + " / " + workOrder);
 }
 
 void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::string& terrainType, const float t, const float m)

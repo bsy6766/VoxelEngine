@@ -94,7 +94,7 @@ namespace Voxel
 		void updatePlayerRotation(const glm::vec3& rotation);
 		void updatePlayerLookingAt(const glm::ivec3& lookingAt, const Cube::Face& face);
 		void setPlayerLookingAtVisibility(const bool visibility);
-		void updateChunkNumbers(const int visible, const int active, const int total);
+		void updateChunkNumbers(const int visible, const int active, const int total, const std::string& workOrder);
 		void updateBiome(const std::string& biomeType, const std::string& terrainType, const float t, const float m);
 		void updateRegion(const unsigned int regionID);
 	};
