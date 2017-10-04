@@ -397,6 +397,22 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return false;
 						}
 					}
+					else if (arg1 == "fly")
+					{
+						bool arg2Bool = split.at(2) == "true" ? true : false;
+						player->setFly(arg2Bool);
+
+						if (arg2Bool)
+						{
+							executedCommandHistory.push_back("Enabled player fly");
+						}
+						else
+						{
+							executedCommandHistory.push_back("Disabled player fly");
+						}
+						lastCommand = command;
+						return true;
+					}
 				}
 				if (size == 4)
 				{
@@ -485,7 +501,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								return false;
 							}
 
-							player->setPosition(glm::vec3(x, y, z));
+							player->setPosition(glm::vec3(x, y, z), false);
 							executedCommandHistory.push_back("Set player position to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
 							lastCommand = command;
 							return true;
@@ -562,7 +578,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								return false;
 							}
 
-							player->setPosition(glm::vec3(x, y, z) + player->getPosition());
+							player->setPosition(glm::vec3(x, y, z) + player->getPosition(), false);
 							executedCommandHistory.push_back("Added player position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
 							lastCommand = command;
 							return true;
