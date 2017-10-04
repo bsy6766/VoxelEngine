@@ -9,7 +9,6 @@
 #include <World.h>
 #include <Region.h>
 #include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/common.hpp>
 
 using namespace Voxel;
 

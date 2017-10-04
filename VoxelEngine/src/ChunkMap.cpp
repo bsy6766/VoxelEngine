@@ -640,6 +640,11 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(int x, int y, int z)
 	return nullptr;
 }
 
+Block * Voxel::ChunkMap::getBlockAtWorldXYZ(const glm::vec3 & worldPosition)
+{
+	return getBlockAtWorldXYZ(static_cast<int>(worldPosition.x), static_cast<int>(worldPosition.y), static_cast<int>(worldPosition.z));
+}
+
 int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int z)
 {
 	// Retruns 0 if block exists and transparent. 
@@ -987,7 +992,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const g
 						result.block = curBlock;
 
 						// Check which face did ray hit on cube.
-						result.face = raycastFace(rayStart, curRayPoint, curBlock->getAABB());
+						result.face = raycastFace(rayStart, curRayPoint, curBlock->getBoundingBox());
 
 						return result;
 					}
@@ -1824,6 +1829,39 @@ std::unordered_map<unsigned int, Terrain>& Voxel::ChunkMap::getRegionTerrainsMap
 glm::ivec2 Voxel::ChunkMap::getCurrentChunkXZ()
 {
 	return currentChunkPos;
+}
+
+void Voxel::ChunkMap::getCollidableBlockNearPlayer(const glm::vec3 & playerPosition, std::vector<Block*> collidableBlocks)
+{
+	auto standingBlockWorldPos = glm::ivec3(0);
+	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
+	standingBlockWorldPos.y = static_cast<int>((playerPosition.y >= 0) ? playerPosition.y : 0);
+	standingBlockWorldPos.z = static_cast<int>((playerPosition.z >= 0) ? playerPosition.z : glm::floor(playerPosition.z));
+
+	int startX = standingBlockWorldPos.x - 1;
+	int startY = standingBlockWorldPos.y - 1;
+	int startZ = standingBlockWorldPos.z - 1;
+	int endX = standingBlockWorldPos.x + 1;
+	int endY = standingBlockWorldPos.y + 3;
+	int endZ = standingBlockWorldPos.z + 1;
+
+	for (int x = startX; x <= endX; x++)
+	{
+		for (int z = startZ; x <= endZ; z++)
+		{
+			for (int y = startY; y <= endY; y++)
+			{
+				Block* block = getBlockAtWorldXYZ(x, y, z);
+				if (block)
+				{
+					if (block->isCollidable())
+					{
+						collidableBlocks.push_back(block);
+					}
+				}
+			}
+		}
+	}
 }
 
 int Voxel::ChunkMap::getTopYAt(const glm::vec2 & position)

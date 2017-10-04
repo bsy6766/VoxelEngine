@@ -142,6 +142,7 @@ namespace Voxel
 		// Get block in world position. Returns nullptr if chunk, chunksection or block doesn't exsits.
 		// boo valid tells wether block exists or not. It will be true if block exists. However, return value can still be nullptr if it's air block. False if chunk or chunk section doesn't exists = no block.
 		Block* getBlockAtWorldXYZ(int x, int y, int z);
+		Block* getBlockAtWorldXYZ(const glm::vec3& worldPosition);
 		
 		// Check if block is opaque.
 		// Retruns 0 if block exists and transparent. 
@@ -192,6 +193,8 @@ namespace Voxel
 			
 		// Get current chunk xz pos
 		glm::ivec2 getCurrentChunkXZ();
+
+		void getCollidableBlockNearPlayer(const glm::vec3& playerPosition, std::vector<Block*> collidableBlocks);
 
 		// Get top y at 
 		int getTopYAt(const glm::vec2& position);
