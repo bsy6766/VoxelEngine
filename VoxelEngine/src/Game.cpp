@@ -368,7 +368,7 @@ void Voxel::Game::createWorld()
 	auto randX = Utility::Random::randomReal<float>(startingRegionSitePos.x - 100.0f, startingRegionSitePos.x + 100.0f);
 	auto randZ = Utility::Random::randomReal<float>(startingRegionSitePos.y - 100.0f, startingRegionSitePos.y + 100.0f);
 
-	player->setPosition(glm::vec3(randX, 0, randZ));
+	player->setPosition(glm::vec3(randX, 0, randZ), false);
 }
 
 void Game::update(const float delta)
@@ -384,13 +384,15 @@ void Game::update(const float delta)
 			float topY = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.5f;
 			playerPosition.y = topY;
 
-			player->setPosition(playerPosition);
+			player->setPosition(playerPosition, false);
 
 		}
 	}
 	else
 	{
 		checkUnloadedChunks();
+
+		updatePhysics(delta);
 
 		bool playerMoved = player->didMoveThisFrame();
 		bool playerRotated = player->didRotateThisFrame();
@@ -444,7 +446,7 @@ void Game::update(const float delta)
 
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());
 
-		player->update();
+		player->update(delta);
 		skybox->update(delta);
 
 		calendar->update(delta);
@@ -459,6 +461,7 @@ void Voxel::Game::updateInput(const float delta)
 		updateKeyboardInput(delta);
 		updateMouseMoveInput(delta);
 		updateMouseClickInput();
+		updateMouseScrollInput(delta);
 		updateControllerInput(delta);
 	}
 }
@@ -669,13 +672,26 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 				player->moveRight(delta);
 			}
 
-			if (input->getKeyDown(GLFW_KEY_SPACE))
+			if (player->isFlying())
 			{
-				player->moveUp(delta);
+				if (input->getKeyDown(GLFW_KEY_SPACE))
+				{
+					player->moveUp(delta);
+				}
+				else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+				{
+					player->moveDown(delta);
+				}
 			}
-			else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+			else
 			{
-				player->moveDown(delta);
+				if (player->isOnGround())
+				{
+					if (input->getKeyDown(GLFW_KEY_SPACE, true))
+					{
+						player->jump();
+					}
+				}
 			}
 
 			if (input->getKeyDown(GLFW_KEY_BACKSPACE))
@@ -817,6 +833,20 @@ void Voxel::Game::updateMouseClickInput()
 	}
 }
 
+void Voxel::Game::updateMouseScrollInput(const float delta)
+{
+	auto mouseScroll = input->getMouseScrollValue();
+	if (mouseScroll == 1)
+	{
+		player->zoomInCamera();
+	}
+	else if(mouseScroll == -1)
+	{
+		player->zoomOutCamera();
+	}
+	// Else, mouse scroll didn't move
+}
+
 void Voxel::Game::updateControllerInput(const float delta)
 {
 	if (input->hasController())
@@ -871,6 +901,19 @@ void Voxel::Game::updateControllerInput(const float delta)
 			player->addRotationX(delta * valueRightAxisY * 10.0f);
 		}
 	}
+}
+
+void Voxel::Game::updatePhysics(const float delta)
+{
+	physics->applyGravity(player, delta);
+
+	//auto start = Utility::Time::now();
+	std::vector<Block*> collidableBlock;
+	chunkMap->getCollidableBlockNearPlayer(player->getPosition(), collidableBlock);
+
+	physics->resolvePlayerAndBlockCollision(player, collidableBlock);
+	//auto end = Utility::Time::now();
+	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }
 
 void Voxel::Game::updateChunks()

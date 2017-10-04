@@ -26,6 +26,9 @@ namespace Voxel
 		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonMap;
 		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonTickMap;
 
+		// Mouse scroll
+		int mouseScrollValue;
+
 		// Keyboard map that saves input state
 		std::unordered_map<int/*GLFW Key*/, int> keyMap;
 		// Keyboard map that saves input state for only single frame
@@ -64,6 +67,7 @@ namespace Voxel
 		static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void glfwCursorPosCallback(GLFWwindow* window, double x, double y);
 		static void glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		static void glfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
 		// Controller Manager Callback
 		static void onButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button);
@@ -83,6 +87,9 @@ namespace Voxel
 		bool getMouseDown(int button, const bool tick = false);
 		bool getMouseUp(int button, const bool tick = false);
 		bool getMouseRepeat(int button, const bool tick = false);
+
+		// mouse scroll. up = 1, down = -1
+		int getMouseScrollValue();
 
 		// TODO: Controller id can be change at connection and disctionection. save id to player and update
 		// For now, assume it's 0

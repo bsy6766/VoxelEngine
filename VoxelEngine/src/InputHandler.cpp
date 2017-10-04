@@ -10,6 +10,7 @@ InputHandler::InputHandler()
 	, controllerManager(ControllerManager::getInstance())
 	, mods(0)
 	, bufferEnabled(false)
+	, mouseScrollValue(0)
 {
 }
 
@@ -27,6 +28,7 @@ void Voxel::InputHandler::postUpdate()
 {
 	mouseButtonTickMap.clear();
 	keyTickMap.clear();
+	mouseScrollValue = 0;
 }
 
 
@@ -71,6 +73,13 @@ void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
 void InputHandler::glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	InputHandler::getInstance().updateMouseButton(button, action, mods);
+}
+
+void Voxel::InputHandler::glfwScrollCallback(GLFWwindow * window, double xOffset, double yOffset)
+{
+	// ignore xOffset
+	// up = 1, down = -1
+	InputHandler::getInstance().mouseScrollValue = static_cast<int>(yOffset);
 }
 
 void Voxel::InputHandler::onButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button)
@@ -332,6 +341,11 @@ bool InputHandler::getMouseRepeat(int button, const bool tick)
 			return mouseButtonMap[button] == GLFW_REPEAT;
 		}
 	}
+}
+
+int Voxel::InputHandler::getMouseScrollValue()
+{
+	return mouseScrollValue;
 }
 
 void Voxel::InputHandler::setCursorToCenter()

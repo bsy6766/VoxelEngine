@@ -152,6 +152,7 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	glfwSetKeyCallback(window, InputHandler::glfwKeyCallback);
 	glfwSetCursorPosCallback(window, InputHandler::glfwCursorPosCallback);
 	glfwSetMouseButtonCallback(window, InputHandler::glfwMouseButtonCallback);
+	glfwSetScrollCallback(window, InputHandler::glfwScrollCallback);
 }
 
 void Voxel::GLView::initGLEW()

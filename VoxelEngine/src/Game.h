@@ -123,7 +123,10 @@ namespace Voxel
 		void updateKeyboardInput(const float delta);
 		void updateMouseMoveInput(const float delta);
 		void updateMouseClickInput();
+		void updateMouseScrollInput(const float delta);
 		void updateControllerInput(const float delta);
+
+		void updatePhysics(const float delta);
 
 		// Check if chunk loader needs to be updated
 		void updateChunks();
