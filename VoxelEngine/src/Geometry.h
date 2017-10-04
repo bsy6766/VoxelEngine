@@ -41,11 +41,16 @@ namespace Voxel
 		class AABB
 		{
 		public:
+			// Default construcotr
 			AABB();
+			// Constructor with values
 			AABB(const glm::vec3& center, const glm::vec3& size);
+			// Nothing to release, use default destructor
 			~AABB() = default;
 
+			// Center of AABB
 			glm::vec3 center;
+			// Size of AABB (Not radius)
 			glm::vec3 size;
 
 			// Order: Front > Left > Back > Right > Top > Bottom
@@ -53,11 +58,58 @@ namespace Voxel
 			std::vector<Plane> toPlanes() const;
 			std::vector<Triangle> toTriangles() const;
 
+			/**
+			*	getMin
+			*	Get minimum point (origin)
+			*
+			*	@return A minimum point of AABB.
+			*/
 			glm::vec3 getMin() const;
+
+			/**
+			*	getMax
+			*	Get maximum point (origin + size)
+			*
+			*	@return A maximum point of AABB.
+			*/
 			glm::vec3 getMax() const;
 
+			/**
+			*	getCenter
+			*
+			*	@return glm::vec3 center point of AABB
+			*/
+			glm::vec3 getCenter() const;
+
+			/**
+			*	getSize
+			*
+			*	@return glm::vec3 size of AABB
+			*/
+			glm::vec3 getSize() const;
+
+			/**
+			*	doesIntersectsWith
+			*	Check if this AABB intersects with other AABB.
+			*
+			*	@param [int] other An reference of other AABB to check intersection
+			*	@return true if this AABB intersects other AABB. Else, false.
+			*/
 			bool doesIntersectsWith(const AABB& other);
 
+			/**
+			*	isZero
+			*	Checks if this AABB is zero.
+			*
+			*	@param [in] all Set true if want to check if all 3 axis are zero. Else, false. If false, AABB will be zero if there is one or more axis sized 0.
+			*	@return true If AABB is zero;
+			*/
+			bool isZero(const bool all) const;
+
+			/**
+			*	print
+			*	Print AABB info.
+			*/
 			void print();
 		};
 	}

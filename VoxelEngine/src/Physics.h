@@ -3,6 +3,7 @@
 
 #include <glm\glm.hpp>
 #include <vector>
+#include <Geometry.h>
 
 namespace Voxel
 {
@@ -15,6 +16,10 @@ namespace Voxel
 	*/
 	class Physics
 	{
+	private:
+		// for collision resolution. We divide step to x axis and z axis
+		static const unsigned int X_AXIS;
+		static const unsigned int Z_AXIS;
 	public:
 		// Gravity. Same as earth.
 		static const float Gravity;
@@ -32,6 +37,16 @@ namespace Voxel
 		*	@param [in] delta Game tick.
 		*/
 		void applyGravity(Player* player, const float delta);
+
+		/**
+		*	getIntersectingBoundingBox
+		*	Returns intersecting bounding box between two bounding boxes
+		*
+		*	@param [in] A First bounding box.
+		*	@param [in] B Second bounding box.
+		*	@return A Geometry::AABB of intersection between bounding box A and B.
+		*/
+		Geometry::AABB getIntersectingBoundingBox(const Geometry::AABB& A, const Geometry::AABB& B);
 
 		/**
 		*	resolvePlayerAndBlockCollision

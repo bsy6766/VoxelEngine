@@ -33,12 +33,14 @@ namespace Voxel
 	private:
 		// World position of player
 		glm::vec3 position;
-		// Next position of player (for physics and smooth movement)
+		// For smooth position transition
+		glm::vec3 positionTarget;
+		// For collision resolution
 		glm::vec3 nextPosition;
 		// player's rotation angle in degree
 		glm::vec3 rotation;
 		// For smooth rotation
-		glm::vec3 nextRotation;
+		glm::vec3 rotationTarget;
 		// direction vector of player
 		glm::vec3 direction;
 		// Range in blocks that player can reach from position
@@ -105,6 +107,8 @@ namespace Voxel
 
 		glm::vec3 getPosition();
 		void setPosition(const glm::vec3& newPosition, const bool smoothMovement);
+		void setNextPosition(const glm::vec3& nextPosition);
+		void applyNextPosition();
 
 		glm::vec3 getNextPosition();
 
@@ -130,6 +134,7 @@ namespace Voxel
 		void updateDirection();
 
 		void update(const float delta);
+		void updateMovement(const float delta);
 		void renderDebugLines(Program* lineProgram);
 
 		//glm::mat4 getVP(const glm::mat4& projection);
@@ -179,6 +184,7 @@ namespace Voxel
 		Cube::Face getLookingFace();
 
 		Geometry::AABB getBoundingBox();
+		Geometry::AABB getBoundingBox(const glm::vec3& position);
 	};
 }
 

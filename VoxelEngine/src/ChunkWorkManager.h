@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <thread>
 #include <vector>
+#include <string>
 
 namespace Voxel
 {
@@ -125,6 +126,9 @@ namespace Voxel
 		void stop();
 		// Join threads
 		void joinThread();
+
+		// for debug
+		std::string getDebugOutput();
 	};
 }
 

@@ -136,7 +136,6 @@ void Application::run()
 		
 		input.update();
 
-		game->updateInput(delta);
 		game->update(delta);
 
 		// Wipe input data for current frame

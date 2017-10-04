@@ -194,7 +194,7 @@ namespace Voxel
 		// Get current chunk xz pos
 		glm::ivec2 getCurrentChunkXZ();
 
-		void getCollidableBlockNearPlayer(const glm::vec3& playerPosition, std::vector<Block*> collidableBlocks);
+		void getCollidableBlockNearPlayer(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 
 		// Get top y at 
 		int getTopYAt(const glm::vec2& position);

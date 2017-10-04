@@ -257,6 +257,32 @@ void Voxel::ChunkWorkManager::popFinishedAndNotify()
 	}
 }
 
+std::string Voxel::ChunkWorkManager::getDebugOutput()
+{
+	std::string log = "";
+
+	{
+		// Scope lock
+		std::unique_lock<std::mutex> lock(queueMutex);
+
+		log += "P: " + std::to_string(preGenerateQueue.size()) + " / ";
+		log += "S: " + std::to_string(smoothQueue.size()) + " / ";
+		log += "G: " + std::to_string(generateQueue.size()) + " / ";
+		log += "A: " + std::to_string(addStructureQueue.size()) + " / ";
+		log += "B: " + std::to_string(buildMeshQueue.size()) + " / ";
+	}
+
+	{
+		// Scope lock
+		std::unique_lock<std::mutex> lock(finishedQueueMutex);
+
+		log += "F: " + std::to_string(unloadFinishedQueue.size());
+	}
+
+	return log;
+}
+
+
 void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world)
 {
 	// loop while it's running

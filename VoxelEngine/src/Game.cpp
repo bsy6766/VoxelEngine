@@ -390,8 +390,19 @@ void Game::update(const float delta)
 	}
 	else
 	{
+		// First, update input
+		updateKeyboardInput(delta);
+		updateMouseMoveInput(delta);
+		updateMouseClickInput();
+		updateMouseScrollInput(delta);
+		updateControllerInput(delta);
+
 		checkUnloadedChunks();
 
+		// update player movement. This doesn't actually moves player. We need to resolve collision before applying position
+		player->updateMovement(delta);
+
+		// Update physics
 		updatePhysics(delta);
 
 		bool playerMoved = player->didMoveThisFrame();
@@ -415,6 +426,7 @@ void Game::update(const float delta)
 			{
 				Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
 			}
+
 			// Also update raycast
 			updatePlayerRaycast();
 
@@ -444,12 +456,13 @@ void Game::update(const float delta)
 			program->setUniformVec3("playerPosition", playerPos);
 		}
 
-		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize());
+		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
 
 		player->update(delta);
 		skybox->update(delta);
 
 		calendar->update(delta);
+
 		defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 	}
 }
@@ -458,11 +471,6 @@ void Voxel::Game::updateInput(const float delta)
 {
 	if (loadingState == LoadingState::FINISHED)
 	{
-		updateKeyboardInput(delta);
-		updateMouseMoveInput(delta);
-		updateMouseClickInput();
-		updateMouseScrollInput(delta);
-		updateControllerInput(delta);
 	}
 }
 
@@ -908,10 +916,12 @@ void Voxel::Game::updatePhysics(const float delta)
 	physics->applyGravity(player, delta);
 
 	//auto start = Utility::Time::now();
-	std::vector<Block*> collidableBlock;
-	chunkMap->getCollidableBlockNearPlayer(player->getPosition(), collidableBlock);
+	std::vector<Block*> collidableBlocks;
+	chunkMap->getCollidableBlockNearPlayer(player->getPosition(), collidableBlocks);
 
-	physics->resolvePlayerAndBlockCollision(player, collidableBlock);
+	//std::cout << "cb: " << collidableBlocks.size() << std::endl;
+
+	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
 	//auto end = Utility::Time::now();
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }

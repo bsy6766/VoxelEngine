@@ -12,9 +12,10 @@ const float Player::MaxCameraDistance = 10.0f;
 
 Player::Player()
 	: position(0)
+	, positionTarget(0)
 	, nextPosition(0)
 	, rotation(0)
-	, nextRotation(0)
+	, rotationTarget(0)
 	, movementSpeed(15.0f)
 	, rotationSpeed(15.0f)
 	, fly(false)
@@ -150,8 +151,8 @@ void Voxel::Player::initBoundingBoxLine()
 	// Bind it
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	auto min = glm::vec3(-0.5f, 0, -0.5f);
-	auto max = glm::vec3(0.5f, 2.0f, 0.5f);
+	auto min = glm::vec3(-0.4f, 0, -0.4f);
+	auto max = glm::vec3(0.4f, 1.5f, 0.4f);
 
 	// color = yellow
 	GLfloat box[] = 
@@ -209,40 +210,40 @@ void Voxel::Player::initBoundingBoxLine()
 
 void Player::moveFoward(const float delta)
 {
-	nextPosition += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
-	moved = true;
+	positionTarget += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	//moved = true;
 }
 
 void Player::moveBackward(const float delta)
 {
-	nextPosition += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
-	moved = true;
+	positionTarget += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
+	//moved = true;
 }
 
 void Player::moveLeft(const float delta)
 {
-	nextPosition += getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
-	moved = true;
+	positionTarget += getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	//moved = true;
 }
 
 void Player::moveRight(const float delta)
 {
-	nextPosition += getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
-	moved = true;
+	positionTarget += getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	//moved = true;
 }
 
 void Player::moveUp(const float delta)
 {
 	// move up
-	nextPosition.y += movementSpeed * delta;
-	moved = true;
+	positionTarget.y += movementSpeed * delta;
+	//moved = true;
 }
 
 void Player::moveDown(const float delta)
 {
 	// move down
-	nextPosition.y -= movementSpeed * delta;
-	moved = true;
+	positionTarget.y -= movementSpeed * delta;
+	//moved = true;
 }
 
 void Player::jump()
@@ -448,7 +449,12 @@ Cube::Face Voxel::Player::getLookingFace()
 
 Geometry::AABB Voxel::Player::getBoundingBox()
 {
-	return Geometry::AABB(glm::vec3(position.x, position.y + 1.0f, position.z), glm::vec3(1.0f, 2.0f, 1.0f));
+	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
+}
+
+Geometry::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
+{
+	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -494,39 +500,23 @@ void Voxel::Player::updateDirection()
 
 void Voxel::Player::update(const float delta)
 {
-	if (position != nextPosition)
+	if (rotation.x != rotationTarget.x)
 	{
-		position = glm::lerp(position, nextPosition, 10.0f * delta);
-
-		if (glm::abs(glm::distance(position, nextPosition)) <= 0.01f)
-		{
-			position = nextPosition;
-		}
-
-		moved = true;
-	}
-	else
-	{
-		moved = false;
-	}
-
-	if (rotation.x != nextRotation.x)
-	{
-		rotation.x = glm::lerp(rotation.x, nextRotation.x, 20.0f * delta);
+		rotation.x = glm::lerp(rotation.x, rotationTarget.x, 20.0f * delta);
 
 		if (rotation.x >= 360.0f || rotation.x < 0)
 		{	
 			// angle x range: 0 ~ 360
 			wrapAngle(rotation.x);
-			wrapAngle(nextRotation.x);
+			wrapAngle(rotationTarget.x);
 		}
 
 		// Angle x range: 0~90, 360 ~ 270
 		wrapAngleX();
 
-		if (glm::abs(glm::distance(rotation.x, nextRotation.x)) <= 0.01f)
+		if (glm::abs(glm::distance(rotation.x, rotationTarget.x)) <= 0.01f)
 		{
-			rotation.x = nextRotation.x;
+			rotation.x = rotationTarget.x;
 		}
 
 		updateViewMatrix();
@@ -539,19 +529,19 @@ void Voxel::Player::update(const float delta)
 		rotated = false;
 	}
 
-	if (rotation.y != nextRotation.y)
+	if (rotation.y != rotationTarget.y)
 	{
-		rotation.y = glm::lerp(rotation.y, nextRotation.y, 20.0f * delta);
+		rotation.y = glm::lerp(rotation.y, rotationTarget.y, 20.0f * delta);
 
 		if (rotation.y >= 360.0f || rotation.y < 0)
 		{
 			wrapAngle(rotation.y);
-			wrapAngle(nextRotation.y);
+			wrapAngle(rotationTarget.y);
 		}
 
-		if (glm::abs(glm::distance(rotation.y, nextRotation.y)) <= 0.01f)
+		if (glm::abs(glm::distance(rotation.y, rotationTarget.y)) <= 0.01f)
 		{
-			rotation.y = nextRotation.y;
+			rotation.y = rotationTarget.y;
 		}
 
 		updateViewMatrix();
@@ -571,6 +561,25 @@ void Voxel::Player::update(const float delta)
 		{
 			cameraDistance = cameraDistanceTarget;
 		}
+	}
+}
+
+void Voxel::Player::updateMovement(const float delta)
+{
+	if (position != positionTarget)
+	{
+		nextPosition = glm::lerp(position, positionTarget, 10.0f * delta);
+
+		if (glm::abs(glm::distance(position, positionTarget)) <= 0.01f)
+		{
+			nextPosition = positionTarget;
+		}
+
+		moved = true;
+	}
+	else
+	{
+		moved = false;
 	}
 }
 
@@ -615,15 +624,26 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition, const bool smooth
 {
 	if (smoothMovement)
 	{
-		nextPosition = newPosition;
+		positionTarget = newPosition;
 	}
 	else
 	{
 		position = newPosition;
+		positionTarget = newPosition;
 		nextPosition = newPosition;
-	}
 
-	moved = true;
+		moved = true;
+	}
+}
+
+void Voxel::Player::setNextPosition(const glm::vec3 & nextPosition)
+{
+	this->nextPosition = nextPosition;
+}
+
+void Voxel::Player::applyNextPosition()
+{
+	position = nextPosition;
 }
 
 glm::vec3 Voxel::Player::getNextPosition()
@@ -633,13 +653,13 @@ glm::vec3 Voxel::Player::getNextPosition()
 
 void Voxel::Player::addRotationX(const float x)
 {
-	nextRotation.x += x * rotationSpeed;
+	rotationTarget.x += x * rotationSpeed;
 	wrapNextAngleX();
 }
 	
 void Voxel::Player::addRotationY(const float y)
 {
-	nextRotation.y += y * rotationSpeed;
+	rotationTarget.y += y * rotationSpeed;
 }
 
 void Player::wrapAngle(float& axis)
@@ -657,26 +677,26 @@ void Voxel::Player::wrapAngle()
 
 void Voxel::Player::wrapNextAngleX()
 {
-	if (nextRotation.x < 180.0f)
+	if (rotationTarget.x < 180.0f)
 	{
-		if (nextRotation.x < -90.0f)
+		if (rotationTarget.x < -90.0f)
 		{
-			nextRotation.x = -90.0f;
+			rotationTarget.x = -90.0f;
 		}
-		else if (nextRotation.x > 90.0f)
+		else if (rotationTarget.x > 90.0f)
 		{
-			nextRotation.x = 90.0f;
+			rotationTarget.x = 90.0f;
 		}
 	}
-	else if (nextRotation.x >= 180.0f)
+	else if (rotationTarget.x >= 180.0f)
 	{
-		if (nextRotation.x < 270.0f)
+		if (rotationTarget.x < 270.0f)
 		{
-			nextRotation.x = 270.0f;
+			rotationTarget.x = 270.0f;
 		}
-		else if (nextRotation.x > 450.0f)
+		else if (rotationTarget.x > 450.0f)
 		{
-			nextRotation.x = 450.0f;
+			rotationTarget.x = 450.0f;
 		}
 	}
 }

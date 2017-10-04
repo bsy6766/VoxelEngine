@@ -135,6 +135,16 @@ glm::vec3 Geometry::AABB::getMax() const
 	return center + (size * 0.5f);
 }
 
+glm::vec3 Voxel::Geometry::AABB::getCenter() const
+{
+	return center;
+}
+
+glm::vec3 Voxel::Geometry::AABB::getSize() const
+{
+	return size;
+}
+
 bool Geometry::AABB::doesIntersectsWith(const AABB & other)
 {
 	auto min = getMin();
@@ -145,6 +155,18 @@ bool Geometry::AABB::doesIntersectsWith(const AABB & other)
 	return (min.x <= oMax.x && max.x >= oMin.x) &&
 		(min.y <= oMax.y && max.y >= oMin.y) &&
 		(min.z <= oMax.z && max.z >= oMin.z);
+}
+
+bool Voxel::Geometry::AABB::isZero(const bool all) const
+{
+	if (all)
+	{
+		return (size.x == 0) && (size.y == 0) && (size.z == 0);
+	}
+	else
+	{
+		return (size.x == 0) || (size.y == 0) || (size.z == 0);
+	}
 }
 
 void Geometry::AABB::print()

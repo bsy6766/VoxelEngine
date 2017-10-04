@@ -1831,7 +1831,7 @@ glm::ivec2 Voxel::ChunkMap::getCurrentChunkXZ()
 	return currentChunkPos;
 }
 
-void Voxel::ChunkMap::getCollidableBlockNearPlayer(const glm::vec3 & playerPosition, std::vector<Block*> collidableBlocks)
+void Voxel::ChunkMap::getCollidableBlockNearPlayer(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
 {
 	auto standingBlockWorldPos = glm::ivec3(0);
 	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
@@ -1845,9 +1845,11 @@ void Voxel::ChunkMap::getCollidableBlockNearPlayer(const glm::vec3 & playerPosit
 	int endY = standingBlockWorldPos.y + 3;
 	int endZ = standingBlockWorldPos.z + 1;
 
+	// max 54 blocks
+
 	for (int x = startX; x <= endX; x++)
 	{
-		for (int z = startZ; x <= endZ; z++)
+		for (int z = startZ; z <= endZ; z++)
 		{
 			for (int y = startY; y <= endY; y++)
 			{
