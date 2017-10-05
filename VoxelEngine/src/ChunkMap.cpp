@@ -929,15 +929,15 @@ void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockWorldCoordinate, Chu
 	}
 }
 
-RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange)
+RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, const glm::vec3& playerDirection, const float playerRange)
 {
 	//std::cout << "RayCasting" << std::endl;
 
 	//std::cout << "player pos = " << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
 	//std::cout << "player dir = " << playerDirection.x << ", " << playerDirection.y << ", " << playerDirection.z << ")" << std::endl;
 
-	auto rayStart = playerPosition;
-	auto rayEnd = playerPosition + (playerDirection * playerRange);
+	auto rayStart = playerEyePosition;
+	auto rayEnd = playerEyePosition + (playerDirection * playerRange);
 
 	//std::cout << "rayStart = " << rayStart.x << ", " << rayStart.y << ", " << rayStart.z << ")" << std::endl;
 	//std::cout << "rayEnd = " << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;

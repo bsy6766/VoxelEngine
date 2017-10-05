@@ -160,7 +160,7 @@ namespace Voxel
 		void removeBlockAt(const glm::ivec3& blockWorldCoordinate, ChunkWorkManager* workManager);
 		
 		// From rayStart to rayEnd, visit all blocks
-		RayResult raycastBlock(const glm::vec3& playerPosition, const glm::vec3& playerDirection, const float playerRange);
+		RayResult raycastBlock(const glm::vec3& playerEyePosition, const glm::vec3& playerDirection, const float playerRange);
 
 		// Check which face of block(cube) did ray hit
 		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);

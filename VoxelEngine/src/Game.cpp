@@ -245,7 +245,7 @@ void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
 	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
 
-	skybox->setFogEnabled(true);
+	skybox->setFogEnabled(false);
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -309,7 +309,8 @@ void Game::createPlayer()
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug
-	player->setFly(true);
+	player->setFly(false);
+	player->setViewMode(1);
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
@@ -399,11 +400,14 @@ void Game::update(const float delta)
 
 		checkUnloadedChunks();
 
-		// update player movement. This doesn't actually moves player. We need to resolve collision before applying position
-		player->updateMovement(delta);
-
 		// Update physics
-		updatePhysics(delta);
+		updatePhysics(delta);		
+
+		// Resolve collision in game
+		updateCollisionResolution();
+		
+		// After resolving collision and updating physics, update player's movement
+		player->updateMovement(delta);
 
 		bool playerMoved = player->didMoveThisFrame();
 		bool playerRotated = player->didRotateThisFrame();
@@ -411,22 +415,22 @@ void Game::update(const float delta)
 		// After updating frustum, run frustum culling to find visible chunk
 		int totalVisible = chunkMap->findVisibleChunk();
 
+		// If player either move or rotated, update frustum
+		auto playerViewMode = player->getViewMode();
+		if (playerViewMode == Player::ViewMode::FIRST_PERSON_VIEW)
+		{
+			//Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
+			Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+		}
+		else if (playerViewMode == Player::ViewMode::THIRD_PERSON_VIEW)
+		{
+			Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+		}
+
+
 		if (playerMoved || playerRotated)
 		{
 			auto playerPos = player->getPosition();
-
-			// If player either move or rotated, update frustum
-			auto playerViewMode = player->getViewMode();
-			if (playerViewMode == Player::ViewMode::FIRST_PERSON_VIEW)
-			{
-				//Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
-				Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
-			}
-			else if(playerViewMode == Player::ViewMode::THIRD_PERSON_VIEW)
-			{
-				Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
-			}
-
 			// Also update raycast
 			updatePlayerRaycast();
 
@@ -693,12 +697,17 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			}
 			else
 			{
-				if (player->isOnGround())
+				if (player->canJump())
 				{
-					if (input->getKeyDown(GLFW_KEY_SPACE, true))
+					if (input->getKeyDown(GLFW_KEY_SPACE))
 					{
-						player->jump();
+						player->jump(delta);
 					}
+				}
+
+				if (input->getKeyUp(GLFW_KEY_SPACE, true))
+				{
+					player->lockJump();
 				}
 			}
 
@@ -911,19 +920,22 @@ void Voxel::Game::updateControllerInput(const float delta)
 	}
 }
 
-void Voxel::Game::updatePhysics(const float delta)
-{
-	physics->applyGravity(player, delta);
-
+void Voxel::Game::updateCollisionResolution()
+{	
 	//auto start = Utility::Time::now();
 	std::vector<Block*> collidableBlocks;
-	chunkMap->getCollidableBlockNearPlayer(player->getPosition(), collidableBlocks);
+	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
 
 	//std::cout << "cb: " << collidableBlocks.size() << std::endl;
 
 	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
 	//auto end = Utility::Time::now();
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
+}
+
+void Voxel::Game::updatePhysics(const float delta)
+{
+	physics->applyGravity(player, delta);
 }
 
 void Voxel::Game::updateChunks()
@@ -943,7 +955,7 @@ void Voxel::Game::updateChunks()
 
 void Voxel::Game::updatePlayerRaycast()
 {
-	auto result = chunkMap->raycastBlock(player->getPosition(), player->getDirection(), player->getRange());
+	auto result = chunkMap->raycastBlock(player->getEyePosition(), player->getDirection(), player->getRange());
 	if (result.block != nullptr)
 	{
 		player->setLookingBlock(result.block, result.face);
