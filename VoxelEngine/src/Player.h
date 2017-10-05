@@ -24,6 +24,9 @@ namespace Voxel
 	{
 	private:
 		static const float MaxCameraDistance;
+		static const float DefaultJumpDistance;
+		static const float DefaultJumpCooldown;
+		static const float EyeHeight;
 	public:
 		enum class ViewMode
 		{
@@ -33,10 +36,12 @@ namespace Voxel
 	private:
 		// World position of player
 		glm::vec3 position;
-		// For smooth position transition
-		glm::vec3 positionTarget;
 		// For collision resolution
 		glm::vec3 nextPosition;
+		// player jump distance
+		float jumpDistance;
+		// to prevent glith-like jumping
+		float jumpCooldown;
 		// player's rotation angle in degree
 		glm::vec3 rotation;
 		// For smooth rotation
@@ -109,8 +114,8 @@ namespace Voxel
 		void setPosition(const glm::vec3& newPosition, const bool smoothMovement);
 		void setNextPosition(const glm::vec3& nextPosition);
 		void applyNextPosition();
-
 		glm::vec3 getNextPosition();
+		glm::vec3 getEyePosition();
 
 		void addRotationX(const float x);
 		void addRotationY(const float y);
@@ -124,7 +129,7 @@ namespace Voxel
 		void moveRight(const float delta);
 		void moveUp(const float delta);
 		void moveDown(const float delta);
-		void jump();
+		void jump(const float delta);
 		void sneak();
 
 		void setFly(const bool mode);		
@@ -185,6 +190,19 @@ namespace Voxel
 
 		Geometry::AABB getBoundingBox();
 		Geometry::AABB getBoundingBox(const glm::vec3& position);
+
+
+		void jumpInstant(const float y);
+
+		/**
+		*	Checks if player can jump
+		*/
+		bool canJump();
+		
+		/**
+		*	When player jump and release the jump key, game locks the jump so it can't do double jump.
+		*/
+		void lockJump();
 	};
 }
 

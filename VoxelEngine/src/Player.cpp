@@ -1,5 +1,6 @@
 #include "Player.h"
 #include <Camera.h>
+#include <Utility.h>
 #include <ProgramManager.h>
 #include <Program.h>
 #include <glm/gtx/transform.hpp>
@@ -9,14 +10,16 @@
 using namespace Voxel;
 
 const float Player::MaxCameraDistance = 10.0f;
+const float Player::DefaultJumpDistance = 3.5f;
+const float Player::DefaultJumpCooldown = 0.1f;
+const float Player::EyeHeight = 1.5f;
 
 Player::Player()
 	: position(0)
-	, positionTarget(0)
 	, nextPosition(0)
 	, rotation(0)
 	, rotationTarget(0)
-	, movementSpeed(15.0f)
+	, movementSpeed(6.0f)
 	, rotationSpeed(15.0f)
 	, fly(false)
 	, mainCamera(Camera::mainCamera)
@@ -30,6 +33,8 @@ Player::Player()
 	, lookingFace(Cube::Face::NONE)
 	, fallDuration(0)
 	, fallDistance(0)
+	, jumpDistance(Player::DefaultJumpDistance)
+	, jumpCooldown(Player::DefaultJumpCooldown)
 	, onGround(false)
 	, cameraDistance(Player::MaxCameraDistance)
 	, cameraDistanceTarget(Player::MaxCameraDistance)
@@ -210,45 +215,59 @@ void Voxel::Player::initBoundingBoxLine()
 
 void Player::moveFoward(const float delta)
 {
-	positionTarget += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	nextPosition += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
 	//moved = true;
 }
 
 void Player::moveBackward(const float delta)
 {
-	positionTarget += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
+	nextPosition += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
 	//moved = true;
 }
 
 void Player::moveLeft(const float delta)
 {
-	positionTarget += getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	nextPosition += getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
 	//moved = true;
 }
 
 void Player::moveRight(const float delta)
 {
-	positionTarget += getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
+	nextPosition += getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
 	//moved = true;
 }
 
 void Player::moveUp(const float delta)
 {
 	// move up
-	positionTarget.y += movementSpeed * delta;
+	nextPosition.y += movementSpeed * delta;
 	//moved = true;
 }
 
 void Player::moveDown(const float delta)
 {
 	// move down
-	positionTarget.y -= movementSpeed * delta;
+	nextPosition.y -= movementSpeed * delta;
 	//moved = true;
 }
 
-void Player::jump()
+void Player::jump(const float delta)
 {
 	onGround = false;
+
+	if (jumpDistance > 0.0f)
+	{
+		float d = glm::lerp(0.0f, jumpDistance, delta * 10.0f);
+		jumpDistance -= d;
+
+		nextPosition.y += d;
+
+		if (jumpDistance < 0.001f)
+		{
+			nextPosition.y += jumpDistance;
+			jumpDistance = 0;
+		}
+	}
 }
 
 void Player::sneak()
@@ -265,11 +284,11 @@ glm::mat4 Voxel::Player::getViewMatrix()
 {
 	if (viewMode == ViewMode::FIRST_PERSON_VIEW)
 	{
-		return glm::translate(viewMatrix, -position);
+		return glm::translate(viewMatrix, -position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
 	}
 	else
 	{
-		return  glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistance)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -position);
+		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistance)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
 	}
 }
 
@@ -366,9 +385,16 @@ void Voxel::Player::setOnGround(const bool onGround)
 {
 	this->onGround = onGround;
 
+	if (onGround)
+	{
+		// run cooldown;
+		jumpCooldown = 0;
+	}
+
 	// take fall damage
 
 	fallDistance = 0.0f;
+	fallDuration = 0.0f;
 }
 
 bool Voxel::Player::isFlying()
@@ -455,6 +481,25 @@ Geometry::AABB Voxel::Player::getBoundingBox()
 Geometry::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
 {
 	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
+}
+
+void Voxel::Player::jumpInstant(const float y)
+{
+	position.y += y;
+	nextPosition.y += y;
+
+	moved = true;
+}
+
+bool Voxel::Player::canJump()
+{
+	return (jumpDistance != 0);
+}
+
+void Voxel::Player::lockJump()
+{
+	// just make jump dist 0
+	jumpDistance = 0;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -562,18 +607,32 @@ void Voxel::Player::update(const float delta)
 			cameraDistance = cameraDistanceTarget;
 		}
 	}
+
+	if (jumpCooldown < Player::DefaultJumpCooldown)
+	{
+		jumpCooldown += delta;
+
+		if (jumpCooldown >= Player::DefaultJumpCooldown)
+		{
+			jumpCooldown = Player::DefaultJumpCooldown;
+			// refill jump distance
+			jumpDistance = Player::DefaultJumpDistance;
+		}
+	}
 }
 
 void Voxel::Player::updateMovement(const float delta)
 {
-	if (position != positionTarget)
+	if (position != nextPosition)
 	{
-		nextPosition = glm::lerp(position, positionTarget, 10.0f * delta);
-
-		if (glm::abs(glm::distance(position, positionTarget)) <= 0.01f)
+		position = glm::lerp(position, nextPosition, 20.0f * delta);
+		//std::cout << "p: " << Utility::Log::vec3ToStr(position) << "lerp np:" << Utility::Log::vec3ToStr(nextPosition) <<  std::endl;
+		if (glm::abs(glm::distance(position, nextPosition)) <= 0.01f)
 		{
-			nextPosition = positionTarget;
+			position = nextPosition;
 		}
+
+		//position = nextPosition;
 
 		moved = true;
 	}
@@ -598,7 +657,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 		glBindVertexArray(rayVao);
 
 		glm::mat4 rayMat = mat4(1.0f);
-		rayMat = glm::translate(rayMat, position);
+		rayMat = glm::translate(rayMat, getEyePosition());
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
 		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
@@ -624,12 +683,11 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition, const bool smooth
 {
 	if (smoothMovement)
 	{
-		positionTarget = newPosition;
+		nextPosition = newPosition;
 	}
 	else
 	{
 		position = newPosition;
-		positionTarget = newPosition;
 		nextPosition = newPosition;
 
 		moved = true;
@@ -649,6 +707,11 @@ void Voxel::Player::applyNextPosition()
 glm::vec3 Voxel::Player::getNextPosition()
 {
 	return nextPosition;
+}
+
+glm::vec3 Voxel::Player::getEyePosition()
+{
+	return glm::vec3(position.x, position.y + Player::EyeHeight, position.z);
 }
 
 void Voxel::Player::addRotationX(const float x)
