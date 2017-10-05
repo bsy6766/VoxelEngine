@@ -59,37 +59,26 @@ namespace Voxel
 			std::vector<Triangle> toTriangles() const;
 
 			/**
-			*	getMin
-			*	Get minimum point (origin)
-			*
 			*	@return A minimum point of AABB.
 			*/
 			glm::vec3 getMin() const;
 
 			/**
-			*	getMax
-			*	Get maximum point (origin + size)
-			*
 			*	@return A maximum point of AABB.
 			*/
 			glm::vec3 getMax() const;
 
 			/**
-			*	getCenter
-			*
 			*	@return glm::vec3 center point of AABB
 			*/
 			glm::vec3 getCenter() const;
 
 			/**
-			*	getSize
-			*
 			*	@return glm::vec3 size of AABB
 			*/
 			glm::vec3 getSize() const;
 
 			/**
-			*	doesIntersectsWith
 			*	Check if this AABB intersects with other AABB.
 			*
 			*	@param [int] other An reference of other AABB to check intersection
@@ -98,16 +87,14 @@ namespace Voxel
 			bool doesIntersectsWith(const AABB& other);
 
 			/**
-			*	isZero
-			*	Checks if this AABB is zero.
+			*	Checks if this AABB has any or all axis equal to zero
 			*
-			*	@param [in] all Set true if want to check if all 3 axis are zero. Else, false. If false, AABB will be zero if there is one or more axis sized 0.
+			*	@param [in] all Set true to check all 3 axis. Else, false. If false, AABB will be zero if there is one or more axis sized 0.
 			*	@return true If AABB is zero;
 			*/
 			bool isZero(const bool all) const;
 
 			/**
-			*	print
 			*	Print AABB info.
 			*/
 			void print();
