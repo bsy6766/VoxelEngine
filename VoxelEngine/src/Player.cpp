@@ -10,7 +10,7 @@
 using namespace Voxel;
 
 const float Player::MaxCameraDistanceX = 10.0f;
-const float Player::DefaultJumpDistance = 1.1f;
+const float Player::DefaultJumpDistance = 2.5f;
 const float Player::DefaultJumpCooldown = 0.1f;
 const float Player::EyeHeight = 1.5f;
 
@@ -19,7 +19,7 @@ Player::Player()
 	, nextPosition(0)
 	, rotation(0)
 	, rotationTarget(0)
-	, movementSpeed(6.0f)
+	, movementSpeed(7.0f)
 	, rotationSpeed(15.0f)
 	, fly(false)
 	, mainCamera(Camera::mainCamera)
@@ -624,7 +624,8 @@ void Voxel::Player::update(const float delta)
 
 	if (jumpState == JumpState::JUMPING)
 	{
-		float jumpDist = glm::lerp(jumpDistance, 0.0f, 30.0f * delta);
+		//float jumpDist = glm::lerp(jumpDistance, 0.0f, 30.0f * delta);
+		float jumpDist = glm::lerp(0.0f, jumpDistance, 15.0f * delta);
 		jumpDistance -= jumpDist;
 
 		if (jumpDistance <= 0.01f)

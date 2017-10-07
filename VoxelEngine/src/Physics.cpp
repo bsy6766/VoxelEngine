@@ -275,10 +275,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 	auto resolvingPos = playerNextPos;
 
 	bool resolved = false;
-	const float pad = 0;
-
-	// resolve y.
-
+	
 	// init player bounding box
 	auto pBB = player->getBoundingBox(resolvingPos);
 	
@@ -352,7 +349,6 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 		}
 	}
 
-
 	bool resolvedXZ = false;
 
 	if (inMidAir == false)
@@ -388,82 +384,6 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 				//std::cout << "1" << std::endl;
 			}
 		}
-		/*
-		if (movedDist.x != 0 || movedDist.z != 0)
-		{
-			// resolve for x and z axis
-			for (int i = 0; i < 2; i++)
-			{
-				if (i == Physics::X_AXIS)
-				{
-					resolvingPos.x = playerNextPos.x;
-				}
-				else if(i == Physics::Z_AXIS)
-				{ 
-					resolvingPos.z = playerNextPos.z;
-				}
-
-				// Get player boundinb box based on resolving position
-				auto pBB = player->getBoundingBox(resolvingPos);
-
-				// iterate blocks and resolve
-				for (auto block : collidableBlocks)
-				{
-					auto blockBB = block->getBoundingBox();
-
-					if (blockBB.doesIntersectsWith(pBB))
-					{
-						auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
-
-						// intersecting AABB muse not be zero in all axis
-						if (!intersectingAABB.isZero(false))
-						{
-							if (i == Physics::X_AXIS)
-							{
-								if (movedDist.x > 0.0f)
-								{
-									// Moved to east (positive x)
-									resolvingPos.x -= (intersectingAABB.getSize().x + pad);
-									resolved = true;
-									pBB = player->getBoundingBox(resolvingPos);
-									std::cout << "Player moved east (positive x). resolved" << std::endl;
-								}
-								else if (movedDist.x < 0.0f)
-								{
-									// Moved to west (negative x)
-									resolvingPos.x += (intersectingAABB.getSize().x + pad);
-									resolved = true;
-									pBB = player->getBoundingBox(resolvingPos);
-									std::cout << "Player moved west (negative x). resolved" << std::endl;
-								}
-							}
-							else if (i == Physics::Z_AXIS)
-							{
-								if (movedDist.z > 0.0f)
-								{
-									// Moved to south (positive z)
-									resolvingPos.z -= (intersectingAABB.getSize().z + pad);
-									resolved = true;
-									pBB = player->getBoundingBox(resolvingPos);
-									std::cout << "Player moved south (positive z). resolved" << std::endl;
-								}
-								else if (movedDist.z < 0.0f)
-								{
-									// Moved to north (negative z)
-									resolvingPos.z += (intersectingAABB.getSize().z + pad);
-									resolved = true;
-									pBB = player->getBoundingBox(resolvingPos);
-									std::cout << "Player moved north (negative z). resolved" << std::endl;
-								}
-							}
-						}
-					}
-				}
-			}
-
-		}
-	
-		*/
 	}
 
 	if (inMidAir)
