@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <Camera.h>
 #include <ChunkMap.h>
+#include <Setting.h>
 
 using namespace Voxel;
 
@@ -53,6 +54,7 @@ DebugConsole::~DebugConsole()
 void Voxel::DebugConsole::init()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+	this->settingPtr = &Setting::getInstance();
 
 	commandInputField = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.225f));
 	commandInputField->setPivot(glm::vec2(0, -0.5f));
@@ -361,6 +363,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					auto arg1 = split.at(1);
 					if (arg1 == "viewmode" || arg1 == "vm")
 					{
+						// player viewmode [mode]
 						auto arg2 = split.at(2);
 						int mode = -1;
 
@@ -399,6 +402,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					}
 					else if (arg1 == "fly")
 					{
+						//player fly [mode]
 						bool arg2Bool = split.at(2) == "true" ? true : false;
 						player->setFly(arg2Bool);
 
@@ -409,6 +413,23 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						else
 						{
 							executedCommandHistory.push_back("Disabled player fly");
+						}
+						lastCommand = command;
+						return true;
+					}
+					else if (arg1 == "autojump" || arg1 == "aj")
+					{
+						//player autojump [mode]
+						bool arg2Bool = split.at(2) == "true" ? true : false;
+						settingPtr->setAutoJumpMode(arg2Bool);
+
+						if (arg2Bool)
+						{
+							executedCommandHistory.push_back("Enabled auto jump");
+						}
+						else
+						{
+							executedCommandHistory.push_back("Disabled auto jump");
 						}
 						lastCommand = command;
 						return true;

@@ -22,6 +22,8 @@ Setting::Setting()
 	std::cout << "[Setting] Render distance = " << renderDistance << std::endl;
 	std::cout << "[Setting] Field of view = " << fieldOfView << std::endl;
 	std::cout << "[Setting] Block shade mode = " << blockShadeMode << std::endl;
+
+	autoJump = gameSetting->getBool("control.autoJump");
 }
 
 Setting::~Setting()
@@ -60,4 +62,14 @@ int Voxel::Setting::getFieldOfView()
 int Voxel::Setting::getBlockShadeMode()
 {
 	return blockShadeMode;
+}
+
+bool Voxel::Setting::getAutoJumpMode()
+{
+	return autoJump;
+}
+
+void Voxel::Setting::setAutoJumpMode(const bool mode)
+{
+	autoJump = mode;
 }

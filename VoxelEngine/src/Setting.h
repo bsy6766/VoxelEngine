@@ -31,6 +31,9 @@ namespace Voxel
 
 		// Keybind settings
 		// Audio settings
+
+		// Control
+		bool autoJump;
 	public:
 		static Setting& getInstance()
 		{
@@ -44,6 +47,9 @@ namespace Voxel
 		int getRenderDistance();
 		int getFieldOfView();
 		int getBlockShadeMode();
+
+		bool getAutoJumpMode();
+		void setAutoJumpMode(const bool mode);
 	};
 
 }

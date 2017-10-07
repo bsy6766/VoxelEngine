@@ -21,6 +21,7 @@ namespace Voxel
 	class Game;
 	class ChunkMap;
 	class World;
+	class Setting;
 
 	class DebugConsole
 	{
@@ -72,7 +73,8 @@ namespace Voxel
 		Game* game;
 		World* world;
 		ChunkMap* chunkMap;
-		 
+		Setting* settingPtr;
+
 		void init();
 
 		void openConsole();
