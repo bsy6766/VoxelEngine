@@ -23,7 +23,7 @@ namespace Voxel
 	class Player
 	{
 	private:
-		static const float MaxCameraDistance;
+		static const float MaxCameraDistanceX;
 		static const float DefaultJumpDistance;
 		static const float DefaultJumpCooldown;
 		static const float EyeHeight;
@@ -32,6 +32,12 @@ namespace Voxel
 		{
 			FIRST_PERSON_VIEW = 0,
 			THIRD_PERSON_VIEW
+		};
+
+		enum class JumpState
+		{
+			IDLE = 0,
+			JUMPING,
 		};
 	private:
 		// World position of player
@@ -48,11 +54,15 @@ namespace Voxel
 		glm::vec3 rotationTarget;
 		// direction vector of player
 		glm::vec3 direction;
+
 		// Range in blocks that player can reach from position
 		float rayRange;
 
 		// view mode
 		ViewMode viewMode;
+
+		// jump state
+		JumpState jumpState;
 
 		// Matrix
 		glm::mat4 viewMatrix;
@@ -63,8 +73,9 @@ namespace Voxel
 		float rotationSpeed;
 
 		// player's camera
-		float cameraDistance;
-		float cameraDistanceTarget;
+		float cameraY;
+		float cameraDistanceZ;
+		float cameraDistanceTargetZ;
 
 		// True if player can fly
 		bool fly;
@@ -119,7 +130,7 @@ namespace Voxel
 
 		void addRotationX(const float x);
 		void addRotationY(const float y);
-		void setRotation(const glm::vec3& newRotation);
+		void setRotation(const glm::vec3& newRotation, const bool smoothRotation);
 		glm::vec3 getRotation();
 
 		// Movement by inputs
@@ -191,8 +202,8 @@ namespace Voxel
 		Geometry::AABB getBoundingBox();
 		Geometry::AABB getBoundingBox(const glm::vec3& position);
 
-
-		void jumpInstant(const float y);
+		void runJumpCooldown();
+		void autoJump(const float y);
 
 		/**
 		*	Checks if player can jump

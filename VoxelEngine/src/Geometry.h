@@ -45,6 +45,8 @@ namespace Voxel
 			AABB();
 			// Constructor with values
 			AABB(const glm::vec3& center, const glm::vec3& size);
+			// Constructor with values without glm 
+			AABB(const glm::vec3& center, const float width, const float height, const float length);
 			// Nothing to release, use default destructor
 			~AABB() = default;
 

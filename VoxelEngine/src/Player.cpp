@@ -9,8 +9,8 @@
 
 using namespace Voxel;
 
-const float Player::MaxCameraDistance = 10.0f;
-const float Player::DefaultJumpDistance = 3.5f;
+const float Player::MaxCameraDistanceX = 10.0f;
+const float Player::DefaultJumpDistance = 13.5f;
 const float Player::DefaultJumpCooldown = 0.1f;
 const float Player::EyeHeight = 1.5f;
 
@@ -36,8 +36,9 @@ Player::Player()
 	, jumpDistance(Player::DefaultJumpDistance)
 	, jumpCooldown(Player::DefaultJumpCooldown)
 	, onGround(false)
-	, cameraDistance(Player::MaxCameraDistance)
-	, cameraDistanceTarget(Player::MaxCameraDistance)
+	, cameraY(Player::EyeHeight)
+	, cameraDistanceZ(Player::MaxCameraDistanceX)
+	, cameraDistanceTargetZ(Player::MaxCameraDistanceX)
 	, viewMode(ViewMode::FIRST_PERSON_VIEW)
 	// Debug
 	, yLineVao(0)
@@ -288,7 +289,7 @@ glm::mat4 Voxel::Player::getViewMatrix()
 	}
 	else
 	{
-		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistance)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
+		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));// *glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
 	}
 }
 
@@ -385,16 +386,17 @@ void Voxel::Player::setOnGround(const bool onGround)
 {
 	this->onGround = onGround;
 
+	// take fall damage
+
+	// reset values if player is on ground
 	if (onGround)
 	{
 		// run cooldown;
 		jumpCooldown = 0;
+
+		fallDistance = 0.0f;
+		fallDuration = 0.0f;
 	}
-
-	// take fall damage
-
-	fallDistance = 0.0f;
-	fallDuration = 0.0f;
 }
 
 bool Voxel::Player::isFlying()
@@ -436,19 +438,19 @@ Player::ViewMode Voxel::Player::getViewMode()
 
 void Voxel::Player::zoomInCamera()
 {
-	this->cameraDistanceTarget -= 1.0f;
-	if (this->cameraDistanceTarget < 1.0f)
+	this->cameraDistanceTargetZ -= 1.0f;
+	if (this->cameraDistanceTargetZ < 1.0f)
 	{
-		this->cameraDistanceTarget = 1.0f;
+		this->cameraDistanceTargetZ = 1.0f;
 	}
 }
 
 void Voxel::Player::zoomOutCamera()
 {
-	this->cameraDistanceTarget += 1.0f;
-	if (this->cameraDistanceTarget > Player::MaxCameraDistance)
+	this->cameraDistanceTargetZ += 1.0f;
+	if (this->cameraDistanceTargetZ > Player::MaxCameraDistanceX)
 	{
-		this->cameraDistanceTarget = Player::MaxCameraDistance;
+		this->cameraDistanceTargetZ = Player::MaxCameraDistanceX;
 	}
 }
 
@@ -481,18 +483,26 @@ Geometry::AABB Voxel::Player::getBoundingBox()
 Geometry::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
 {
 	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
+	//return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), 0.8f, 1.5f, 0.8f);
 }
 
-void Voxel::Player::jumpInstant(const float y)
+void Voxel::Player::runJumpCooldown()
+{
+	jumpCooldown = 0;
+}
+
+void Voxel::Player::autoJump(const float y)
 {
 	position.y += y;
 	nextPosition.y += y;
+	cameraY -= y;
 
 	moved = true;
 }
 
 bool Voxel::Player::canJump()
 {
+	//std::cout << "jd = " << jumpDistance << ", fd = " << fallDistance << std::endl;
 	return (jumpDistance != 0);
 }
 
@@ -545,6 +555,8 @@ void Voxel::Player::updateDirection()
 
 void Voxel::Player::update(const float delta)
 {
+	rotated = false;
+
 	if (rotation.x != rotationTarget.x)
 	{
 		rotation.x = glm::lerp(rotation.x, rotationTarget.x, 20.0f * delta);
@@ -564,14 +576,7 @@ void Voxel::Player::update(const float delta)
 			rotation.x = rotationTarget.x;
 		}
 
-		updateViewMatrix();
-		updateDirMatrix();
-		updateDirection();
 		rotated = true;
-	}
-	else
-	{
-		rotated = false;
 	}
 
 	if (rotation.y != rotationTarget.y)
@@ -588,30 +593,38 @@ void Voxel::Player::update(const float delta)
 		{
 			rotation.y = rotationTarget.y;
 		}
+		rotated = true;
+	}
 
+	if (rotated)
+	{
 		updateViewMatrix();
 		updateDirMatrix();
 		updateDirection();
-		rotated = true;
 	}
-	else
+	
+	if (cameraDistanceZ != cameraDistanceTargetZ)
 	{
-		rotated = false;
+		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 10.0f * delta);
+		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.01f)
+		{
+			cameraDistanceZ = cameraDistanceTargetZ;
+		}
 	}
 
-	if (cameraDistance != cameraDistanceTarget)
+	if (cameraY != Player::EyeHeight)
 	{
-		cameraDistance = glm::lerp(cameraDistance, cameraDistanceTarget, 10.0f * delta);
-		if (glm::abs(cameraDistanceTarget - cameraDistance) < 0.01f)
+		cameraY = glm::lerp(cameraY, Player::EyeHeight, 5.0f * delta);
+		if (glm::abs(cameraY - Player::EyeHeight) < 0.01f)
 		{
-			cameraDistance = cameraDistanceTarget;
+			cameraY = Player::EyeHeight;
 		}
 	}
 
 	if (jumpCooldown < Player::DefaultJumpCooldown)
 	{
 		jumpCooldown += delta;
-
+		//std::cout << "jump cd = " << jumpCooldown << std::endl;
 		if (jumpCooldown >= Player::DefaultJumpCooldown)
 		{
 			jumpCooldown = Player::DefaultJumpCooldown;
@@ -625,7 +638,11 @@ void Voxel::Player::updateMovement(const float delta)
 {
 	if (position != nextPosition)
 	{
+		//auto prevPositionY = position.y;
 		position = glm::lerp(position, nextPosition, 20.0f * delta);
+		
+		//auto movedDistY = position.y - prevPositionY;
+
 		//std::cout << "p: " << Utility::Log::vec3ToStr(position) << "lerp np:" << Utility::Log::vec3ToStr(nextPosition) <<  std::endl;
 		if (glm::abs(glm::distance(position, nextPosition)) <= 0.01f)
 		{
@@ -633,6 +650,8 @@ void Voxel::Player::updateMovement(const float delta)
 		}
 
 		//position = nextPosition;
+
+		//cameraY += movedDistY;
 
 		moved = true;
 	}
@@ -782,17 +801,24 @@ void Voxel::Player::wrapAngleX()
 	}
 }
 
-
-void Voxel::Player::setRotation(const glm::vec3 & newRotation)
+void Voxel::Player::setRotation(const glm::vec3 & newRotation, const bool smoothRotation)
 {
-	rotation = newRotation;
+	if (smoothRotation)
+	{
+		rotationTarget = newRotation;
+	}
+	else
+	{
+		rotation = newRotation;
+		rotationTarget = newRotation;
 
-	wrapAngle();
+		wrapAngle();
 
-	updateViewMatrix();
-	updateDirMatrix();
-	updateDirection();
-	rotated = true;
+		updateViewMatrix();
+		updateDirMatrix();
+		updateDirection();
+		rotated = true;
+	}
 }
 
 glm::vec3 Voxel::Player::getRotation()

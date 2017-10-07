@@ -387,6 +387,8 @@ void Game::update(const float delta)
 
 			player->setPosition(playerPosition, false);
 
+			player->setPosition(glm::vec3(365.244, 68, -117.754), false);
+			player->setRotation(glm::vec3(291.5, 302.25, 0), false);
 		}
 	}
 	else
@@ -401,7 +403,7 @@ void Game::update(const float delta)
 		checkUnloadedChunks();
 
 		// Update physics
-		updatePhysics(delta);		
+		updatePhysics(delta);
 
 		// Resolve collision in game
 		updateCollisionResolution();
@@ -701,6 +703,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 				{
 					if (input->getKeyDown(GLFW_KEY_SPACE))
 					{
+						std::cout << "j" << std::endl;
 						player->jump(delta);
 					}
 				}
@@ -741,9 +744,19 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
 	}
 
+	if (input->getKeyDown(GLFW_KEY_3, true))
+	{
+		player->setRotation(glm::vec3(0, 0, 0), false);
+	}
 	if (input->getKeyDown(GLFW_KEY_4, true))
 	{
-		player->setRotation(glm::vec3(0, 180, 0));
+		player->setRotation(glm::vec3(0, 180, 0), false);
+	}
+
+	if (input->getKeyDown(GLFW_KEY_5, true))
+	{
+		player->setPosition(glm::vec3(365.244, 68, -117.754), false);
+		player->setRotation(glm::vec3(291.5, 302.25, 0), false);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_6, true))
@@ -921,12 +934,18 @@ void Voxel::Game::updateControllerInput(const float delta)
 }
 
 void Voxel::Game::updateCollisionResolution()
-{	
+{
 	//auto start = Utility::Time::now();
 	std::vector<Block*> collidableBlocks;
 	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
 
-	//std::cout << "cb: " << collidableBlocks.size() << std::endl;
+	// auto jump
+	physics->resolveAutoJump(player, collidableBlocks);
+
+	// clear list
+	collidableBlocks.clear();
+	// query again
+	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
 
 	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
 	//auto end = Utility::Time::now();

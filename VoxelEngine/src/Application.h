@@ -5,7 +5,8 @@
 #include <iostream>
 #include <GLView.h>
 
-#define GLM_FORCE_DEGREES
+//#define GLM_FORCE_DEGREES
+//#define GLM_PRECISION_MEDIUMP_FLOAT
 
 namespace Voxel
 {

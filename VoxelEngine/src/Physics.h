@@ -25,12 +25,23 @@ namespace Voxel
 		static const float Gravity;
 		// Gravity modifier.
 		static const float GravityModifier;
+		
+		// Player jump distance (1 block by default)
+		static const float PlayerJumpDistance;
+		// 
+
+		bool resolvePlayerXAndBlockCollision(Player* player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks);
+		bool resolvePlayerZAndBlockCollision(Player* player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks);
 	public:
 		Physics();
 		~Physics();
 
 		/**
-		*	applyGravity
+		*	Updates player position during the jump
+		*/
+		void updatePlayerJump(Player* player, const float delta);
+
+		/**
 		*	Applies gravity to player.
 		*
 		*	@param [in] player A player pointer.
@@ -39,7 +50,6 @@ namespace Voxel
 		void applyGravity(Player* player, const float delta);
 
 		/**
-		*	getIntersectingBoundingBox
 		*	Returns intersecting bounding box between two bounding boxes
 		*
 		*	@param [in] A First bounding box.
@@ -49,7 +59,15 @@ namespace Voxel
 		Geometry::AABB getIntersectingBoundingBox(const Geometry::AABB& A, const Geometry::AABB& B);
 
 		/**
-		*	resolvePlayerAndBlockCollision
+		*	Resolves auto jump feature
+		*	Auto jump is a feature that player can automatically move up the block without jumping
+		*	
+		*	@param [in] player A player pointer.
+		*	@param [in] collidableBlocks A vector of Blocks that is collidable.
+		*/
+		void resolveAutoJump(Player* player, const std::vector<Block*>& collidableBlocks);
+
+		/**
 		*	Resolves collistion between player and blocks.
 		*
 		*	@param [in] player A player pointer.

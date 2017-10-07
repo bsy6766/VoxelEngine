@@ -9,7 +9,7 @@ const unsigned int Physics::X_AXIS = 0;
 const unsigned int Physics::Z_AXIS = 1;
 
 const float Physics::Gravity = 9.80665f;
-const float Physics::GravityModifier = 0.75f;
+const float Physics::GravityModifier = 5.0f;
 
 Voxel::Physics::Physics()
 {
@@ -28,15 +28,15 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 
 	float fallDuration = player->getFallDuration();
 
-	float fallDistance = Physics::Gravity * (fallDuration + delta) * Physics::GravityModifier;
+	float fallDistance = Physics::Gravity * (fallDuration + delta) * Physics::GravityModifier * delta;
 
-	if (fallDistance > 6.0f)
+	if (fallDistance > 5.0f)
 	{
-		fallDistance = 6.0f;
+		fallDistance = 5.0f;
 	}
 
-	//std::cout << "fd = " << fallDistance << std::endl;
-	//std::cout << "ft = " << fallDuration + delta << std::endl;
+	std::cout << "fd = " << fallDistance << std::endl;
+	std::cout << "ft = " << fallDuration + delta << std::endl;
 
 	pos.y -= fallDistance;
 
@@ -96,6 +96,170 @@ Geometry::AABB Voxel::Physics::getIntersectingBoundingBox(const Geometry::AABB &
 	return Geometry::AABB(iMin + (iSize * 0.5f), iSize);
 }
 
+void Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>& collidableBlocks)
+{
+	// current position
+	auto playerPos = player->getPosition();
+	// position that player tried to move
+	auto playerNextPos = player->getNextPosition();
+	
+	// Resolving position
+	auto resolvingPos = playerNextPos;
+
+	// init player bounding box
+	auto pBB = player->getBoundingBox(resolvingPos);
+
+	// First, check if player was on ground and collided with block on the side. And if that block doesn't have any other block above, move player up (auto jump)
+	for (auto block : collidableBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		if (blockBB.doesIntersectsWith(pBB))
+		{
+			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto iSize = intersectingAABB.getSize();
+
+			if (iSize.y == blockBB.getSize().y)
+			{
+				// block's bounding box y axis is in player's bounding box y axis
+				if (player->isOnGround())
+				{
+					// player isn't in mid airs
+					if (pBB.getMin().y == blockBB.getMin().y)
+					{
+						auto upResolvingPos = resolvingPos;
+						upResolvingPos.y += 1.0f;
+
+						auto upPBB = player->getBoundingBox(upResolvingPos);
+
+						bool canAutoJump = true;
+
+						for (auto upBlock : collidableBlocks)
+						{
+							auto upBlockBB = upBlock->getBoundingBox();
+							if (upBlockBB.doesIntersectsWith(upPBB))
+							{
+								auto iBB = getIntersectingBoundingBox(upPBB, upBlockBB);
+								if (iBB.getSize().y > 0)
+								{
+									canAutoJump = false;
+									break;
+								}
+							}
+						}
+
+						if (canAutoJump)
+						{
+							std::cout << "auto jump. p.y = " << playerPos.y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
+							player->autoJump(iSize.y);
+							player->runJumpCooldown();
+							//autoJumped = true;
+							break;
+						}
+						else
+						{
+							// there is a block above current block. can't auto jump
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks)
+{
+	// Get player boundinb box based on resolving position
+	auto pBB = player->getBoundingBox(resolvingPos);
+
+	bool resolved = false;
+
+	// iterate blocks and resolve
+	for (auto block : collidableBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		if (blockBB.doesIntersectsWith(pBB))
+		{
+			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+
+			// intersecting AABB muse not be zero in all axis
+			if (!intersectingAABB.isZero(false))
+			{
+				if (movedDist.x > 0.0f)
+				{
+					// Moved to east (positive x)
+					auto bPos = block->getWorldCoordinate();
+					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")" << std::endl;
+					std::cout << "playerY = " << player->getPosition().y << std::endl;
+					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
+					resolvingPos.x -= (intersectingAABB.getSize().x);
+					resolved = true;
+					pBB = player->getBoundingBox(resolvingPos);
+					std::cout << "Player moved east (positive x). resolved" << std::endl;
+				}
+				else if (movedDist.x < 0.0f)
+				{
+					// Moved to west (negative x)
+					auto bPos = block->getWorldCoordinate();
+					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")" << std::endl;
+					std::cout << "playerY = " << player->getPosition().y << std::endl;
+					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
+					resolvingPos.x += (intersectingAABB.getSize().x);
+					resolved = true;
+					pBB = player->getBoundingBox(resolvingPos);
+					std::cout << "Player moved west (negative x). resolved" << std::endl;
+				}
+			}
+		}
+	}
+
+	return resolved;
+}
+
+bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks)
+{
+	// Get player boundinb box based on resolving position
+	auto pBB = player->getBoundingBox(resolvingPos);
+
+	bool resolved = false;
+
+	// iterate blocks and resolve
+	for (auto block : collidableBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		if (blockBB.doesIntersectsWith(pBB))
+		{
+			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+
+			// intersecting AABB muse not be zero in all axis
+			if (!intersectingAABB.isZero(false))
+			{
+				if (movedDist.z > 0.0f)
+				{
+					// Moved to south (positive z)
+					resolvingPos.z -= (intersectingAABB.getSize().z);
+					resolved = true;
+					pBB = player->getBoundingBox(resolvingPos);
+					std::cout << "Player moved south (positive z). resolved" << std::endl;
+				}
+				else if (movedDist.z < 0.0f)
+				{
+					// Moved to north (negative z)
+					resolvingPos.z += (intersectingAABB.getSize().z);
+					resolved = true;
+					pBB = player->getBoundingBox(resolvingPos);
+					std::cout << "Player moved north (negative z). resolved" << std::endl;
+				}
+			}
+		}
+	}
+
+	return resolved;
+}
+
+
 void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::vector<Block*>& collidableBlocks)
 {
 	// current position
@@ -116,69 +280,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 
 	// init player bounding box
 	auto pBB = player->getBoundingBox(resolvingPos);
-
-	bool autoJumped = false;
-	// First, check if player was on ground and collided with block on the side. And if that block doesn't have any other block above, move player up (auto jump)
-	for (auto block : collidableBlocks)
-	{
-		auto blockBB = block->getBoundingBox();
-
-		if (blockBB.doesIntersectsWith(pBB))
-		{
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
-			float sizeY = intersectingAABB.getSize().y;
-
-			if (sizeY == blockBB.getSize().y)
-			{
-				// block's bounding box y axis is in player's bounding box y axis
-				if (player->isOnGround())
-				{
-					// player isn't in mid air
-					if (pBB.getMin().y == blockBB.getMin().y)
-					{
-						// player and block is on same level
-						auto bPos = block->getWorldCoordinate();
-						bool result = false;
-						for (auto upBlock : collidableBlocks)
-						{
-							auto ubPos = block->getWorldCoordinate();
-							if (glm::abs(bPos.y - ubPos.y) == 1)
-							{
-								// There is a block above current block
-								result = true;
-								break;
-							}
-						}
-
-						if (result)
-						{
-							// there is a block above current block. can't auto jump
-						}
-						else
-						{
-							// There is no other block above current block. 
-							player->jumpInstant(sizeY);
-							autoJumped = true;
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if (autoJumped)
-	{
-		resolvingPos = playerPos;
-		playerPos = player->getPosition();
-		playerNextPos = player->getNextPosition();
-	}
-	else
-	{
-		resolvingPos.y = playerNextPos.y;
-	}
-	pBB = player->getBoundingBox(resolvingPos);
-
+	
 	// Now iterate blocks again and resolve y again
 	bool inMidAir = true;
 
@@ -197,6 +299,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 				{
 					// touching
 					inMidAir = false;
+					continue;
 				}
 				else
 				{
@@ -220,95 +323,145 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 						resolvingPos.y -= (intersectingAABB.getSize().y);
 						resolved = true;
 						pBB = player->getBoundingBox(resolvingPos);
+						std::cout << "Player moved up. resolved" << std::endl;
 					}
 					else if (movedDist.y < 0.0f)
 					{
 						// moved down
+						std::cout << "position y = " << resolvingPos.y << std::endl;
 						resolvingPos.y += (intersectingAABB.getSize().y);
+						std::cout << "resolving y = " << resolvingPos.y << std::endl;
 						resolved = true;
 						inMidAir = false;
 						pBB = player->getBoundingBox(resolvingPos);
 						player->setOnGround(true);
+						std::cout << "Player moved down. resolved" << std::endl;
 					}
 				}
 			}
 		}
 	}
-	
-	// resolve for x and z axis
-	for (int i = 0; i < 2; i++)
+
+
+	bool resolvedXZ = false;
+
+	if (inMidAir == false)
 	{
-		if (i == Physics::X_AXIS)
+		resolvingPos.x = playerPos.x;
+		resolvingPos.z = playerPos.z;
+
+		glm::vec3 absMovedDist = glm::abs(movedDist);
+
+		if (absMovedDist.x != 0 || absMovedDist.z != 0)
 		{
-			resolvingPos.x = playerNextPos.x;
-		}
-		else if(i == Physics::Z_AXIS)
-		{ 
-			resolvingPos.z = playerNextPos.z;
-		}
-
-		// Get player boundinb box based on resolving position
-		auto pBB = player->getBoundingBox(resolvingPos);
-
-		// iterate blocks and resolve
-		for (auto block : collidableBlocks)
-		{
-			auto blockBB = block->getBoundingBox();
-
-			if (blockBB.doesIntersectsWith(pBB))
+			if (absMovedDist.x >= absMovedDist.z)
 			{
-				auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
-
-				// intersecting AABB muse not be zero in all axis
-				if (!intersectingAABB.isZero(false))
+				//std::cout << "0" << std::endl;
+				resolvingPos.x = playerNextPos.x;
+				bool result = false;
+				result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+				if (result) resolvedXZ = true;
+				resolvingPos.z = playerNextPos.z;
+				result = resolvePlayerZAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+				if (result) resolvedXZ = true;
+			}
+			else
+			{
+				// resolve z first
+				resolvingPos.z = playerNextPos.z;
+				bool result = false;
+				result = resolvePlayerZAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+				if (result) resolvedXZ = true;
+				resolvingPos.x = playerNextPos.x;
+				result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+				if (result) resolvedXZ = true;
+				//std::cout << "1" << std::endl;
+			}
+		}
+		/*
+		if (movedDist.x != 0 || movedDist.z != 0)
+		{
+			// resolve for x and z axis
+			for (int i = 0; i < 2; i++)
+			{
+				if (i == Physics::X_AXIS)
 				{
-					if (i == Physics::X_AXIS)
+					resolvingPos.x = playerNextPos.x;
+				}
+				else if(i == Physics::Z_AXIS)
+				{ 
+					resolvingPos.z = playerNextPos.z;
+				}
+
+				// Get player boundinb box based on resolving position
+				auto pBB = player->getBoundingBox(resolvingPos);
+
+				// iterate blocks and resolve
+				for (auto block : collidableBlocks)
+				{
+					auto blockBB = block->getBoundingBox();
+
+					if (blockBB.doesIntersectsWith(pBB))
 					{
-						if (movedDist.x > 0.0f)
+						auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+
+						// intersecting AABB muse not be zero in all axis
+						if (!intersectingAABB.isZero(false))
 						{
-							// Moved to east (positive x)
-							resolvingPos.x -= (intersectingAABB.getSize().x + pad);
-							resolved = true;
-							pBB = player->getBoundingBox(resolvingPos);
-						}
-						else if (movedDist.x < 0.0f)
-						{
-							// Moved to west (negative x)
-							resolvingPos.x += (intersectingAABB.getSize().x + pad);
-							resolved = true;
-							pBB = player->getBoundingBox(resolvingPos);
-						}
-					}
-					else if (i == Physics::Z_AXIS)
-					{
-						if (movedDist.z > 0.0f)
-						{
-							// Moved to south (positive z)
-							resolvingPos.z -= (intersectingAABB.getSize().z + pad);
-							resolved = true;
-							pBB = player->getBoundingBox(resolvingPos);
-						}
-						else if (movedDist.z < 0.0f)
-						{
-							// Moved to north (negative z)
-							resolvingPos.z += (intersectingAABB.getSize().z + pad);
-							resolved = true;
-							pBB = player->getBoundingBox(resolvingPos);
+							if (i == Physics::X_AXIS)
+							{
+								if (movedDist.x > 0.0f)
+								{
+									// Moved to east (positive x)
+									resolvingPos.x -= (intersectingAABB.getSize().x + pad);
+									resolved = true;
+									pBB = player->getBoundingBox(resolvingPos);
+									std::cout << "Player moved east (positive x). resolved" << std::endl;
+								}
+								else if (movedDist.x < 0.0f)
+								{
+									// Moved to west (negative x)
+									resolvingPos.x += (intersectingAABB.getSize().x + pad);
+									resolved = true;
+									pBB = player->getBoundingBox(resolvingPos);
+									std::cout << "Player moved west (negative x). resolved" << std::endl;
+								}
+							}
+							else if (i == Physics::Z_AXIS)
+							{
+								if (movedDist.z > 0.0f)
+								{
+									// Moved to south (positive z)
+									resolvingPos.z -= (intersectingAABB.getSize().z + pad);
+									resolved = true;
+									pBB = player->getBoundingBox(resolvingPos);
+									std::cout << "Player moved south (positive z). resolved" << std::endl;
+								}
+								else if (movedDist.z < 0.0f)
+								{
+									// Moved to north (negative z)
+									resolvingPos.z += (intersectingAABB.getSize().z + pad);
+									resolved = true;
+									pBB = player->getBoundingBox(resolvingPos);
+									std::cout << "Player moved north (negative z). resolved" << std::endl;
+								}
+							}
 						}
 					}
 				}
 			}
-		}
-	}
 
+		}
 	
+		*/
+	}
 
 	if (inMidAir)
 	{
 		player->setOnGround(false);
 	}
 
-	if (resolved)
+	if (resolved || resolvedXZ)
 	{
 		player->setNextPosition(resolvingPos);
 	}

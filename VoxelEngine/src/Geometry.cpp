@@ -32,9 +32,16 @@ Geometry::AABB::AABB()
 {}
 
 Geometry::AABB::AABB(const glm::vec3 & center, const glm::vec3 & size)
-	: center(center)
-	, size(size)
-{}
+{
+	this->center = center;
+	this->size = size;
+}
+
+Voxel::Geometry::AABB::AABB(const glm::vec3 & center, const float width, const float height, const float length)
+{
+	this->center = center;
+	this->size = glm::vec3(width, height, length);
+}
 
 std::vector<Geometry::Plane> Geometry::AABB::toPlanes() const
 {

@@ -538,7 +538,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								return false;
 							}
 
-							player->setRotation(glm::vec3(x, y, z));
+							player->setRotation(glm::vec3(x, y, z), false);
 							executedCommandHistory.push_back("Set player rotation to (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
 							lastCommand = command;
 							return true;
@@ -615,7 +615,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								return false;
 							}
 
-							player->setRotation(glm::vec3(x, y, z) + player->getRotation());
+							player->setRotation(glm::vec3(x, y, z) + player->getRotation(), false);
 							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
 							lastCommand = command;
 							return true;
