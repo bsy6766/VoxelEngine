@@ -23,6 +23,7 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 {
 	if (player->isFlying()) return;
 	if (player->isOnGround()) return; 
+	if (player->isJumping()) return;
 	
 	auto pos = player->getNextPosition();
 
@@ -35,8 +36,8 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 		fallDistance = 5.0f;
 	}
 
-	std::cout << "fd = " << fallDistance << std::endl;
-	std::cout << "ft = " << fallDuration + delta << std::endl;
+	//std::cout << "fd = " << fallDistance << std::endl;
+	//std::cout << "ft = " << fallDuration + delta << std::endl;
 
 	pos.y -= fallDistance;
 
@@ -284,58 +285,67 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 	// Now iterate blocks again and resolve y again
 	bool inMidAir = true;
 
-	for (auto block : collidableBlocks)
+	if (!player->isJumping())
 	{
-		auto blockBB = block->getBoundingBox();
-
-		if (blockBB.doesIntersectsWith(pBB))
+		for (auto block : collidableBlocks)
 		{
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
-			float sizeY = intersectingAABB.getSize().y;
-			if (sizeY == 0.0f)
+			auto blockBB = block->getBoundingBox();
+
+			if (blockBB.doesIntersectsWith(pBB))
 			{
-				// block and player isn't intersecting in y axis. They might touching. Check y.
-				if (pBB.getMin().y == blockBB.getMax().y)
+				auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+				float sizeY = intersectingAABB.getSize().y;
+				if (sizeY == 0.0f)
 				{
-					// touching
-					inMidAir = false;
-					continue;
-				}
-				else
-				{
-					continue;
-				}
-			}
-			else
-			{
-				// block and player is intersecting in y axis
-				if (sizeY == blockBB.getSize().y)
-				{
-					// block is completly inside of player's bounding box in y axis. skip					
-					continue;
-				}
-				else
-				{
-					// player and block is intersecting partialy.
-					if (movedDist.y > 0.0f)
+					// block and player isn't intersecting in y axis. They might touching. Check y.
+					if (pBB.getMin().y == blockBB.getMax().y)
 					{
-						// moved up
-						resolvingPos.y -= (intersectingAABB.getSize().y);
-						resolved = true;
-						pBB = player->getBoundingBox(resolvingPos);
-						std::cout << "Player moved up. resolved" << std::endl;
-					}
-					else if (movedDist.y < 0.0f)
-					{
-						// moved down
-						std::cout << "position y = " << resolvingPos.y << std::endl;
-						resolvingPos.y += (intersectingAABB.getSize().y);
-						std::cout << "resolving y = " << resolvingPos.y << std::endl;
-						resolved = true;
+						// touching
 						inMidAir = false;
-						pBB = player->getBoundingBox(resolvingPos);
-						player->setOnGround(true);
-						std::cout << "Player moved down. resolved" << std::endl;
+						continue;
+					}
+					else
+					{
+						continue;
+					}
+				}
+				else
+				{
+					// block and player is intersecting in y axis
+					if (sizeY == blockBB.getSize().y)
+					{
+						// block is completly inside of player's bounding box in y axis. skip					
+						continue;
+					}
+					else
+					{
+						if (!intersectingAABB.isZero(false))
+						{
+							// player and block is intersecting partialy.
+							if (movedDist.y > 0.0f)
+							{
+								// moved up
+								resolvingPos.y -= (intersectingAABB.getSize().y);
+								resolved = true;
+								pBB = player->getBoundingBox(resolvingPos);
+								std::cout << "Player moved up. resolved" << std::endl;
+							}
+							else if (movedDist.y < 0.0f)
+							{
+								if (pBB.getMin().y == blockBB.getMax().y)
+								{
+								}
+								// moved down
+								std::cout << "position y = " << resolvingPos.y << std::endl;
+								resolvingPos.y += (intersectingAABB.getSize().y);
+								std::cout << "resolving y = " << resolvingPos.y << std::endl;
+								resolved = true;
+								inMidAir = false;
+								pBB = player->getBoundingBox(resolvingPos);
+								player->setOnGround(true);
+								std::cout << "Player moved down. resolved" << std::endl;
+							}
+						}
 					}
 				}
 			}

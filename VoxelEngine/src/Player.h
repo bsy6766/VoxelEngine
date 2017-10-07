@@ -38,16 +38,13 @@ namespace Voxel
 		{
 			IDLE = 0,
 			JUMPING,
+			FALLING
 		};
 	private:
 		// World position of player
 		glm::vec3 position;
 		// For collision resolution
 		glm::vec3 nextPosition;
-		// player jump distance
-		float jumpDistance;
-		// to prevent glith-like jumping
-		float jumpCooldown;
 		// player's rotation angle in degree
 		glm::vec3 rotation;
 		// For smooth rotation
@@ -90,6 +87,10 @@ namespace Voxel
 		float fallDistance;
 		// True if player is standing on block. Else, it's falling
 		bool onGround;
+		// player jump distance
+		float jumpDistance;
+		// to prevent glith-like jumping
+		float jumpCooldown;
 
 		// Block that player is looking at
 		Block* lookingBlock;
@@ -214,6 +215,13 @@ namespace Voxel
 		*	When player jump and release the jump key, game locks the jump so it can't do double jump.
 		*/
 		void lockJump();
+
+		/**
+		*	Checks if player is jumping
+		*/
+		bool isJumping();
+
+		bool isFalling();
 	};
 }
 

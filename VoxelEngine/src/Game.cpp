@@ -309,7 +309,7 @@ void Game::createPlayer()
 	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug
-	player->setFly(false);
+	player->setFly(true);
 	player->setViewMode(1);
 	// Update matrix
 	player->updateViewMatrix();
@@ -387,8 +387,8 @@ void Game::update(const float delta)
 
 			player->setPosition(playerPosition, false);
 
-			player->setPosition(glm::vec3(365.244, 68, -117.754), false);
-			player->setRotation(glm::vec3(291.5, 302.25, 0), false);
+			//player->setPosition(glm::vec3(365.244, 68 + 1.5f, -117.754), false);
+			//player->setRotation(glm::vec3(291.5, 302.25, 0), false);
 		}
 	}
 	else
@@ -701,16 +701,11 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			{
 				if (player->canJump())
 				{
-					if (input->getKeyDown(GLFW_KEY_SPACE))
+					if (input->getKeyDown(GLFW_KEY_SPACE, true))
 					{
 						std::cout << "j" << std::endl;
 						player->jump(delta);
 					}
-				}
-
-				if (input->getKeyUp(GLFW_KEY_SPACE, true))
-				{
-					player->lockJump();
 				}
 			}
 
@@ -940,12 +935,16 @@ void Voxel::Game::updateCollisionResolution()
 	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
 
 	// auto jump
-	physics->resolveAutoJump(player, collidableBlocks);
+	if (settingPtr->getAutoJumpMode())
+	{
+		physics->resolveAutoJump(player, collidableBlocks);
 
-	// clear list
-	collidableBlocks.clear();
-	// query again
-	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
+		// clear list
+		collidableBlocks.clear();
+
+		// query again
+		chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
+	}
 
 	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
 	//auto end = Utility::Time::now();

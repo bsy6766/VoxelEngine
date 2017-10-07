@@ -10,7 +10,7 @@
 using namespace Voxel;
 
 const float Player::MaxCameraDistanceX = 10.0f;
-const float Player::DefaultJumpDistance = 13.5f;
+const float Player::DefaultJumpDistance = 1.1f;
 const float Player::DefaultJumpCooldown = 0.1f;
 const float Player::EyeHeight = 1.5f;
 
@@ -40,6 +40,7 @@ Player::Player()
 	, cameraDistanceZ(Player::MaxCameraDistanceX)
 	, cameraDistanceTargetZ(Player::MaxCameraDistanceX)
 	, viewMode(ViewMode::FIRST_PERSON_VIEW)
+	, jumpState(JumpState::FALLING)
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
@@ -256,19 +257,7 @@ void Player::jump(const float delta)
 {
 	onGround = false;
 
-	if (jumpDistance > 0.0f)
-	{
-		float d = glm::lerp(0.0f, jumpDistance, delta * 10.0f);
-		jumpDistance -= d;
-
-		nextPosition.y += d;
-
-		if (jumpDistance < 0.001f)
-		{
-			nextPosition.y += jumpDistance;
-			jumpDistance = 0;
-		}
-	}
+	jumpState = JumpState::JUMPING;
 }
 
 void Player::sneak()
@@ -393,6 +382,9 @@ void Voxel::Player::setOnGround(const bool onGround)
 	{
 		// run cooldown;
 		jumpCooldown = 0;
+		jumpDistance = Player::DefaultJumpDistance;
+		jumpState = JumpState::IDLE;
+		//std::cout << "Player is on ground" << std::endl;
 
 		fallDistance = 0.0f;
 		fallDuration = 0.0f;
@@ -502,14 +494,23 @@ void Voxel::Player::autoJump(const float y)
 
 bool Voxel::Player::canJump()
 {
-	//std::cout << "jd = " << jumpDistance << ", fd = " << fallDistance << std::endl;
-	return (jumpDistance != 0);
+	return (jumpState == JumpState::IDLE) && (jumpCooldown == Player::DefaultJumpCooldown);
 }
 
 void Voxel::Player::lockJump()
 {
 	// just make jump dist 0
 	jumpDistance = 0;
+}
+
+bool Voxel::Player::isJumping()
+{
+	return jumpState == JumpState::JUMPING;
+}
+
+bool Voxel::Player::isFalling()
+{
+	return jumpState == JumpState::FALLING;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -621,6 +622,24 @@ void Voxel::Player::update(const float delta)
 		}
 	}
 
+	if (jumpState == JumpState::JUMPING)
+	{
+		float jumpDist = glm::lerp(jumpDistance, 0.0f, 30.0f * delta);
+		jumpDistance -= jumpDist;
+
+		if (jumpDistance <= 0.01f)
+		{
+			jumpDist += jumpDistance;
+			jumpDistance = 0;
+
+			jumpState = JumpState::FALLING;
+		}
+
+		std::cout << "jumpDistance = " << jumpDistance << std::endl;
+
+		nextPosition.y += jumpDist;
+	}
+
 	if (jumpCooldown < Player::DefaultJumpCooldown)
 	{
 		jumpCooldown += delta;
@@ -630,6 +649,7 @@ void Voxel::Player::update(const float delta)
 			jumpCooldown = Player::DefaultJumpCooldown;
 			// refill jump distance
 			jumpDistance = Player::DefaultJumpDistance;
+			jumpState = JumpState::IDLE;
 		}
 	}
 }

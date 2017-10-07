@@ -8,3 +8,5 @@ videoSetting
 	renderDistance 1
 	fieldOfView 70
 	blockShade 2
+control
+	autoJump true
