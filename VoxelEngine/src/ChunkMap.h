@@ -149,6 +149,7 @@ namespace Voxel
 		// Returns 1 if block exists and opaque
 		// Retruns 2 if chunk section doesn't exists
 		// Retruns 3 if chunk doesn't exsits.
+		// Returns 4 if chunk is inactive
 		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 
 		// Place block at block world coordinate.

@@ -651,12 +651,16 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 	// Returns 1 if block exists and opaque
 	// Retruns 2 if chunk section doesn't exists
 	// Retruns 3 if chunk doesn't exsits.
+	// Returns 4 if chunk is inactive
+
+	//auto start = Utility::Time::now();
 
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
 
 	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(x, y, z), blockLocalPos, chunkSectionPos);
 
+	int result = -1;
 	// target chunk
 	auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 	if (chunk)
@@ -673,29 +677,40 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 				{
 					if (block->isTransparent())
 					{
-						return 0;
+						result = 0;
 					}
 					else
 					{
-						return 1;
+						result = 1;
 					}
 				}
 				else
 				{
 					// block is air == nullptr
-					return 0;
+					result = 0;
 				}
 			}
 			// There is no block in this chunk section = nullptr
 			else
 			{
-				return 2;
+				result = 2;
 			}
 		}
 		// Can't access block that is in inactive chunk
+		else
+		{
+			result = 4;
+		}
+	}
+	else
+	{
+		result = 3;
 	}
 
-	return 3;
+	//auto end = Utility::Time::now();
+	//std::cout << "block query t: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
+
+	return result;
 }
 
 void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const Cube::Face & faceDir, ChunkWorkManager* workManager)
