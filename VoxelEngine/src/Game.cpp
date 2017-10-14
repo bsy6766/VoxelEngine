@@ -414,21 +414,20 @@ void Game::update(const float delta)
 		bool playerMoved = player->didMoveThisFrame();
 		bool playerRotated = player->didRotateThisFrame();
 
+		Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+
 		// After updating frustum, run frustum culling to find visible chunk
+		//std::vector<glm::ivec2> visibleChunks;
+		//std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> visibleChunks;
+		//int totalVisible = chunkMap->findVisibleChunk(visibleChunks);
 		int totalVisible = chunkMap->findVisibleChunk();
 
-		// If player either move or rotated, update frustum
-		auto playerViewMode = player->getViewMode();
-		if (playerViewMode == Player::ViewMode::FIRST_PERSON_VIEW)
-		{
-			//Camera::mainCamera->getFrustum()->update(playerPos, player->getOrientation());
-			Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
-		}
-		else if (playerViewMode == Player::ViewMode::THIRD_PERSON_VIEW)
-		{
-			Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
-		}
-
+		/*
+		auto sortStart = Utility::Time::now();
+		chunkWorkManager->sortBuildMeshQueue(chunkMap->getCurrentChunkXZ(), visibleChunks);
+		auto sortEnd = Utility::Time::now();
+		std::cout << "sort: " << Utility::Time::toMicroSecondString(sortStart, sortEnd) << std::endl;
+		*/
 
 		if (playerMoved || playerRotated)
 		{

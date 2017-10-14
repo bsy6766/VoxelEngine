@@ -3,11 +3,13 @@
 
 #include <list>
 #include <glm\glm.hpp>
+#include <ChunkUtil.h>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
 #include <thread>
 #include <vector>
+#include <unordered_set>
 #include <string>
 
 namespace Voxel
@@ -104,6 +106,8 @@ namespace Voxel
 		// sort load queue based on chunk position that player is on. Locked by queueMutex
 		//void sortBuildMeshQueue(const glm::vec3& playerPosition);
 		void sortBuildMeshQueue(const glm::ivec2& currentChunkXZ);
+		void sortBuildMeshQueue(const glm::ivec2& currentChunkXZ, const std::vector<glm::ivec2>& visibleChunks);
+		void sortBuildMeshQueue(const glm::ivec2& currentChunkXZ, const std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks);
 
 		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);

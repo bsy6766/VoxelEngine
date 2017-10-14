@@ -709,6 +709,7 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 
 	//auto end = Utility::Time::now();
 	//std::cout << "block query t: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
+	// block quert takes 0 micro seconds usually, but sometime spikes to 15 ish.
 
 	return result;
 }
@@ -1800,6 +1801,76 @@ int Voxel::ChunkMap::findVisibleChunk()
 
 					if (visible)
 						count++;
+				}
+			}
+		}
+	}
+
+	return count;
+}
+
+int Voxel::ChunkMap::findVisibleChunk(std::vector<glm::ivec2>& visibleChunks)
+{
+	int count = 0;
+
+	for (auto& e : map)
+	{
+		auto chunk = e.second;
+		if (chunk != nullptr)
+		{
+			auto chunkXZ = chunk->getCoordinate();
+			if (isChunkOnEdge(chunkXZ))
+			{
+				continue;
+			}
+			else
+			{
+				if (chunk->isGenerated())
+				{
+					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
+					chunk->setVisibility(visible);
+
+					if (visible)
+					{
+						count++;
+						auto pos = chunk->getPosition();
+						visibleChunks.push_back(glm::ivec2(pos.x, pos.z));
+					}
+				}
+			}
+		}
+	}
+
+	return count;
+}
+
+int Voxel::ChunkMap::findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks)
+{
+	int count = 0;
+
+	for (auto& e : map)
+	{
+		auto chunk = e.second;
+		if (chunk != nullptr)
+		{
+			auto chunkXZ = chunk->getCoordinate();
+			if (isChunkOnEdge(chunkXZ))
+			{
+				continue;
+			}
+			else
+			{
+				if (chunk->isGenerated())
+				{
+					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
+					chunk->setVisibility(visible);
+
+					if (visible)
+					{
+						count++;
+						auto pos = chunk->getPosition();
+						visibleChunks.emplace(glm::ivec2(pos.x, pos.z));
+					}
 				}
 			}
 		}

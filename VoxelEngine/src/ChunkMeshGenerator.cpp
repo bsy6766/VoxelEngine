@@ -23,7 +23,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
 	//std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
-	auto chunkStart = Utility::Time::now();
+	//auto chunkStart = Utility::Time::now();
 
 	// Iterate all chunk sections O(16)
 	int indicesOffsetPerBlock = 0;

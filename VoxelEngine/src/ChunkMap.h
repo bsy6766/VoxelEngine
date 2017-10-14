@@ -181,6 +181,8 @@ namespace Voxel
 		
 		// find visible chunks. retrusn the number of chunks that is visible
 		int findVisibleChunk();
+		int findVisibleChunk(std::vector<glm::ivec2>& visibleChunks);
+		int findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks);
 
 		// mode setter
 		void setRenderChunkBorderMode(const bool mode);

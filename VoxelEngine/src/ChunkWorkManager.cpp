@@ -187,18 +187,6 @@ void Voxel::ChunkWorkManager::addBuildMeshWorks(const std::vector<glm::ivec2>& c
 
 void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2& currentChunkXZ)
 {
-	// Scope lock
-	//std::unique_lock<std::mutex> lock(queueMutex);
-
-	/*
-	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
-	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
-
-	// Shift by 1 if player is in negative position in XZ axis.
-	if (playerPosition.x < 0) chunkX -= 1;
-	if (playerPosition.z < 0) chunkZ -= 1;
-
-	*/
 	glm::vec2 p = glm::vec2(currentChunkXZ);
 
 	std::vector<glm::vec2> loadQueueFloat;
@@ -209,6 +197,117 @@ void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2& currentChunkX
 	}
 
 	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
+
+	buildMeshQueue.clear();
+
+	for (auto xz : loadQueueFloat)
+	{
+		buildMeshQueue.push_back(glm::ivec2(xz));
+	}
+}
+
+void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2 & currentChunkXZ, const std::vector<glm::ivec2>& visibleChunks)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	glm::vec2 p = glm::vec2(currentChunkXZ);
+
+	std::vector<glm::vec2> loadQueueFloat;
+
+	for (auto xz : buildMeshQueue)
+	{
+		loadQueueFloat.push_back(glm::vec2(xz));
+	}
+	
+	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p, visibleChunks](const glm::vec2& lhs, const glm::vec2& rhs)
+	{
+		bool lhsVisible = false;
+		glm::ivec2 iLhs = glm::ivec2(lhs);
+
+		for (auto& e : visibleChunks)
+		{
+			if (e == iLhs)
+			{
+				lhsVisible = true;
+				break;
+			}
+		}
+
+		bool rhsVisible = false;
+		glm::ivec2 iRhs = glm::ivec2(rhs);
+
+		for (auto& e : visibleChunks)
+		{
+			if (e == iRhs)
+			{
+				rhsVisible = true;
+				break;
+			}
+		}
+
+		if (lhsVisible && !rhsVisible)
+		{
+			return true;
+		}
+		else if (!lhsVisible && rhsVisible)
+		{
+			return false;
+		}
+		else if (lhsVisible && rhsVisible)
+		{
+			return glm::distance(p, lhs) < glm::distance(p, rhs);
+		}
+		else
+		{
+			return glm::distance(p, lhs) < glm::distance(p, rhs);
+		}
+	});
+
+	buildMeshQueue.clear();
+
+	for (auto xz : loadQueueFloat)
+	{
+		buildMeshQueue.push_back(glm::ivec2(xz));
+	}
+}
+
+void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2 & currentChunkXZ, const std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	glm::vec2 p = glm::vec2(currentChunkXZ);
+
+	std::vector<glm::vec2> loadQueueFloat;
+
+	for (auto xz : buildMeshQueue)
+	{
+		loadQueueFloat.push_back(glm::vec2(xz));
+	}
+
+	std::sort(loadQueueFloat.begin(), loadQueueFloat.end(), [p, visibleChunks](const glm::vec2& lhs, const glm::vec2& rhs)
+	{
+		bool lhsVisible = visibleChunks.find(glm::ivec2(lhs)) != visibleChunks.end();
+		bool rhsVisible = visibleChunks.find(glm::ivec2(rhs)) != visibleChunks.end();
+
+		if (lhsVisible && !rhsVisible)
+		{
+			return true;
+		}
+		else if (!lhsVisible && rhsVisible)
+		{
+			return false;
+		}
+		else if (lhsVisible && rhsVisible)
+		{
+			return glm::distance(p, lhs) < glm::distance(p, rhs);
+		}
+		else
+		{
+			return glm::distance(p, lhs) < glm::distance(p, rhs);
+		}
+	});
 
 	buildMeshQueue.clear();
 
