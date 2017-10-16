@@ -25,6 +25,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 
 	//auto chunkStart = Utility::Time::now();
 
+	int shadeMode = Setting::getInstance().getBlockShadeMode();
+
 	// Iterate all chunk sections O(16)
 	int indicesOffsetPerBlock = 0;
 	for (auto chunkSection : chunk->chunkSections)
@@ -34,12 +36,11 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 			// There is no block in this chunksection
 			continue;
 		}
+
 		//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
 
 		// Iterate all blocks. O(4096)
 		//auto chunkSectionStart = Utility::Time::now();
-
-		int shadeMode = Setting::getInstance().getBlockShadeMode();
 
 		for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 		{
@@ -137,7 +138,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						// Shadow weight for each vertex point of block. Weight gets added by 1 whenever other opaque blocks touches the vertex point.
 						std::vector<unsigned int> shadeWeight;
 
-						//auto st1 = Utility::Time::now();
+						auto st1 = Utility::Time::now();
 
 						if (shadeMode == 2)
 						{
@@ -295,8 +296,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 							}
 						}
 						
-						//auto st2 = Utility::Time::now();
-						//std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
+						auto st2 = Utility::Time::now();
+						std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
 
 
 						// Check face
@@ -354,7 +355,11 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	//auto chunkEnd = Utility::Time::now();
 	//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;
 	
-	chunk->chunkMesh->initBuffer(vertices, colors, normals, indices);
 
+	//auto bStart = Utility::Time::now();
+	chunk->chunkMesh->initBuffer(vertices, colors, normals, indices);
+	//auto bEnd = Utility::Time::now();
+	//std::cout << "initBuffer t: " << Utility::Time::toMicroSecondString(bStart, bEnd) << std::endl;
+	// initbuffer takes 30~10 micro seconds
 	//std::cout << "[ChunkMeshGenerator] -> Total vertices: " << vertices.size() << std::endl;
 }

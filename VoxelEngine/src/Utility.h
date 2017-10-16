@@ -181,6 +181,13 @@ namespace Voxel
 				return ss.str() + "ms";
 			}
 
+			static inline const std::string toNanoSecondSTring(const std::chrono::steady_clock::time_point start, const std::chrono::steady_clock::time_point end, const bool addUnit = true)
+			{
+				std::stringstream ss;
+				ss << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+				return ss.str() + "ns";
+			}
+
 			static inline const std::string getDate()
 			{
 				auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
