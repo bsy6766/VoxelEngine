@@ -6,7 +6,6 @@ AnimatedModel::AnimatedModel()
 {
 }
 
-
 AnimatedModel::~AnimatedModel()
 {
 }

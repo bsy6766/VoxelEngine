@@ -6,8 +6,8 @@
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
-#include <boost\polygon\voronoi.hpp>
-#include <boost\polygon\segment_data.hpp>
+#include <polygon\voronoi.hpp>
+#include <polygon\segment_data.hpp>
 #include <GL\glew.h>
 #include <memory>
 

@@ -60,6 +60,9 @@ namespace Voxel
 		// Cehck if block is collidable 
 		bool isCollidable();
 
+		// Check if block is solid. Solid blocks are 1 sized cube. anything else that isn't complete cube (that is transparent, or size is less than 1) is not solid
+		//bool isSolid();
+
 		// Set color of block (0 ~ 1)
 		void setColor(const glm::vec3& color);
 
