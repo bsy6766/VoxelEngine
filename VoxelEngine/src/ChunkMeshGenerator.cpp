@@ -138,7 +138,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						// Shadow weight for each vertex point of block. Weight gets added by 1 whenever other opaque blocks touches the vertex point.
 						std::vector<unsigned int> shadeWeight;
 
-						auto st1 = Utility::Time::now();
+						//auto st1 = Utility::Time::now();
 
 						if (shadeMode == 2)
 						{
@@ -296,8 +296,8 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 							}
 						}
 						
-						auto st2 = Utility::Time::now();
-						std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
+						//auto st2 = Utility::Time::now();
+						//std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
 
 
 						// Check face
