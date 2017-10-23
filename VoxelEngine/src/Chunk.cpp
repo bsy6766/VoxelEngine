@@ -27,14 +27,14 @@ bool Voxel::Chunk::canGenerate()
 {
 	if (generated.load() == true)
 	{
-		std::cout << "Chunk trying to generate again" << std::endl;
+		std::cout << "Chunk trying to generate again\n";
 		return false;
 	}
 
 	/*
 	if (chunkSections.empty() == false)
 	{
-		std::cout << "Chunk already has chunksections" << std::endl;
+		std::cout << "Chunk already has chunksections\n";
 		return false;
 	}
 	*/
@@ -59,7 +59,7 @@ Chunk::~Chunk()
 		delete chunkMesh;
 	}
 
-	//std::cout << "[Chunk] Deleting chunk at (" << position.x << ", " << position.z << ")..." << std::endl;
+	//std::cout << "[Chunk] Deleting chunk at (" << position.x << ", " << position.z << ")...\n";
 }
 
 Chunk* Chunk::create(const int x, const int z)
@@ -69,8 +69,8 @@ Chunk* Chunk::create(const int x, const int z)
 	{
 		if (newChunk->generateSingleSection())
 		{
-			//std::cout << "[Chunk] Done.\n" << std::endl;
-			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")..." << std::endl;
+			//std::cout << "[Chunk] Done.\n\n";
+			//std::cout << "[Chunk] Creating new chunk at (" << x << ", " << z << ")...\n";
 			return newChunk;
 		}
 	}
@@ -85,8 +85,8 @@ Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 	Chunk* newChunk = new Chunk();
 	if (newChunk->init(x, z))
 	{
-		//std::cout << "[Chunk] Done.\n" << std::endl;
-		//std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")..." << std::endl;
+		//std::cout << "[Chunk] Done.\n\n";
+		//std::cout << "[Chunk] Creating new empty chunk at (" << x << ", " << z << ")...\n";
 		return newChunk;
 	}
 
@@ -114,7 +114,7 @@ bool Chunk::init(const int x, const int z)
 	worldPosition.y = 0;
 	worldPosition.z = Constant::CHUNK_BORDER_SIZE * (static_cast<float>(z) + 0.5f);
 
-	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")" << std::endl;
+	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")\n";
 
 	// init border. worldPosition works as center position of border
 	float borderDistance = (Constant::CHUNK_BORDER_SIZE * 0.5f);
@@ -129,7 +129,7 @@ bool Chunk::init(const int x, const int z)
 
 	chunkSections = std::vector<ChunkSection*>(Constant::TOTAL_CHUNK_SECTION_PER_CHUNK, nullptr);
 
-	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")" << std::endl;
+	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")\n";
 
 	//auto end = Utility::Time::now();
 	//std::cout << "Chunk generation elapsed time: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -198,7 +198,7 @@ bool Voxel::Chunk::generateWithBiomeTest()
 {
 	assert(canGenerate());
 
-	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections..." << std::endl;
+	//std::cout << "[Chunk] Creating " << Constant::TOTAL_CHUNK_SECTION_PER_CHUNK << " ChunkSections...\n";
 	std::vector<std::vector<float>> elevationMap;
 	std::vector<std::vector<float>> temperatureMap;
 	std::vector<std::vector<float>> moistureMap;
@@ -707,7 +707,7 @@ void Voxel::Chunk::updateTimestamp(const double timestamp)
 
 void Voxel::Chunk::print()
 {
-	std::cout << "Chunk (" << position.x << ", " << position.z << ") info." << std::endl;
+	std::cout << "Chunk (" << position.x << ", " << position.z << ") info.\n";
 	std::cout << "World position = " << Utility::Log::vec3ToStr(worldPosition) << std::endl;
 	std::cout << "Active: " << (active ? "True" : "False") << std::endl;
 	std::cout << "Visible: " << (visible ? "True" : "False") << std::endl;

@@ -61,9 +61,9 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 	newCamera->screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 
 	std::cout << "[Camera] Creating camera. Fovy: " << fovy << ", Fovx: " << newCamera->fovx << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << newCamera->aspect << std::endl;
-	std::cout << "[Camera] Camera position (" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
-	std::cout << "[Camera] Camera rotation (" << newCamera->angle.x << ", " << newCamera->angle.y << ", " << newCamera->angle.z << ")" << std::endl;
-	std::cout << "[Camera] Camera screen space (" << newCamera->screenSpacePos.x << ", " << newCamera->screenSpacePos.y << ", " << newCamera->screenSpacePos.z << ")" << std::endl;
+	std::cout << "[Camera] Camera position (" << position.x << ", " << position.y << ", " << position.z << ")\n";
+	std::cout << "[Camera] Camera rotation (" << newCamera->angle.x << ", " << newCamera->angle.y << ", " << newCamera->angle.z << ")\n";
+	std::cout << "[Camera] Camera screen space (" << newCamera->screenSpacePos.x << ", " << newCamera->screenSpacePos.y << ", " << newCamera->screenSpacePos.z << ")\n";
 	std::cout << std::endl;
 
 	return newCamera;
@@ -160,7 +160,7 @@ void Camera::setAngle(const vec3 & angle)
 	this->angle = angle;
 	wrapAngle();
 
-	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
+	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")\n";
 }
 
 void Camera::addAngle(const vec3 & angle)
@@ -168,7 +168,7 @@ void Camera::addAngle(const vec3 & angle)
 	this->angle += angle;
 	wrapAngle();
 
-	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
+	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")\n";
 }
 
 float Voxel::Camera::getAngleY()
@@ -202,6 +202,6 @@ void Camera::wrapAngle(float& axis)
 
 void Camera::print()
 {
-	std::cout << "[Camera] position = (" << this->position.x << ", " << this->position.y << ", " << this->position.z << ")" << std::endl;
-	std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")" << std::endl;
+	std::cout << "[Camera] position = (" << this->position.x << ", " << this->position.y << ", " << this->position.z << ")\n";
+	std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")\n";
 }

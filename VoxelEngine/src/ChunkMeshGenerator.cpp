@@ -20,7 +20,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 	std::vector<float> normals;
 	std::vector<unsigned int> indices;
 
-	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")" << std::endl;
+	//std::cout << "[ChunkMeshGenerator] -> Chunk (" << chunk->position.x << ", " << chunk->position.y << ", " << chunk->position.z << ")\n";
 	//std::cout << "[ChunkMeshGenerator] -> Total chunk sections: " << chunk->chunkSections.size() << std::endl;
 
 	//auto chunkStart = Utility::Time::now();
@@ -37,7 +37,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 			continue;
 		}
 
-		//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")" << std::endl;
+		//std::cout << "[ChunkMeshGenerator] -> Generating for chunk section at (" << chunkSection->position.x << ", " << chunkSection->position.y << ", " << chunkSection->position.z << ")\n";
 
 		// Iterate all blocks. O(4096)
 		//auto chunkSectionStart = Utility::Time::now();
@@ -52,7 +52,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 
 					if (blockIndex < 0 || blockIndex >= Constant::TOTAL_BLOCKS)
 					{
-						std::cout << "Out or range (" << blockX << ", " << blockY << ", " << blockZ << ")" << std::endl;
+						std::cout << "Out or range (" << blockX << ", " << blockY << ", " << blockZ << ")\n";
 						std::cout << "blockIndex = " << blockIndex << std::endl;
 						throw std::runtime_error("out of range");
 					}
@@ -347,10 +347,10 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 		//auto chunkSectionEnd = Utility::Time::now();
 		//std::cout << "[ChunkMeshGenerator] -> Chunk section Elapsed time: " << Utility::Time::toMilliSecondString(chunkSectionStart, chunkSectionEnd) << std::endl;
 
-		//std::cout << "[ChunkMeshGenerator] -> Done." << std::endl;
+		//std::cout << "[ChunkMeshGenerator] -> Done.\n";
 	}
 
-	//std::cout << "[ChunkMeshGenerator] finished building mesh (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")" << std::endl;
+	//std::cout << "[ChunkMeshGenerator] finished building mesh (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")\n";
 
 	//auto chunkEnd = Utility::Time::now();
 	//std::cout << "[ChunkMeshGenerator] -> Chunk Elapsed time: " << Utility::Time::toMilliSecondString(chunkStart, chunkEnd) << std::endl;

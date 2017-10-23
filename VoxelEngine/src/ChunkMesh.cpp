@@ -47,7 +47,7 @@ void Voxel::ChunkMesh::initBuffer(const std::vector<float>& vertices, const std:
 	this->colors = colors;
 	this->indices = indices;
 	this->normals = normals;
-	this->indicesSize = indices.size();
+	this->indicesSize = static_cast<int>(indices.size());
 
 	loadable.store(true);
 

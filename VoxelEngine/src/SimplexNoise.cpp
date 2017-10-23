@@ -115,7 +115,7 @@ void Voxel::Noise::SimplexNoise::init(const std::string & seed)
 {
 	rand.seedString = seed;
 	rand.seedNumber = std::hash<std::string>{}(seed);
-	rand.generator.seed(rand.seedNumber);
+	rand.generator.seed(static_cast<unsigned int>(rand.seedNumber));
 
 	randomize();
 }

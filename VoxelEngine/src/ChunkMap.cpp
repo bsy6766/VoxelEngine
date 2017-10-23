@@ -49,7 +49,7 @@ Voxel::ChunkMap::~ChunkMap()
 
 std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & playerPosition, const int renderDistance)
 {
-	std::cout << "[ChunkMap] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
+	std::cout << "[ChunkMap] Player is at (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")\n";
 
 	// Only need player x and z to find which chunk that player is in. This is world position
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
@@ -58,7 +58,7 @@ std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & pl
 	if (playerPosition.x < 0) chunkX -= 1;
 	if (playerPosition.z < 0) chunkZ -= 1;
 
-	std::cout << "[ChunkMap] Player is in chunk (" << chunkX << ", " << chunkZ << ")" << std::endl;
+	std::cout << "[ChunkMap] Player is in chunk (" << chunkX << ", " << chunkZ << ")\n";
 
 	currentChunkPos.x = chunkX;
 	currentChunkPos.y = chunkZ;
@@ -88,7 +88,7 @@ std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & pl
 			if (chunkLUT.find(coordinate) == chunkLUT.end())
 			{
 				// new chunk
-				//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") chunk." << std::endl;
+				//std::cout << "[ChunkMap] Adding (" << x << ", " << z << ") chunk.\n";
 				Chunk* newChunk = Chunk::createEmpty(x, z);
 
 				map.emplace(coordinate, std::shared_ptr<Chunk>(newChunk));
@@ -263,7 +263,7 @@ void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &cbo);
 
-	chunkBorderLineSize = lines.size();
+	chunkBorderLineSize = static_cast<int>(lines.size());
 }
 
 void Voxel::ChunkMap::initBlockOutline(Program* program)
@@ -471,7 +471,7 @@ void Voxel::ChunkMap::generateEmptyChunk(const int x, const int z)
 
 unsigned int Voxel::ChunkMap::getSize()
 {
-	return map.size();
+	return static_cast<unsigned int>(map.size());
 }
 
 void Voxel::ChunkMap::blockWorldCoordinateToLocalAndChunkSectionCoordinate(const glm::ivec3& blockWorldCoordinate, glm::ivec3& blockLocalCoordinate, glm::ivec3& chunkSectionCoordinate)
@@ -794,7 +794,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -842,7 +842,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -890,7 +890,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists" << std::endl;
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -930,7 +930,7 @@ void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockWorldCoordinate, Chu
 				}
 				else
 				{
-					std::cout << "[ChunkMap] Error. Tried to break block where chunk section doesn't exists" << std::endl;
+					std::cout << "[ChunkMap] Error. Tried to break block where chunk section doesn't exists\n";
 					return;
 				}
 			}
@@ -940,30 +940,30 @@ void Voxel::ChunkMap::removeBlockAt(const glm::ivec3 & blockWorldCoordinate, Chu
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to break block where chunk doesn't exists" << std::endl;
+		std::cout << "[ChunkMap] Error. Tried to break block where chunk doesn't exists\n";
 		return;
 	}
 }
 
 RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, const glm::vec3& playerDirection, const float playerRange)
 {
-	//std::cout << "RayCasting" << std::endl;
+	//std::cout << "RayCasting\n";
 
-	//std::cout << "player pos = " << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")" << std::endl;
-	//std::cout << "player dir = " << playerDirection.x << ", " << playerDirection.y << ", " << playerDirection.z << ")" << std::endl;
+	//std::cout << "player pos = " << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")\n";
+	//std::cout << "player dir = " << playerDirection.x << ", " << playerDirection.y << ", " << playerDirection.z << ")\n";
 
 	auto rayStart = playerEyePosition;
 	auto rayEnd = playerEyePosition + (playerDirection * playerRange);
 
-	//std::cout << "rayStart = " << rayStart.x << ", " << rayStart.y << ", " << rayStart.z << ")" << std::endl;
-	//std::cout << "rayEnd = " << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")" << std::endl;
+	//std::cout << "rayStart = " << rayStart.x << ", " << rayStart.y << ", " << rayStart.z << ")\n";
+	//std::cout << "rayEnd = " << rayEnd.x << ", " << rayEnd.y << ", " << rayEnd.z << ")\n";
 
 	glm::vec3 dirVec = rayEnd - rayStart;
 
 	float div = 1500.0f;
 	glm::vec3 step = dirVec / div;
 
-	//std::cout << "step = " << step.x << ", " << step.y << ", " << step.z << ")" << std::endl;
+	//std::cout << "step = " << step.x << ", " << step.y << ", " << step.z << ")\n";
 
 	int threshold = 1500;
 
@@ -972,7 +972,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 	glm::ivec3 startBlockPos = glm::ivec3(Utility::Math::fastFloor(rayStart.x), Utility::Math::fastFloor(rayStart.y), Utility::Math::fastFloor(rayStart.z));
 	glm::ivec3 curBlockPos = startBlockPos;
 
-	//std::cout << "start block (" << startBlockPos.x << ", " << startBlockPos.y << ", " << startBlockPos.z << ")" << std::endl;
+	//std::cout << "start block (" << startBlockPos.x << ", " << startBlockPos.y << ", " << startBlockPos.z << ")\n";
 
 	RayResult result;
 	result.block = nullptr;
@@ -986,7 +986,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 		{
 			return result;
 		}
-		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")" << std::endl;
+		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")\n";
 
 		auto visitingBlockPos = glm::ivec3(Utility::Math::fastFloor(curRayPoint.x), Utility::Math::fastFloor(curRayPoint.y), Utility::Math::fastFloor(curRayPoint.z));
 
@@ -994,7 +994,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 		{
 			curBlockPos = visitingBlockPos;
 
-			//std::cout << "cur block (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
+			//std::cout << "cur block (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")\n";
 			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z);
 
 			if (curBlock)
@@ -1004,7 +1004,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 					// raycasted block not empty. 
 					if (curBlockPos != startBlockPos)
 					{
-						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")" << std::endl;
+						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")\n";
 						result.block = curBlock;
 
 						// Check which face did ray hit on cube.
@@ -1056,32 +1056,32 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 	case 0:
 	case 1:
 		result = Cube::Face::FRONT;
-		//std::cout << "FRONT" << std::endl;
+		//std::cout << "FRONT\n";
 		break;
 	case 2:
 	case 3:
 		result = Cube::Face::LEFT;
-		//std::cout << "LEFT" << std::endl;
+		//std::cout << "LEFT\n";
 		break;
 	case 4:
 	case 5:
 		result = Cube::Face::BACK;
-		//std::cout << "BACK" << std::endl;
+		//std::cout << "BACK\n";
 		break;
 	case 6:
 	case 7:
 		result = Cube::Face::RIGHT;
-		//std::cout << "RIGHT" << std::endl;
+		//std::cout << "RIGHT\n";
 		break;
 	case 8:
 	case 9:
 		result = Cube::Face::TOP;
-		//std::cout << "TOP" << std::endl;
+		//std::cout << "TOP\n";
 		break;
 	case 10:
 	case 11:
 		result = Cube::Face::BOTTOM;
-		//std::cout << "BOTTOM" << std::endl;
+		//std::cout << "BOTTOM\n";
 		break;
 	default:
 		break;
@@ -1160,17 +1160,14 @@ void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
 			map.erase(coordinate);
 			chunkLUT.erase(coordinate);
 
-			//std::cout << "Removing chunk (" << coordinate.x << ", " << coordinate.y << ")" << std::endl;
+			//std::cout << "Removing chunk (" << coordinate.x << ", " << coordinate.y << ")\n";
 		}
 	}
 }
 
 int Voxel::ChunkMap::getActiveChunksCount()
 {
-	int row = activeChunks.size();
-	int col = activeChunks.front().size();
-
-	return row * col;
+	return static_cast<int>(activeChunks.size() * activeChunks.front().size());
 }
 
 bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager * workManager, const double time)
@@ -1195,7 +1192,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 
 	if (newChunkXZ != currentChunkPos)
 	{
-		//std::cout << "Player pos (" << playerPosition.x << ", " << playerPosition.z << ")" << std::endl;
+		//std::cout << "Player pos (" << playerPosition.x << ", " << playerPosition.z << ")\n";
 		// Player moved to new chunk.
 		// normally, player should move more than 1 chunk at a time. Moving more than 1 chunk (16 blocks = 16 meter in scale)
 		// means player is cheating or in god mode or whatever. 
@@ -1220,7 +1217,7 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		// Then find which row and col need to be added based on direction player moved.
 		// also find which row and col to pop aswell.
 		glm::ivec2 d = newChunkXZ - currentChunkPos;
-		//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")" << std::endl;
+		//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")\n";
 		currentChunkPos = newChunkXZ;
 
 		// Always modify x first. I think...that.. is.. better....right?

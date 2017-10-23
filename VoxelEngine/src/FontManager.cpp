@@ -25,7 +25,7 @@ void FontManager::initDefaultFont()
 	auto arial = Font::create("Arial.ttf", 50);
 	if (arial)
 	{
-		std::cout << "[FontManager] Adding default font \"Arial.ttf\" with id #0" << std::endl;
+		std::cout << "[FontManager] Adding default font \"Arial.ttf\" with id #0\n";
 		fonts.emplace(0, arial);
 	}
 	else

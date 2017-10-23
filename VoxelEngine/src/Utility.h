@@ -20,7 +20,11 @@ namespace Voxel
 			static size_t seedNumber;
 			static std::string seedString;
 
+#ifdef _WIN64
+			static std::mt19937_64 generator;
+#else
 			static std::mt19937 generator;
+#endif
 
 			static bool initialized;
 
@@ -38,7 +42,7 @@ namespace Voxel
 
 				seedString = randStr;
 
-				std::cout << "[Utility::Random] Created new random seed: " << seedString << std::endl;
+				std::cout << "[Utility::Random] Created new random seed: " << seedString << "\n";
 			}
 
 			static inline void generateSeed()
@@ -51,11 +55,6 @@ namespace Voxel
 			}
 
 		public:
-			static inline std::mt19937& getGenerator()
-			{
-				return generator;
-			}
-
 			static inline int randomInt(int min, int max)
 			{
 				if (seedNumber == 0 || seedString == "")
@@ -152,7 +151,7 @@ namespace Voxel
 
 				Utility::Random::initialized = true;
 
-				std::cout << "[Utility::Random] Created new random seed: " << seedString << std::endl;
+				std::cout << "[Utility::Random] Created new random seed: " << seedString << "\n";
 			}
 
 		};

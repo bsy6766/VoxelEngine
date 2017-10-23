@@ -85,7 +85,7 @@ void Voxel::Terrain::setTypeByBiome(Voxel::BiomeType biomeType)
 	{
 		auto& terrainTypeList = find_it->second;
 		
-		int randIndex = Utility::Random::randomInt(0, terrainTypeList.size() - 1);
+		int randIndex = Utility::Random::randomInt(0, static_cast<int>(terrainTypeList.size() - 1));
 
 		setType(terrainTypeList.at(randIndex));
 

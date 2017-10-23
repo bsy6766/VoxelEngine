@@ -384,7 +384,7 @@ void Voxel::Player::setOnGround(const bool onGround)
 		jumpCooldown = 0;
 		jumpDistance = Player::DefaultJumpDistance;
 		jumpState = JumpState::IDLE;
-		//std::cout << "Player is on ground" << std::endl;
+		//std::cout << "Player is on ground\n";
 
 		fallDistance = 0.0f;
 		fallDuration = 0.0f;
@@ -551,7 +551,7 @@ void Voxel::Player::updateDirMatrix()
 void Voxel::Player::updateDirection()
 {
 	direction = vec3(dirMatrix * vec4(0, 0, -1, 1));
-	//std::cout << "Updating player view direction (" << direction.x << ", " << direction.y << ", " << direction.z << ")" << std::endl;
+	//std::cout << "Updating player view direction (" << direction.x << ", " << direction.y << ", " << direction.z << ")\n";
 }
 
 void Voxel::Player::update(const float delta)

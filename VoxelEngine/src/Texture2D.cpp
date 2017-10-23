@@ -94,7 +94,7 @@ void Voxel::Texture2D::bind()
 
 void Voxel::Texture2D::print()
 {
-	std::cout << "Texture info:" << std::endl;
+	std::cout << "Texture info:\n";
 	std::cout << "Object: " << textureObject << std::endl;
 	std::cout << "Target: " << textureTarget << std::endl;
 	std::cout << "Location: " << textureLocation << std::endl;
@@ -216,7 +216,7 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 	case Channel::RGBA:
 		// PNG
 		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		std::cout << "[Texture2D] Created texture size of (" << width << ", " << height << ") with RGBA channel" << std::endl;
+		std::cout << "[Texture2D] Created texture size of (" << width << ", " << height << ") with RGBA channel\n";
 		break;
 	case Channel::NONE:
 	default:

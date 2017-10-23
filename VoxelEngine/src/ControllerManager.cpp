@@ -482,7 +482,7 @@ float Voxel::ControllerManager::getAxisValue(ControllerID id, IO::XBOX_360::AXIS
 
 int Voxel::ControllerManager::getControllerCount()
 {
-	return controllers.size();
+	return static_cast<int>(controllers.size());
 }
 
 bool Voxel::ControllerManager::hasController()

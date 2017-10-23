@@ -104,7 +104,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	// whitespace to tilde. Iterate all character to find the size of character map
 	// this loops find the texture size we are going to make for this font.
 	// whitespace doesn't have texture space, so we can ignore, but font always can have different stuffs filled in any char, so we still check for it.
-	for (size_t i = ' '; i < '~'; i++)
+	for (unsigned int i = ' '; i < '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
@@ -131,7 +131,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	if (widthDiv > textureSizeLimit || heightDiv > textureSizeLimit)
 	{
 		FT_Done_Face(face);
-		std::cout << "[Font] Font size is too big to generate font texture" << std::endl;
+		std::cout << "[Font] Font size is too big to generate font texture\n";
 		return false;
 	}
 
@@ -142,7 +142,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	pow2Width = 1024;
 	pow2Height = 1024;
 
-	std::cout << "[Font] Generating font texture sized (" << pow2Width << ", " << pow2Height << ")" << std::endl;
+	std::cout << "[Font] Generating font texture sized (" << pow2Width << ", " << pow2Height << ")\n";
 
 	//int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
 	//int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
@@ -176,7 +176,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 	int customLineSpace = 0;
 
-	for (size_t i = ' '; i <= '~'; i++)
+	for (unsigned int i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
@@ -221,7 +221,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 			if (y > pow2Height)
 			{
-				std::cout << "[Font] Error. Font size is too big to fit in texture" << std::endl;
+				std::cout << "[Font] Error. Font size is too big to fit in texture\n";
 				return false;
 			}
 			x = 0;
@@ -245,9 +245,9 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		/*
 		if (i == 70)
 		{
-			std::cout << "char = \"" << c << "\"" << std::endl;
-			std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")" << std::endl;
-			std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")" << std::endl;
+			std::cout << "char = \"" << c << "\"\n";
+			std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")\n";
+			std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")\n";
 		}
 		*/
 

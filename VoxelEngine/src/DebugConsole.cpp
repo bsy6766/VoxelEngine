@@ -260,12 +260,12 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 							bool result = executeCommand(curText);
 							if (result)
 							{
-								std::cout << "Success." << std::endl;
+								std::cout << "Success.\n";
 								updateCommandHistory();
 							}
 							else
 							{
-								std::cout << "Fail." << std::endl;
+								std::cout << "Fail.\n";
 							}
 							closeConsole();
 							return;
@@ -280,7 +280,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 
 						if (token == "VOXEL_GLFW_KEY_BACKSPACE")
 						{
-							//std::cout << "Backspace" << std::endl;
+							//std::cout << "Backspace\n";
 
 							auto curSize = curText.size();
 							if (curSize == 0)

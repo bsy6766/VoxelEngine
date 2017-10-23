@@ -321,7 +321,7 @@ void Voxel::ChunkWorkManager::addFinishedQueue(const glm::ivec2 & coordinate)
 {
 	// Scope lock
 	std::unique_lock<std::mutex> lock(finishedQueueMutex);
-	//std::cout << "Finished unloading (" << coordinate.x << ", " << coordinate.y << ")" << std::endl;
+	//std::cout << "Finished unloading (" << coordinate.x << ", " << coordinate.y << ")\n";
 	unloadFinishedQueue.push_back(coordinate);
 }
 
@@ -333,7 +333,7 @@ bool Voxel::ChunkWorkManager::getFinishedFront(glm::ivec2& coordinate)
 	if (!unloadFinishedQueue.empty())
 	{
 		coordinate = unloadFinishedQueue.front();
-		//std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload" << std::endl;
+		//std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload\n";
 		return true;
 	}
 
@@ -385,7 +385,7 @@ std::string Voxel::ChunkWorkManager::getDebugOutput()
 void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world)
 {
 	// loop while it's running
-	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh " << std::endl;
+	//std::cout << "Thraed #" << std::this_thread::get_id() << " started to build mesh \n";
 	while (running)
 	{
 		{
@@ -398,7 +398,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				cv.wait(fLock);
 			}
 
-			//std::cout << "No need to wait!" << std::endl;
+			//std::cout << "No need to wait!\n";
 		}
 
 		glm::ivec2 chunkXZ;
@@ -414,7 +414,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				cv.wait(lock);
 			}
 
-			//std::cout << "There is job to do!" << std::endl;
+			//std::cout << "There is job to do!\n";
 
 			if (running == false)
 			{
@@ -474,7 +474,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 		if (map && meshGenerator)
 		{
-			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
+			//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")\n";
 
 			if (workType == WorkType::PRE_GENERATE)
 			{
@@ -482,7 +482,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
-					//std::cout << "PreGen" << std::endl;
+					//std::cout << "PreGen\n";
 					// Get all block world position in XZ axises and find which region the are at
 					std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
@@ -609,12 +609,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk)
 				{
-					//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
+					//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
 					//auto s = Utility::Time::now();
 
 					if (chunk->hasMultipleRegion())
 					{
-						//std::cout << "Smooth" << std::endl;
+						//std::cout << "Smooth\n";
 						if (chunk->isActive())
 						{
 							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
@@ -651,9 +651,9 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				{
 					if (!chunk->isGenerated() && chunk->isActive())
 					{
-						//std::cout << "Gen" << std::endl;
+						//std::cout << "Gen\n";
 
-						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk" << std::endl;
+						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
 						//auto s = Utility::Time::now();
 
 						if (!chunk->smoothed)
@@ -741,7 +741,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 							if (needSmooth >= 1)
 							{
-								//std::cout << "Gen smooth" << std::endl;
+								//std::cout << "Gen smooth\n";
 								const int q11 = nearByChunks.at(2).at(2)->getQ22();
 								const int q12 = nearByChunks.at(0).at(2)->getQ21(); 
 								const int q21 = nearByChunks.at(2).at(0)->getQ12();
@@ -848,7 +848,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							// 2. Chunk already has mesh but need to refresh
 							//auto s = Utility::Time::now();
 							meshGenerator->generateSingleChunkMesh(chunk.get(), map);
-							//std::cout << "Done" << std::endl;
+							//std::cout << "Done\n";
 							//auto e = Utility::Time::now();
 							//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
 						}
@@ -902,7 +902,7 @@ void Voxel::ChunkWorkManager::createThreads(ChunkMap* map, ChunkMeshGenerator* m
 	// Debug. For now, just use 1 thread
 	threadCount = 1;
 
-	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)" << std::endl;
+	std::cout << "[ChunkWorkManager] Spawning " << threadCount << " thread(s)\n";
 	
 	// for now, just use 1 thread. Using more than 1 thread doesn't really improves the loading performance
 	// (I guess because if mutex lock)
@@ -939,7 +939,7 @@ void Voxel::ChunkWorkManager::stop()
 void Voxel::ChunkWorkManager::joinThread()
 {
 	{
-		//std::cout << "Waiting to thread join..." << std::endl;
+		//std::cout << "Waiting to thread join...\n";
 		// Scope lock
 		std::unique_lock<std::mutex> lock(queueMutex);
 		preGenerateQueue.clear();

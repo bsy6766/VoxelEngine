@@ -178,7 +178,7 @@ bool Voxel::Geometry::AABB::isZero(const bool all) const
 
 void Geometry::AABB::print()
 {
-	std::cout << "[BoundingBox] center: (" << center.x << ", " << center.y << ", " << center.z << "), size: (" << size.x << ", " << size.y << ", " << size.z << ")" << std::endl;
+	std::cout << "[BoundingBox] center: (" << center.x << ", " << center.y << ", " << center.z << "), size: (" << size.x << ", " << size.y << ", " << size.z << ")\n";
 }
 
 

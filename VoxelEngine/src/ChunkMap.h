@@ -68,7 +68,7 @@ namespace Voxel
 
 		// Chunk debug border draw
 		GLuint chunkBorderVao;
-		unsigned int chunkBorderLineSize;
+		int chunkBorderLineSize;
 		glm::mat4 chunkBorderModelMat;
 
 		// render mode

@@ -17,7 +17,7 @@ Setting::Setting()
 	blockShadeMode = gameSetting->getInt("videoSetting.blockShade");
 
 	std::cout << "[Setting] Window mode = " << windowMode << std::endl;
-	std::cout << "[Setting] Resolution = (" << resolution.x << ", " << resolution.y << ")" << std::endl;
+	std::cout << "[Setting] Resolution = (" << resolution.x << ", " << resolution.y << ")\n";
 	std::cout << "[Setting] Vsnyc = " << vsync << std::endl;
 	std::cout << "[Setting] Render distance = " << renderDistance << std::endl;
 	std::cout << "[Setting] Field of view = " << fieldOfView << std::endl;

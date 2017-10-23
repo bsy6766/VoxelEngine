@@ -96,12 +96,12 @@ void Voxel::InputHandler::onAxisMoved(ControllerID id, IO::XBOX_360::AXIS axis, 
 
 void Voxel::InputHandler::onControllerConnected(ControllerID id)
 {
-	std::cout << "[InputHandler] Controller #" << id << " is connected" << std::endl;
+	std::cout << "[InputHandler] Controller #" << id << " is connected\n";
 }
 
 void Voxel::InputHandler::onControllerDisconnected(ControllerID id)
 {
-	std::cout << "[InputHandler] Controller #" << id << " is disconnected" << std::endl;
+	std::cout << "[InputHandler] Controller #" << id << " is disconnected\n";
 }
 
 void InputHandler::updateMousePosition(double x, double y)

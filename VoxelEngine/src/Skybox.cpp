@@ -52,7 +52,7 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 
 	std::vector<unsigned int> indices = Cube::getIndices(Cube::Face::ALL, 0);
 
-	indicesSize = indices.size();
+	indicesSize = static_cast<int>(indices.size());
 	// 1. VAO
 	// Generate vertex array object
 	glGenVertexArrays(1, &vao);

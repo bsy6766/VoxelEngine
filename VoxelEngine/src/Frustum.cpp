@@ -209,7 +209,7 @@ void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & MVP)
 
 bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 {
-	//std::cout << "Frustum culling chunk at (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")" << std::endl;
+	//std::cout << "Frustum culling chunk at (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")\n";
 
 	/*
 	// This was used for testing frustum culling. This only checks the most bottom chunk .

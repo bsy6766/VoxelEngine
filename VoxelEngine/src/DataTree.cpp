@@ -195,7 +195,7 @@ const std::string DataTree::parseValue(const std::string& fileData, const int si
 int DataTree::findNewLineIndex(const std::string& fileData, int curIndex)
 {
 	// Get size of data
-	unsigned int dataSize = fileData.size();
+	size_t dataSize = fileData.size();
 	unsigned int i = 0;
 	// Loop until it finds new line char
 	for (i = curIndex; i < dataSize && !isNewLineChar(fileData[i]); i++)
@@ -253,7 +253,7 @@ int DataTree::findFirstNonWhitespaceIndex(const std::string& fileData, int curIn
 	// start from current index
 	unsigned int i = curIndex;
 	// end of file
-	unsigned int size = fileData.size();
+	size_t size = fileData.size();
 
 	// Because newline considered as newline, iterate til end
 	for (; i < size; i++)
@@ -277,7 +277,7 @@ int DataTree::findFirstNonWhitespaceIndex(const std::string& fileData, int curIn
 int DataTree::getCurrentDepth(const std::string& fileData, int curIndex)
 {
 	unsigned int i = curIndex;
-	unsigned int size = fileData.size();
+	size_t size = fileData.size();
 
 	int counter = 0;
 
@@ -299,7 +299,7 @@ int DataTree::getCurrentDepth(const std::string& fileData, int curIndex)
 int DataTree::findWhitespace(const std::string& fileData, int curIndex)
 {
 	unsigned int i = curIndex;
-	unsigned int size = fileData.size();
+	size_t size = fileData.size();
 
 	for (; i < size; i++)
 	{
@@ -328,7 +328,7 @@ const std::string DataTree::getValueFromKey(int curIndex, const std::vector<std:
 	// Reject empty keys
 	if (keys.empty()) { return std::string(); };
 
-	const unsigned int size = keys.size();
+	const size_t size = keys.size();
 
 	// Check size
 	if (curIndex >= size) { return std::string(); };

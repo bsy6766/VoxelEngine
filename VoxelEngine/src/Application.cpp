@@ -112,7 +112,7 @@ void Voxel::Application::initInternalSettings()
 	}
 	else
 	{
-		std::cout << "[Application] Failed to load internal setting" << std::endl;
+		std::cout << "[Application] Failed to load internal setting\n";
 	}
 }
 

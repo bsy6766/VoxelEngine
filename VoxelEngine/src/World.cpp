@@ -314,7 +314,7 @@ bool Voxel::World::updatePlayerPos(const glm::vec3 & playerPos)
 			Region* r = getRegion(regionID);
 			if (r == nullptr)
 			{
-				std::cout << "Region is nullptr" << std::endl;
+				std::cout << "Region is nullptr\n";
 				return false;
 			}
 			else
@@ -455,7 +455,7 @@ void Voxel::World::initVoronoi()
 				randPos = glm::ivec2(randX, randZ);
 
 				type = Voronoi::Site::Type::MARKED;
-				//std::cout << "Marked" << std::endl;
+				//std::cout << "Marked\n";
 			}
 			break;
 			case OMITTED:
@@ -471,14 +471,14 @@ void Voxel::World::initVoronoi()
 				randPos = glm::ivec2(randX, randZ);
 
 				type = Voronoi::Site::Type::OMITTED;
-				//std::cout << "Omitted" << std::endl;
+				//std::cout << "Omitted\n";
 			}
 			break;
 			case BORDER:
 			{
 				randPos = glm::vec2(0);
 				type = Voronoi::Site::Type::BORDER;
-				//std::cout << "Border" << std::endl;
+				//std::cout << "Border\n";
 			}
 			break;
 			case EMPTY:

@@ -125,7 +125,7 @@ glm::vec2 Voxel::Region::getSitePosition()
 void Voxel::Region::setAsStartingRegion()
 {
 	difficulty = 0;
-	std::cout << "Setting region #" << cell->getID() << " to starting region." << std::endl;
+	std::cout << "Setting region #" << cell->getID() << " to starting region.\n";
 }
 
 void Voxel::Region::initBiomeType(const float minT, const float maxT, const float minM, const float maxM)

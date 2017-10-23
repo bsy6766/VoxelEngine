@@ -26,12 +26,12 @@ void Voxel::FileSystem::init()
 	std::string worldFolderDir = "saves";
 	if (CreateDirectory(worldFolderDir.c_str(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError())
 	{
-		std::cout << "[FileSystem] saves directory already exists" << std::endl;
+		std::cout << "[FileSystem] saves directory already exists\n";
 		return;
 	}
 	else
 	{
-		std::cout << "[FileSystem] Failed to create saves directory" << std::endl;
+		std::cout << "[FileSystem] Failed to create saves directory\n";
 		throw std::runtime_error("Failed to create saves directory");
 	}
 	*/
@@ -44,7 +44,7 @@ void Voxel::FileSystem::init()
 		boost::filesystem::create_directory(path);
 		if (boost::filesystem::exists(path))
 		{
-			std::cout << "[FileSystem] Created saves directory" << std::endl;
+			std::cout << "[FileSystem] Created saves directory\n";
 		}
 	}
 	/*
@@ -52,11 +52,11 @@ void Voxel::FileSystem::init()
 	{
 		if (boost::filesystem::is_regular_file(path))
 		{
-			std::cout << "It's regular file" << std::endl;
+			std::cout << "It's regular file\n";
 		}
 		else if (boost::filesystem::is_directory(path))
 		{
-			std::cout << "It's directory" << std::endl;
+			std::cout << "It's directory\n";
 		}
 	}
 	*/
@@ -257,7 +257,7 @@ void Voxel::FileSystem::readFromRegionFile(const glm::ivec2& regionCoordinate, c
 			char regionZ;
 			rFile.read(&regionZ, 1);
 
-			std::cout << "Reading region file " << static_cast<int>(regionX) << "." << static_cast<int>(regionZ) << ".r" << std::endl;
+			std::cout << "Reading region file " << static_cast<int>(regionX) << "." << static_cast<int>(regionZ) << ".r\n";
 
 			char data[4096 * 4] = { 0 };
 
@@ -285,14 +285,14 @@ void Voxel::FileSystem::createWorldFolder(const std::string & worldName)
 	auto worldPath = "./saves/" + worldName;
 	if (CreateDirectory(worldPath.c_str(), nullptr))
 	{
-		std::cout << "[FileSystem] Created world folder at \"" + worldPath + "\"" << std::endl;
+		std::cout << "[FileSystem] Created world folder at \"" + worldPath + "\"\n";
 	}
 	else 
 	{
 		auto lastError = GetLastError();
 		if (ERROR_ALREADY_EXISTS == lastError)
 		{
-			std::cout << "[FileSystem] World folder \"" + worldPath + "\" already exists." << std::endl;
+			std::cout << "[FileSystem] World folder \"" + worldPath + "\" already exists.\n";
 			return;
 		}
 		else
@@ -307,7 +307,7 @@ void Voxel::FileSystem::createFile(const std::string & filePath)
 	std::ifstream ifs(filePath.c_str(), std::ifstream::out | std::ifstream::binary);
 	if (ifs)
 	{
-		std::cout << "[FileSystem] File \"" + filePath + "\" already exists" << std::endl;
+		std::cout << "[FileSystem] File \"" + filePath + "\" already exists\n";
 		ifs.close();
 		return;
 	}
@@ -357,7 +357,7 @@ bool Voxel::FileSystem::readFile(const std::string & filePath)
 	}
 	else
 	{
-		std::cout << "Failed to find file: \"" << filePath << "\" to read." << std::endl;
+		std::cout << "Failed to find file: \"" << filePath << "\" to read.\n";
 
 		return false;
 	}
@@ -374,7 +374,7 @@ bool Voxel::FileSystem::writeFile(const std::string & filePath)
 	}
 	else
 	{
-		std::cout << "Failed to find file: \"" << filePath << "\" to write." << std::endl;
+		std::cout << "Failed to find file: \"" << filePath << "\" to write.\n";
 
 		return false;
 	}

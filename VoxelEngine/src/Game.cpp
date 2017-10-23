@@ -157,7 +157,7 @@ void Voxel::Game::init()
 
 void Voxel::Game::release()
 {
-	std::cout << "[World] Releasing all instances" << std::endl;
+	std::cout << "[World] Releasing all instances\n";
 
 	SpriteSheetManager::getInstance().releaseAll();
 	TextureManager::getInstance().releaseAll();
@@ -589,7 +589,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			{
 				std::cout << "*";
 			}
-			std::cout << "   (" << freq.at(i) << ")" << std::endl;
+			std::cout << "   (" << freq.at(i) << ")\n";
 		}
 	}
 	
@@ -598,7 +598,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		Camera::mainCamera->print();
 		auto playerPos = player->getPosition();
 		auto playerRot = player->getRotation();
-		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")" << std::endl;
+		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")\n";
 	}
 
 	if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == 0)
@@ -669,7 +669,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			if (input->getKeyDown(GLFW_KEY_W))
 			{
 				player->moveFoward(delta);
-				//std::cout << "!" << std::endl;
+				//std::cout << "!\n";
 			}
 			else if (input->getKeyDown(GLFW_KEY_S))
 			{
@@ -702,7 +702,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 				{
 					if (input->getKeyDown(GLFW_KEY_SPACE, true))
 					{
-						std::cout << "j" << std::endl;
+						std::cout << "j\n";
 						player->jump(delta);
 					}
 				}

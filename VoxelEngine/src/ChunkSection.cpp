@@ -34,10 +34,10 @@ ChunkSection::~ChunkSection()
 ChunkSection* ChunkSection::create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->init(x, y, z, chunkPosition, regionMap, heightMap, colorMap))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -50,10 +50,10 @@ ChunkSection* ChunkSection::create(const int x, const int y, const int z, const 
 ChunkSection * Voxel::ChunkSection::createEmpty(const int x, const int y, const int z, const glm::vec3 & chunkPosition)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initEmpty(x, y, z, chunkPosition))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -66,10 +66,10 @@ ChunkSection * Voxel::ChunkSection::createEmpty(const int x, const int y, const 
 ChunkSection * Voxel::ChunkSection::createWithFill(const int x, const int y, const int z, const glm::vec3 & chunkPosition)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initWithFill(x, y, z, chunkPosition))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -82,10 +82,10 @@ ChunkSection * Voxel::ChunkSection::createWithFill(const int x, const int y, con
 ChunkSection * Voxel::ChunkSection::createWithHeightMap(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& heightMap)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initWithHeightMap(x, y, z, chunkPosition, heightMap))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -98,10 +98,10 @@ ChunkSection * Voxel::ChunkSection::createWithHeightMap(const int x, const int y
 ChunkSection * Voxel::ChunkSection::createWithValues(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initWithValues(x, y, z, chunkPosition, eMap, tMap, mMap))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -114,10 +114,10 @@ ChunkSection * Voxel::ChunkSection::createWithValues(const int x, const int y, c
 ChunkSection * Voxel::ChunkSection::createWithColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const glm::uvec3 & color)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initWithColor(x, y, z, chunkPosition, color))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -130,10 +130,10 @@ ChunkSection * Voxel::ChunkSection::createWithColor(const int x, const int y, co
 ChunkSection * Voxel::ChunkSection::createWithRegionColor(const int x, const int y, const int z, const glm::vec3 & chunkPosition, const std::vector<unsigned int>& blockRegion)
 {
 	ChunkSection* newChunkSection = new ChunkSection();
-	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] Creating new chunk section at (" << x << ", " << y << ", " << z << ")...\n";
 	if (newChunkSection->initWithRegionColor(x, y, z, chunkPosition, blockRegion))
 	{
-		//std::cout << "[ChunkSection] Done." << std::endl;
+		//std::cout << "[ChunkSection] Done.\n";
 		return newChunkSection;
 	}
 	else
@@ -235,10 +235,10 @@ bool ChunkSection::init(const int x, const int y, const int z, const glm::vec3& 
 	worldPosition = chunkPosition;
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 	
-	//std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")...\n";
 
 	// Fill vector in order of width(x), length(z) and then height(y)
-	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
+	//std::cout << "[ChunkSection] Generating blocks...\n";
 	//auto color = Color::getRandomColor();
 
 	blocks.clear();
@@ -315,10 +315,10 @@ bool Voxel::ChunkSection::initWithFill(const int x, const int y, const int z, co
 	worldPosition = chunkPosition;
 	worldPosition.y = (static_cast<float>(y) + 0.5f) * static_cast<float>(Constant::CHUNK_SECTION_HEIGHT);
 
-	//std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")..." << std::endl;
+	//std::cout << "[ChunkSection] World position (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")...\n";
 
 	// Fill vector in order of width(x), length(z) and then height(y)
-	//std::cout << "[ChunkSection] Generating blocks..." << std::endl;
+	//std::cout << "[ChunkSection] Generating blocks...\n";
 	//auto color = Color::getRandomColor();
 
 	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
@@ -347,7 +347,7 @@ bool Voxel::ChunkSection::initWithFill(const int x, const int y, const int z, co
 	}
 
 	//auto size = sizeof(Block);
-	//std::cout << "size = " << std::endl;
+	//std::cout << "size = \n";
 
 	return true;
 }

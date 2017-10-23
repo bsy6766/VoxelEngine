@@ -625,7 +625,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 								//	{
 								//		if (coOwner->getID() == cellID)
 								//		{
-								//			//std::cout << "Removing from cowoner" << std::endl;
+								//			//std::cout << "Removing from cowoner\n";
 								//			e->setCoOwner(nullptr);
 								//			break;
 								//		}
@@ -661,7 +661,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 		}
 	}
 
-	std::cout << "Removed " << totalRemoved << " cells" << std::endl;
+	std::cout << "Removed " << totalRemoved << " cells\n";
 	std::cout << "Total valid cell count: " << totalValidCells << std::endl;
 }
 

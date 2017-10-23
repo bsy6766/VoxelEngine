@@ -186,14 +186,14 @@ void Voxel::UI::Text::setText(const std::string & text)
 		{
 			if (type == TYPE::STATIC)
 			{
-				std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text" << std::endl;
+				std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text\n";
 			}
 			else
 			{
 				// Can modify text. reject larger texts
 				if (text.length() >= maxTextLength)
 				{
-					std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+					std::cout << "[Text] Can't not rebuild text over initial maximum size\n";
 					return;
 				}
 				else
@@ -300,7 +300,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 			if (text.length() >= this->maxTextLength)
 			{
 				// Todo: automatically reallocate buffer with new size
-				std::cout << "[Text] Can't not rebuild text over initial maximum size" << std::endl;
+				std::cout << "[Text] Can't not rebuild text over initial maximum size\n";
 				return false;
 			}
 		}
@@ -560,7 +560,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 	}
 	else
 	{
-		std::cout << "[Text] Error: Font is nullptr" << std::endl;
+		std::cout << "[Text] Error: Font is nullptr\n";
 		return false;
 	}
 
@@ -603,7 +603,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 				if (glyph->valid == false)
 				{
-					std::cout << "[Text] Glyph is invalid" << std::endl;
+					std::cout << "[Text] Glyph is invalid\n";
 					continue;
 				}
 
@@ -1452,9 +1452,9 @@ Canvas* Canvas::create(const glm::vec2& size, const glm::vec2& centerPosition)
 	newCanvas->size = size;
 	newCanvas->centerPosition = centerPosition;
 
-	std::cout << "[Canvas] Creating new canvas" << std::endl;
-	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")" << std::endl;
-	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")" << std::endl;
+	std::cout << "[Canvas] Creating new canvas\n";
+	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
+	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")\n";
 
 	return newCanvas;
 }

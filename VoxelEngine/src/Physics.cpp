@@ -191,25 +191,25 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 				{
 					// Moved to east (positive x)
 					auto bPos = block->getWorldCoordinate();
-					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")" << std::endl;
+					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
 					std::cout << "playerY = " << player->getPosition().y << std::endl;
 					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
 					resolvingPos.x -= (intersectingAABB.getSize().x);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved east (positive x). resolved" << std::endl;
+					std::cout << "Player moved east (positive x). resolved\n";
 				}
 				else if (movedDist.x < 0.0f)
 				{
 					// Moved to west (negative x)
 					auto bPos = block->getWorldCoordinate();
-					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")" << std::endl;
+					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
 					std::cout << "playerY = " << player->getPosition().y << std::endl;
 					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
 					resolvingPos.x += (intersectingAABB.getSize().x);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved west (negative x). resolved" << std::endl;
+					std::cout << "Player moved west (negative x). resolved\n";
 				}
 			}
 		}
@@ -243,7 +243,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 					resolvingPos.z -= (intersectingAABB.getSize().z);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved south (positive z). resolved" << std::endl;
+					std::cout << "Player moved south (positive z). resolved\n";
 				}
 				else if (movedDist.z < 0.0f)
 				{
@@ -251,7 +251,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 					resolvingPos.z += (intersectingAABB.getSize().z);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved north (negative z). resolved" << std::endl;
+					std::cout << "Player moved north (negative z). resolved\n";
 				}
 			}
 		}
@@ -325,7 +325,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 								resolvingPos.y -= (intersectingAABB.getSize().y);
 								resolved = true;
 								pBB = player->getBoundingBox(resolvingPos);
-								std::cout << "Player moved up. resolved" << std::endl;
+								std::cout << "Player moved up. resolved\n";
 							}
 							else if (movedDist.y < 0.0f)
 							{
@@ -340,7 +340,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 								inMidAir = false;
 								pBB = player->getBoundingBox(resolvingPos);
 								player->setOnGround(true);
-								std::cout << "Player moved down. resolved" << std::endl;
+								std::cout << "Player moved down. resolved\n";
 							}
 						}
 					}
@@ -362,7 +362,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 		{
 			if (absMovedDist.x >= absMovedDist.z)
 			{
-				//std::cout << "0" << std::endl;
+				//std::cout << "0\n";
 				resolvingPos.x = playerNextPos.x;
 				bool result = false;
 				result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
@@ -381,7 +381,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 				resolvingPos.x = playerNextPos.x;
 				result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
 				if (result) resolvedXZ = true;
-				//std::cout << "1" << std::endl;
+				//std::cout << "1\n";
 			}
 		}
 	}
