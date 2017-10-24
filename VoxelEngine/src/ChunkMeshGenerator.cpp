@@ -129,6 +129,12 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 							face |= Cube::Face::BACK;
 						}
 
+						if (face == Cube::Face::NONE)
+						{
+							// Skip if it's surrounded by blocks.
+							continue;
+						}
+
 						//auto bt2 = Utility::Time::now();
 						//std::cout << "block t: " << Utility::Time::toMicroSecondString(bt1, bt2) << std::endl;
 						// block t = 1 ~ 6 micro seconds
