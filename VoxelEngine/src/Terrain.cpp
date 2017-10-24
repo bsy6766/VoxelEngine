@@ -9,6 +9,7 @@ const std::unordered_map<Voxel::BiomeType, std::vector<Voxel::TerrainType>> Terr
 	{ Voxel::BiomeType::WOODS,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS } },
 	{ Voxel::BiomeType::TAIGA,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS } },
 	{ Voxel::BiomeType::FOREST,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS, Voxel::TerrainType::MOUNTAINS } },
+	{ Voxel::BiomeType::TAIGA_FOREST,{ Voxel::TerrainType::PLAIN, Voxel::TerrainType::HILLS, Voxel::TerrainType::MOUNTAINS } },
 };
 
 /*
@@ -40,6 +41,9 @@ std::string Voxel::Terrain::terrainTypeToString(Voxel::TerrainType terrain, Voxe
 		break;
 	case Voxel::TerrainType::MOUNTAINS:
 		terrainStr = "MOUNTAINS";
+		break;
+	case Voxel::TerrainType::BORDER:
+		terrainStr = "BORDER";
 		break;
 	default:
 		return "ERROR";

@@ -18,10 +18,8 @@ namespace Voxel
 	class Biome
 	{
 	public:
-
-	public:
 		// Store types of vegitation that can grow in biome
-		//static const std::unordered_map<Type, std::vector<Vegitation>> vegitationMap;
+		static const std::unordered_map<BiomeType, std::vector<Voxel::Vegitation::Tree>> biomeTreeMap;
 		// Store types of living entity that can live in biome
 		// Store types of structure that can be spawned in biome
 		
@@ -30,6 +28,12 @@ namespace Voxel
 
 		Voxel::BiomeType type;
 		
+		// Possible tree and the weight of tree. Higher the weight, higher the chance to spawn
+		std::unordered_map<Voxel::Vegitation::Tree, int> trees;
+		// Possible plant and the weight of plant.
+		std::unordered_map<Voxel::Vegitation::Plant, int> plants;
+		// Possible flowers and the weight of flowers.
+		std::unordered_map<Voxel::Vegitation::Flower, int> flowers;
 	public:
 		Biome();
 		~Biome() = default;
@@ -44,6 +48,13 @@ namespace Voxel
 
 		float getTemperature();
 		float getMoisture();
+
+		// Check if this biome has flower
+		bool hasFlower();
+		// Check if this biome has tree
+		bool hasTree();
+		// Check if this biome has grass
+		bool hasGrass();
 	};
 }
 

@@ -3,14 +3,13 @@
 
 using namespace Voxel;
 
-/*
-const std::unordered_map<Biome::Type, std::vector<Biome::Vegitation>> Biome::vegitationMap =
+const std::unordered_map<BiomeType, std::vector<Voxel::Vegitation::Tree>> Biome::biomeTreeMap =
 {
-	{Biome::Type::WOODS, {Biome::Vegitation::OAK_TREE, Biome::Vegitation::LOW_GRASS}},
-	{Biome::Type::FOREST, {Biome::Vegitation::OAK_TREE, Biome::Vegitation::BIRCH_TREE, Biome::Vegitation::SPRUCE_TREE}},		// Forest can have any type of trees except jungle tree
-	{Biome::Type::TAIGA, {Biome::Vegitation::SPRUCE_TREE}}
+	{BiomeType::WOODS, {Voxel::Vegitation::Tree::OAK}},
+	{BiomeType::FOREST, {Voxel::Vegitation::Tree::OAK, Voxel::Vegitation::Tree::BIRCH}},
+	{BiomeType::TAIGA, {Voxel::Vegitation::Tree::SPRUCE}},
+	{BiomeType::TAIGA_FOREST, {Voxel::Vegitation::Tree::SPRUCE}}
 };
-*/
 
 Voxel::Biome::Biome()
 	: temperature(0)
@@ -65,26 +64,34 @@ Voxel::BiomeType Voxel::Biome::getBiomeType(float temperature, float moisture, f
 	// Above sea level
 	if (temperature <= 0.5f)
 	{
-		// Freezing
-		// Always tundra
-		return Voxel::BiomeType::TUNDRA;
+		// Freezing.
+		if (moisture <= 0.5f)
+		{
+			// Freezing and low moisture. Tundra.
+			// Snowy biome with very few vegitation. 
+			return Voxel::BiomeType::TUNDRA;
+		}
+		else
+		{
+			// Frezzing but has some moisture. Some plants and trees can grow in this biome
+			return Voxel::BiomeType::ICY_TAIGA;
+		}
 	}
 	else if (temperature > 0.5f && temperature <= 1.0f)
 	{
 		// Cold
-		/*
 		if (moisture <= 0.5f)
 		{
-		// Cold and none or few moisture.
-		// Grass desert
-		return Type::GRASS_DESERT;
+			return Voxel::BiomeType::GRASS_DESERT;
+		}
+		else if (moisture > 0.5f && moisture <= 1.0f)
+		{
+			return Voxel::BiomeType::TAIGA;
 		}
 		else
 		{
+			return Voxel::BiomeType::TAIGA_FOREST;
 		}
-		*/
-		// Taiga
-		return Voxel::BiomeType::TAIGA;
 	}
 	else if (temperature > 1.0f && temperature <= 1.5f)
 	{
@@ -174,6 +181,9 @@ std::string Voxel::Biome::biomeTypeToString(Voxel::BiomeType type)
 	case Voxel::BiomeType::TAIGA:
 		return "TAIGA";
 		break;
+	case Voxel::BiomeType::ICY_TAIGA:
+		return "ICY_TAIGA";
+		break;
 	case Voxel::BiomeType::DESERT:
 		return "DESERT";
 		break;
@@ -182,6 +192,9 @@ std::string Voxel::Biome::biomeTypeToString(Voxel::BiomeType type)
 		break;
 	case Voxel::BiomeType::FOREST:
 		return "FOREST";
+		break;
+	case Voxel::BiomeType::TAIGA_FOREST:
+		return "TAIGA_FOREST";
 		break;
 	case Voxel::BiomeType::SWAMP:
 		return "SWAMP";

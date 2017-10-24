@@ -8,47 +8,53 @@ namespace Voxel
 	{
 		NONE = 0,
 		OCEAN,					// Filled with water
-		TUNDRA,					// Coldest area covered with snow. Hard to find any trees. Several short shrubs or mosses. Possible berries. Rarely snows.
-		GRASS_DESERT,			// Desert with some plants. No trees. Random water (oasis). some cactus
-		TAIGA,					// Cold area. No snow. Possbile rain. Spruce and pine tree. Tree can grow short to mega sized.
-		DESERT,					// Hot and dry area. No water can be found. No plants. few cactus
-		WOODS,					// Warm area. few moisture too. Trees can grow but not there aren't many. 
-		FOREST,					// Warm area with some moisture. Covered with trees.  
+		TUNDRA,					// Coldest area. Covered with snow. No rain. Very few vegitation.
+		GRASS_DESERT,			// Cold and warm area. Covered with sand. No rain, but possible oasis and cactus
+		DESERT,					// Warm and hot area. Covered with sand. No rain. Very few vegiation. 
+		ICY_TAIGA,				// Coldest area. Covered with snow. Fewer vegitation than Taiga. Else, all same with Taiga.
+		TAIGA,					// Cold area. Some vegitation. 
+		WOODS,					// Warm area. few moisture too. Few tree grows. Some grass and flowers.
+		SAVANNA,				// Hot area. Few moisture. Few tree, grass, flowers grows. 
+		TAIGA_FOREST,			// Cold area. Basically Taiga but with more vegitation. 
+		FOREST,					// Warm area with some moisture. Fully covered with trees. 
+		SEASONAL_FOREST,		// Basically forest but with different variation of trees. 
 		SWAMP,					// Warm area with high moisture. Water can be found. Oak trees can be found.
-		SAVANNA,				// Hot and few moisture. Acacia tree can be found
-		SEASONAL_FOREST,		// 
 		RAIN_FOREST,			// Jungle. Lots of rain and hot area. Lots of tall trees. Lots of plants below the tree. 
 		ERROR,
 	};
 
-	enum class Tree
+	namespace Vegitation
 	{
-		NONE = 0,
-		OAK,
-		BIRCH,
-		SPRUCE,
-		PINE,
-		ACACIA,
-		JUNGLE,
-		MAPLE
-	};
+		enum class Tree
+		{
+			NONE = 0,
+			OAK,
+			BIRCH,
+			SPRUCE,
+			PINE,
+			ACACIA,
+			JUNGLE,
+			MAPLE
+		};
 
-	enum class Plant
-	{
-		NONE = 0,
-		LOW_GRASS,
-		TALL_GRASS,
-		CACTUS,
-		SHRUB,
-	};
+		enum class Plant
+		{
+			NONE = 0,
+			SHORT_GRASS,
+			TALL_GRASS,
+			CAT_TAIL,
+			CACTUS,
+			SHRUB,
+		};
 
-	enum class Flower
-	{
-		NONE = 0,
-		SUNFLOWER,
-		ROSE,
-		DAISY,
-	};
+		enum class Flower
+		{
+			NONE = 0,
+			SUNFLOWER,
+			ROSE,
+			DAISY,
+		};
+	}
 
 	// Types of living entity for biomes. 
 	enum class LivingEntity

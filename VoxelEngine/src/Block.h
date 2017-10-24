@@ -28,6 +28,8 @@ namespace Voxel
 			OAK_LEAVES,
 			WATER,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
+			SHORT_GRASS,
+			TALL_GRASS,
 			INVALID = 255
 		};
 	private:

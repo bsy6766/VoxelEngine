@@ -150,12 +150,6 @@ void Voxel::Region::initBiomeType(const float minT, const float maxT, const floa
 	newM += minM;
 
 	biomeType.setType(newT, newM);
-
-	if (cell->isValid())
-	{
-		std::cout << "Setting region #" << cell->getID() << " t: " << newT << ", m: " << newM << std::endl;
-		std::cout << "Biome: " << Biome::biomeTypeToString(biomeType.getType()) << std::endl;
-	}
 }
 
 Biome Voxel::Region::getBiomeType()
@@ -166,11 +160,6 @@ Biome Voxel::Region::getBiomeType()
 void Voxel::Region::initTerrainType()
 {
 	terrainType.setTypeByBiome(this->biomeType.getType());
-
-	if (cell->isValid())
-	{
-		std::cout << "Setting region #" << cell->getID() << " terrain: " << Terrain::terrainTypeToString(terrainType) << std::endl;
-	}
 }
 
 void Voxel::Region::initTerrainType(Voxel::TerrainType type)

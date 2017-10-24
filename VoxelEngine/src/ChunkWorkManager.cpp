@@ -584,7 +584,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					// Generate height map.
 					HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
-					HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), chunk->plainHeightMap);
+
+					std::vector<std::vector<int>> plainHeightMap;
+					HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), plainHeightMap);
+
+					chunk->mergeHeightMap(plainHeightMap);
+
 					chunk->smoothed = false;
 
 					if (regionIDSet.size() == 1)
@@ -639,6 +644,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 					if (!map->isChunkOnEdge(chunkXZ))
 					{
+						// Only generate chunk that is not on edge
 						addGenerateWork(chunkXZ);
 					}
 				}
@@ -656,9 +662,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
 						//auto s = Utility::Time::now();
 
+						// Check if chunk is smoothed
 						if (!chunk->smoothed)
 						{
+							// Chunk is not smoothed. Check nearby chunk and see if chunk needs to be smoothed
 							std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+							
 							int needSmooth = 0;
 
 							const int cq11 = chunk->getQ11();
@@ -779,6 +788,11 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 				if (chunk && chunk->isActive())
 				{
+					// First, add small structures like grass, flower, etc
+					// Then, add mid sized structures like stone, 
+					// Then, check if chunk has structure. If so, add structure
+					// Then, add trees. Point is, tree is large and can have up to 1 tree per chunk. We don't want to add tree where large structure exists.
+
 					// test tree
 					glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
 					//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));

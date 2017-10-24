@@ -49,6 +49,7 @@ void Voxel::World::init(const int gridWidth, const int gridLength)
 	initRegionDifficulty();
 	initRegionBiome();
 	initRegionTerrain();
+	printRegionBiomeAndTerrain();
 	initVoronoiDebug();
 }
 
@@ -677,6 +678,20 @@ void Voxel::World::initRegionTerrain()
 		{
 			region->initTerrainType(Voxel::TerrainType::BORDER);
 		}
+	}
+}
+
+void Voxel::World::printRegionBiomeAndTerrain()
+{
+	for (auto& r : regions)
+	{
+		auto region = r.second;
+
+		auto bt = region->getBiomeType();
+
+		std::cout << "Region #" << region->getID() << std::endl;
+		std::cout << "Biome: " << Biome::biomeTypeToString(bt.getType()) << ", t: " << bt.getTemperature() << ", m: " << bt.getMoisture() << std::endl;
+		std::cout << "Terrain: " << Terrain::terrainTypeToString(region->getTerrainType()) << std::endl;
 	}
 }
 

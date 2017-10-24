@@ -140,15 +140,24 @@ bool Voxel::Chunk::generate()
 {
 	assert(canGenerate());
 
+	// For terrain color variation. Repeating all same color for large amount of area gives bad visual. so use this noise to smoothly mix color
 	std::vector<std::vector<float>> colorMap;
-
 	HeightMap::getHeightMapForColor(position, colorMap);
+
+	// Add grass and flower. Grass and flowers are represented as single block, even if they are higher than 1 block (never gets bigger than 1 block wide & len). 
+
+	// Grass doesn't need 
+
+	// Flower noise. Flowers are spawned based on this noise. Spawns flower if value is higher than specific value. If region has multiple type of flower, 
+	std::vector<std::vector<float>> flowerMap;
+
+
 
 	for (auto chunkSection : chunkSections)
 	{
 		if (chunkSection != nullptr)
 		{
-			chunkSection->init(regionMap, heightMap, plainHeightMap, colorMap);
+			chunkSection->init(heightMap, colorMap);
 		}
 	}
 
@@ -538,17 +547,6 @@ int Voxel::Chunk::findMaxY()
 		}
 	}
 
-	for (auto& row : plainHeightMap)
-	{
-		for (auto& val : row)
-		{
-			if (val > max)
-			{
-				max = val;
-			}
-		}
-	}
-
 	return max;
 }
 
@@ -651,6 +649,28 @@ void Voxel::Chunk::setRegionMap(const std::vector<unsigned int>& regionIDs)
 	regionMap = regionIDs;
 }
 
+void Voxel::Chunk::mergeHeightMap(std::vector<std::vector<int>>& plainHeightMap)
+{
+	const int rowSize = heightMap.size();
+	const int colSize = heightMap.front().size();
+
+	assert(rowSize == plainHeightMap.size());
+	assert(colSize == plainHeightMap.front().size());
+
+	for (int row = 0; row < rowSize; row++)
+	{
+		for (int col = 0; col < colSize; col++)
+		{
+			auto pH = plainHeightMap.at(row).at(col);
+			auto h = heightMap.at(row).at(col);
+			if (h < pH)
+			{
+				heightMap.at(row).at(col) = ((h + pH) / 2);
+			}
+		}
+	}
+}
+
 bool Voxel::Chunk::isGenerated()
 {
 	return generated.load();
@@ -688,16 +708,7 @@ bool Voxel::Chunk::isSmoothed()
 
 int Voxel::Chunk::getTopY(const int x, const int z)
 {
-	int val = heightMap.at(x).at(z);
-	int pVal = plainHeightMap.at(x).at(z);
-	if (val < pVal)
-	{
-		return pVal;
-	}
-	else
-	{
-		return val;
-	}
+	return heightMap.at(x).at(z);
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)
