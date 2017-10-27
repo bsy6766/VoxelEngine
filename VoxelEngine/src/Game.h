@@ -35,6 +35,12 @@ namespace Voxel
 	*/
 	class Game
 	{
+	private:
+		enum UI_Z_ORDER
+		{
+			CROSS_HAIR = 0,
+			TIME,
+		};
 	public:
 		enum class GameState
 		{
@@ -118,6 +124,9 @@ namespace Voxel
 		// Init UI 
 		void initUI();
 		void initLoadingScreen();
+		void initDefaultCanvas();
+		void initDebugConsole();
+		void initCursor();
 		void initSkyBox(const glm::vec4& skyColor, Program* program);
 
 		// Update inputs

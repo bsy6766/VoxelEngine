@@ -16,9 +16,12 @@ namespace Voxel
 	class Font;
 	class Program;
 	class SpriteSheet;
+	struct ImageEntry;
 
 	namespace UI
 	{
+		class Canvas;
+
 		/**
 		*	@class UINode
 		*	@brief Base class of any UI classes that contains model matrix(pos, scale in xy and rotation) with pivot data
@@ -35,8 +38,11 @@ namespace Voxel
 			// string name
 			std::string name;
 
-			// canvas pivot
-			//glm::vec2 canvasPivot;
+			// parent pivot. 
+			glm::vec2 parentPivot;
+
+			// Parent
+			Canvas* parentCanvas;
 
 			// Position in screen space
 			glm::vec2 position;
@@ -49,6 +55,9 @@ namespace Voxel
 
 			// Size
 			glm::vec2 size;
+
+			// color
+			glm::vec3 color;
 
 			// Opacity
 			float opacity;
@@ -89,6 +98,16 @@ namespace Voxel
 			virtual void setSize(const glm::vec2& size);
 			virtual glm::vec2 getSize();
 
+			// get Texture
+			virtual Texture2D* getTexture();
+
+			// Build vertices
+			virtual void buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) = 0;
+
+			// Color
+			void setColor(const glm::vec3& color);
+			glm::vec3 getColor();
+
 			// Opacity (0 ~ 1.0f)
 			void setOpacity(const float opacity);
 			float getOpacity();
@@ -103,11 +122,17 @@ namespace Voxel
 			// returns min and max point of box
 			Geometry::Rect getBoundingBox();
 
+			// parent pivot
+			virtual void setParentPivot(const glm::vec2& pivot);
+			virtual glm::vec2 getParentPivot();
+
 			// Check if this node has children
 			bool hasChildren();
 
-			//virtual void setCanvasPivot(const glm::vec2& pivot);
-			//virtual glm::vec2 getCanvasPivot();
+			// Checks if this object can be rendered
+			virtual bool isRenderable();
+
+			virtual unsigned int getIndicesOffset() = 0;
 
 			// Print children
 			void printChildren(const int depth);
@@ -141,7 +166,78 @@ namespace Voxel
 			// Program
 			Program* program;
 
+			// load
+			void load(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::vector<float>& colors, const std::vector<float>& uvs);
+
 			// Render batch.
+			void render();
+		};
+
+		/**
+		*	@class Cursor
+		*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
+		*
+		*	Unlike other UIs, cursor doesn't have parent canvas. Cursor is universal nomatter what the game state is at, so Game class manages the cursor.
+		*/
+		class Cursor
+		{
+		public:
+			enum class CursorType
+			{
+				POINTER = 0,	// Default cursor
+				FINGER,
+			};
+		private:
+			Cursor();
+
+			// Textures for cursor.
+			Texture2D* texture;
+
+			// position of cursor
+			glm::vec2 position;
+			// Pivot. -0.5f ~ 0.5f.
+			glm::vec2 pivot;
+
+			// size is fixed to 32 x 32
+			const glm::vec2 size = glm::vec2(32.0f, 32.0f);
+
+			GLuint vao;
+			GLuint uvbo;
+
+			// visibility
+			bool visible;
+
+			// screen boundary
+			glm::vec2 minScreenBoundary;
+			glm::vec2 maxScreenBoundary;
+
+			// Current cursor type
+			CursorType currentCursorType;
+
+			float screenSpaceZ;
+
+			// Initailize all cursors
+			bool init();
+		public:
+			~Cursor();
+
+			// Creates cursor.
+			static Cursor* create();
+
+			// position
+			void setPosition(const glm::vec2& position);
+			void addPosition(const glm::vec2& distance);
+
+			// set boundary
+			void updateBoudnary();
+
+			// Set cursor type. 
+			void setCursorType(const CursorType cursorType);
+
+			// Set visibility of all cursor
+			void setVisibility(const bool visibility);
+
+			// Render cursor
 			void render();
 		};
 
@@ -155,21 +251,62 @@ namespace Voxel
 		class Image : public UINode
 		{
 		private:
-			Image();
+			// Constructor with name
+			Image(const std::string& name);
 
+			// Texture
 			Texture2D* texture;
 
-			GLuint vao;
+			// Cache uv because it varys based on texture.
+			std::vector<float> uvs;
 
-			bool init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
-			bool initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
+			// Initialize image
+			bool init(const std::string& textureName, const glm::vec2& position, const glm::vec3& color, const float opacity);
+			bool initWithSpriteSheet(const ImageEntry* imageEntry, Texture2D* texture, const glm::vec2& position, const glm::vec3& color = glm::vec3(1.0f), const float opacity = 1.0f);
+
 		public:
-			~Image();
+			// Default constructor
+			~Image() = default;
 
-			static Image* create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
-			static Image* createFromSpriteSheet(const std::string& spriteSheetName, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color);
+			/**
+			*	Creates Image. Uses existing texture if exists. Else, creates new.
+			*	@param [in] name Name of object. Can't be empty.
+			*	@param [in] textureName Name of texture. Can't be empty.
+			*	@param [in] position Position of Image in canvas.
+			*	@param [in] color Color (rgb) of image. White by default.
+			*	@param [in] opacity Opacity of image. 1.0f by default.
+			*	@return An Image instance. Nullptr if fails.
+			*/
+			static Image* create(const std::string& name, const std::string& textureName, const glm::vec2& position, const glm::vec3& color = glm::vec3(1.0f), const float opacity = 1.0f);
+			
+			/**
+			*	Creates Image from sprite sheet
+			*	@param [in] name Name of object. Can't be empty.
+			*	@param [in] spriteSheetName Name of sprite sheet. can't be empty.
+			*	@param [in] imageName Name of image. can't be empty.
+			*	@param [in] position Position of Image in canvas.
+			*	@param [in] color Color (rgb) of image. White by default.
+			*	@param [in] opacity Opacity of image. 1.0f by default.
+			*	@return An Image instance. Nullptr if fails.
+			*/
+			static Image* createWithSpriteSheet(const std::string& name, const std::string& spriteSheetName, const std::string& imageName, const glm::vec2& position, const glm::vec3& color = glm::vec3(1.0f), const float opacity = 1.0f);
 
-			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
+			/**
+			*	Build vertices for image (quad)
+			*	@param [in] bVertices Vertices that are batched
+			*	@param [in] bIndices Indices that are batched
+			*	@param [in] bColors Colors that are batched
+			*	@param [in] bUV UVs Coordinates that are batched
+			*/
+			void buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) override;
+
+			// Check if this image is renderable, which is always true though.
+			bool isRenderable() override;
+
+			unsigned int getIndicesOffset() override;
+
+			// get texture
+			Texture2D* getTexture() override;
 		};
 
 		/**
@@ -209,6 +346,9 @@ namespace Voxel
 
 			bool visible;
 
+			// True if there was modification on uiNodes
+			bool needToUpdateBatch;
+
 			glm::vec2 size;
 			glm::vec2 position;
 
@@ -217,6 +357,9 @@ namespace Voxel
 
 			// UI objects
 			std::map<ZOrder, std::unique_ptr<UINode>, ZOrderComp> uiNodes;
+
+			// Batches
+			std::vector<UIBatch*> batches;
 		public:
 			// Destructor. Releases all UIs.
 			~Canvas();
@@ -233,21 +376,8 @@ namespace Voxel
 			bool addNode(UINode* node);
 			bool addNode(UINode* node, int zOrder);
 			bool addNode(UINode* node, ZOrder zOrder);
-			/*
-			// add image
-			//bool addImage(const std::string& name, const std::string& textureName, const glm::vec2& position, const glm::vec4& color);
-			bool addImage(const std::string& name, Image* image, const int z);
 
-			// add test
-			//bool addText(const std::string& name, const std::string& text, const glm::vec2& position, const glm::vec4& color, const int fontID, Text::ALIGN align = Text::ALIGN::LEFT, Text::TYPE type = Text::TYPE::STATIC, const int maxLength = 0);
-			bool addText(const std::string& name, Text* text, const int z);
-
-
-			Image* getImage(const std::string& name);
-			Text* getText(const std::string& name);
-
-			glm::vec2 getPivotCanvasPos(PIVOT pivot);
-			*/
+			//glm::vec2 getPivotCanvasPos(PIVOT pivot);
 
 			/**
 			*	get the size of canvas
@@ -278,6 +408,11 @@ namespace Voxel
 			*	@param [in] mouseButton A GLFW mouse button ID.
 			*/
 			void updateMouseInput(const glm::vec2& mousePos, int mouseButton);
+
+			/**
+			*	Updates batch only if it's needed
+			*/
+			void updateBatch();
 
 			/**
 			*	Renders UI objects.

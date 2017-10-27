@@ -138,18 +138,6 @@ void Voxel::Game::init()
 	// UI & font
 	initUI();
 
-	/*
-	// Debug. This creates all the debug UI components
-	debugConsole = new DebugConsole();
-	debugConsole->toggleDubugOutputs();
-
-	// for debugging
-	debugConsole->player = player;
-	debugConsole->game = this;
-	debugConsole->chunkMap = chunkMap;
-	debugConsole->world = world;
-	*/
-
 	TextureManager::getInstance().print();
 
 	//Application::getInstance().getGLView()->setWindowedFullScreen(1);
@@ -178,9 +166,9 @@ void Voxel::Game::release()
 
 	if (loadingCanvas) delete loadingCanvas;
 
-	//if (cursor) delete cursor;
+	if (cursor) delete cursor;
 
-	//if (defaultCanvas) delete defaultCanvas;
+	if (defaultCanvas) delete defaultCanvas;
 
 	//if (debugConsole) delete debugConsole;
 
@@ -211,34 +199,11 @@ void Voxel::Game::initUI()
 
 	initLoadingScreen();
 
-	//defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+	initDefaultCanvas();
 
-	/*
-	// cursor
-	cursor = UI::Cursor::create();
+	initDebugConsole();
 
-	// Add temporary cross hair
-	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
-	defaultCanvas->addImage("crossHair", crossHairImage, 0);
-
-	// Add time label
-	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
-	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
-	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
-	defaultCanvas->addText("timeLabel", timeLabel, 0);
-
-
-	// Add bg
-	auto bg = UI::Image::createFromSpriteSheet("UISpriteSheet", "1x1.png", glm::vec2(0), glm::vec4(1));
-	bg->setScale(resolution);
-	loadingCanvas->addImage("bg", bg, 0);
-
-	// Add loading label
-	auto loadingLabel = UI::Image::createFromSpriteSheet("UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f), glm::vec4(1));
-	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
-	loadingLabel->setCanvasPivot(glm::vec2(0.5f, -0.5f));
-	loadingCanvas->addImage("loadingLabel", loadingLabel, 1);
-	*/
+	initCursor();
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -249,6 +214,22 @@ void Voxel::Game::initLoadingScreen()
 	loadingCanvas = UI::Canvas::create(resolution, glm::vec2(0));
 
 	loadingCanvas->print();
+
+	// Add bg
+	auto bg = UI::Image::createWithSpriteSheet("bg", "UISpriteSheet", "1x1.png", glm::vec2(0));
+	bg->setScale(resolution);
+
+	loadingCanvas->addNode(bg);
+
+	auto loadingLabel = UI::Image::createWithSpriteSheet("loadingLabel", "UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f));
+	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
+	loadingLabel->setParentPivot(glm::vec2(0.5f, -0.5f));
+
+	loadingCanvas->addNode(loadingLabel);
+
+	loadingCanvas->print();
+
+	loadingCanvas->updateBatch();
 
 	/*
 	auto testNode = new UI::UINode("test");
@@ -282,6 +263,49 @@ void Voxel::Game::initLoadingScreen()
 
 	loadingCanvas->print();
 	*/
+}
+
+void Voxel::Game::initDefaultCanvas()
+{
+	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+
+	defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+
+	// Add temporary cross hair
+	auto crossHairImage = UI::Image::createWithSpriteSheet("crossHair", "UISpriteSheet", "cross_hair.png", glm::vec2(0));
+
+	defaultCanvas->addNode(crossHairImage, ZOrder(UI_Z_ORDER::CROSS_HAIR));
+	defaultCanvas->updateBatch();
+
+	/*
+	// Add time label
+	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
+	defaultCanvas->addText("timeLabel", timeLabel, 0);
+
+	*/
+}
+
+void Voxel::Game::initDebugConsole()
+{
+	/*
+	// Debug. This creates all the debug UI components
+	debugConsole = new DebugConsole();
+	debugConsole->toggleDubugOutputs();
+
+	// for debugging
+	debugConsole->player = player;
+	debugConsole->game = this;
+	debugConsole->chunkMap = chunkMap;
+	debugConsole->world = world;
+	*/
+}
+
+void Voxel::Game::initCursor()
+{
+	// cursor
+	cursor = UI::Cursor::create();
 }
 
 void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
@@ -600,12 +624,12 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
 	{
 		gameState = GameState::CURSOR_MODE;
-		//cursor->setVisibility(true);
+		cursor->setVisibility(true);
 	}
 	else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
 	{
 		gameState = GameState::IDLE;
-		//cursor->setVisibility(false);
+		cursor->setVisibility(false);
 	}
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
@@ -658,27 +682,28 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")\n";
 	}
 
-	/*
 	if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == 0)
 	{
-		Application::getInstance().getGLView()->setWindowedFullScreen(1);
+		Application::getInstance().getGLView()->setFullScreen(1);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
-		debugConsole->updateResolution(1920, 1080);
+		//debugConsole->updateResolution(1920, 1080);
+		cursor->updateBoudnary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == GLFW_MOD_CONTROL)
 	{
 		Application::getInstance().getGLView()->setWindowed(1280, 720);
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 		defaultCanvas->setSize(glm::vec2(1280, 720));
-		debugConsole->updateResolution(1280, 720);
+		//debugConsole->updateResolution(1280, 720);
+		cursor->updateBoudnary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(0);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
-		debugConsole->updateResolution(1920, 1080);
+		//debugConsole->updateResolution(1920, 1080);
+		cursor->updateBoudnary();
 	}
-	*/
 
 	if (input->getKeyDown(GLFW_KEY_V, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
 	{
@@ -789,12 +814,12 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 	if (input->getKeyDown(GLFW_KEY_1, true))
 	{
-		//cursor->setCursorType(UI::Cursor::CursorType::POINTER);
+		cursor->setCursorType(UI::Cursor::CursorType::POINTER);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_2, true))
 	{
-		//cursor->setCursorType(UI::Cursor::CursorType::FINGER);
+		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_3, true))
@@ -877,7 +902,7 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	}
 	else if (gameState == GameState::CURSOR_MODE)
 	{
-		//cursor->addPosition(glm::vec2(dx, -dy));
+		cursor->addPosition(glm::vec2(dx, -dy));
 	}
 }
 
@@ -1171,10 +1196,10 @@ void Voxel::Game::renderGameWorld(const float delta)
 
 	// --------------------------------- Render UI ------------------------------------------
 	// Render UIs
-	//defaultCanvas->render();
+	defaultCanvas->render();
 	//debugConsole->render();
 
-	//cursor->render();
+	cursor->render();
 	// --------------------------------------------------------------------------------------
 }
 
@@ -1184,7 +1209,7 @@ void Voxel::Game::renderLoadingScreen(const float delta)
 	glDepthFunc(GL_ALWAYS);
 
 	// Render UIs
-	//loadingCanvas->render();
+	loadingCanvas->render();
 }
 
 void Voxel::Game::setFogEnabled(const bool enabled)

@@ -159,6 +159,11 @@ SpriteSheet * Voxel::SpriteSheetManager::getSpriteSheet(const std::string & json
 	}
 }
 
+bool Voxel::SpriteSheetManager::hasSpriteSheet(const std::string & name)
+{
+	return this->spriteSheetMap.find(name) != this->spriteSheetMap.end();
+}
+
 void Voxel::SpriteSheetManager::releaseAll()
 {
 	for (auto& e : spriteSheetMap)

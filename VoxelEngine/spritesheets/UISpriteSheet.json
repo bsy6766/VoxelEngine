@@ -10,6 +10,15 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
+	"filename": "1x1_green.png",
+	"frame": {"x":349,"y":1,"w":1,"h":1},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
+	"sourceSize": {"w":1,"h":1},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
 	"filename": "2x2.png",
 	"frame": {"x":342,"y":1,"w":2,"h":2},
 	"rotated": false,
@@ -43,6 +52,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:6676edeb25161883a5065a8ccd3519f8:65c2a1ea55b0b4eda22a2a9704ca7e17:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:9e4366cbd2f7b2005beb1948b516caef:c4410247df1ebba7d92ab60900c3eb27:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }

@@ -15,6 +15,7 @@ namespace Voxel
 	*/
 	class Texture2D
 	{
+		friend class TextureManager;
 	public:
 		enum class Channel : int
 		{
@@ -29,10 +30,12 @@ namespace Voxel
 	private:
 		Texture2D();
 
+		unsigned int id;
+
 		GLuint textureObject;
 		GLenum textureTarget;
 		GLint textureLocation;
-
+		
 		int width;
 		int height;
 
@@ -58,6 +61,8 @@ namespace Voxel
 		void activate(GLenum textureUnit);
 		void bind();
 
+		unsigned int getID();
+
 		void print();
 	};
 
@@ -73,6 +78,8 @@ namespace Voxel
 		TextureManager() = default;
 		~TextureManager();
 
+		static unsigned int idCounter;
+
 		// Delete copy, move, assign operators
 		TextureManager(TextureManager const&) = delete;             // Copy construct
 		TextureManager(TextureManager&&) = delete;                  // Move construct
@@ -80,6 +87,8 @@ namespace Voxel
 		TextureManager& operator=(TextureManager &&) = delete;      // Move assign
 
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> texturesMap;
+
+		std::string removeFileExtention(std::string fileName);
 	public:
 		static TextureManager& getInstance()
 		{
