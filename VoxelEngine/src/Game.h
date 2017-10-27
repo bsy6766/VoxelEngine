@@ -25,7 +25,7 @@ namespace Voxel
 	namespace UI
 	{
 		class Canvas;
-		class Text;
+		class Text2;
 		class Cursor;
 	}
 

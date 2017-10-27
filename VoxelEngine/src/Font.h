@@ -81,6 +81,8 @@ namespace Voxel
 
 		Glyph* getCharGlyph(const char c);
 
+		Texture2D* getTexture();
+
 		int getLineSpace();
 		int getOutlineSize();
 

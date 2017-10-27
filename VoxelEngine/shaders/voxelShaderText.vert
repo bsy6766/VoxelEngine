@@ -12,7 +12,7 @@ out vec4 vertColor;
 
 void main()
 {
-	gl_Position = projMat * modelMat * vec4(vert, 1);
+	gl_Position = projMat  * modelMat * vec4(vert, 1);
 	vertColor = color;
 	fragTexCoord = uvVert;
 }

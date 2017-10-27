@@ -282,6 +282,11 @@ Glyph* Font::getCharGlyph(const char c)
 	}
 }
 
+Texture2D * Voxel::Font::getTexture()
+{
+	return this->texture;
+}
+
 int Voxel::Font::getLineSpace()
 {
 	return linespace;

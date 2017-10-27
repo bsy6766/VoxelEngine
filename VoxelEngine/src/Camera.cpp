@@ -94,7 +94,7 @@ void Voxel::Camera::setFovy(const float fovy)
 	lineProgram->use(true);
 	lineProgram->setUniformMat4("projMat", getProjection());
 
-	lineProgram->use(false);
+	//lineProgram->use(false);
 
 	frustum->updateProjection(fovy, aspect, nears, fars);
 }

@@ -194,7 +194,7 @@ void Voxel::Game::initUI()
 {
 	// init fonts
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
-	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
+	FontManager::getInstance().addFont("Pixel.ttf", 40, 2);
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 
 	initLoadingScreen();
@@ -216,7 +216,7 @@ void Voxel::Game::initLoadingScreen()
 	loadingCanvas->print();
 
 	// Add bg
-	auto bg = UI::Image::createWithSpriteSheet("bg", "UISpriteSheet", "1x1.png", glm::vec2(0));
+	auto bg = UI::Image::createWithSpriteSheet("bg", "UISpriteSheet", "1x1_green.png", glm::vec2(0));
 	bg->setScale(resolution);
 
 	loadingCanvas->addNode(bg);
@@ -226,6 +226,12 @@ void Voxel::Game::initLoadingScreen()
 	loadingLabel->setParentPivot(glm::vec2(0.5f, -0.5f));
 
 	loadingCanvas->addNode(loadingLabel);
+
+	//auto timeLabel = UI::Text::create("timeLabel", "XX:XX", glm::vec2(0), glm::vec4(1.0f), 1, UI::Text::ALIGN::LEFT, 10);
+	
+	//loadingCanvas->addNode(timeLabel);
+
+	loadingCanvas->temp = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(0), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
 
 	loadingCanvas->print();
 
@@ -276,23 +282,29 @@ void Voxel::Game::initDefaultCanvas()
 
 	defaultCanvas->addNode(crossHairImage, ZOrder(UI_Z_ORDER::CROSS_HAIR));
 
-	/*
+	//auto timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, 10);
+	auto timeLabel = UI::Text2::createWithOutline("timeLabel", calendar->getTimeInStr(false), glm::vec2(0), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text2::ALIGN::LEFT, 10);
+	//timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+	//timeLabel->setParentPivot(glm::vec2(0.5f, 0.5f));
+
+	defaultCanvas->addNode(timeLabel, ZOrder(UI_Z_ORDER::TIME));
+
 	// node order debug
-	auto t0 = UI::Image::createWithSpriteSheet("t0", "UISpriteSheet", "debug_square_0.png", glm::vec2(0), glm::vec3(1, 0, 0));
+	auto t0 = UI::Image::createWithSpriteSheet("t0", "UISpriteSheet", "debug_square_0.png", glm::vec2(-200.0f, 0.0f), glm::vec3(1, 0, 0));
 
-	auto t1 = UI::Image::createWithSpriteSheet("t1", "UISpriteSheet", "debug_square_0.png", glm::vec2(-40.0f, -40.0f), glm::vec3(0, 1, 0));
-	auto t2 = UI::Image::createWithSpriteSheet("t2", "UISpriteSheet", "debug_square_0.png", glm::vec2(40.0f,- 40.0f), glm::vec3(0, 0, 1));
+	auto t1 = UI::Image::createWithSpriteSheet("t1", "UISpriteSheet", "debug_square_0.png", glm::vec2(-240.0f, -40.0f), glm::vec3(0, 1, 0));
+	auto t2 = UI::Image::createWithSpriteSheet("t2", "UISpriteSheet", "debug_square_0.png", glm::vec2(-160.0f,- 40.0f), glm::vec3(0, 0, 1));
 
-	auto t3 = UI::Image::createWithSpriteSheet("t3", "UISpriteSheet", "debug_square_0.png", glm::vec2(-80.0f, -80.0f), glm::vec3(1, 1, 0));
-	auto t4 = UI::Image::createWithSpriteSheet("t4", "UISpriteSheet", "debug_square_0.png", glm::vec2(-50.0f, -80.0f), glm::vec3(0, 1, 1));
-	auto t5 = UI::Image::createWithSpriteSheet("t5", "UISpriteSheet", "debug_square_0.png", glm::vec2(-20.0f, -80.0f), glm::vec3(1, 0, 1));
+	auto t3 = UI::Image::createWithSpriteSheet("t3", "UISpriteSheet", "debug_square_0.png", glm::vec2(-280.0f, -80.0f), glm::vec3(1, 1, 0));
+	auto t4 = UI::Image::createWithSpriteSheet("t4", "UISpriteSheet", "debug_square_0.png", glm::vec2(-250.0f, -80.0f), glm::vec3(0, 1, 1));
+	auto t5 = UI::Image::createWithSpriteSheet("t5", "UISpriteSheet", "debug_square_0.png", glm::vec2(-220.0f, -80.0f), glm::vec3(1, 0, 1));
 	
-	auto t6 = UI::Image::createWithSpriteSheet("t6", "UISpriteSheet", "debug_square_0.png", glm::vec2(70.0f, -80.0f), glm::vec3(1, 0, 0));
+	auto t6 = UI::Image::createWithSpriteSheet("t6", "UISpriteSheet", "debug_square_0.png", glm::vec2(-130.0f, -80.0f), glm::vec3(1, 0, 0));
 
-	auto t7 = UI::Image::createWithSpriteSheet("t7", "UISpriteSheet", "debug_square_0.png", glm::vec2(-90.0f, -120.0f), glm::vec3(0, 0.5f, 1));
-	auto t8 = UI::Image::createWithSpriteSheet("t8", "UISpriteSheet", "debug_square_0.png", glm::vec2(-70.0f, -120.0f), glm::vec3(0.5f, 1, 0.5f));
-	auto t9 = UI::Image::createWithSpriteSheet("t9", "UISpriteSheet", "debug_square_0.png", glm::vec2(-40.0f, -120.0f), glm::vec3(1, 0, 0.5f));
-	auto t10 = UI::Image::createWithSpriteSheet("t10", "UISpriteSheet", "debug_square_0.png", glm::vec2(-10.0f, -120.0f), glm::vec3(0.5f, 0.5f, 1));
+	auto t7 = UI::Image::createWithSpriteSheet("t7", "UISpriteSheet", "debug_square_0.png", glm::vec2(-290.0f, -120.0f), glm::vec3(0, 0.5f, 1));
+	auto t8 = UI::Image::createWithSpriteSheet("t8", "UISpriteSheet", "debug_square_0.png", glm::vec2(-270.0f, -120.0f), glm::vec3(0.5f, 1, 0.5f));
+	auto t9 = UI::Image::createWithSpriteSheet("t9", "UISpriteSheet", "debug_square_0.png", glm::vec2(-240.0f, -120.0f), glm::vec3(1, 0, 0.5f));
+	auto t10 = UI::Image::createWithSpriteSheet("t10", "UISpriteSheet", "debug_square_0.png", glm::vec2(-210.0f, -120.0f), glm::vec3(0.5f, 0.5f, 1));
 
 	t0->addChild(t1, ZOrder(-1));
 	t0->addChild(t2, ZOrder(0));
@@ -309,7 +321,6 @@ void Voxel::Game::initDefaultCanvas()
 	t4->addChild(t10, ZOrder(11));
 
 	defaultCanvas->addNode(t0);
-	*/
 
 	defaultCanvas->updateBatch();
 
@@ -491,7 +502,7 @@ void Game::update(const float delta)
 	{
 		if (chunkWorkManager->isFirstInitDone())
 		{
-			loadingState = LoadingState::FINISHED;
+			//loadingState = LoadingState::FINISHED;
 
 			// get top y at player position
 			auto playerPosition = player->getPosition();
@@ -1266,5 +1277,5 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 	{
 		program->setUniformBool("fogEnabled", false);
 	}
-	program->use(false);
+	//program->use(false);
 }

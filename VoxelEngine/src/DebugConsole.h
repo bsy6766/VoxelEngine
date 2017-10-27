@@ -13,7 +13,7 @@ namespace Voxel
 	namespace UI
 	{
 		class Canvas;
-		class Text;
+		class Text2;
 		class Image;
 	}
 
@@ -34,30 +34,30 @@ namespace Voxel
 		UI::Canvas* debugCanvas;
 
 		//UI::Text* staticLabels;
-		UI::Text* fpsNumber;
-		UI::Text* resolutionNumber;
-		UI::Text* vsyncMode;
+		UI::Text2* fpsNumber;
+		UI::Text2* resolutionNumber;
+		UI::Text2* vsyncMode;
 
-		UI::Text* hardwardInfo;
+		UI::Text2* hardwardInfo;
 
-		UI::Text* mousePosition;
-		UI::Text* cameraPosition;
-		UI::Text* cameraRotation;
+		UI::Text2* mousePosition;
+		UI::Text2* cameraPosition;
+		UI::Text2* cameraRotation;
 
-		UI::Text* playerPosition;
-		UI::Text* playerRotation;
-		UI::Text* playerChunkPosition;
-		UI::Text* playerLookingAt;
+		UI::Text2* playerPosition;
+		UI::Text2* playerRotation;
+		UI::Text2* playerChunkPosition;
+		UI::Text2* playerLookingAt;
 
-		UI::Text* chunkNumbers;
+		UI::Text2* chunkNumbers;
 
-		UI::Text* biome;
-		UI::Text* region;
+		UI::Text2* biome;
+		UI::Text2* region;
 
 		UI::Image* commandInputField;
 		UI::Image* commandHistoryBg;
-		UI::Text* command;
-		UI::Text* commandHistorys;
+		UI::Text2* command;
+		UI::Text2* commandHistorys;
 
 		std::list<std::string> executedCommandHistory;
 		std::string lastCommand;

@@ -102,7 +102,7 @@ namespace Voxel
 			virtual Texture2D* getTexture();
 
 			// Build vertices
-			virtual void buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) = 0;
+			virtual bool buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) = 0;
 
 			// Color
 			void setColor(const glm::vec3& color);
@@ -132,13 +132,22 @@ namespace Voxel
 			// Checks if this object can be rendered
 			virtual bool isRenderable();
 
-			virtual unsigned int getIndicesOffset() = 0;
+			virtual unsigned int getIndicesOffset();
 
 			// Get children in vector. negative z order -> parent -> positive z order
 			void getChildrenInVector(std::vector<UINode*>& nodes, UINode* parent);
 
 			// Print children
 			void printChildren(const int depth);
+		};
+
+		class UIBatchBase
+		{
+		public:
+			UIBatchBase() = default;
+			virtual ~UIBatchBase() = default;
+
+			virtual void render() = 0;
 		};
 
 		/**
@@ -148,7 +157,7 @@ namespace Voxel
 		*	All UI component except Text is batched. 
 		*	Text uses font texture atlas and have high chance to be modified. 
 		*/
-		class UIBatch
+		class UIBatch : public UIBatchBase
 		{
 			friend class Canvas;
 		private:
@@ -173,7 +182,52 @@ namespace Voxel
 			void load(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::vector<float>& colors, const std::vector<float>& uvs);
 
 			// Render batch.
-			void render();
+			void render() override;
+		};
+
+		/**
+		*	@class UIDynTextBatch
+		*	@brief Batches all characters in Text that is created as dynamic.
+		*
+		*	Difference between UIBatch is that this keeps all the opengl objects incase of change of Text.
+		*/
+		class UITextBatch : public UIBatchBase
+		{
+			friend class Canvas;
+		private:
+			// Constructor
+			UITextBatch();
+			// Destructor. Releases batch. Calls OpenGL calls.
+			~UITextBatch();
+
+			bool loaded;
+
+			// Vertex array object
+			GLuint vao;
+			GLuint vbo;
+			GLuint cbo;
+			GLuint uvbo;
+			GLuint ibo;
+
+			int outlineSize;
+			glm::vec4 outlineColor;
+
+			// size if indices
+			unsigned int indicesSize;
+
+			// Texture
+			Texture2D* texture;
+
+			// Program
+			Program* program;
+
+			// load
+			void load(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::vector<float>& colors, const std::vector<float>& uvs, const unsigned int maxTextLength);
+			// update
+			void update(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::vector<float>& colors, const std::vector<float>& uvs);
+
+			// Render batch.
+			void render() override;
 		};
 
 		/**
@@ -301,7 +355,7 @@ namespace Voxel
 			*	@param [in] bColors Colors that are batched
 			*	@param [in] bUV UVs Coordinates that are batched
 			*/
-			void buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) override;
+			bool buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) override;
 
 			// Check if this image is renderable, which is always true though.
 			bool isRenderable() override;
@@ -311,6 +365,160 @@ namespace Voxel
 			// get texture
 			Texture2D* getTexture() override;
 		};
+
+		/**
+		*	@class Text
+		*	@brief List of quads where each quad renders each character.
+		*
+		*	Text class builds list of quads one by one, based on font metric.
+		*	It doesn't provide any font related function, such as linespace or size modification.
+		*	Use FontManager to get font and modify values from there.
+		*/
+		class Text : public UINode
+		{
+		public:
+			enum class ALIGN
+			{
+				LEFT = 0,
+				CENTER,
+				RIGHT
+			};
+
+			enum class TYPE
+			{
+				STATIC = 0,
+				DYNAMIC
+			};
+		private:
+			Text();
+
+			bool loaded;
+
+			std::string text;
+
+			Font* font;
+
+			GLuint vao;
+			GLuint vbo;
+			GLuint cbo;
+			GLuint uvbo;
+			GLuint ibo;
+
+			TYPE type;
+
+			glm::vec4 color;
+			glm::vec4 outlineColor;
+
+			unsigned int indicesSize;
+			unsigned int maxTextLength;
+
+			float maxWidth;
+			float totalHeight;
+
+			ALIGN align;
+
+			bool outlined;
+
+			bool init(const std::string& text, const glm::vec2& position, const glm::vec4& color, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			bool initWithOutline(const std::string& text, const glm::vec2& position, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			bool buildMesh(const bool update);
+			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			void clearBuffer();
+			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
+		public:
+			~Text();
+
+			static Text* create(const std::string& text, const glm::vec2& position, const glm::vec4& color, int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+			static Text* createWithOutline(const std::string& text, const glm::vec2& position, const int fontID, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
+
+			void setText(const std::string& text);
+			std::string getText();
+
+			bool isOutlined();
+
+			void setColor(const glm::vec4& color);
+			glm::vec4 getOutlineColor();
+
+			void clear();
+
+			bool buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) override
+			{
+				return true;
+			}
+
+			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
+		};
+
+		/**
+		*	@class Text
+		*	@brief List of quads where each quad renders each character.
+		*
+		*	Text class builds list of quads one by one, based on font metric.
+		*	It doesn't provide any font related function, such as linespace or size modification.
+		*	Use FontManager to get font and modify values from there.
+		*/
+		class Text2 : public UINode
+		{
+		public:
+			enum class ALIGN
+			{
+				LEFT = 0,
+				CENTER,
+				RIGHT
+			};
+		private:
+			Text2(const std::string& name);
+
+			std::string text;
+
+			Font* font;
+						
+			glm::vec3 outlineColor;
+
+			unsigned int maxTextLength;
+			
+			ALIGN align;
+
+			bool init(const std::string& text, const glm::vec2& position, const glm::vec4& color, ALIGN align = ALIGN::LEFT, const int maxLength = 0);
+			bool initWithOutline(const std::string& text, const glm::vec2& position, const glm::vec4& color, const glm::vec3& outlineColor, ALIGN align = ALIGN::LEFT, const int maxLength = 0);
+			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
+		public:
+			~Text2();
+
+			static Text2* create(const std::string& name, const std::string& text, const glm::vec2& position, const glm::vec4& color, int fontID, ALIGN align = ALIGN::LEFT, const int maxLength = 0);
+			static Text2* createWithOutline(const std::string& name, const std::string& text, const glm::vec2& position, const int fontID, const glm::vec4& color, const glm::vec3& outlineColor, ALIGN align = ALIGN::LEFT, const int maxLength = 0);
+
+			void setText(const std::string& text);
+			std::string getText();
+
+			bool isOutlined();
+
+			void setColor(const glm::vec4& color);
+			glm::vec4 getOutlineColor();
+
+			unsigned int getMaxTextLength();
+
+			void clear();
+
+			// Check if this image is renderable, which is always true though.
+			bool isRenderable() override;
+
+			int getOutlineSize();
+
+			// get Texture
+			Texture2D* getTexture() override;
+
+			/**
+			*	Build vertices for image (quad)
+			*	@param [in] bVertices Vertices that are batched
+			*	@param [in] bIndices Indices that are batched
+			*	@param [in] bColors Colors that are batched
+			*	@param [in] bUV UVs Coordinates that are batched
+			*/
+			bool buildVertices(std::vector<float>& bVertices, std::vector<unsigned int>& bIndices, std::vector<float>& bColors, std::vector<float>& bUVs, const unsigned int indexStart, const glm::mat4& parentMat) override;
+		};
+
 
 		/**
 		*	@class Canvas
@@ -362,7 +570,7 @@ namespace Voxel
 			std::map<ZOrder, std::unique_ptr<UINode>, ZOrderComp> uiNodes;
 
 			// Batches
-			std::vector<UIBatch*> batches;
+			std::vector<UIBatchBase*> batches;
 		public:
 			// Destructor. Releases all UIs.
 			~Canvas();
@@ -381,6 +589,8 @@ namespace Voxel
 			bool addNode(UINode* node, ZOrder zOrder);
 
 			//glm::vec2 getPivotCanvasPos(PIVOT pivot);
+
+			UI::Text* temp = nullptr;
 
 			/**
 			*	get the size of canvas
