@@ -66,6 +66,7 @@ namespace Voxel
 
 			// add child
 			bool addChild(UINode* child);
+			bool addChild(UINode* child, int zOrder);
 			bool addChild(UINode* child, ZOrder& zOrder);
 			
 			// Scale
@@ -109,7 +110,7 @@ namespace Voxel
 			//virtual glm::vec2 getCanvasPivot();
 
 			// Print children
-			void printChildren();
+			void printChildren(const int depth);
 		};
 
 		/**
@@ -230,6 +231,7 @@ namespace Voxel
 
 			// Add node
 			bool addNode(UINode* node);
+			bool addNode(UINode* node, int zOrder);
 			bool addNode(UINode* node, ZOrder zOrder);
 			/*
 			// add image

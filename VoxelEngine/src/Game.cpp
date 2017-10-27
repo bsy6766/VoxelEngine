@@ -248,10 +248,11 @@ void Voxel::Game::initLoadingScreen()
 
 	loadingCanvas = UI::Canvas::create(resolution, glm::vec2(0));
 
-	/*
 	loadingCanvas->print();
 
-	loadingCanvas->addNode(new UI::UINode("test"));
+	/*
+	auto testNode = new UI::UINode("test");
+	loadingCanvas->addNode(testNode);
 	loadingCanvas->addNode(new UI::UINode("test"));
 	loadingCanvas->addNode(new UI::UINode("test"));
 	loadingCanvas->addNode(new UI::UINode("test"));
@@ -268,6 +269,16 @@ void Voxel::Game::initLoadingScreen()
 
 	loadingCanvas->addNode(new UI::UINode("test"));
 	loadingCanvas->addNode(new UI::UINode("test"));
+
+	loadingCanvas->print();
+
+	auto testChildNode = new UI::UINode("testChild");
+	testNode->addChild(testChildNode);
+	testNode->addChild(new UI::UINode("testChild"));
+	testNode->addChild(new UI::UINode("testChild"), ZOrder(1));
+	testNode->addChild(new UI::UINode("testChild"));
+
+	testChildNode->addChild(new UI::UINode("testChildChild"));
 
 	loadingCanvas->print();
 	*/

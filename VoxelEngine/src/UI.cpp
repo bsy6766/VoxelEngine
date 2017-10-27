@@ -144,6 +144,11 @@ bool Voxel::UI::UINode::addChild(UINode * child)
 	return true;
 }
 
+bool Voxel::UI::UINode::addChild(UINode * child, int zOrder)
+{
+	return addChild(child, ZOrder(zOrder));
+}
+
 bool Voxel::UI::UINode::addChild(UINode * child, ZOrder& zOrder)
 {
 	if (child == nullptr) return false;
@@ -258,12 +263,19 @@ bool Voxel::UI::UINode::hasChildren()
 	return !children.empty();
 }
 
-void Voxel::UI::UINode::printChildren()
+void Voxel::UI::UINode::printChildren(const int depth)
 {
-	std::cout << "UI Node (" << name << ")'s children...";
+	std::string str = "";
+
+	for (int i = 0; i < depth; i++)
+	{
+		str += "\t";
+	}
+
 	for (auto& e : children)
 	{
-		e.second->printChildren();
+		std::cout << str << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
+		e.second->printChildren(depth + 1);
 	}
 }
 
@@ -409,6 +421,11 @@ bool Voxel::UI::Canvas::addNode(UINode * node)
 	return true;
 }
 
+bool Voxel::UI::Canvas::addNode(UINode * node, int zOrder)
+{
+	return addNode(node, ZOrder(zOrder));
+}
+
 bool Voxel::UI::Canvas::addNode(UINode * node, ZOrder zOrder)
 {
 	if (node == nullptr) return false;
@@ -430,17 +447,17 @@ bool Voxel::UI::Canvas::addNode(UINode * node, ZOrder zOrder)
 void Voxel::UI::Canvas::print()
 {
 	std::cout << "[Canvas] Canvas info...\n";
-	std::cout << "\tSize (" << size.x << ", " << size.y << ")\n";
-	std::cout << "\tPos  (" << position.x << ", " << position.y << ")\n";
+	std::cout << "Size (" << size.x << ", " << size.y << ")\n";
+	std::cout << "Pos  (" << position.x << ", " << position.y << ")\n";
 
-	std::cout << "\tUIs\n";
+	std::cout << "UIs\n";
 
 	for (auto& e : uiNodes)
 	{
 		std::cout << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
 		if (e.second->hasChildren())
 		{
-			e.second->printChildren();
+			e.second->printChildren(1);
 		}
 	}
 
