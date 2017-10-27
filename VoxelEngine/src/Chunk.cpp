@@ -151,8 +151,6 @@ bool Voxel::Chunk::generate()
 	// Flower noise. Flowers are spawned based on this noise. Spawns flower if value is higher than specific value. If region has multiple type of flower, 
 	std::vector<std::vector<float>> flowerMap;
 
-
-
 	for (auto chunkSection : chunkSections)
 	{
 		if (chunkSection != nullptr)

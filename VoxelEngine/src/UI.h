@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
+#include <ZOrder.h>
+#include <memory>
 
 namespace Voxel
 {
@@ -243,6 +245,16 @@ namespace Voxel
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};
 
+		class Slider
+		{
+
+		};
+
+		class Button
+		{
+
+		};
+
 		/**
 		*	@class Canvas
 		*	@brief A rectangular shape of area that defines screen space for UI.
@@ -277,6 +289,7 @@ namespace Voxel
 			// Each ui components
 			std::unordered_map<std::string, Image*> images;
 			std::unordered_map<std::string, Text*> texts;
+			std::unordered_map<ZOrder, std::unique_ptr<UINode>, ZOrderComp, ZOrderComp> uiNodes;
 		public:
 			~Canvas();
 
