@@ -182,3 +182,14 @@ void Geometry::AABB::print()
 }
 
 
+
+
+Voxel::Geometry::Rect::Rect()
+	: center(0)
+	, size(0)
+{}
+
+Voxel::Geometry::Rect::Rect(const glm::vec2 & center, const glm::vec2 & size)
+	: center(center)
+	, size(size)
+{}

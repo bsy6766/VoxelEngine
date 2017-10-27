@@ -101,6 +101,21 @@ namespace Voxel
 			*/
 			void print();
 		};
+
+		/**
+		*	@class Rect
+		*	@brief Simple rectangle in XY space.
+		*/
+		class Rect
+		{
+		public:
+			Rect();
+			Rect(const glm::vec2& center, const glm::vec2& size);
+			~Rect() = default;
+
+			glm::vec2 center;
+			glm::vec2 size;
+		};
 	}
 }
 

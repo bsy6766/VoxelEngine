@@ -15,6 +15,7 @@
 
 using namespace Voxel;
 
+/*
 DebugConsole::DebugConsole()
 	: openingConsole(false)
 	, debugCanvas(nullptr)
@@ -100,14 +101,12 @@ void Voxel::DebugConsole::init()
 	glm::vec4 outlineColor = glm::vec4(0, 0, 0, 1.0f);
 	const int fontID = 2;
 
-	/*
-	staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:\n\nBiome:\n\nRegion:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
-	staticLabels->setVisibility(false);
-	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
-	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	//staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:\n\nBiome:\n\nRegion:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
+	//staticLabels->setVisibility(false);
+	//staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
+	//staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 
-	debugCanvas->addText("staticLabels", staticLabels, 0);
-	*/
+	//debugCanvas->addText("staticLabels", staticLabels, 0);
 
 	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
 	fpsNumber = UI::Text::createWithOutline("fps: 00000", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
@@ -1047,3 +1046,4 @@ void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 {
 	region->setText("region: " + std::to_string(regionID));
 }
+*/

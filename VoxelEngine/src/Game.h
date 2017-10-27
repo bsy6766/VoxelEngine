@@ -117,6 +117,7 @@ namespace Voxel
 
 		// Init UI 
 		void initUI();
+		void initLoadingScreen();
 		void initSkyBox(const glm::vec4& skyColor, Program* program);
 
 		// Update inputs
