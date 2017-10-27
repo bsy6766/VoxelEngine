@@ -134,6 +134,9 @@ namespace Voxel
 
 			virtual unsigned int getIndicesOffset() = 0;
 
+			// Get children in vector. negative z order -> parent -> positive z order
+			void getChildrenInVector(std::vector<UINode*>& nodes, UINode* parent);
+
 			// Print children
 			void printChildren(const int depth);
 		};

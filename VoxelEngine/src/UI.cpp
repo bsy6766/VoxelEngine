@@ -12,6 +12,7 @@
 #include <SpriteSheet.h>
 #include <Application.h>
 #include <glm/gtx/transform.hpp>
+#include <Utility.h>
 
 using namespace Voxel::UI;
 
@@ -261,6 +262,56 @@ bool Voxel::UI::UINode::isRenderable()
 	return false;
 }
 
+void Voxel::UI::UINode::getChildrenInVector(std::vector<UINode*>& nodes, UINode * parent)
+{
+	if (children.empty())
+	{
+		return;
+	}
+	else
+	{
+		std::vector<UINode*> negativesORder, positiveOrder;
+
+		for (auto& e : children)
+		{
+			if ((e.first).globalZOrder < 0)
+			{
+				if ((e.second)->hasChildren())
+				{
+					(e.second)->getChildrenInVector(negativesORder, (e.second).get());
+				}
+				else
+				{
+					negativesORder.push_back((e.second).get());
+				}
+			}
+			else
+			{
+				if ((e.second)->hasChildren())
+				{
+					(e.second)->getChildrenInVector(positiveOrder, (e.second).get());
+				}
+				else
+				{
+					positiveOrder.push_back((e.second).get());
+				}
+			}
+		}
+
+		if (!negativesORder.empty())
+		{
+			nodes.insert(nodes.end(), negativesORder.begin(), negativesORder.end());
+		}
+
+		nodes.push_back(parent);
+
+		if (!positiveOrder.empty())
+		{
+			nodes.insert(nodes.end(), positiveOrder.begin(), positiveOrder.end());
+		}
+	}
+}
+
 void Voxel::UI::UINode::printChildren(const int depth)
 {
 	std::string str = "";
@@ -352,8 +403,6 @@ void Voxel::UI::UIBatch::render()
 	
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
-
-	imageShader->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
@@ -751,9 +800,7 @@ void Voxel::UI::Cursor::render()
 
 			texture->activate(GL_TEXTURE0);
 			texture->bind();
-
-			program->setUniformMat4("modelMat", uiMat);
-
+			
 			glBindVertexArray(vao);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
@@ -956,6 +1003,8 @@ void Voxel::UI::Canvas::updateBatch()
 {
 	if (needToUpdateBatch)
 	{
+		auto start = Utility::Time::now();
+
 		for (auto batch : batches)
 		{
 			delete batch;
@@ -976,12 +1025,31 @@ void Voxel::UI::Canvas::updateBatch()
 
 		unsigned int indexCounter = 0;
 
+		std::vector<UINode*> nodes;
+
 		for (auto& e : uiNodes)
 		{
 			// skip Text
 			if ((e.second)->isRenderable())
 			{
-				auto texture = (e.second)->getTexture();
+				if ((e.second)->hasChildren())
+				{
+					(e.second)->getChildrenInVector(nodes, (e.second).get());
+				}
+				else
+				{
+					nodes.push_back((e.second).get());
+				}
+			}
+		}
+
+
+		for (auto node : nodes)
+		{
+			// skip Text
+			if (node->isRenderable())
+			{
+				auto texture = node->getTexture();
 
 				if (texture)
 				{
@@ -991,32 +1059,32 @@ void Voxel::UI::Canvas::updateBatch()
 						curBatch->texture = texture;
 
 						// batch it
-						auto parentPivotMat = (e.second)->getParentPivot();
+						auto parentPivotMat = node->getParentPivot();
 						parentPivotMat.x *= size.x;
 						parentPivotMat.y *= size.y;
 						glm::mat4 parentMat = glm::mat4(1.0f);
 						parentMat = glm::translate(parentMat, glm::vec3(position, 0.0f));
 						parentMat = glm::translate(parentMat, glm::vec3(parentPivotMat, 0.0f));
 
-						(e.second)->buildVertices(vertices, indices, colors, uvs, indexCounter, parentMat);
+						node->buildVertices(vertices, indices, colors, uvs, indexCounter, parentMat);
 
-						indexCounter += (e.second)->getIndicesOffset();
+						indexCounter += node->getIndicesOffset();
 					}
 					else
 					{
 						if (curTextureID == texture->getID())
 						{
 							// batch it
-							auto parentPivotMat = (e.second)->getParentPivot();
+							auto parentPivotMat = node->getParentPivot();
 							parentPivotMat.x *= size.x;
 							parentPivotMat.y *= size.y;
 							glm::mat4 parentMat = glm::mat4(1.0f);
 							parentMat = glm::translate(parentMat, glm::vec3(position, 0.0f));
 							parentMat = glm::translate(parentMat, glm::vec3(parentPivotMat, 0.0f));
 
-							(e.second)->buildVertices(vertices, indices, colors, uvs, indexCounter, parentMat);
+							node->buildVertices(vertices, indices, colors, uvs, indexCounter, parentMat);
 
-							indexCounter += (e.second)->getIndicesOffset();
+							indexCounter += node->getIndicesOffset();
 						}
 						else
 						{
@@ -1055,7 +1123,9 @@ void Voxel::UI::Canvas::updateBatch()
 			batches.pop_back();
 		}
 
-		std::cout << "[Canvas] Total batch: " << batches.size() << "\n";
+		auto end = Utility::Time::now();
+
+		std::cout << "[Canvas] Total batch: " << batches.size() << ", UI count: " << nodes.size() << ", t: " << Utility::Time::toMicroSecondString(start, end) << "\n";
 
 		needToUpdateBatch = false;
 	}

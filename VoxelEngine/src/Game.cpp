@@ -275,7 +275,45 @@ void Voxel::Game::initDefaultCanvas()
 	auto crossHairImage = UI::Image::createWithSpriteSheet("crossHair", "UISpriteSheet", "cross_hair.png", glm::vec2(0));
 
 	defaultCanvas->addNode(crossHairImage, ZOrder(UI_Z_ORDER::CROSS_HAIR));
+
+	/*
+	// node order debug
+	auto t0 = UI::Image::createWithSpriteSheet("t0", "UISpriteSheet", "debug_square_0.png", glm::vec2(0), glm::vec3(1, 0, 0));
+
+	auto t1 = UI::Image::createWithSpriteSheet("t1", "UISpriteSheet", "debug_square_0.png", glm::vec2(-40.0f, -40.0f), glm::vec3(0, 1, 0));
+	auto t2 = UI::Image::createWithSpriteSheet("t2", "UISpriteSheet", "debug_square_0.png", glm::vec2(40.0f,- 40.0f), glm::vec3(0, 0, 1));
+
+	auto t3 = UI::Image::createWithSpriteSheet("t3", "UISpriteSheet", "debug_square_0.png", glm::vec2(-80.0f, -80.0f), glm::vec3(1, 1, 0));
+	auto t4 = UI::Image::createWithSpriteSheet("t4", "UISpriteSheet", "debug_square_0.png", glm::vec2(-50.0f, -80.0f), glm::vec3(0, 1, 1));
+	auto t5 = UI::Image::createWithSpriteSheet("t5", "UISpriteSheet", "debug_square_0.png", glm::vec2(-20.0f, -80.0f), glm::vec3(1, 0, 1));
+	
+	auto t6 = UI::Image::createWithSpriteSheet("t6", "UISpriteSheet", "debug_square_0.png", glm::vec2(70.0f, -80.0f), glm::vec3(1, 0, 0));
+
+	auto t7 = UI::Image::createWithSpriteSheet("t7", "UISpriteSheet", "debug_square_0.png", glm::vec2(-90.0f, -120.0f), glm::vec3(0, 0.5f, 1));
+	auto t8 = UI::Image::createWithSpriteSheet("t8", "UISpriteSheet", "debug_square_0.png", glm::vec2(-70.0f, -120.0f), glm::vec3(0.5f, 1, 0.5f));
+	auto t9 = UI::Image::createWithSpriteSheet("t9", "UISpriteSheet", "debug_square_0.png", glm::vec2(-40.0f, -120.0f), glm::vec3(1, 0, 0.5f));
+	auto t10 = UI::Image::createWithSpriteSheet("t10", "UISpriteSheet", "debug_square_0.png", glm::vec2(-10.0f, -120.0f), glm::vec3(0.5f, 0.5f, 1));
+
+	t0->addChild(t1, ZOrder(-1));
+	t0->addChild(t2, ZOrder(0));
+
+	t1->addChild(t3, ZOrder(-2));
+	t1->addChild(t4, ZOrder(-1));
+	t1->addChild(t5, ZOrder(5));
+
+	t2->addChild(t6, ZOrder(1));
+
+	t4->addChild(t7, ZOrder(-4));
+	t4->addChild(t8, ZOrder(-2));
+	t4->addChild(t9, ZOrder(10));
+	t4->addChild(t10, ZOrder(11));
+
+	defaultCanvas->addNode(t0);
+	*/
+
 	defaultCanvas->updateBatch();
+
+
 
 	/*
 	// Add time label
