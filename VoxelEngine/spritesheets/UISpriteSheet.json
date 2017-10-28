@@ -2,7 +2,16 @@
 
 {
 	"filename": "1x1.png",
-	"frame": {"x":346,"y":1,"w":1,"h":1},
+	"frame": {"x":510,"y":1,"w":1,"h":1},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
+	"sourceSize": {"w":1,"h":1},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "1x1_green.png",
+	"frame": {"x":510,"y":4,"w":1,"h":1},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
@@ -11,7 +20,7 @@
 },
 {
 	"filename": "2x2.png",
-	"frame": {"x":342,"y":1,"w":2,"h":2},
+	"frame": {"x":506,"y":1,"w":2,"h":2},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":2},
@@ -20,11 +29,38 @@
 },
 {
 	"filename": "cross_hair.png",
-	"frame": {"x":308,"y":1,"w":32,"h":32},
+	"frame": {"x":1,"y":43,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_square_0.png",
+	"frame": {"x":308,"y":1,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_square_1.png",
+	"frame": {"x":374,"y":1,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_square_2.png",
+	"frame": {"x":440,"y":1,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64},
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
@@ -43,6 +79,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:6676edeb25161883a5065a8ccd3519f8:65c2a1ea55b0b4eda22a2a9704ca7e17:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:7b31f2777e601d1c5e556ed9ee1a6d02:695e501a627b3313a4df9f718974d8a7:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }
