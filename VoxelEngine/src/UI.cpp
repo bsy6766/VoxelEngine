@@ -1912,7 +1912,7 @@ void Voxel::UI::Canvas::render()
 {
 	for (auto e : batches)
 	{
-		e->render();
+		//e->render();
 	}
 
 	if (temp)
@@ -1941,8 +1941,11 @@ void Voxel::UI::Canvas::render()
 		canvasPivot.x *= size.x;
 		canvasPivot.y *= size.y;
 		glm::mat4 canvasMat = glm::mat4(1.0f);
+		/*
 		canvasMat = glm::translate(canvasMat, glm::vec3(position, 0.0f));
 		canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
+		*/
+
 		temp->render(uiMat, canvasMat, textShader);
 	}
 }

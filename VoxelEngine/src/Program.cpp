@@ -502,7 +502,7 @@ void Voxel::Program::use(const bool use)
 	else
 	{
 		glUseProgram(0);
-		lastProgramObject = 0;
+		//lastProgramObject = 0;
 	}
 }
 

@@ -21,7 +21,7 @@ void main()
     {
     	if(textureColor.r > 0.5)
     	{
-			fragColor = vertColor;
+			fragColor = vec4(vertColor.rgb, 1);
     	}
     	else
     	{

@@ -194,16 +194,16 @@ void Voxel::Game::initUI()
 {
 	// init fonts
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
-	FontManager::getInstance().addFont("Pixel.ttf", 40, 2);
+	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 
 	initLoadingScreen();
 
-	initDefaultCanvas();
+	//initDefaultCanvas();
 
-	initDebugConsole();
+	//initDebugConsole();
 
-	initCursor();
+	//initCursor();
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -216,16 +216,16 @@ void Voxel::Game::initLoadingScreen()
 	loadingCanvas->print();
 
 	// Add bg
-	auto bg = UI::Image::createWithSpriteSheet("bg", "UISpriteSheet", "1x1_green.png", glm::vec2(0));
-	bg->setScale(resolution);
+	//auto bg = UI::Image::createWithSpriteSheet("bg", "UISpriteSheet", "1x1_green.png", glm::vec2(0));
+	//bg->setScale(resolution);
 
-	loadingCanvas->addNode(bg);
+	//loadingCanvas->addNode(bg);
 
-	auto loadingLabel = UI::Image::createWithSpriteSheet("loadingLabel", "UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f));
-	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
-	loadingLabel->setParentPivot(glm::vec2(0.5f, -0.5f));
+	//auto loadingLabel = UI::Image::createWithSpriteSheet("loadingLabel", "UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f));
+	//loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
+	//loadingLabel->setParentPivot(glm::vec2(0.5f, -0.5f));
 
-	loadingCanvas->addNode(loadingLabel);
+	//loadingCanvas->addNode(loadingLabel);
 
 	//auto timeLabel = UI::Text::create("timeLabel", "XX:XX", glm::vec2(0), glm::vec4(1.0f), 1, UI::Text::ALIGN::LEFT, 10);
 	
@@ -235,7 +235,7 @@ void Voxel::Game::initLoadingScreen()
 
 	loadingCanvas->print();
 
-	loadingCanvas->updateBatch();
+	//loadingCanvas->updateBatch();
 
 	/*
 	auto testNode = new UI::UINode("test");
