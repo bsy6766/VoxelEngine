@@ -14,6 +14,7 @@
 #include <Program.h>
 #include <ChunkUtil.h>
 #include <ChunkMesh.h>
+#include <Application.h>
 
 using namespace Voxel;
 
@@ -2001,6 +2002,19 @@ void Voxel::ChunkMap::renderChunkBorder(Program * program)
 		program->setUniformMat4("modelMat", chunkBorderModelMat);
 
 		glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
+
+		// For debug
+		auto glView = Application::getInstance().getGLView();
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(chunkBorderLineSize / 2);
+		}
 	}
 }
 
@@ -2014,6 +2028,19 @@ void Voxel::ChunkMap::renderBlockOutline(Program * lineProgram, const glm::vec3&
 		lineProgram->setUniformMat4("modelMat", cubeMat);
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+		// For debug
+		auto glView = Application::getInstance().getGLView();
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(12);
+		}
 	}
 }
 

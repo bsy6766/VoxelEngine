@@ -7,6 +7,7 @@
 #include <ProgramManager.h>
 #include <Program.h>
 #include <glm/gtx/transform.hpp>
+#include <Application.h>
 
 using namespace Voxel;
 
@@ -361,5 +362,18 @@ void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
 
 		glBindVertexArray(vao);
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+		// For debug
+		auto glView = Application::getInstance().getGLView();
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(12);
+		}
 	}
 }

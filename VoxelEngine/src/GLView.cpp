@@ -29,6 +29,10 @@ GLView::GLView()
 	, windowTitle("")
 	, clearColor(0)
 	, vsync(false)
+	, countDrawCalls(true)
+	, totalDrawCalls(0)
+	, countVertices(true)
+	, totalVertices(0)
 {
 }
 
@@ -79,7 +83,8 @@ void Voxel::GLView::initGLFW()
 }
 
 void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
-{//set to OpenGL 4.3
+{
+	//set to OpenGL 4.3
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -263,7 +268,7 @@ bool Voxel::GLView::isRunning()
 	return !glfwWindowShouldClose(window);
 }
 
-void Voxel::GLView::clearBuffer()
+void Voxel::GLView::clearBufferBit()
 {
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -277,6 +282,9 @@ void Voxel::GLView::render()
 	glfwPollEvents();
 
 	glUseProgram(0);
+
+	totalDrawCalls = 0;
+	totalVertices = 0;
 }
 
 void Voxel::GLView::updateTime()
@@ -514,6 +522,39 @@ void Voxel::GLView::setVsync(const bool vsync)
 bool Voxel::GLView::isWindowDecorated()
 {
 	return glfwGetWindowAttrib(window, GLFW_DECORATED);
+}
+
+bool Voxel::GLView::doesCountDrawCalls()
+{
+	return countDrawCalls;
+}
+
+bool Voxel::GLView::doesCountVerticesSize()
+{
+	return countVertices;
+}
+
+void Voxel::GLView::incrementDrawCall()
+{
+	totalDrawCalls++;
+}
+
+int Voxel::GLView::getTotalDrawCalls()
+{
+	return totalDrawCalls;
+}
+
+int Voxel::GLView::getTotalVerticesSize()
+{
+	return totalVertices;
+}
+
+void Voxel::GLView::addVerticesSize(const int size)
+{
+	if (size > 0)
+	{
+		totalVertices += size;
+	}
 }
 
 glm::ivec2 Voxel::GLView::getScreenSize()

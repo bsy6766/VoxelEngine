@@ -167,6 +167,19 @@ void ChunkMesh::render()
 {
 	assert(indicesSize > 0);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+
+	// For debug
+	auto glView = Application::getInstance().getGLView();
+
+	if (glView->doesCountDrawCalls())
+	{
+		glView->incrementDrawCall();
+	}
+
+	if (glView->doesCountVerticesSize())
+	{
+		glView->addVerticesSize(indicesSize);
+	}
 }
 
 void ChunkMesh::unbind()

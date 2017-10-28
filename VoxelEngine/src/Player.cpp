@@ -2,6 +2,7 @@
 #include <Camera.h>
 #include <Utility.h>
 #include <ProgramManager.h>
+#include <Application.h>
 #include <Program.h>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -684,12 +685,25 @@ void Voxel::Player::updateMovement(const float delta)
 
 void Voxel::Player::renderDebugLines(Program* lineProgram)
 {
+	// For debug
+	auto glView = Application::getInstance().getGLView();
+
 	if (yLineVao)
 	{
 		glBindVertexArray(yLineVao);
 
 		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
 		glDrawArrays(GL_LINES, 0, 2);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(1);
+		}
 	}
 
 	if (rayVao)
@@ -704,6 +718,16 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 
 		lineProgram->setUniformMat4("modelMat", rayMat);
 		glDrawArrays(GL_LINES, 0, 2);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(1);
+		}
 	}
 
 	if (boundingBoxVao)
@@ -711,6 +735,16 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 		glBindVertexArray(boundingBoxVao);
 		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
 		glDrawArrays(GL_LINES, 0, 24);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(12);
+		}
 	}
 }
 

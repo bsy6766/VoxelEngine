@@ -176,6 +176,12 @@ void Voxel::DebugConsole::init()
 	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	region->setVisibility(false);
 	debugCanvas->addText("region", region, 0);
+
+	drawCallAndVertCount = UI::Text::createWithOutline("Draw calls: ----, vertices: -------", glm::vec2(5.0f, -257.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	drawCallAndVertCount->setPivot(glm::vec2(-0.5f, 0.5f));
+	drawCallAndVertCount->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	drawCallAndVertCount->setVisibility(false);
+	debugCanvas->addText("drawCallAndVertCount", drawCallAndVertCount, 0);
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -933,6 +939,7 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	chunkNumbers->setVisibility(debugOutputVisibility);
 	biome->setVisibility(debugOutputVisibility);
 	region->setVisibility(debugOutputVisibility);
+	drawCallAndVertCount->setVisibility(debugOutputVisibility);
 }
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
@@ -1046,4 +1053,14 @@ void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::
 void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 {
 	region->setText("region: " + std::to_string(regionID));
+}
+
+void Voxel::DebugConsole::updateDrawCallsAndVerticesSize()
+{
+	auto glView = Application::getInstance().getGLView();
+
+	if (glView->doesCountDrawCalls() || glView->doesCountVerticesSize())
+	{
+		drawCallAndVertCount->setText("Draw calls: " + std::to_string(glView->getTotalDrawCalls()) + ", Vertices: " + std::to_string(glView->getTotalVerticesSize()));
+	}
 }

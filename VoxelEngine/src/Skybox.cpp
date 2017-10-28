@@ -6,6 +6,7 @@
 #include <ChunkUtil.h>
 #include <Utility.h>
 #include <iostream>
+#include <Application.h>
 
 using namespace Voxel;
 
@@ -131,6 +132,19 @@ void Voxel::Skybox::render()
 {
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+
+	// For debug
+	auto glView = Application::getInstance().getGLView();
+
+	if (glView->doesCountDrawCalls())
+	{
+		glView->incrementDrawCall();
+	}
+
+	if (glView->doesCountVerticesSize())
+	{
+		glView->addVerticesSize(indicesSize);
+	}
 }
 
 glm::vec4 Voxel::Skybox::getColor()

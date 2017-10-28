@@ -127,7 +127,7 @@ void Application::run()
 	
 	while (glView->isRunning())
 	{
-		glView->clearBuffer();
+		glView->clearBufferBit();
 
 		glView->updateTime();
 		glView->updateFPS();

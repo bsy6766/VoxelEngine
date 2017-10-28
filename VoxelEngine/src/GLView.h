@@ -39,6 +39,14 @@ namespace Voxel
 		// vsync
 		bool vsync;
 
+		// Draw calls
+		bool countDrawCalls;
+		unsigned int totalDrawCalls;
+
+		// total vert
+		bool countVertices;
+		unsigned int totalVertices;
+
 		// GL clear color
 		glm::vec3 clearColor;
 
@@ -56,22 +64,70 @@ namespace Voxel
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
 
+		// Intiialize opengl
 		void init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync); 
 		
+		/**
+		*	Initialize GLFW
+		*/
 		void initGLFW();
+
+		/**
+		*	Initailize GLFW window
+		*/
 		void initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync);
+
+		/**
+		*	Initialize GLEW
+		*/
 		void initGLEW();
+
+		/**
+		*	Enables OpenGL Attributes
+		*/
 		void initOpenGL();
+
+		/**
+		*	Initialize defulat shader programs that are used in game
+		*/
 		void initDefaultShaderProgram();
+
+		/**
+		*	Get CPU name for debugging
+		*/
 		void initCPUName();
 
+		/**
+		*	Check if OpenGL is running. Checks if GLFW window shoudl close or not
+		*	@return True if window should be closed. Else, false
+		*/
 		bool isRunning();
 
-		void clearBuffer();
+		/**
+		*	Clear OpenGL color and depth buffer bits
+		*/
+		void clearBufferBit();
+
+		/**
+		*	Render to screen.	
+		*/
 		void render();
 
+		/**
+		*	Update time. Calculates elapsed time on this frame using GLFW
+		*/
 		void updateTime();
+
+		/**
+		*	Update FPS.
+		*/
 		void updateFPS();
+
+		/**
+		*	Set cursor position.
+		*	@param [in] x X position of cursor
+		*	@param [in] y Y position of cursor
+		*/
 		void updateMousePosition(double& x, double& y);
 	public:
 		void setCursorPos(double x, double y);
@@ -98,6 +154,14 @@ namespace Voxel
 		void setVsync(const bool vsync);
 
 		bool isWindowDecorated();
+
+		bool doesCountDrawCalls();
+		bool doesCountVerticesSize();
+		void incrementDrawCall();
+
+		int getTotalDrawCalls();
+		int getTotalVerticesSize();
+		void addVerticesSize(const int size);
 
 		glm::ivec2 getScreenSize();
 

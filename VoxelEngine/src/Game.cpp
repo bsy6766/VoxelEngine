@@ -1140,6 +1140,8 @@ void Voxel::Game::renderGameWorld(const float delta)
 	debugConsole->render();
 
 	cursor->render();
+
+	debugConsole->updateDrawCallsAndVerticesSize();
 	// --------------------------------------------------------------------------------------
 }
 

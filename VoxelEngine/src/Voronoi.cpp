@@ -5,6 +5,7 @@
 #include <Program.h>
 #include <Color.h>
 #include <Region.h>
+#include <Application.h>
 #include <limits>
 
 using namespace Voxel;
@@ -1761,24 +1762,57 @@ glm::vec2 Voxel::Voronoi::Diagram::retrivePoint(const CellType & cell)
 
 void Voxel::Voronoi::Diagram::render()
 {
+	// For debug
+	auto glView = Application::getInstance().getGLView();
+
 	if (vao)
 	{
 		glBindVertexArray(vao);
 
 		glDrawArrays(GL_LINES, 0, size);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(size / 2);
+		}
 	}
 
 	if (fillVao)
 	{
 		glBindVertexArray(fillVao);
 		glDrawElements(GL_TRIANGLE_FAN, fillSize, GL_UNSIGNED_INT, 0);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(fillSize);
+		}
 	}
 
 	if (borderVao)
 	{
 		glBindVertexArray(borderVao);
 
-		glDrawArrays(GL_LINES, 0, borderVao);
+		glDrawArrays(GL_LINES, 0, borderSize);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(borderSize / 2);
+		}
 	}
 
 	if (posPinVao)
@@ -1786,6 +1820,16 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(posPinVao);
 
 		glDrawArrays(GL_LINES, 0, posPinSize);
+
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(posPinSize / 2);
+		}
 	}
 
 	if (graphLineVao)
@@ -1793,6 +1837,16 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(graphLineVao);
 
 		glDrawArrays(GL_LINES, 0, graphLineSize);
+		
+		if (glView->doesCountDrawCalls())
+		{
+			glView->incrementDrawCall();
+		}
+
+		if (glView->doesCountVerticesSize())
+		{
+			glView->addVerticesSize(graphLineSize / 2);
+		}
 	}
 }
 
