@@ -201,11 +201,6 @@ void Voxel::Game::initUI()
 	initLoadingScreen();
 
 	initDebugConsole();
-
-	auto resolution = Application::getInstance().getGLView()->getScreenSize();
-	testCanvas = NewUI::Canvas::create(resolution, glm::vec2(0));
-
-	testCanvas->temp = NewUI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(0), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), NewUI::Text::ALIGN::LEFT, NewUI::Text::TYPE::DYNAMIC, 10);
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -1145,8 +1140,6 @@ void Voxel::Game::renderGameWorld(const float delta)
 	debugConsole->render();
 
 	cursor->render();
-
-	testCanvas->render();
 	// --------------------------------------------------------------------------------------
 }
 

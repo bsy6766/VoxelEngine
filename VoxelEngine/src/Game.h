@@ -96,7 +96,6 @@ namespace Voxel
 		// UI canvases
 		UI::Canvas* defaultCanvas;
 		UI::Canvas* loadingCanvas;
-		NewUI::Canvas* testCanvas;
 
 		// cursor
 		UI::Cursor* cursor;

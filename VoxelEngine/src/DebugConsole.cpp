@@ -116,7 +116,7 @@ void Voxel::DebugConsole::init()
 	fpsNumber->setVisibility(false);
 	debugCanvas->addText("fpsNumber", fpsNumber, 0);
 
-	resolutionNumber = UI::Text::createWithOutline("resolution: 00000 x 00000", glm::vec2(5.0f, -19.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
+	resolutionNumber = UI::Text::createWithOutline("resolution: " + std::to_string(resolution.x) + " x " + std::to_string(resolution.y), glm::vec2(5.0f, -19.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
 	resolutionNumber->setPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setVisibility(false);
