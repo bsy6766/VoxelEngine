@@ -50,39 +50,56 @@ namespace Voxel
 	class Font
 	{
 	public:
+		// constants
 		const static int MIN_FONT_SIZE;
 		const static std::string DEFAULT_FONT_PATH;
 	private:
 		// Freetype library. Reads library.
 		static FT_Library library;
 
-		// Font attributes
+		// size of font
 		int size;
+
+		// font's space between lines
 		int linespace;
 
 		// Font texture
 		Texture2D* texture;
+
+		// Texture size
 		float texAtlasWidth;
 		float texAtlasHeight;
 
+		// outline size in pixel
 		int outlineSize;
 
 		// Glyph map
 		std::unordered_map<char, Glyph> glyphMap;
 
+		// constructor
 		Font();
 
+		// initialize font
 		bool init(const std::string& fontName, const int fontSize, const int outlineSize);
+
+		// init FreeType
 		void initLibrary();
 	public:
+		// creates font
 		static Font* create(const std::string& fontName, const int fontSize);
+		// creates font with outline
 		static Font* createWithOutline(const std::string& fontName, const int fontSize, const int outlineSize);
+
+		// destructor
 		~Font();
 
+		// Get glyph for specific char
 		Glyph* getCharGlyph(const char c);
 
+		// getters
 		int getLineSpace();
 		int getOutlineSize();
+		Texture2D* getTexture();
 
 		static void closeFreetype();
 

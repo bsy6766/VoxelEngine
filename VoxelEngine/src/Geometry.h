@@ -34,6 +34,17 @@ namespace Voxel
 			float distance;
 		};
 
+		class Rect
+		{
+		public:
+			Rect();
+			Rect(const glm::vec2& center, const glm::vec2& size);
+			~Rect() = default;
+
+			glm::vec2 center;
+			glm::vec2 size;
+		};
+
 		/**
 		*	@class AABB
 		*	@brief Simple Axis Aligned Bounding box

@@ -13,6 +13,8 @@ Geometry::Triangle::Triangle(const glm::vec3 & p1, const glm::vec3 & p2, const g
 }
 
 
+
+
 Geometry::Plane::Plane(const glm::vec3 & normal, const float distance)
 	: normal(normal)
 	, distance(distance)
@@ -24,6 +26,21 @@ Geometry::Plane::Plane(const Triangle& triangle)
 	normal = glm::normalize(glm::cross(triangle.p2 - triangle.p1, triangle.p3 - triangle.p1));
 	distance = glm::dot(normal, triangle.p1);
 }
+
+
+
+Voxel::Geometry::Rect::Rect()
+	: center(0)
+	, size(0)
+{}
+
+Voxel::Geometry::Rect::Rect(const glm::vec2 & center, const glm::vec2 & size)
+	: center(center)
+	, size(size)
+{}
+
+
+
 
 
 Geometry::AABB::AABB()

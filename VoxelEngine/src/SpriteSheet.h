@@ -32,22 +32,31 @@ namespace Voxel
 	class SpriteSheet
 	{
 	private:
+		// Constructor
 		SpriteSheet();
 
+		// sprite sheet texture
 		Texture2D* texture;
 
+		// image entries. Contains each sprite's data
 		std::unordered_map<std::string/*image file name*/, ImageEntry> imageEntryMap;
 
+		// initailize 
 		bool init(const std::string& dataFileName);
 	public:
+		// destructor
 		~SpriteSheet();
 
+		// create sprite sheet
 		static SpriteSheet* create(const std::string& dataFileName);
 
+		// check if sprite sheet has specific image(sprite)
 		bool hasImage(const std::string& imageName);
 		
+		// get specific image entry
 		const ImageEntry* getImageEntry(const std::string& imageName);
 
+		// get texture
 		Texture2D* getTexture();
 	};
 

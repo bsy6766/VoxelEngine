@@ -29,12 +29,23 @@ namespace Voxel
 		class Cursor;
 	}
 
+	namespace NewUI
+	{
+		class Canvas;
+	}
+
 	/**
 	*	@class Game
 	*	@brief A game. Manages everything that is in the game (World, player, input, etc)
 	*/
 	class Game
 	{
+	private:
+		enum class UI_Z_ORDER
+		{
+			CROSS_HAIR = 0,
+			TIME,
+		};
 	public:
 		enum class GameState
 		{
@@ -85,6 +96,7 @@ namespace Voxel
 		// UI canvases
 		UI::Canvas* defaultCanvas;
 		UI::Canvas* loadingCanvas;
+		NewUI::Canvas* testCanvas;
 
 		// cursor
 		UI::Cursor* cursor;
@@ -116,7 +128,11 @@ namespace Voxel
 		void initRandoms();
 
 		// Init UI 
-		void initUI();
+		void initUI(); 
+		void initLoadingScreen();
+		void initDefaultCanvas();
+		void initDebugConsole();
+		void initCursor();
 		void initSkyBox(const glm::vec4& skyColor, Program* program);
 
 		// Update inputs

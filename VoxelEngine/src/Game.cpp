@@ -23,6 +23,7 @@
 #include <SpriteSheet.h>
 
 #include <UI.h>
+#include <NewUI.h>
 #include <FontManager.h>
 
 #include <ProgramManager.h>
@@ -138,16 +139,6 @@ void Voxel::Game::init()
 	// UI & font
 	initUI();
 
-	// Debug. This creates all the debug UI components
-	debugConsole = new DebugConsole();
-	debugConsole->toggleDubugOutputs();
-
-	// for debugging
-	debugConsole->player = player;
-	debugConsole->game = this;
-	debugConsole->chunkMap = chunkMap;
-	debugConsole->world = world;
-
 	TextureManager::getInstance().print();
 
 	//Application::getInstance().getGLView()->setWindowedFullScreen(1);
@@ -202,22 +193,25 @@ void Voxel::Game::initUI()
 {
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
 	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
+
+	initCursor();
+
+	initDefaultCanvas();
+
+	initLoadingScreen();
+
+	initDebugConsole();
+
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
-	defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+	testCanvas = NewUI::Canvas::create(resolution, glm::vec2(0));
 
-	// cursor
-	cursor = UI::Cursor::create();
+	testCanvas->temp = NewUI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(0), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), NewUI::Text::ALIGN::LEFT, NewUI::Text::TYPE::DYNAMIC, 10);
+}
 
-	// Add temporary cross hair
-	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
-	defaultCanvas->addImage("crossHair", crossHairImage, 0);
-
-	// Add time label
-	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
-	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
-	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
-	defaultCanvas->addText("timeLabel", timeLabel, 0);
-
+void Voxel::Game::initLoadingScreen()
+{
+	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+	
 	// loading canvas
 	loadingCanvas = UI::Canvas::create(resolution, glm::vec2(0));
 
@@ -231,6 +225,45 @@ void Voxel::Game::initUI()
 	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
 	loadingLabel->setCanvasPivot(glm::vec2(0.5f, -0.5f));
 	loadingCanvas->addImage("loadingLabel", loadingLabel, 1);
+}
+
+void Voxel::Game::initDefaultCanvas()
+{
+	auto resolution = Application::getInstance().getGLView()->getScreenSize(); 
+	
+	defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+
+	// Add temporary cross hair
+	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
+	defaultCanvas->addImage("crossHair", crossHairImage, 0);
+
+	// Add time label
+	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
+	defaultCanvas->addText("timeLabel", timeLabel, 0);
+
+}
+
+void Voxel::Game::initDebugConsole()
+{
+	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+
+	// Debug. This creates all the debug UI components
+	debugConsole = new DebugConsole();
+	debugConsole->toggleDubugOutputs();
+
+	// for debugging
+	debugConsole->player = player;
+	debugConsole->game = this;
+	debugConsole->chunkMap = chunkMap;
+	debugConsole->world = world;
+}
+
+void Voxel::Game::initCursor()
+{
+	// cursor
+	cursor = UI::Cursor::create();
 }
 
 void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
@@ -1112,6 +1145,8 @@ void Voxel::Game::renderGameWorld(const float delta)
 	debugConsole->render();
 
 	cursor->render();
+
+	testCanvas->render();
 	// --------------------------------------------------------------------------------------
 }
 

@@ -376,8 +376,13 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 	auto w = videoMode->width;
 	auto h = videoMode->height;	
 
+	screenWidth = w;
+	screenHeight = h;
+
+	glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, GLFW_TRUE);
 	glfwSetWindowMonitor(window, monitor, 0, 0, w, h, videoMode->refreshRate);
 	glViewport(0, 0, w, h);
+
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
 }
 
@@ -424,6 +429,9 @@ void Voxel::GLView::setWindowed(int width, int height)
 		ypos += (videoMode->height - height) / 2;
 
 		monitor = nullptr;
+
+		screenWidth = width;
+		screenHeight = height;
 
 		glfwSetWindowMonitor(window, monitor, xpos, ypos, width, height, GLFW_DONT_CARE);
 		glViewport(0, 0, width, height);
@@ -479,7 +487,11 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 	auto w = videoMode->width;
 	auto h = videoMode->height;
 
+	screenWidth = w;
+	screenHeight = h;
+
 	glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+	glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, GLFW_FALSE);
 	glfwSetWindowMonitor(window, nullptr, xpos, ypos, w, h, videoMode->refreshRate);
 	glViewport(0, 0, w, h);
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));

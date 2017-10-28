@@ -3,6 +3,20 @@
 
 namespace Voxel
 {
+	// Foward declaration
+	namespace UI
+	{
+		class UINode;
+		class Canvas;
+	}
+
+	namespace NewUI
+	{
+		class UINode;
+		class Canvas;
+	}
+
+
 	/**
 	*	@class ZOrder
 	*	@brief Used in 2D rendering to sort the order of rendering.
@@ -14,6 +28,10 @@ namespace Voxel
 	class ZOrder
 	{
 		friend struct ZOrderComp;
+		friend class UI::UINode;
+		friend class UI::Canvas;
+		friend class NewUI::UINode;
+		friend class NewUI::Canvas;
 	private:
 		// Global Z order
 		int globalZOrder;
@@ -21,8 +39,15 @@ namespace Voxel
 		int localZOrder;
 		// True if initialized
 		bool initialized;
+
+		// For canvas and uinode
+		ZOrder(const int global, const int local) : globalZOrder(global), localZOrder(local), initialized(true) {}
 	public:
+		// constructor
 		ZOrder() : globalZOrder(0), localZOrder(0), initialized(false) {}
+		// constructor with global
+		ZOrder(const int zOrder) : globalZOrder(zOrder), localZOrder(0), initialized(false) {}
+		// default destructor
 		~ZOrder() = default;
 
 		/**
@@ -63,13 +88,30 @@ namespace Voxel
 		/**
 		*	Sets z order.
 		*	@param [in] global A global z order
-		*	@param [in] local A local z order
 		*/
-		void setZOrder(const int global, const int local)
+		/*
+		void setZOrder(const int global)
 		{
 			this->globalZOrder = global;
-			this->localZOrder = local;
-			this->initialized = true;
+		}
+		*/
+		
+		/**
+		*	Checks if global z order is MAX_INT
+		*	return True if global z order is MAX_INT. Else, false.
+		*/
+		bool isGlobalZOrderMaxInt() const
+		{
+			return this->globalZOrder == (int)std::numeric_limits<int>::max();
+		}
+
+		/**
+		*	Checks if local z order is MAX_INT
+		*	return True if global z order is MAX_INT. Else, false.
+		*/
+		bool isLocalZOrderMaxInt() const
+		{
+			return this->localZOrder == (int)std::numeric_limits<int>::max();
 		}
 	};
 

@@ -292,6 +292,11 @@ int Voxel::Font::getOutlineSize()
 	return outlineSize;
 }
 
+Texture2D * Voxel::Font::getTexture()
+{
+	return texture;
+}
+
 void Voxel::Font::closeFreetype()
 {
 	if(Font::library)

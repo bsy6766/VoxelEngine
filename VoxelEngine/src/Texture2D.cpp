@@ -10,12 +10,12 @@ const std::string Texture2D::DEFAULT_TEXTURE_PATH = "textures/";
 
 Texture2D::Texture2D()
 	: textureObject(0)
-	, textureLocation(0)
+	, textureLocation(-1)
 	, width(0)
 	, height(0)
 	, channel(0)
-{
-}
+	, id(-1)
+{}
 
 Texture2D::~Texture2D()
 {
@@ -81,6 +81,11 @@ void Voxel::Texture2D::setLocationOnProgram(ProgramManager::PROGRAM_NAME program
 	this->textureLocation = ProgramManager::getInstance().getDefaultProgram(programName)->getUniformLocation("tex");
 }
 
+unsigned int Voxel::Texture2D::getID()
+{
+	return id;
+}
+
 void Voxel::Texture2D::activate(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
@@ -89,6 +94,7 @@ void Voxel::Texture2D::activate(GLenum textureUnit)
 void Voxel::Texture2D::bind()
 {
 	glBindTexture(textureTarget, textureObject);
+	assert(textureLocation != -1);
 	glUniform1i(textureLocation, 0);
 }
 
@@ -227,25 +233,37 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 }
 
 
+unsigned int TextureManager::idCounter = 0;
 
 Voxel::TextureManager::~TextureManager()
 {
 	releaseAll();
 }
 
+std::string Voxel::TextureManager::removeFileExtention(std::string fileName)
+{
+	size_t lastindex = fileName.find_last_of(".");
+	return fileName.substr(0, lastindex);
+}
+
 bool Voxel::TextureManager::hasTexture(const std::string & textureName)
 {
-	return texturesMap.find(textureName) != texturesMap.end();
+	return texturesMap.find(removeFileExtention(textureName)) != texturesMap.end();
 }
 
 bool Voxel::TextureManager::addTexture(const std::string & textureName, Texture2D * texture)
 {
-	if (hasTexture(textureName))
+	std::string rawName = removeFileExtention(textureName);
+
+	if (hasTexture(rawName))
 	{
 		return false;
 	}
 	else
 	{
+		texture->id = idCounter + 1;
+		idCounter++;
+
 		texturesMap.emplace(textureName, std::shared_ptr<Texture2D>(texture));
 		return true;
 	}
@@ -253,9 +271,11 @@ bool Voxel::TextureManager::addTexture(const std::string & textureName, Texture2
 
 std::shared_ptr<Texture2D> Voxel::TextureManager::getTexture(const std::string & textureName)
 {
-	if (hasTexture(textureName))
+	std::string rawName = removeFileExtention(textureName);
+
+	if (hasTexture(rawName))
 	{
-		return texturesMap[textureName];
+		return texturesMap[rawName];
 	}
 	else
 	{
@@ -269,7 +289,7 @@ void Voxel::TextureManager::print()
 	{
 		if (e.second)
 		{
-			std::cout << "Texture name: " << e.first << std::endl;
+			std::cout << "Texture name: " << removeFileExtention(e.first) << std::endl;
 			std::cout << "Reference count: " << e.second.use_count() << std::endl;
 			e.second->print();
 		}
