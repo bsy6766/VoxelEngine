@@ -41,9 +41,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 
 		// Iterate all blocks. O(4096)
 		//auto chunkSectionStart = Utility::Time::now();
-
-		int visibleFaceCount = 0;
-
+		
 		for (int blockX = 0; blockX < Constant::CHUNK_SECTION_WIDTH; blockX++)
 		{
 			for (int blockZ = 0; blockZ < Constant::CHUNK_SECTION_LENGTH; blockZ++)
@@ -92,7 +90,7 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 						if (worldPos.y > 0)
 						{
 							int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
-							if (blockDown == 0 || blockDown == 2)
+							if (blockDown == 0)
 							{
 								// Block exists and transparent. Add face
 								face |= Cube::Face::BOTTOM;
@@ -136,8 +134,6 @@ void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap 
 							// Skip if it's surrounded by blocks.
 							continue;
 						}
-
-						visibleFaceCount++;
 
 						//auto bt2 = Utility::Time::now();
 						//std::cout << "block t: " << Utility::Time::toMicroSecondString(bt1, bt2) << std::endl;
