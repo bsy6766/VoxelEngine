@@ -121,7 +121,6 @@ glm::vec4 Voxel::UI::UINode::getBoundingBox()
 
 
 
-
 Voxel::UI::Text::Text()
 	: UINode()
 	, text("")
