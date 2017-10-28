@@ -221,6 +221,8 @@ namespace Voxel
 		*/
 		bool isJumping();
 
+		void setAsFalling();
+
 		bool isFalling();
 	};
 }

@@ -641,7 +641,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 		//world->rebuildWorldMap();
 
-		teleportPlayer(player->getPosition() + glm::vec3(2000, 0, 0));
+		std::vector<Block*> collidableBlocks;
+		chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+
+		std::cout << "Queried " << collidableBlocks.size() << " blocks\n";
+		for (auto block : collidableBlocks)
+		{
+			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldPosition()) << std::endl;
+		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -1007,6 +1014,77 @@ void Voxel::Game::updateControllerInput(const float delta)
 
 void Voxel::Game::updateCollisionResolution()
 {
+	if (player->isFlying()) return;
+
+	if (player->isOnGround())
+	{
+		// Player is on ground. First check if player auto jumped. Then, resolve XZ.
+		std::vector<Block*> collidableBlocks;
+		// Query near by block in XZ axis
+		chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
+
+		bool autoJumped = physics->resolveAutoJump(player, collidableBlocks);
+
+		if (!autoJumped)
+		{
+			// clear list
+			//collidableBlocks.clear();
+
+			// Query near by block in XZ axis
+			//chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
+
+			// Reoslve XZ
+			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
+
+			// clear list
+			collidableBlocks.clear();
+
+			// query again in negative Y 
+			chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+
+			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
+			physics->checkIfPlayerIsFalling(player, collidableBlocks);
+		}
+	}
+	else
+	{
+		// Either jumping or falling
+		//assert(player->isJumping() || player->isFalling());
+
+		if (player->isJumping())
+		{
+			// player is jumping. Check if player collided on top. Then, resolve XZ.
+			std::vector<Block*> collidableBlocks;
+			// Query near by block in XZ axis
+			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
+
+			// Reoslve XZ
+			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
+		}
+		else if (player->isFalling())
+		{
+			// Player is falling. Check if player collided on bottom. Then, resolve XZ.
+
+			//auto start = Utility::Time::now();
+			std::vector<Block*> collidableBlocks;
+			// Query near by block in XZ axis
+			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
+
+			// Reoslve XZ
+			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
+
+			// clear list
+			collidableBlocks.clear();
+
+			// query again in negative Y 
+			chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+
+			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
+			physics->resolvePlayerBottomCollision(player, collidableBlocks);
+		}
+	}
+
+	/*
 	//auto start = Utility::Time::now();
 	std::vector<Block*> collidableBlocks;
 	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
@@ -1014,16 +1092,20 @@ void Voxel::Game::updateCollisionResolution()
 	// auto jump
 	if (settingPtr->getAutoJumpMode())
 	{
-		physics->resolveAutoJump(player, collidableBlocks);
+		if (player->isOnGround())
+		{
+			physics->resolveAutoJump(player, collidableBlocks);
 
-		// clear list
-		collidableBlocks.clear();
+			// clear list
+			collidableBlocks.clear();
 
-		// query again
-		chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
+			// query again
+			chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
+		}
 	}
 
 	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
+	*/
 	//auto end = Utility::Time::now();
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }

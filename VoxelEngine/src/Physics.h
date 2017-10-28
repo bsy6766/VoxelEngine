@@ -65,7 +65,7 @@ namespace Voxel
 		*	@param [in] player A player pointer.
 		*	@param [in] collidableBlocks A vector of Blocks that is collidable.
 		*/
-		void resolveAutoJump(Player* player, const std::vector<Block*>& collidableBlocks);
+		bool resolveAutoJump(Player* player, const std::vector<Block*>& collidableBlocks);
 
 		/**
 		*	Resolves collistion between player and blocks.
@@ -74,6 +74,12 @@ namespace Voxel
 		*	@param [in] collidableBlocks A vector of Blocks that is collidable.
 		*/
 		void resolvePlayerAndBlockCollision(Player* player, const std::vector<Block*>& collidableBlocks);
+
+		void resolvePlayerAndBlockCollisionInXZAxis(Player* player, const std::vector<Block*>& collidableBlocks);
+
+		void resolvePlayerBottomCollision(Player* player, const std::vector<Block*>& collidableBlocks);
+
+		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
 	};
 }
 

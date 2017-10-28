@@ -97,7 +97,7 @@ Geometry::AABB Voxel::Physics::getIntersectingBoundingBox(const Geometry::AABB &
 	return Geometry::AABB(iMin + (iSize * 0.5f), iSize);
 }
 
-void Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>& collidableBlocks)
+bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>& collidableBlocks)
 {
 	// current position
 	auto playerPos = player->getPosition();
@@ -123,49 +123,48 @@ void Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 			if (iSize.y == blockBB.getSize().y)
 			{
 				// block's bounding box y axis is in player's bounding box y axis
-				if (player->isOnGround())
+				if (pBB.getMin().y == blockBB.getMin().y)
 				{
-					// player isn't in mid airs
-					if (pBB.getMin().y == blockBB.getMin().y)
+					auto upResolvingPos = resolvingPos;
+					upResolvingPos.y += 1.0f;
+
+					auto upPBB = player->getBoundingBox(upResolvingPos);
+
+					bool canAutoJump = true;
+
+					for (auto upBlock : collidableBlocks)
 					{
-						auto upResolvingPos = resolvingPos;
-						upResolvingPos.y += 1.0f;
-
-						auto upPBB = player->getBoundingBox(upResolvingPos);
-
-						bool canAutoJump = true;
-
-						for (auto upBlock : collidableBlocks)
+						auto upBlockBB = upBlock->getBoundingBox();
+						if (upBlockBB.doesIntersectsWith(upPBB))
 						{
-							auto upBlockBB = upBlock->getBoundingBox();
-							if (upBlockBB.doesIntersectsWith(upPBB))
+							auto iBB = getIntersectingBoundingBox(upPBB, upBlockBB);
+							if (iBB.getSize().y > 0)
 							{
-								auto iBB = getIntersectingBoundingBox(upPBB, upBlockBB);
-								if (iBB.getSize().y > 0)
-								{
-									canAutoJump = false;
-									break;
-								}
+								canAutoJump = false;
+								break;
 							}
 						}
+					}
 
-						if (canAutoJump)
-						{
-							std::cout << "auto jump. p.y = " << playerPos.y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
-							player->autoJump(iSize.y);
-							player->runJumpCooldown();
-							//autoJumped = true;
-							break;
-						}
-						else
-						{
-							// there is a block above current block. can't auto jump
-						}
+					if (canAutoJump)
+					{
+						std::cout << "auto jump. p.y = " << playerPos.y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
+						player->autoJump(iSize.y);
+						player->runJumpCooldown();
+						player->setOnGround(true);
+						//autoJumped = true;
+						return true;
+					}
+					else
+					{
+						// there is a block above current block. can't auto jump
 					}
 				}
 			}
 		}
 	}
+
+	return false;
 }
 
 bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks)
@@ -174,6 +173,8 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 	auto pBB = player->getBoundingBox(resolvingPos);
 
 	bool resolved = false;
+
+	float pad = 0.01f;
 
 	// iterate blocks and resolve
 	for (auto block : collidableBlocks)
@@ -187,30 +188,29 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 			// intersecting AABB muse not be zero in all axis
 			if (!intersectingAABB.isZero(false))
 			{
+				//auto bPos = block->getWorldCoordinate();
+				//std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
+				//std::cout << "playerY = " << player->getPosition().y << std::endl;
+				//std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
+				//std::cout << "Resolving pos = (" << resolvingPos.x << ", " << resolvingPos.y << ", " << resolvingPos.z << ")\n";
+
 				if (movedDist.x > 0.0f)
 				{
 					// Moved to east (positive x)
-					auto bPos = block->getWorldCoordinate();
-					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
-					std::cout << "playerY = " << player->getPosition().y << std::endl;
-					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
-					resolvingPos.x -= (intersectingAABB.getSize().x);
+					resolvingPos.x -= (intersectingAABB.getSize().x + pad);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved east (positive x). resolved\n";
+					//std::cout << "Player moved east (positive x). resolved\n";
 				}
 				else if (movedDist.x < 0.0f)
 				{
 					// Moved to west (negative x)
-					auto bPos = block->getWorldCoordinate();
-					std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
-					std::cout << "playerY = " << player->getPosition().y << std::endl;
-					std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
-					resolvingPos.x += (intersectingAABB.getSize().x);
+					resolvingPos.x += (intersectingAABB.getSize().x + pad);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved west (negative x). resolved\n";
+					//std::cout << "Player moved west (negative x). resolved\n";
 				}
+				//std::cout << "Resolved pos = (" << resolvingPos.x << ", " << resolvingPos.y << ", " << resolvingPos.z << ")\n";
 			}
 		}
 	}
@@ -225,6 +225,8 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 
 	bool resolved = false;
 
+	float pad = 0.01f;
+
 	// iterate blocks and resolve
 	for (auto block : collidableBlocks)
 	{
@@ -237,22 +239,29 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 			// intersecting AABB muse not be zero in all axis
 			if (!intersectingAABB.isZero(false))
 			{
+				//auto bPos = block->getWorldCoordinate();
+				//std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
+				//std::cout << "playerY = " << player->getPosition().y << std::endl;
+				//std::cout << "iSize.y = " << intersectingAABB.getSize().y << std::endl;
+				//std::cout << "Resolving pos = (" << resolvingPos.x << ", " << resolvingPos.y << ", " << resolvingPos.z << ")\n";
+
 				if (movedDist.z > 0.0f)
 				{
 					// Moved to south (positive z)
-					resolvingPos.z -= (intersectingAABB.getSize().z);
+					resolvingPos.z -= (intersectingAABB.getSize().z + pad);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved south (positive z). resolved\n";
+					//std::cout << "Player moved south (positive z). resolved\n";
 				}
 				else if (movedDist.z < 0.0f)
 				{
 					// Moved to north (negative z)
-					resolvingPos.z += (intersectingAABB.getSize().z);
+					resolvingPos.z += (intersectingAABB.getSize().z + pad);
 					resolved = true;
 					pBB = player->getBoundingBox(resolvingPos);
-					std::cout << "Player moved north (negative z). resolved\n";
+					//std::cout << "Player moved north (negative z). resolved\n";
 				}
+				//std::cout << "Resolved pos = (" << resolvingPos.x << ", " << resolvingPos.y << ", " << resolvingPos.z << ")\n";
 			}
 		}
 	}
@@ -272,7 +281,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 	auto movedDist = playerNextPos - playerPos;
 
 	// Resolving position
-	auto resolvingPos = playerNextPos;
+	auto resolvingPos = glm::vec3(playerPos.x, playerNextPos.y, playerPos.z);
 
 	bool resolved = false;
 	
@@ -282,8 +291,10 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 	// Now iterate blocks again and resolve y again
 	bool inMidAir = true;
 
+	// Check if player is jumping
 	if (!player->isJumping())
 	{
+		// not jumping
 		for (auto block : collidableBlocks)
 		{
 			auto blockBB = block->getBoundingBox();
@@ -333,6 +344,8 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 								{
 								}
 								// moved down
+
+
 								std::cout << "position y = " << resolvingPos.y << std::endl;
 								resolvingPos.y += (intersectingAABB.getSize().y);
 								std::cout << "resolving y = " << resolvingPos.y << std::endl;
@@ -351,7 +364,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 
 	bool resolvedXZ = false;
 
-	if (inMidAir == false)
+	if (true)
 	{
 		resolvingPos.x = playerPos.x;
 		resolvingPos.z = playerPos.z;
@@ -395,4 +408,171 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 	{
 		player->setNextPosition(resolvingPos);
 	}
+}
+
+void Voxel::Physics::resolvePlayerAndBlockCollisionInXZAxis(Player * player, const std::vector<Block*>& collidableBlocks)
+{
+	// current position
+	auto playerPos = player->getPosition();
+	// position that player tried to move
+	auto playerNextPos = player->getNextPosition();
+
+	// get moved distance
+	auto movedDist = playerNextPos - playerPos;
+
+	// Resolving position
+	auto resolvingPos = playerPos;
+
+	bool resolved = false;
+
+	glm::vec3 absMovedDist = glm::abs(movedDist);
+
+	if (absMovedDist.x != 0 || absMovedDist.z != 0)
+	{
+		if (absMovedDist.x >= absMovedDist.z)
+		{
+			// resolve x first
+			//std::cout << "0\n";
+
+			bool result = false;
+
+			resolvingPos.x = playerNextPos.x;
+
+			result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+			
+			if (result) 
+				resolved = true;
+
+			resolvingPos.z = playerNextPos.z;
+
+			result = resolvePlayerZAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+			
+			if (result) 
+				resolved = true;
+		}
+		else
+		{
+			// resolve z first
+			//std::cout << "1\n";
+			bool result = false;
+
+			resolvingPos.z = playerNextPos.z;
+
+			result = resolvePlayerZAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+
+			if (result) 
+				resolved = true;
+
+			resolvingPos.x = playerNextPos.x;
+
+			result = resolvePlayerXAndBlockCollision(player, resolvingPos, movedDist, collidableBlocks);
+			
+			if (result) 
+				resolved = true;
+		}
+	}
+
+	if (resolved)
+	{
+		player->setNextPosition(glm::vec3(resolvingPos.x, playerNextPos.y, resolvingPos.z));
+	}
+}
+
+void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::vector<Block*>& collidableBlocks)
+{	
+	// current position
+	auto playerPos = player->getPosition();
+	// position that player tried to move
+	auto playerNextPos = player->getNextPosition();
+
+	// get moved distance
+	auto movedDist = playerNextPos - playerPos;
+
+	if (movedDist.y >= 0.0f)
+	{
+		// player didn't move downward. 
+		return;
+	}
+
+	// Resolving position
+	auto resolvingPos = playerNextPos;
+
+	// init player bounding box
+	auto pBB = player->getBoundingBox(resolvingPos);
+
+	for (auto block : collidableBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		// Check intersection
+		if (blockBB.doesIntersectsWith(pBB))
+		{
+			// intersects with block
+			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+
+			// get y size
+			float sizeY = intersectingAABB.getSize().y;// block i
+
+			//if (!intersectingAABB.isZero(false))
+			if(sizeY > 0)
+			{
+				// player and block is intersecting
+				std::cout << "position y = " << resolvingPos.y << std::endl;
+				resolvingPos.y += (intersectingAABB.getSize().y);
+				std::cout << "resolving y = " << resolvingPos.y << std::endl;
+
+				//pBB = player->getBoundingBox(resolvingPos);
+				player->setOnGround(true);
+
+				player->setNextPosition(resolvingPos);
+
+				std::cout << "Player moved down. resolved\n";
+
+				return;
+			}
+		}
+	}
+
+ 	//player->setOnGround(false);
+	//player->setAsFalling();
+}
+
+void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<Block*>& collidableBlocks)
+{
+	// current position
+	auto playerPos = player->getPosition();
+	// position that player tried to move
+	auto playerNextPos = player->getNextPosition();
+
+	// Resolving position
+	auto resolvingPos = playerNextPos;
+	resolvingPos.y -= 0.01f;
+
+	// init player bounding box
+	auto pBB = player->getBoundingBox(resolvingPos);
+
+	for (auto block : collidableBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		// Check intersection
+		if (blockBB.doesIntersectsWith(pBB))
+		{
+			// intersects with block
+			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+
+			// get y size
+			float sizeY = intersectingAABB.getSize().y;// block i
+
+			 //if (!intersectingAABB.isZero(false))
+			if (sizeY > 0)
+			{
+				// player and block is intersecting
+				return;
+			}
+		}
+	}
+
+	player->setOnGround(false);
+	player->setAsFalling();
 }

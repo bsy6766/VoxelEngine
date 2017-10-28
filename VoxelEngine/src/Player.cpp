@@ -390,6 +390,10 @@ void Voxel::Player::setOnGround(const bool onGround)
 		fallDistance = 0.0f;
 		fallDuration = 0.0f;
 	}
+	else
+	{
+
+	}
 }
 
 bool Voxel::Player::isFlying()
@@ -509,6 +513,11 @@ bool Voxel::Player::isJumping()
 	return jumpState == JumpState::JUMPING;
 }
 
+void Voxel::Player::setAsFalling()
+{
+	this->jumpState = JumpState::FALLING;
+}
+
 bool Voxel::Player::isFalling()
 {
 	return jumpState == JumpState::FALLING;
@@ -557,6 +566,8 @@ void Voxel::Player::updateDirection()
 
 void Voxel::Player::update(const float delta)
 {
+	//std::cout << "js = " << std::to_string((int)jumpState) << "\n";
+
 	rotated = false;
 
 	if (rotation.x != rotationTarget.x)
