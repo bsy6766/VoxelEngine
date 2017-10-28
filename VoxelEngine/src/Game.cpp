@@ -194,16 +194,16 @@ void Voxel::Game::initUI()
 {
 	// init fonts
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
-	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
+	FontManager::getInstance().addFont("Pixel.ttf", 40, 2);
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+
+	initCursor();
+
+	initDefaultCanvas();
 
 	initLoadingScreen();
 
-	//initDefaultCanvas();
-
 	//initDebugConsole();
-
-	//initCursor();
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -502,7 +502,7 @@ void Game::update(const float delta)
 	{
 		if (chunkWorkManager->isFirstInitDone())
 		{
-			//loadingState = LoadingState::FINISHED;
+			loadingState = LoadingState::FINISHED;
 
 			// get top y at player position
 			auto playerPosition = player->getPosition();
