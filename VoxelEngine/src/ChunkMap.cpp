@@ -356,6 +356,13 @@ void Voxel::ChunkMap::initBlockOutline(Program* program)
 void ChunkMap::clear()
 {
 	map.clear();
+	chunkLUT.clear();
+	currentChunkPos = glm::ivec2(0);
+	activeChunks.clear();
+	regionTerrainsMap.clear();
+
+	minXZ = glm::ivec2(0);
+	maxXZ = glm::ivec2(0);
 }
 
 bool Voxel::ChunkMap::hasChunkAtXZ(int x, int z)
@@ -1171,9 +1178,9 @@ int Voxel::ChunkMap::getActiveChunksCount()
 	return static_cast<int>(activeChunks.size() * activeChunks.front().size());
 }
 
-bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager * workManager, const double time)
+glm::ivec2 Voxel::ChunkMap::checkPlayerChunkPos(const glm::vec3 & playerPosition)
 {
-	if (!updateChunksMode) return false;
+	if (!updateChunksMode) return currentChunkPos;
 
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
@@ -1183,13 +1190,6 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 	if (playerPosition.z < 0) chunkZ -= 1;
 
 	auto newChunkXZ = glm::ivec2(chunkX, chunkZ);
-
-	if (renderChunkBorderMode)
-	{
-		glm::vec3 translate = glm::vec3(newChunkXZ.x, 0, newChunkXZ.y);
-		translate *= Constant::CHUNK_BORDER_SIZE;
-		chunkBorderModelMat = glm::translate(glm::mat4(1.0f), translate);
-	}
 
 	if (newChunkXZ != currentChunkPos)
 	{
@@ -1209,97 +1209,100 @@ bool Voxel::ChunkMap::update(const glm::vec3 & playerPosition, ChunkWorkManager 
 		bool isNearby = glm::abs(dist) <= Constant::CHUNK_RANGE;
 
 		//bool inBorder = newChunk->isPointInBorder(playerPosition);
-		if (isNearby)
+		if (!isNearby)
 		{
-			return false;
+			return newChunkXZ;
 		}
-
-		// Anyway, first we get how far player moved. In chunk distance.
-		// Then find which row and col need to be added based on direction player moved.
-		// also find which row and col to pop aswell.
-		glm::ivec2 d = newChunkXZ - currentChunkPos;
-		//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")\n";
-		currentChunkPos = newChunkXZ;
-
-		// Always modify x first. I think...that.. is.. better....right?
-		
-		/*
-			2D std::list
-
-											^
-											| -x (West)
-					List 
-						List --------------------------------------
-						List --------------------------------------
-						List --------------------------------------
-	-z (North) <-		List --------------------------------------		-> +z (South)
-						List --------------------------------------
-						List --------------------------------------
-						List --------------------------------------
-		
-											| +x (east)
-											v
-		*/
-
-		//auto start = Utility::Time::now();
-		
-		if (d.x != 0)
-		{
-			// Run move function as much as chunk distance
-			int dist = glm::abs(d.x);
-
-			// Moved in x axis
-			for (int i = 0; i < dist; i++)
-			{
-				if (d.x < 0)
-				{
-					// Moved to west
-					std::cout << "Player moved to west. d.x = " << d.x << std::endl;
-					moveWest(workManager);
-				}
-				else
-				{
-					// moved to east
-					std::cout << "Player moved to east. d.x = " << d.x << std::endl;
-					moveEast(workManager);
-				}
-			}
-		}
-		// Else, didn't move in X axis
-
-		if (d.y/*z*/ != 0)
-		{
-			// Run move function as much as chunk distance
-			int dist = glm::abs(d.y);
-			
-			// Moved in z axis
-			for (int i = 0; i < dist; i++)
-			{
-				if (d.y < 0)
-				{
-					// Move to north
-					std::cout << "Player moved to north. d.y = " << d.y << std::endl;
-					moveNorth(workManager);
-				}
-				else
-				{
-					// Moved to sourth
-					std::cout << "Player moved to south. d.y = " << d.y << std::endl;
-					moveSouth(workManager);
-				}
-			}
-		}
-		// Else, didn't move in Z axis
-
-		workManager->notify();
-
-		//auto end = Utility::Time::now();
-		//std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
-
-		return true;
 	}
 
-	return false;
+	return currentChunkPos;
+}
+
+bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * workManager, const double time)
+{
+	// Anyway, first we get how far player moved. In chunk distance.
+	// Then find which row and col need to be added based on direction player moved.
+	// also find which row and col to pop aswell.
+	glm::ivec2 d = newChunkXZ - currentChunkPos;
+	//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")\n";
+	currentChunkPos = newChunkXZ;
+
+	// Always modify x first. I think...that.. is.. better....right?
+		
+	/*
+		2D std::list
+
+										^
+										| -x (West)
+				List 
+					List --------------------------------------
+					List --------------------------------------
+					List --------------------------------------
+-z (North) <-		List --------------------------------------		-> +z (South)
+					List --------------------------------------
+					List --------------------------------------
+					List --------------------------------------
+		
+										| +x (east)
+										v
+	*/
+
+	//auto start = Utility::Time::now();
+		
+	if (d.x != 0)
+	{
+		// Run move function as much as chunk distance
+		int dist = glm::abs(d.x);
+
+		// Moved in x axis
+		for (int i = 0; i < dist; i++)
+		{
+			if (d.x < 0)
+			{
+				// Moved to west
+				std::cout << "Player moved to west. d.x = " << d.x << std::endl;
+				moveWest(workManager);
+			}
+			else
+			{
+				// moved to east
+				std::cout << "Player moved to east. d.x = " << d.x << std::endl;
+				moveEast(workManager);
+			}
+		}
+	}
+	// Else, didn't move in X axis
+
+	if (d.y/*z*/ != 0)
+	{
+		// Run move function as much as chunk distance
+		int dist = glm::abs(d.y);
+			
+		// Moved in z axis
+		for (int i = 0; i < dist; i++)
+		{
+			if (d.y < 0)
+			{
+				// Move to north
+				std::cout << "Player moved to north. d.y = " << d.y << std::endl;
+				moveNorth(workManager);
+			}
+			else
+			{
+				// Moved to sourth
+				std::cout << "Player moved to south. d.y = " << d.y << std::endl;
+				moveSouth(workManager);
+			}
+		}
+	}
+	// Else, didn't move in Z axis
+
+	workManager->notify();
+
+	//auto end = Utility::Time::now();
+	//std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+
+	return true;
 }
 
 void Voxel::ChunkMap::moveWest(ChunkWorkManager* wm)

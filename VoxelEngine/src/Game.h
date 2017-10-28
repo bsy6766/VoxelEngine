@@ -56,6 +56,7 @@ namespace Voxel
 		enum class LoadingState
 		{
 			INITIALIZING = 0,
+			FADING,
 			FINISHED,
 		};
 	private:
@@ -167,9 +168,15 @@ namespace Voxel
 		// debug
 		DebugConsole* debugConsole;
 
+		// teleport player
+		void teleportPlayer(const glm::vec3& position);
+
 		// Updates (tick) the world.
 		void update(const float delta);
 		void updateInput(const float delta);
+
+		// refresh chunk map
+		void refreshChunkMap();
 
 		void render(const float delta);
 		void renderGameWorld(const float delta);

@@ -46,6 +46,14 @@ namespace Voxel
 			ADD_STRUCTURE,
 			BUILD_MESH
 		};
+
+		enum class WORK_STATE
+		{
+			IDLE = 0,
+			RUNNING,						// running. do work.
+			CLEARING,						// clearing work. Releasing all mesh data and add work to unloadFinishedQueue.
+			WAITING_MAIN_THREAD,			// Waits for main thread to change state.
+		};
 	private:
 		// Queue with chunk coordinate that nees to pre generate chunk datas(height map, region map, etc)
 		std::list<glm::ivec2> preGenerateQueue;
@@ -75,6 +83,9 @@ namespace Voxel
 
 		// True if first initialization is done (ignores build mesh)
 		std::atomic<bool> firstInitDone;
+
+		// work state
+		std::atomic<WORK_STATE> workState;
 		
 		// Condition variable that makes thread to wait if main thread is busy or there is no work to do
 		std::condition_variable cv;
@@ -112,7 +123,7 @@ namespace Voxel
 		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);
 		// Get first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
-		bool getFinishedFront(glm::ivec2& coordinate);
+		bool getUnloadFinishedQueueFront(glm::ivec2& coordinate);
 		// Pop the first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
 		void popFinishedAndNotify();
 
@@ -120,6 +131,21 @@ namespace Voxel
 		void createThreads(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world, const int coreCount);
 
 		bool isFirstInitDone();
+
+		// Clear all work order
+		void clear();
+
+		// Check if work manager is aboring all work
+		bool isClearing();
+
+		// Check if work manager is waiting for main thread
+		bool isWaitingMainThread();
+
+		// Resume work
+		void resumeWork();
+
+		// Check if chunk work manager is generating chunks yet
+		bool isGeneratingChunks();
 
 		// notify condition variable
 		void notify();

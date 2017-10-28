@@ -400,6 +400,19 @@ void Voxel::Game::createWorld()
 	player->setPosition(glm::vec3(randX, 0, randZ), false);
 }
 
+void Voxel::Game::teleportPlayer(const glm::vec3 & position)
+{
+	std::cout << "Teleporint to " << Utility::Log::vec3ToStr(position) << "\n";
+	// move player
+	player->setPosition(position, false);
+	player->setLookingBlock(nullptr, Cube::Face::NONE);
+	player->setRotation(glm::vec3(0), false);
+
+	// clear chunk work manager
+	chunkWorkManager->clear();
+	chunkWorkManager->notify();
+}
+
 void Game::update(const float delta)
 {
 	if (loadingState == LoadingState::INITIALIZING)
@@ -421,6 +434,31 @@ void Game::update(const float delta)
 	}
 	else
 	{
+		if (chunkWorkManager->isClearing())
+		{
+			// chunk work manager is clearing. don't update stuffs
+			return;
+		}
+		else if (chunkWorkManager->isWaitingMainThread())
+		{
+			std::cout << "Chunk work manager is waiting for main thread\n. Clearing chunk map";
+			chunkMap->clear();
+
+			std::cout << "Done. Regenerate chunk map and get chunk work manager back to work\n";
+
+			createChunkMap();
+
+			chunkWorkManager->resumeWork();
+
+			return;
+		}
+		else if (chunkWorkManager->isGeneratingChunks())
+		{
+			// chunk work manager is till generating chunk. block updates
+			debugConsole->updateChunkNumbers(0, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
+			return;
+		}
+
 		// First, update input
 		updateKeyboardInput(delta);
 		updateMouseMoveInput(delta);
@@ -469,7 +507,7 @@ void Game::update(const float delta)
 
 		if (playerMoved)
 		{
-			// if player moved, update chunk
+			// if player moved, update chunk only if chunk work manager is not aborting
 			updateChunks();
 
 			auto playerPos = player->getPosition();
@@ -591,7 +629,9 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 		*/
 
-		world->rebuildWorldMap();
+		//world->rebuildWorldMap();
+
+		teleportPlayer(player->getPosition() + glm::vec3(2000, 0, 0));
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -989,12 +1029,39 @@ void Voxel::Game::updateChunks()
 	// Based on player position, check if player moved to new chunk
 	// If so, we need to load new chunks. 
 	// Else, player reamains on same chunk as now.
-	bool updated = chunkMap->update(player->getPosition(), chunkWorkManager, glfwGetTime());
+	glm::ivec2 newChunkXZ = chunkMap->checkPlayerChunkPos(player->getPosition());
+	glm::ivec2 curChunkXZ = chunkMap->getCurrentChunkXZ();
 
-	//Whenever player moved, sort the load queue again 
-	if (updated)
+	if (newChunkXZ == curChunkXZ)
 	{
-		//chunkWorkManager->sortBuildMeshQueue(player->getPosition());
+		// still on same chunk. do nothing
+		return;
+	}
+	else
+	{
+		// moved to new chunk
+		glm::ivec2 absDist = glm::abs(newChunkXZ - curChunkXZ);
+
+		auto rd = settingPtr->getRenderDistance();
+
+		if (absDist.x >= rd || absDist.y >= rd)
+		{
+			// player moved more than render distance at once. consider this as teleport.
+			teleportPlayer(player->getPosition());
+		}
+		else
+		{
+			// player moved less than render distance. Normally load chunk map
+			bool updated = chunkMap->update(newChunkXZ, chunkWorkManager, glfwGetTime());
+
+			/*
+			//Whenever player moved, sort the load queue again
+			if (updated)
+			{
+			chunkWorkManager->sortBuildMeshQueue(player->getPosition());
+			}
+			*/
+		}
 	}
 }
 
@@ -1021,7 +1088,7 @@ void Voxel::Game::checkUnloadedChunks()
 	{
 		// Check if there is any chunk to unload
 		glm::ivec2 chunkXZ;
-		result = chunkWorkManager->getFinishedFront(chunkXZ);
+		result = chunkWorkManager->getUnloadFinishedQueueFront(chunkXZ);
 		if (result)
 		{
 			chunkMap->releaseChunk(chunkXZ);
@@ -1035,11 +1102,24 @@ void Voxel::Game::checkUnloadedChunks()
 	}
 }
 
+void Voxel::Game::refreshChunkMap()
+{
+	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
+	std::cout << "Refreshing chunk map\n";
+	chunkWorkManager->clear();
+	chunkWorkManager->notify();
+}
+
 void Game::render(const float delta)
 {
 	if (loadingState == LoadingState::INITIALIZING)
 	{
 		renderLoadingScreen(delta);
+	}
+	else if (loadingState == LoadingState::FADING)
+	{
+		renderLoadingScreen(delta);
+		renderGameWorld(delta);
 	}
 	else
 	{

@@ -441,7 +441,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						return true;
 					}
 				}
-				if (size == 4)
+				else if (size == 4)
 				{
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
@@ -487,6 +487,48 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								// do nothing
 							}
 						}
+					}
+				}
+				else if (size == 5)
+				{
+					auto arg1 = split.at(1);
+
+					if (arg1 == "tp")
+					{
+						float x = 0;
+						try
+						{
+							x = std::stof(split.at(2));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						float y = 0;
+						try
+						{
+							y = std::stof(split.at(3));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						float z = 0;
+						try
+						{
+							z = std::stof(split.at(4));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						game->teleportPlayer(glm::vec3(x, y, z));
+						executedCommandHistory.push_back("Teleported player to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
+						lastCommand = command;
+						return true;
 					}
 				}
 				else if (size == 6)
@@ -735,10 +777,10 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
 
-					bool arg2Bool = arg2 == "true" ? true : false;
-
 					if (arg1 == "update" || arg1 == "u")
 					{
+						bool arg2Bool = arg2 == "true" ? true : false;
+
 						chunkMap->setUpdateChunkMapMode(arg2Bool);
 						if (arg2Bool)
 						{
@@ -748,6 +790,13 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled chunk update");
 						}
+						lastCommand = command;
+						return true;
+					}
+					else if (arg2 == "refresh" || arg2 == "r")
+					{
+						game->refreshChunkMap();
+						executedCommandHistory.push_back("Refreshing chunk map");
 						lastCommand = command;
 						return true;
 					}

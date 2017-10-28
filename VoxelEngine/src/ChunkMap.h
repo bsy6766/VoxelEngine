@@ -59,7 +59,7 @@ namespace Voxel
 		// 2D list that keep tracks the active chunk coordinates
 		std::list<std::list<glm::ivec2>> activeChunks;
 
-		// Cache the terrain type for each region 
+		// Cache the terrain type for each region. This is used when work manager generates chunk's hight map. chunk has region map and need terrain type for each region value in region map.
 		std::unordered_map<unsigned int, Terrain> regionTerrainsMap;
 
 		// Chunk map's min and max XZ coordinate
@@ -177,7 +177,8 @@ namespace Voxel
 		bool isChunkOnEdge(const glm::ivec2& chunkXZ);
 
 		// Update chunk map
-		bool update(const glm::vec3& playerPosition, ChunkWorkManager* workManager, const double time);
+		glm::ivec2 checkPlayerChunkPos(const glm::vec3& playerPosition);
+		bool update(const glm::ivec2& newChunkXZ, ChunkWorkManager* workManager, const double time);
 		
 		// find visible chunks. retrusn the number of chunks that is visible
 		int findVisibleChunk();
