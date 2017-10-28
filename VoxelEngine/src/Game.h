@@ -57,6 +57,7 @@ namespace Voxel
 		{
 			INITIALIZING = 0,
 			FADING,
+			RELOADING,
 			FINISHED,
 		};
 	private:

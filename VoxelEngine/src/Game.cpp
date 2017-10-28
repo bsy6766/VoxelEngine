@@ -411,6 +411,8 @@ void Voxel::Game::teleportPlayer(const glm::vec3 & position)
 	// clear chunk work manager
 	chunkWorkManager->clear();
 	chunkWorkManager->notify();
+
+	loadingState = LoadingState::RELOADING;
 }
 
 void Game::update(const float delta)
@@ -432,7 +434,7 @@ void Game::update(const float delta)
 			//player->setRotation(glm::vec3(291.5, 302.25, 0), false);
 		}
 	}
-	else
+	else if (loadingState == LoadingState::RELOADING)
 	{
 		if (chunkWorkManager->isClearing())
 		{
@@ -452,14 +454,21 @@ void Game::update(const float delta)
 
 			return;
 		}
-		else if (chunkWorkManager->isGeneratingChunks())
+		else
 		{
-			// chunk work manager is till generating chunk. block updates
-			debugConsole->updateChunkNumbers(0, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
-			return;
+			if (chunkWorkManager->isGeneratingChunks())
+			{
+				return;
+			}
+			else
+			{
+				loadingState = LoadingState::FINISHED;
+			}
 		}
-
-		// First, update input
+	}
+	else
+	{
+		// update input
 		updateKeyboardInput(delta);
 		updateMouseMoveInput(delta);
 		updateMouseClickInput();
@@ -473,13 +482,14 @@ void Game::update(const float delta)
 
 		// Resolve collision in game
 		updateCollisionResolution();
-		
-		// After resolving collision and updating physics, update player's movement
-		player->updateMovement(delta);
 
 		bool playerMoved = player->didMoveThisFrame();
 		bool playerRotated = player->didRotateThisFrame();
 
+		// After resolving collision and updating physics, update player's movement
+		player->updateMovement(delta);
+
+		// First check visible chunk
 		Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
 
 		// After updating frustum, run frustum culling to find visible chunk
@@ -1108,11 +1118,13 @@ void Voxel::Game::refreshChunkMap()
 	std::cout << "Refreshing chunk map\n";
 	chunkWorkManager->clear();
 	chunkWorkManager->notify();
+
+	loadingState = LoadingState::RELOADING;
 }
 
 void Game::render(const float delta)
 {
-	if (loadingState == LoadingState::INITIALIZING)
+	if (loadingState == LoadingState::INITIALIZING || loadingState == LoadingState::RELOADING)
 	{
 		renderLoadingScreen(delta);
 	}

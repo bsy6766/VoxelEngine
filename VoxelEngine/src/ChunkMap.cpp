@@ -1801,7 +1801,14 @@ int Voxel::ChunkMap::findVisibleChunk()
 					chunk->setVisibility(visible);
 
 					if (visible)
-						count++;
+					{
+						auto mesh = chunk->getMesh();
+
+						if (mesh->isRenderable())
+						{
+							count++;
+						}
+					}
 				}
 			}
 		}
