@@ -201,6 +201,7 @@ namespace Voxel
 		void getCollidableBlockNearPlayer(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 		void queryNearByCollidableBlocksInXZ(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 		void queryBottomCollidableBlocksInY(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
+		void queryTopCollidableBlocksInY(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 
 		// Get top y at 
 		int getTopYAt(const glm::vec2& position);

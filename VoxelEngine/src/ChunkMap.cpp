@@ -2030,6 +2030,41 @@ void Voxel::ChunkMap::queryBottomCollidableBlocksInY(const glm::vec3 & playerPos
 	}
 }
 
+void Voxel::ChunkMap::queryTopCollidableBlocksInY(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
+{
+	auto standingBlockWorldPos = glm::ivec3(0);
+	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
+	standingBlockWorldPos.y = static_cast<int>((playerPosition.y >= 0) ? playerPosition.y : 0);
+	standingBlockWorldPos.z = static_cast<int>((playerPosition.z >= 0) ? playerPosition.z : glm::floor(playerPosition.z));
+
+	// Query only near by in XZ axis. Bottom of over top blocks aren't counted
+
+	int startX = standingBlockWorldPos.x - 1;
+	int startY = standingBlockWorldPos.y + 2;
+	int startZ = standingBlockWorldPos.z - 1;
+	int endX = standingBlockWorldPos.x + 1;
+	int endY = standingBlockWorldPos.y + 3;
+	int endZ = standingBlockWorldPos.z + 1;
+
+	for (int x = startX; x <= endX; x++)
+	{
+		for (int z = startZ; z <= endZ; z++)
+		{
+			for (int y = startY; y <= endY; y++)
+			{
+				Block* block = getBlockAtWorldXYZ(x, y, z);
+				if (block)
+				{
+					if (block->isCollidable())
+					{
+						collidableBlocks.push_back(block);
+					}
+				}
+			}
+		}
+	}
+}
+
 int Voxel::ChunkMap::getTopYAt(const glm::vec2 & position)
 {
 	glm::ivec3 blockLocalPos;

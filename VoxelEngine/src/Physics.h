@@ -81,6 +81,10 @@ namespace Voxel
 
 		void resolvePlayerBottomCollision(Player* player, const std::vector<Block*>& collidableBlocks);
 
+		// Resolves collision between blocks above player. Only resolves in Y axis. Only called while jupming.
+		void resolvePlayerTopCollision(Player* player, const std::vector<Block*>& collidableBlocks);
+		void checkIfPlayerCollidedTop(Player* player, const std::vector<Block*>& collidableBlocks);
+
 		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
 
 		bool updatePlayerJumpForce(Player* player, const float delta);

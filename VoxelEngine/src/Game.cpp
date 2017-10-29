@@ -648,16 +648,15 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 		//world->rebuildWorldMap();
 
-		/*
 		std::vector<Block*> collidableBlocks;
-		chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+		//chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+		chunkMap->queryTopCollidableBlocksInY(player->getPosition(), collidableBlocks);
 
 		std::cout << "Queried " << collidableBlocks.size() << " blocks\n";
 		for (auto block : collidableBlocks)
 		{
 			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
 		}
-		*/
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -1026,6 +1025,8 @@ void Voxel::Game::updateCollisionResolution()
 {
 	if (player->isFlying()) return;
 
+	auto start = Utility::Time::now();
+
 	if (player->isOnGround())
 	{
 		// Player is on ground. First check if player auto jumped. Then, resolve XZ.
@@ -1063,24 +1064,31 @@ void Voxel::Game::updateCollisionResolution()
 	else
 	{
 		// Either jumping or falling
-		//assert(player->isJumping() || player->isFalling());
-
 		if (player->isJumping())
 		{
 			// player is jumping. Check if player collided on top. Then, resolve XZ.
 			std::vector<Block*> collidableBlocks;
+
 			// Query near by block in XZ axis
 			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
 
 			// Reoslve XZ
 			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
+
+			// clear list
+			collidableBlocks.clear();
+
+			// query again in negative Y 
+			chunkMap->queryTopCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
+
+			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
+			physics->resolvePlayerTopCollision(player, collidableBlocks);
 		}
 		else if (player->isFalling())
 		{
 			// Player is falling. Check if player collided on bottom. Then, resolve XZ.
-
-			//auto start = Utility::Time::now();
 			std::vector<Block*> collidableBlocks;
+
 			// Query near by block in XZ axis
 			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
 
@@ -1093,42 +1101,12 @@ void Voxel::Game::updateCollisionResolution()
 			// query again in negative Y 
 			chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
 
-			/*
-			std::cout << "Queried " << collidableBlocks.size() << " blocks\n";
-			for (auto block : collidableBlocks)
-			{
-				std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
-			}
-			*/
-
 			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
 			physics->resolvePlayerBottomCollision(player, collidableBlocks);
 		}
 	}
 
-	/*
-	//auto start = Utility::Time::now();
-	std::vector<Block*> collidableBlocks;
-	chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
-
-	// auto jump
-	if (settingPtr->getAutoJumpMode())
-	{
-		if (player->isOnGround())
-		{
-			physics->resolveAutoJump(player, collidableBlocks);
-
-			// clear list
-			collidableBlocks.clear();
-
-			// query again
-			chunkMap->getCollidableBlockNearPlayer(player->getNextPosition(), collidableBlocks);
-		}
-	}
-
-	physics->resolvePlayerAndBlockCollision(player, collidableBlocks);
-	*/
-	//auto end = Utility::Time::now();
+	auto end = Utility::Time::now();
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }
 
