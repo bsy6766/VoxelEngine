@@ -1038,13 +1038,13 @@ void Voxel::Game::updateCollisionResolution()
 
 			// clear list
 			collidableBlocks.clear();
-
-			// query again in negative Y 
-			chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
-
-			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
-			physics->checkIfPlayerIsFalling(player, collidableBlocks);
 		}
+
+		// query again in negative Y 
+		chunkMap->queryBottomCollidableBlocksInY(player->getPosition(), collidableBlocks);
+
+		// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
+		physics->checkIfPlayerIsFalling(player, collidableBlocks);
 	}
 	else
 	{

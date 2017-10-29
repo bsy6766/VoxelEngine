@@ -545,7 +545,7 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 	auto playerNextPos = player->getNextPosition();
 
 	// Resolving position
-	auto resolvingPos = playerNextPos;
+	auto resolvingPos = playerPos;
 	resolvingPos.y -= 0.01f;
 
 	// init player bounding box
