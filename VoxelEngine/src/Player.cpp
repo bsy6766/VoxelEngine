@@ -11,8 +11,6 @@
 using namespace Voxel;
 
 const float Player::MaxCameraDistanceX = 10.0f;
-const float Player::DefaultJumpDistance = 2.5f;
-const float Player::DefaultJumpCooldown = 0.1f;
 const float Player::EyeHeight = 1.5f;
 
 Player::Player()
@@ -34,8 +32,6 @@ Player::Player()
 	, lookingFace(Cube::Face::NONE)
 	, fallDuration(0)
 	, fallDistance(0)
-	, jumpDistance(Player::DefaultJumpDistance)
-	, jumpCooldown(Player::DefaultJumpCooldown)
 	, onGround(false)
 	, cameraY(Player::EyeHeight)
 	, cameraDistanceZ(Player::MaxCameraDistanceX)
@@ -254,7 +250,7 @@ void Player::moveDown(const float delta)
 	//moved = true;
 }
 
-void Player::jump(const float delta)
+void Player::jump()
 {
 	onGround = false;
 
@@ -382,9 +378,9 @@ void Voxel::Player::setOnGround(const bool onGround)
 	if (onGround)
 	{
 		// run cooldown;
-		jumpCooldown = 0;
-		jumpDistance = Player::DefaultJumpDistance;
-		jumpState = JumpState::IDLE;
+		//jumpCooldown = 0;
+		//jumpDistance = Player::DefaultJumpDistance;
+		//jumpState = JumpState::IDLE;
 		//std::cout << "Player is on ground\n";
 
 		fallDistance = 0.0f;
@@ -483,29 +479,16 @@ Geometry::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
 	//return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), 0.8f, 1.5f, 0.8f);
 }
 
-void Voxel::Player::runJumpCooldown()
-{
-	jumpCooldown = 0;
-}
-
 void Voxel::Player::autoJump(const float y)
 {
 	position.y += y;
 	nextPosition.y += y;
 	cameraY -= y;
 
+	position.x = nextPosition.x;
+	position.z = nextPosition.z;
+
 	moved = true;
-}
-
-bool Voxel::Player::canJump()
-{
-	return (jumpState == JumpState::IDLE) && (jumpCooldown == Player::DefaultJumpCooldown);
-}
-
-void Voxel::Player::lockJump()
-{
-	// just make jump dist 0
-	jumpDistance = 0;
 }
 
 bool Voxel::Player::isJumping()
@@ -513,14 +496,14 @@ bool Voxel::Player::isJumping()
 	return jumpState == JumpState::JUMPING;
 }
 
-void Voxel::Player::setAsFalling()
-{
-	this->jumpState = JumpState::FALLING;
-}
-
 bool Voxel::Player::isFalling()
 {
 	return jumpState == JumpState::FALLING;
+}
+
+void Voxel::Player::setJumpState(const JumpState jumpState)
+{
+	this->jumpState = jumpState;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -566,7 +549,7 @@ void Voxel::Player::updateDirection()
 
 void Voxel::Player::update(const float delta)
 {
-	//std::cout << "js = " << std::to_string((int)jumpState) << "\n";
+	std::cout << "js = " << std::to_string((int)jumpState) << "\n";
 
 	rotated = false;
 
@@ -634,6 +617,7 @@ void Voxel::Player::update(const float delta)
 		}
 	}
 
+	/*
 	if (jumpState == JumpState::JUMPING)
 	{
 		//float jumpDist = glm::lerp(jumpDistance, 0.0f, 30.0f * delta);
@@ -663,8 +647,10 @@ void Voxel::Player::update(const float delta)
 			// refill jump distance
 			jumpDistance = Player::DefaultJumpDistance;
 			jumpState = JumpState::IDLE;
+			std::cout << "Player can jump again" << std::endl;
 		}
 	}
+	*/
 }
 
 void Voxel::Player::updateMovement(const float delta)

@@ -1997,7 +1997,7 @@ void Voxel::ChunkMap::queryNearByCollidableBlocksInXZ(const glm::vec3 & playerPo
 
 void Voxel::ChunkMap::queryBottomCollidableBlocksInY(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
 {
-	auto standingBlockWorldPos = glm::ivec3(0);
+ 	auto standingBlockWorldPos = glm::ivec3(0);
 	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
 	standingBlockWorldPos.y = static_cast<int>((playerPosition.y >= 0) ? playerPosition.y : 0);
 	standingBlockWorldPos.z = static_cast<int>((playerPosition.z >= 0) ? playerPosition.z : glm::floor(playerPosition.z));

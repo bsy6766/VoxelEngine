@@ -20,6 +20,8 @@ namespace Voxel
 		// for collision resolution. We divide step to x axis and z axis
 		static const unsigned int X_AXIS;
 		static const unsigned int Z_AXIS;
+
+		glm::vec3 playerJumpForce;
 	public:
 		// Gravity. Same as earth.
 		static const float Gravity;
@@ -37,9 +39,9 @@ namespace Voxel
 		~Physics();
 
 		/**
-		*	Updates player position during the jump
+		*	
 		*/
-		void updatePlayerJump(Player* player, const float delta);
+		void applyJumpForceToPlayer(const glm::vec3& force);
 
 		/**
 		*	Applies gravity to player.
@@ -80,6 +82,8 @@ namespace Voxel
 		void resolvePlayerBottomCollision(Player* player, const std::vector<Block*>& collidableBlocks);
 
 		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
+
+		bool updatePlayerJumpForce(Player* player, const float delta);
 	};
 }
 

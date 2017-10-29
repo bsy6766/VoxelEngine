@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Player.h>
 #include <Block.h>
+#include <glm/gtx/compatibility.hpp>
 
 using namespace Voxel;
 
@@ -150,10 +151,11 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 					{
 						std::cout << "auto jump. p.y = " << playerPos.y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
 						player->autoJump(iSize.y);
-						player->runJumpCooldown();
+						//player->runJumpCooldown();
 						player->setOnGround(true);
+						player->setJumpState(Player::JumpState::IDLE);
 						//autoJumped = true;
-						return true;
+ 						return true;
 					}
 					else
 					{
@@ -269,7 +271,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 	return resolved;
 }
 
-
+/*
 void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::vector<Block*>& collidableBlocks)
 {
 	// current position
@@ -409,6 +411,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollision(Player * player, const std::
 		player->setNextPosition(resolvingPos);
 	}
 }
+*/
 
 void Voxel::Physics::resolvePlayerAndBlockCollisionInXZAxis(Player * player, const std::vector<Block*>& collidableBlocks)
 {
@@ -491,6 +494,7 @@ void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::ve
 	if (movedDist.y >= 0.0f)
 	{
 		// player didn't move downward. 
+		//std::cout << "Player didn't move downward" << std::endl;
 		return;
 	}
 
@@ -517,16 +521,18 @@ void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::ve
 			if(sizeY > 0)
 			{
 				// player and block is intersecting
-				std::cout << "position y = " << resolvingPos.y << std::endl;
+				//std::cout << "position y = " << playerPos.y << std::endl;
+				//std::cout << "r position y = " << resolvingPos.y << std::endl;
 				resolvingPos.y += (intersectingAABB.getSize().y);
-				std::cout << "resolving y = " << resolvingPos.y << std::endl;
+				//std::cout << "resolving y = " << resolvingPos.y << std::endl;
 
 				//pBB = player->getBoundingBox(resolvingPos);
-				player->setOnGround(true);
+ 				player->setOnGround(true);
+				player->setJumpState(Player::JumpState::IDLE);
 
 				player->setNextPosition(resolvingPos);
 
-				std::cout << "Player moved down. resolved\n";
+				//std::cout << "Player moved down. resolved\n";
 
 				return;
 			}
@@ -546,7 +552,8 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 
 	// Resolving position
 	auto resolvingPos = playerPos;
-	resolvingPos.y -= 0.01f;
+	resolvingPos.y = playerNextPos.y;
+	//resolvingPos.y -= 0.01f;
 
 	// init player bounding box
 	auto pBB = player->getBoundingBox(resolvingPos);
@@ -565,14 +572,79 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 			float sizeY = intersectingAABB.getSize().y;// block i
 
 			 //if (!intersectingAABB.isZero(false))
-			if (sizeY > 0)
+			if (sizeY > 0 || (blockBB.getMax().y >= pBB.getMin().y))
 			{
 				// player and block is intersecting
+				//std::cout << "Player is on ground" << std::endl;
+				player->setOnGround(true);
+				player->setJumpState(Player::JumpState::IDLE);
 				return;
 			}
 		}
 	}
 
 	player->setOnGround(false);
-	player->setAsFalling();
+	player->setJumpState(Player::JumpState::FALLING);
+	//std::cout << "Player is falling" << std::endl;
+}
+
+void Voxel::Physics::applyJumpForceToPlayer(const glm::vec3 & force)
+{
+	if (force.y >= 0.0f)
+	{
+		playerJumpForce = force;
+	}
+}
+
+bool Voxel::Physics::updatePlayerJumpForce(Player * player, const float delta)
+{
+	if (player)
+	{
+		if (playerJumpForce.x != 0 || playerJumpForce.y != 0 || playerJumpForce.z != 0)
+		{
+			//std::cout << "Player JF = (" << playerJumpForce.x << ", " << playerJumpForce.y << ", " << playerJumpForce.z << ")" << std::endl;
+
+			auto nextForce = glm::lerp(playerJumpForce, glm::vec3(0), 10.0f * delta);
+
+			//std::cout << "nextForce = (" << nextForce.x << ", " << nextForce.y << ", " << nextForce.z << ")" << std::endl;
+
+			auto forceDelta = playerJumpForce - nextForce;
+
+			//std::cout << "forceDelta = (" << forceDelta.x << ", " << forceDelta.y << ", " << forceDelta.z << ")" << std::endl;
+
+			if (nextForce.x <= 0.05f)
+			{
+				forceDelta.x = playerJumpForce.x;
+				nextForce.x = 0.0f;
+			}
+
+			if (nextForce.y <= 0.05f)
+			{
+				forceDelta.y = playerJumpForce.y;
+				nextForce.y = 0.0f;
+			}
+
+			if (nextForce.z <= 0.05f)
+			{
+				forceDelta.z = playerJumpForce.z;
+				nextForce.z = 0.0f;
+			}
+
+			playerJumpForce = nextForce;
+
+			auto pNextPos = player->getNextPosition();
+			pNextPos += forceDelta;
+
+			if (playerJumpForce.y <= 0.0f)
+			{
+				player->setJumpState(Player::JumpState::FALLING);
+			}
+
+			player->setNextPosition(pNextPos);
+			
+			return true;
+		}
+	}
+
+	return false;
 }

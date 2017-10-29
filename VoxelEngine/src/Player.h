@@ -24,8 +24,6 @@ namespace Voxel
 	{
 	private:
 		static const float MaxCameraDistanceX;
-		static const float DefaultJumpDistance;
-		static const float DefaultJumpCooldown;
 		static const float EyeHeight;
 	public:
 		enum class ViewMode
@@ -87,10 +85,6 @@ namespace Voxel
 		float fallDistance;
 		// True if player is standing on block. Else, it's falling
 		bool onGround;
-		// player jump distance
-		float jumpDistance;
-		// to prevent glith-like jumping
-		float jumpCooldown;
 
 		// Block that player is looking at
 		Block* lookingBlock;
@@ -141,7 +135,7 @@ namespace Voxel
 		void moveRight(const float delta);
 		void moveUp(const float delta);
 		void moveDown(const float delta);
-		void jump(const float delta);
+		void jump();
 		void sneak();
 
 		void setFly(const bool mode);		
@@ -203,27 +197,16 @@ namespace Voxel
 		Geometry::AABB getBoundingBox();
 		Geometry::AABB getBoundingBox(const glm::vec3& position);
 
-		void runJumpCooldown();
 		void autoJump(const float y);
-
-		/**
-		*	Checks if player can jump
-		*/
-		bool canJump();
-		
-		/**
-		*	When player jump and release the jump key, game locks the jump so it can't do double jump.
-		*/
-		void lockJump();
-
+				
 		/**
 		*	Checks if player is jumping
 		*/
 		bool isJumping();
 
-		void setAsFalling();
-
 		bool isFalling();
+
+		void setJumpState(const JumpState jumpState);
 	};
 }
 
