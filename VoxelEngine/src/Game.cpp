@@ -185,12 +185,12 @@ void Voxel::Game::initSpriteSheets()
 
 void Voxel::Game::initRandoms()
 {
-	const std::string seed = "ENGINE";
-	Utility::Random::setSeed(seed);
-	Noise::Manager::init(seed);
+	globalSeed = "ENGINE";
+	Utility::Random::setSeed(globalSeed);
+	Noise::Manager::init(globalSeed);
 
 	auto& rand = Random::getInstance();
-	rand.init(seed);
+	rand.init(globalSeed);
 }
 
 void Voxel::Game::initUI()
@@ -395,7 +395,7 @@ void Voxel::Game::createWorld()
 {
 	world->setTemperature(0.5f, 1.5f);
 	world->setMoisture(0.5f, 1.5f);
-	world->init(10, 10);
+	world->init(10, 10, 0, globalSeed);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
 	auto& rand = Random::getInstance();

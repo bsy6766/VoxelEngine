@@ -56,6 +56,8 @@ namespace Voxel
 		float getTemperature();
 		float getMoisture();
 
+		void initVegitation();
+
 		// Check if this biome has flower
 		bool hasFlower();
 		// Check if this biome has tree

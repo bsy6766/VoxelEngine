@@ -674,9 +674,19 @@ bool Voxel::Chunk::isGenerated()
 	return generated.load();
 }
 
+bool Voxel::Chunk::hasSingleRegion()
+{
+	return regionMap.size() == 1;
+}
+
 bool Voxel::Chunk::hasMultipleRegion()
 {
 	return regionMap.size() > 1;
+}
+
+unsigned int Voxel::Chunk::getFirstRegion()
+{
+	return regionMap.front();
 }
 
 int Voxel::Chunk::getQ11()

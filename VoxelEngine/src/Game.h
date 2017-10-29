@@ -72,6 +72,9 @@ namespace Voxel
 		GameState gameState;
 		LoadingState loadingState;
 		
+		// global seed
+		std::string globalSeed;
+
 		// World
 		World* world;
 

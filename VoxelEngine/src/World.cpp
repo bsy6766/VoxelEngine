@@ -17,6 +17,7 @@ World::World()
 	, minMoisture(0)
 	, maxMoisture(0)
 	, renderVoronoiMode(false)
+	, id(-1)
 {
 }
 
@@ -39,10 +40,13 @@ World::~World()
 }
 
 
-void Voxel::World::init(const int gridWidth, const int gridLength)
+void Voxel::World::init(const int gridWidth, const int gridLength, const unsigned int id, const std::string& globalSeed)
 {
 	this->gridWidth = gridWidth;
 	this->gridLength = gridLength;
+
+	this->seed = globalSeed + "W" + std::to_string(id);
+	this->id = id;
 
 	initVoronoi();
 	initRegions();
@@ -350,6 +354,11 @@ bool Voxel::World::updatePlayerPos(const glm::vec3 & playerPos)
 void Voxel::World::setRenderVoronoiMode(const bool mode)
 {
 	renderVoronoiMode = mode;
+}
+
+std::string Voxel::World::getSeed()
+{
+	return seed;
 }
 
 void Voxel::World::initVoronoi()

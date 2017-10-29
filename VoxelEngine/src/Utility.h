@@ -20,6 +20,24 @@ namespace Voxel
 		*/
 		class Random
 		{
+		public:
+			struct Seed
+			{
+				size_t number;
+				std::string str;
+			};
+
+			struct Generator
+			{
+				Seed seed;
+				std::mt19937 engine;
+				std::uniform_int_distribution<int> dist;
+
+				int get()
+				{
+					return dist(engine);
+				}
+			};
 		private:
 			// Seed in humber. Hashed from seed string
 			static size_t seedNumber;

@@ -243,3 +243,14 @@ float Voxel::Biome::getMoisture()
 {
 	return moisture;
 }
+
+void Voxel::Biome::initVegitation()
+{
+	// init vegitation. 
+	// when initialize vegitation with weight, use base weight and randomly modify the weight.
+}
+
+bool Voxel::Biome::hasTree()
+{
+	return Biome::biomeTreeMap.find(this->type) != Biome::biomeTreeMap.end();
+}

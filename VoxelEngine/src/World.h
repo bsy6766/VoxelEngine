@@ -33,6 +33,12 @@ namespace Voxel
 		int gridWidth;
 		int gridLength;
 
+		// number id
+		unsigned int id;
+
+		// World's unique seed
+		std::string seed;
+
 		// Voronoi diagram
 		Voronoi::Diagram* vd;
 
@@ -60,7 +66,7 @@ namespace Voxel
 		~World();
 
 		// Initialize world
-		void init(const int gridWidth, const int gridLength);
+		void init(const int gridWidth, const int gridLength, const unsigned int id, const std::string& globalSeed);
 		void rebuildWorldMap();
 
 		// Getters
@@ -101,6 +107,9 @@ namespace Voxel
 
 		// mode setter
 		void setRenderVoronoiMode(const bool mode);
+
+		// Get world seed
+		std::string getSeed();
 
 		// Renders visible chunk
 		void render();
