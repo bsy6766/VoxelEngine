@@ -612,19 +612,19 @@ bool Voxel::Physics::updatePlayerJumpForce(Player * player, const float delta)
 
 			//std::cout << "forceDelta = (" << forceDelta.x << ", " << forceDelta.y << ", " << forceDelta.z << ")" << std::endl;
 
-			if (nextForce.x <= 0.05f)
+			if (nextForce.x <= 0.025f)
 			{
 				forceDelta.x = playerJumpForce.x;
 				nextForce.x = 0.0f;
 			}
 
-			if (nextForce.y <= 0.05f)
+			if (nextForce.y <= 0.025f)
 			{
 				forceDelta.y = playerJumpForce.y;
 				nextForce.y = 0.0f;
 			}
 
-			if (nextForce.z <= 0.05f)
+			if (nextForce.z <= 0.025f)
 			{
 				forceDelta.z = playerJumpForce.z;
 				nextForce.z = 0.0f;
