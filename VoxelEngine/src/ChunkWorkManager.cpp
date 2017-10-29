@@ -10,6 +10,7 @@
 #include <ChunkMeshGenerator.h>
 #include <ChunkMesh.h>
 #include <Utility.h>
+#include <Random.h>
 #include <unordered_set>
 #include <Color.h>
 #include <HeightMap.h>
@@ -410,89 +411,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			std::unique_lock<std::mutex> lock(queueMutex);
 
 			std::cout << "Clearing all the work\n";
-
-			/*
-			for (auto& chunkXZ : preGenerateQueue)
-			{
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Scope lock
-						std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-
-						unloadFinishedQueue.push_back(chunkXZ);
-					}
-				}
-			}
-
-			for (auto& chunkXZ : smoothQueue)
-			{
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Scope lock
-						std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-
-						unloadFinishedQueue.push_back(chunkXZ);
-					}
-				}
-			}
-
-			for (auto& chunkXZ : generateQueue)
-			{
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Scope lock
-						std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-
-						unloadFinishedQueue.push_back(chunkXZ);
-					}
-				}
-			}
-
-			for (auto& chunkXZ : addStructureQueue)
-			{
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Scope lock
-						std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-
-						unloadFinishedQueue.push_back(chunkXZ);
-					}
-				}
-			}
-
-			for (auto& chunkXZ : buildMeshQueue)
-			{
-				auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-				if (chunk)
-				{
-					auto mesh = chunk->getMesh();
-					if (mesh)
-					{
-						// Scope lock
-						std::unique_lock<std::mutex> fLock(finishedQueueMutex);
-
-						unloadFinishedQueue.push_back(chunkXZ);
-					}
-				}
-			}
-			*/
-
+			
 			// empty all the queue. 
 			preGenerateQueue.clear();
 			smoothQueue.clear();
@@ -868,7 +787,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							// All chunks starts from chunk section 3 because sea level starts at 33.
 							chunk->generate();
 
-							int rand = Utility::Random::randomInt100();
+							int rand = Random::getInstance().getRandGen100();
 
 							std::cout << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "),  rand = " << rand << std::endl;
 
@@ -910,7 +829,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 						TreeBuilder::TrunkHeight trunkHeight;
 
-						int hRand = Utility::Random::randomInt100();
+						int hRand = Random::getInstance().getRandGen100();
 						if (hRand > 65)
 						{
 							trunkHeight = TreeBuilder::TrunkHeight::SMALL;
@@ -927,7 +846,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						// Get tree width. 
 						TreeBuilder::TrunkWidth trunkWidth;
 
-						int wRand = Utility::Random::randomInt100();
+						int wRand = Random::getInstance().getRandGen100();
 						if (wRand > 65)
 						{
 							trunkWidth = TreeBuilder::TrunkWidth::SMALL;

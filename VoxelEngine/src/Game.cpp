@@ -31,6 +31,7 @@
 #include <glm\gtx\transform.hpp>
 #include <Cube.h>
 #include <Utility.h>
+#include <Random.h>
 #include <SimplexNoise.h>
 #include <Color.h>
 #include <Player.h>
@@ -184,9 +185,12 @@ void Voxel::Game::initSpriteSheets()
 
 void Voxel::Game::initRandoms()
 {
-	const auto seed = "ENGINE";
+	const std::string seed = "ENGINE";
 	Utility::Random::setSeed(seed);
 	Noise::Manager::init(seed);
+
+	auto& rand = Random::getInstance();
+	rand.init(seed);
 }
 
 void Voxel::Game::initUI()
@@ -394,8 +398,9 @@ void Voxel::Game::createWorld()
 	world->init(10, 10);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
-	auto randX = Utility::Random::randomReal<float>(startingRegionSitePos.x - 100.0f, startingRegionSitePos.x + 100.0f);
-	auto randZ = Utility::Random::randomReal<float>(startingRegionSitePos.y - 100.0f, startingRegionSitePos.y + 100.0f);
+	auto& rand = Random::getInstance();
+	auto randX = rand.getRandomFloat(startingRegionSitePos.x - 100.0f, startingRegionSitePos.x + 100.0f);
+	auto randZ = rand.getRandomFloat(startingRegionSitePos.y - 100.0f, startingRegionSitePos.y + 100.0f);
 
 	player->setPosition(glm::vec3(randX, 0, randZ), false);
 }
@@ -449,6 +454,7 @@ void Game::update(const float delta)
 			std::cout << "Done. Regenerate chunk map and get chunk work manager back to work\n";
 
 			Utility::Random::resetGenerator();
+			Random::getInstance().resetAll();
 			createChunkMap();
 
 			chunkWorkManager->resumeWork();
@@ -652,12 +658,6 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
 		}
 		*/
-
-		Utility::Random::resetGenerator();
-		for (int i = 0; i < 10; i++)
-		{
-			std::cout << Utility::Random::randomInt100() << std::endl;
-		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))

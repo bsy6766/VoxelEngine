@@ -1,6 +1,7 @@
 #include "Voronoi.h"
 #include <iostream>
 #include <Utility.h>
+#include <Random.h>
 #include <ProgramManager.h>
 #include <Program.h>
 #include <Color.h>
@@ -677,7 +678,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 
 	auto lineColor = glm::vec3(0);
 	auto sharedLineColor = glm::vec3(1, 1, 0);
-	auto graphColor = Color::getRandomColor();
+	auto graphColor = glm::vec3(0.5f, 0.6f, 0.7f);
 
 	const float y = 32.0f;
 
@@ -1623,14 +1624,16 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
 void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::vec2 & e1, const glm::vec2 & c0, const glm::vec2 & c1, std::vector<glm::vec2>& points, int level, const int startLevel)
 {
 	auto division = 0.0f;
+
+	auto& random = Random::getInstance();
 	
 	if (startLevel == level)
 	{
-		division = Utility::Random::randomInt(0, 1) ? Utility::Random::randomReal<float>(0.6f, 0.7f) : Utility::Random::randomReal<float>(0.3f, 0.4f);
+		division = random.getRandGenBool() ? Utility::Random::randomReal<float>(0.6f, 0.7f) : Utility::Random::randomReal<float>(0.3f, 0.4f);
 	}
 	else
 	{
-		division = Utility::Random::randomInt(0, 1) ? Utility::Random::randomReal<float>(0.55f, 0.6f) : Utility::Random::randomReal<float>(0.4f, 0.45f);
+		division = random.getRandGenBool() ? Utility::Random::randomReal<float>(0.55f, 0.6f) : Utility::Random::randomReal<float>(0.4f, 0.45f);
 		//division = 0.5f;
 	}
 

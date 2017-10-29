@@ -4,6 +4,7 @@
 #include <ChunkMap.h>
 #include <Color.h>
 #include <Utility.h>
+#include <Random.h>
 
 using namespace Voxel;
 
@@ -23,21 +24,24 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 {
 	int trunkHeight = 0;
 
+	auto& rand = Random::getInstance();
+
 	if (h == TreeBuilder::TrunkHeight::SMALL)
 	{
-		trunkHeight = Utility::Random::randomInt(14, 16);
+		// note: originally it was 14 ~ 16
+		trunkHeight = rand.getRandGenTreeTrunk() + 12;	// 12 ~ 16
 	}
 	else if (h == TreeBuilder::TrunkHeight::MEDIUM)
 	{
-		trunkHeight = Utility::Random::randomInt(16, 20);
+		trunkHeight = rand.getRandGenTreeTrunk() + 16;	// 16 ~ 20
 	}
 	else if (h == TreeBuilder::TrunkHeight::LARGE)
 	{
-		trunkHeight = Utility::Random::randomInt(20, 24);
+		trunkHeight = rand.getRandGenTreeTrunk() + 20;	// 20 ~ 24
 	}
 	else if (h == TreeBuilder::TrunkHeight::MEGA)
 	{
-		trunkHeight = Utility::Random::randomInt(30, 34);
+		trunkHeight = rand.getRandGenTreeTrunk() + 30;	// 30 ~ 34
 	}
 	else
 	{
@@ -97,7 +101,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 	p.push_back(glm::ivec3(p.at(4).x + 1, pivot.y, p.at(4).z + 1));	// p23
 	p.push_back(glm::ivec3(p.at(3).x - 1, pivot.y, p.at(3).z + 1));	// p24
 
-	int tRand = Utility::Random::randomInt(0, 3);
+	int tRand = Random::getInstance().getRandGenTreeTrunk();
 
 	int rootHeight = 10;
 
