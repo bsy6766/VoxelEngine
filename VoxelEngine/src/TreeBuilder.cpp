@@ -8,40 +8,40 @@
 
 using namespace Voxel;
 
-void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY)
+void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine)
 {
 	switch (type)
 	{
 	case TreeBuilder::TreeType::OAK:
-		TreeBuilder::createOakTree(h, w, chunkMap, chunkXZ, treeLocalXZ, treeY);
+		TreeBuilder::createOakTree(h, w, chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
 		break;
 	default:
 		break;
 	}
 }
 
-void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY)
+void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937& engine)
 {
 	int trunkHeight = 0;
 
-	auto& rand = Random::getInstance();
+	std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 4);
 
 	if (h == TreeBuilder::TrunkHeight::SMALL)
 	{
 		// note: originally it was 14 ~ 16
-		trunkHeight = rand.getRandGenTreeTrunk() + 12;	// 12 ~ 16
+		trunkHeight = dist(engine) +12;	// 12 ~ 16
 	}
 	else if (h == TreeBuilder::TrunkHeight::MEDIUM)
 	{
-		trunkHeight = rand.getRandGenTreeTrunk() + 16;	// 16 ~ 20
+		trunkHeight = dist(engine) + 16;	// 16 ~ 20
 	}
 	else if (h == TreeBuilder::TrunkHeight::LARGE)
 	{
-		trunkHeight = rand.getRandGenTreeTrunk() + 20;	// 20 ~ 24
+		trunkHeight = dist(engine) + 20;	// 20 ~ 24
 	}
 	else if (h == TreeBuilder::TrunkHeight::MEGA)
 	{
-		trunkHeight = rand.getRandGenTreeTrunk() + 30;	// 30 ~ 34
+		trunkHeight = dist(engine) + 30;	// 30 ~ 34
 	}
 	else
 	{
@@ -101,7 +101,9 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 	p.push_back(glm::ivec3(p.at(4).x + 1, pivot.y, p.at(4).z + 1));	// p23
 	p.push_back(glm::ivec3(p.at(3).x - 1, pivot.y, p.at(3).z + 1));	// p24
 
-	int tRand = Random::getInstance().getRandGenTreeTrunk();
+	dist = std::uniform_int_distribution<>(0, 3);
+
+	int tRand = dist(engine);
 
 	int rootHeight = 10;
 
@@ -209,16 +211,19 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 		}
 
 		// add main leave above trunk
-		int leavesWidth = Utility::Random::randomInt(8, 10);
-		int leavesHeight = Utility::Random::randomInt(6, 7);
-		int leavesLength = Utility::Random::randomInt(8, 10);
+		dist = std::uniform_int_distribution<>(0, 2);
+
+		int leavesWidth = dist(engine) + 8;	// 8 ~ 10
+		int leavesHeight = dist(engine) + 5;	// 5 ~ 7
+		int leavesLength = dist(engine) + 8;	// 8 ~ 10
 
 		//auto l1 = glm::ivec3(p1.x, pivot.y + trunkHeight + (leavesHeight / 2), p1.z);
 		auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-		addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1);
+		addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
 
 		// Add more blocks around top of trunk, below the leaves
+		/*
 		{
 			int newY = pivot.y + trunkHeight;		
 			
@@ -238,6 +243,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 		}
 
 		addOakBranch(chunkMap, p, pivot.y + trunkHeight + 2 - 3 - leavesHeight);
+		*/
 	}
 	else
 	{
@@ -340,13 +346,15 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 			}
 
 			// add main leave above trunk
-			int leavesWidth = Utility::Random::randomInt(12, 14);
-			int leavesHeight = Utility::Random::randomInt(6, 8);
-			int leavesLength = Utility::Random::randomInt(12, 14);
+			dist = std::uniform_int_distribution<>(0, 2);
+
+			int leavesWidth = dist(engine) + 12;	// 12 ~ 14
+			int leavesHeight = dist(engine) + 6;	// 6 ~ 8
+			int leavesLength = dist(engine) + 12;	// 12 ~ 14
 
 			auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1);
+			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
 		}
 		else if (w == TreeBuilder::TrunkWidth::LARGE)
 		{
@@ -526,13 +534,15 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 			}
 
 			// add main leave above trunk
-			int leavesWidth = Utility::Random::randomInt(14, 16);
-			int leavesHeight = Utility::Random::randomInt(8, 10);
-			int leavesLength = Utility::Random::randomInt(14, 16);
+			dist = std::uniform_int_distribution<>(0, 2);
+
+			int leavesWidth = dist(engine) + 14;	// 14 ~ 16
+			int leavesHeight = dist(engine) + 8;	// 8 ~ 10
+			int leavesLength = dist(engine) + 14;	// 14 ~ 16
 
 			auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1);
+			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
 		}
 	}
 }
@@ -581,35 +591,42 @@ void Voxel::TreeBuilder::addTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, gl
 	}
 }
 
-void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos)
+void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine)
 {
-	int mlRand = Utility::Random::randomInt100();
+	auto dist = std::uniform_int_distribution<>(0, 100);
+
+	int mlRand = dist(engine);
+
 	auto l1 = pos;
 
 	if (mlRand < 50)
 	{
-		addOakLeave(map, w, h, l, l1);
+		addOakLeave(map, w, h, l, l1, engine);
 	}
 	else
 	{
 		l1.x -= 1;
 		l1.y -= 2;
-		addOakLeave(map, w, h / 3 * 2, l, l1);
+		addOakLeave(map, w, h / 3 * 2, l, l1, engine);
 
 		l1.x += 1;
-		l1.z += Utility::Random::randomInt(3, 4) * Utility::Random::random_int_minus_1_1();
+		
+		l1.z += std::uniform_int_distribution<>(3, 4)(engine) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
 		l1.y += 3;
-		addOakLeave(map, w, h / 3 * 2, l, l1);
+
+		addOakLeave(map, w, h / 3 * 2, l, l1, engine);
 	}
 
 	// Add additional leaves near main leaves
-	int totalSideLeaves = Utility::Random::randomInt(1, 3);
+	dist = std::uniform_int_distribution<>(1, 3);
+	int totalSideLeaves = dist(engine);
 
 	for (int i = 0; i < totalSideLeaves; i++)
 	{
-		int sideLeavesWidth = Utility::Random::randomInt(3, 4);
-		int sideLeavesHeight = Utility::Random::randomInt(2, 3);
-		int sideLeavesLength = Utility::Random::randomInt(3, 4);
+		int sideLeavesWidth = std::uniform_int_distribution<>(3, 4)(engine);
+		int sideLeavesHeight = std::uniform_int_distribution<>(2, 3)(engine);
+		int sideLeavesLength = std::uniform_int_distribution<>(3, 4)(engine);
+
 
 		int x = 0;
 		int y = 0;
@@ -619,24 +636,25 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p
 
 		if (mlRand)
 		{
-			x = Utility::Random::randomInt(w / 2, (w / 4) * 3) * Utility::Random::random_int_minus_1_1();
-			y = Utility::Random::randomInt(0, h / 2);
-			z = Utility::Random::randomInt(l / 2, (l / 4) * 3) * Utility::Random::random_int_minus_1_1();
+			x = (std::uniform_int_distribution<>(w / 2, (w / 4) * 3)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
+			y = (std::uniform_int_distribution<>(0, h / 2)(engine));
+			z = (std::uniform_int_distribution<>(l / 2, (l / 4) * 3)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
+
 			sidePos = glm::ivec3(x, y, z) + l1;
 		}
 		else
 		{
-			x = Utility::Random::randomInt((w / 4), w / 2) * Utility::Random::random_int_minus_1_1();
-			y = Utility::Random::randomInt(0, h / 2);
-			z = Utility::Random::randomInt((l / 4) * 3, l / 2) * Utility::Random::random_int_minus_1_1();
+			x = (std::uniform_int_distribution<>((w / 4), w / 2)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
+			y = (std::uniform_int_distribution<>(0, h / 2)(engine));
+			z = (std::uniform_int_distribution<>((l / 4) * 3, l / 2)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
 			sidePos = glm::ivec3(x, y, z) + l1;
 		}
 
-		addOakLeave(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos);
+		addOakLeave(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos, engine);
 	}
 }
 
-void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos)
+void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937& engine)
 {
 	float aa = static_cast<float>(w * w);
 	float bb = static_cast<float>(h * h);
@@ -654,14 +672,17 @@ void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, c
 
 	bool skew = false;
 
-	int yrand = Utility::Random::randomInt100();
+	auto dist100 = std::uniform_int_distribution<>(0, 100);
+	int yrand = dist100(engine);
 	glm::ivec3 leaveOffset = glm::ivec3(0);
 
 	if (yrand < 40)
 	{
 		skew = true;
-		int xzRand = Utility::Random::randomInt100();
-		int dirRand = Utility::Random::randomInt100();
+
+		int xzRand = dist100(engine);
+		int dirRand = dist100(engine);
+
 		if (xzRand < 50)
 		{
 			if (dirRand)
@@ -688,9 +709,10 @@ void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, c
 
 	auto leaveColor = Color::colorU3TocolorV3(Color::OAK_LEAVES);
 	auto leaveColorStep = leaveColor * 0.05f;
-	if (Utility::Random::randomInt100() < 50)
+
+	if (dist100(engine) < 50)
 	{
-		leaveColor += (leaveColor * (Utility::Random::random_float_minus_1_1() * Utility::Random::randomReal<float>(0.0f, 0.05f)));
+		leaveColor += (leaveColor * (((std::uniform_int_distribution<>(0, 1)(engine)) ? -1.0f : 1.0f) * (std::uniform_real_distribution<float>(0.0f, 0.05f))(engine)));
 	}
 
 	leaveColor -= (leaveColorStep * (static_cast<float>(h)));
@@ -822,7 +844,7 @@ void Voxel::TreeBuilder::addOakBranch(ChunkMap * map, std::vector<glm::ivec3>& p
 
 		b1.y += (branchLeavesHeight / 2);
 			
-		addOakLeave(map, branchLeaveWidth, branchLeavesHeight, branchLeavesLength, b1);
+		//addOakLeave(map, branchLeaveWidth, branchLeavesHeight, branchLeavesLength, b1);
 	}
 	else if (totalBranch == 2)
 	{

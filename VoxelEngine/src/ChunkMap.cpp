@@ -802,7 +802,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -850,7 +850,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -898,7 +898,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }

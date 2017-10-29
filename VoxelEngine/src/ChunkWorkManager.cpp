@@ -523,16 +523,17 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							{
 								glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
 
-								// First, check if block is in region that we found
-								//unsigned int regionID = world->findClosestRegionToPoint(blockXZPos);
+								// First, check if block is in boundary
 								bool inBoundary = world->isPointInBoundary(blockXZPos);
+
+								// init region ID
 								unsigned int regionID = -1;
 
 								if (inBoundary)
 								{
-									//regionID = world->findRegionHasPoint(blockXZPos);
-									// find closest region
+									// Block is in boundary. Find cloest region to block pos
 									unsigned int closestRegionID = world->findClosestRegionToPoint(blockXZPos);
+
 									// get the region
 									auto region = world->getRegion(closestRegionID);
 
@@ -547,11 +548,11 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										// Nope, check if neighbor regions has block
 										if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
 										{
-											// found
+											// found it.
 										}
 										else
 										{
-											// hmm
+											// Even neighbor regions doesn't have this block. Can't figure out why, assert false it.
 											assert(false);
 										}
 									}
@@ -613,7 +614,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						chunk->mergeHeightMap(plainHeightMap);
 
 						chunk->smoothed = false;
-
+						
 						if (regionIDSet.size() == 1)
 						{
 							// There is only 1 region in this chunk.
@@ -786,20 +787,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 							// All chunks starts from chunk section 3 because sea level starts at 33.
 							chunk->generate();
-
-							int rand = Random::getInstance().getRandGen100();
-
-							std::cout << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "),  rand = " << rand << std::endl;
-
-							int treeChance = 70;
-							if (rand < treeChance)
-							{
-								addStructureWork(chunkXZ);
-							}
-							else
-							{
-								addBuildMeshWork(chunkXZ);
-							}
+							
+							addStructureWork(chunkXZ);
 
 							//auto e = Utility::Time::now();
 							//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
@@ -812,60 +801,119 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 					if (chunk && chunk->isActive())
 					{
+						/*
+						Trick of using random.
+
+						During this step, we use unique random generator using chunk position as seed.
+						In that way, random generator will be guaranteed to be unique between other chunks
+						Also whenever chunk adds structure on the fly, it will always use same random generator
+						We are going to use same engine.
+						We change dist whenever we need
+						*/
+						/*
+						Tree gen process
+
+							dist(0, 100)
+								treeRand = check if tree can spawn in chunk
+								trunkHeightType, trunkWidthType
+
+								dist(0, 4)
+									trunkHeight
+
+									dist(0, 3)
+										tRand = 3 different types of trunk
+
+										dist(0, 2)
+											leaveSize (x3)
+						*/
+						auto worldSeed = world->getSeed();
+
+						std::mt19937 engine(std::hash<std::string>{}(worldSeed + std::to_string(chunkXZ.x) + std::to_string(chunkXZ.y)));
+						std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
+
 						// First, add small structures like grass, flower, etc
 						// Then, add mid sized structures like stone, 
 						// Then, check if chunk has structure. If so, add structure
 						// Then, add trees. Point is, tree is large and can have up to 1 tree per chunk. We don't want to add tree where large structure exists.
 
-						// test tree
-						glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
-						//std::cout << "Tree pos = " << Utility::Log::vec2ToStr(treeLocalPos) << std::endl;
-						//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
-
-						// Don't spawn tree at the edge of chunk. 
-						//treePos = glm::clamp(treePos, 5, 11);
-
-						int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
-
-						TreeBuilder::TrunkHeight trunkHeight;
-
-						int hRand = Random::getInstance().getRandGen100();
-						if (hRand > 65)
+						// If chunk on region border, don't spawn tree
+						if (chunk->hasSingleRegion())
 						{
-							trunkHeight = TreeBuilder::TrunkHeight::SMALL;
-						}
-						else if (hRand <= 65 && hRand > 33)
-						{
-							trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
-						}
-						else if (hRand <= 33)
-						{
-							trunkHeight = TreeBuilder::TrunkHeight::LARGE;
-						}
+							// get region id
+							auto regionID = chunk->getFirstRegion();
+							auto region = world->getRegion(regionID);
 
-						// Get tree width. 
-						TreeBuilder::TrunkWidth trunkWidth;
+							if (region)
+							{
+								auto biomeType = region->getBiomeType();
+								if (biomeType.hasTree())
+								{
+									// biome can spawn tree. Get tree weight and randomly pick tree type
+									// For now, it's oak.
 
-						int wRand = Random::getInstance().getRandGen100();
-						if (wRand > 65)
-						{
-							trunkWidth = TreeBuilder::TrunkWidth::SMALL;
+									// roll
+									int treeRand = dist(engine);
+
+									//std::cout << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "),  rand = " << treeRand << std::endl;
+
+									// check chance. For now, it's 70
+									if (treeRand < 70)
+									{
+										glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
+										//std::cout << "Tree pos = " << Utility::Log::vec2ToStr(treeLocalPos) << std::endl;
+										//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
+
+										// Don't spawn tree at the edge of chunk. 
+										//treePos = glm::clamp(treePos, 5, 11);
+
+										//auto treeStart = Utility::Time::now();
+
+										int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
+
+										TreeBuilder::TrunkHeight trunkHeight;
+
+										int hRand = dist(engine);
+										if (hRand > 65)
+										{
+											trunkHeight = TreeBuilder::TrunkHeight::SMALL;
+										}
+										else if (hRand <= 65 && hRand > 33)
+										{
+											trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
+										}
+										else if (hRand <= 33)
+										{
+											trunkHeight = TreeBuilder::TrunkHeight::LARGE;
+										}
+
+										// Get tree width. 
+										TreeBuilder::TrunkWidth trunkWidth;
+
+										int wRand = dist(engine);
+										if (wRand > 65)
+										{
+											trunkWidth = TreeBuilder::TrunkWidth::SMALL;
+										}
+										else if (wRand <= 65 && wRand > 33)
+										{
+											trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
+										}
+										else if (wRand <= 33)
+										{
+											trunkWidth = TreeBuilder::TrunkWidth::LARGE;
+										}
+
+										TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY, engine);
+
+										//auto treeEnd = Utility::Time::now();
+
+										//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;
+									}
+								}
+							}
 						}
-						else if (wRand <= 65 && wRand > 33)
-						{
-							trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
-						}
-						else if (wRand <= 33)
-						{
-							trunkWidth = TreeBuilder::TrunkWidth::LARGE;
-						}
-
-						//auto treeStart = Utility::Time::now();
-						TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY);
-						//auto treeEnd = Utility::Time::now();
-
-						//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;
-
+						
+						// Finally, build mesh.
 						addBuildMeshWork(chunkXZ);
 					}
 				}
