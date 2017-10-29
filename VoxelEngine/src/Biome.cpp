@@ -3,12 +3,12 @@
 
 using namespace Voxel;
 
-const std::unordered_map<BiomeType, std::vector<Voxel::Vegitation::Tree>> Biome::biomeTreeMap =
+const std::unordered_map<BiomeType, std::vector<Biome::TreePair>> Biome::biomeTreeMap =
 {
-	{BiomeType::WOODS, {Voxel::Vegitation::Tree::OAK}},
-	{BiomeType::FOREST, {Voxel::Vegitation::Tree::OAK, Voxel::Vegitation::Tree::BIRCH}},
-	{BiomeType::TAIGA, {Voxel::Vegitation::Tree::SPRUCE}},
-	{BiomeType::TAIGA_FOREST, {Voxel::Vegitation::Tree::SPRUCE}}
+	{BiomeType::WOODS, {{Voxel::Vegitation::Tree::OAK, 100}}},
+	{BiomeType::FOREST, {{Voxel::Vegitation::Tree::OAK, 50}, {Voxel::Vegitation::Tree::BIRCH, 50}}},
+	{BiomeType::TAIGA, {{Voxel::Vegitation::Tree::SPRUCE, 100}}},
+	{BiomeType::TAIGA_FOREST, {{Voxel::Vegitation::Tree::SPRUCE, 100}}}
 };
 
 Voxel::Biome::Biome()

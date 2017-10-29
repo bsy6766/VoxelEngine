@@ -549,7 +549,7 @@ void Voxel::Player::updateDirection()
 
 void Voxel::Player::update(const float delta)
 {
-	std::cout << "js = " << std::to_string((int)jumpState) << "\n";
+	//std::cout << "js = " << std::to_string((int)jumpState) << "\n";
 
 	rotated = false;
 

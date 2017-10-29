@@ -17,9 +17,16 @@ namespace Voxel
 	*/
 	class Biome
 	{
+	private:
+		struct TreePair
+		{
+		public:
+			Voxel::Vegitation::Tree tree;
+			int weight;
+		};
 	public:
 		// Store types of vegitation that can grow in biome
-		static const std::unordered_map<BiomeType, std::vector<Voxel::Vegitation::Tree>> biomeTreeMap;
+		static const std::unordered_map<BiomeType, std::vector<TreePair>> biomeTreeMap;
 		// Store types of living entity that can live in biome
 		// Store types of structure that can be spawned in biome
 		

@@ -448,6 +448,7 @@ void Game::update(const float delta)
 
 			std::cout << "Done. Regenerate chunk map and get chunk work manager back to work\n";
 
+			Utility::Random::resetGenerator();
 			createChunkMap();
 
 			chunkWorkManager->resumeWork();
@@ -641,6 +642,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 		//world->rebuildWorldMap();
 
+		/*
 		std::vector<Block*> collidableBlocks;
 		chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
 
@@ -648,6 +650,13 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		for (auto block : collidableBlocks)
 		{
 			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
+		}
+		*/
+
+		Utility::Random::resetGenerator();
+		for (int i = 0; i < 10; i++)
+		{
+			std::cout << Utility::Random::randomInt100() << std::endl;
 		}
 	}
 
@@ -1216,6 +1225,10 @@ void Voxel::Game::refreshChunkMap()
 {
 	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
 	std::cout << "Refreshing chunk map\n";
+
+	player->setLookingBlock(nullptr, Cube::Face::NONE);
+	player->setRotation(glm::vec3(0), false);
+
 	chunkWorkManager->clear();
 	chunkWorkManager->notify();
 
@@ -1313,7 +1326,7 @@ void Voxel::Game::renderGameWorld(const float delta)
 	// render player. Need model matrix
 	player->renderDebugLines(lineProgram);
 
-	if (player->isLookingAtBlock())
+	if (player->isLookingAtBlock())	// Error stack: 3
 	{
 		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition());
 	}

@@ -14,19 +14,32 @@ namespace Voxel
 {
 	namespace Utility
 	{
+		/**
+		*	@class Random
+		*	@brief General random generator. All functions and members are static.
+		*/
 		class Random
 		{
 		private:
+			// Seed in humber. Hashed from seed string
 			static size_t seedNumber;
+
+			// Seed string.
 			static std::string seedString;
 
+			// Generator. Uses mt19937.
 #ifdef _WIN64
 			static std::mt19937_64 generator;
 #else
 			static std::mt19937 generator;
 #endif
 
+			// True if initailized (seed generated)
 			static bool initialized;
+
+			// Distribution. Need to store all distribution to generate same number of sequence everytime based on seed.
+			static std::uniform_int_distribution<int> rand100Dist;
+			static std::mt19937 rand100Generator;
 
 			static inline void generateRandomSeedString()
 			{
@@ -55,13 +68,14 @@ namespace Voxel
 			}
 
 		public:
+			static inline void resetGenerator()
+			{
+				rand100Generator.seed(seedNumber);
+				rand100Dist.reset();
+			}
+
 			static inline int randomInt(int min, int max)
 			{
-				if (seedNumber == 0 || seedString == "")
-				{
-					generateSeed();
-				}
-
 				if (min > max)
 				{
 					std::swap(min, max);
@@ -85,7 +99,7 @@ namespace Voxel
 
 			static inline int randomInt100()
 			{
-				return randomInt(0, 100);
+				return rand100Dist(rand100Generator);
 			}
 
 			static inline bool randomIntRollCheck(int chance)
@@ -148,10 +162,11 @@ namespace Voxel
 				seedString = seed;
 				seedNumber = std::hash<std::string>{}(seedString);
 				generator.seed(seedNumber);
+				rand100Generator.seed(seedNumber);
 
 				Utility::Random::initialized = true;
 
-				std::cout << "[Utility::Random] Created new random seed: " << seedString << "\n";
+				std::cout << "[Utility::Random] Created new random seed: " << seedString << ", seed number: " << seedNumber << "\n";
 			}
 
 		};

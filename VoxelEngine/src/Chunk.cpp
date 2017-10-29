@@ -398,7 +398,7 @@ bool Voxel::Chunk::generateWithRegionColor()
 	return true;
 }
 
-void Voxel::Chunk::preGenerateChunkSections(const int minY, const int maxY)
+void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 {
 	if (chunkSections.empty())
 	{

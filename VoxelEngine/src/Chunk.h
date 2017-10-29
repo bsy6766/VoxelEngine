@@ -85,7 +85,7 @@ namespace Voxel
 		bool generateWithRegionColor();
 
 		// Pre generate chunk sections
-		void preGenerateChunkSections(const int minY, const int maxY);
+		void generateChunkSections(const int minY, const int maxY);
 
 		// Unloads chunk. Delete chunk mesh. Stops everything that is in this chunk
 		void unload();

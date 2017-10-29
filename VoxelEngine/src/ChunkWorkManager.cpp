@@ -863,12 +863,14 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								}
 							}
 
-							chunk->preGenerateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
+							chunk->generateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
 
 							// All chunks starts from chunk section 3 because sea level starts at 33.
 							chunk->generate();
 
 							int rand = Utility::Random::randomInt100();
+
+							std::cout << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "),  rand = " << rand << std::endl;
 
 							int treeChance = 70;
 							if (rand < treeChance)
@@ -898,6 +900,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 						// test tree
 						glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
+						//std::cout << "Tree pos = " << Utility::Log::vec2ToStr(treeLocalPos) << std::endl;
 						//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
 
 						// Don't spawn tree at the edge of chunk. 
@@ -939,7 +942,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						}
 
 						//auto treeStart = Utility::Time::now();
-						//TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY);
+						TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY);
 						//auto treeEnd = Utility::Time::now();
 
 						//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;

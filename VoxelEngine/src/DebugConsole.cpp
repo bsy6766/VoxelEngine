@@ -1,4 +1,5 @@
 #include "DebugConsole.h"
+#include <Utility.h>
 #include <UI.h>
 #include <Application.h>
 #include <sstream>
@@ -913,6 +914,20 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								return true;
 							}
 						}
+					}
+				}
+			}
+			else if (commandStr == "random" || commandStr == "rand")
+			{
+				if (size == 2)
+				{
+					auto arg1 = split.at(1);
+					if (arg1 == "reset")
+					{
+						Voxel::Utility::Random::resetGenerator();
+						executedCommandHistory.push_back("Reseting random generator");
+						lastCommand = command;
+						return true;
 					}
 				}
 			}

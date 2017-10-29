@@ -592,7 +592,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 				{
 					if (hasOmittedNeighbor)
 					{
-						int rand = Utility::Random::randomInt100();
+						int rand = Utility::Random::randomInt(0, 100);
 						if (rand < 50)
 						{
 							index++;

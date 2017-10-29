@@ -12,3 +12,6 @@ std::mt19937 Utility::Random::generator;
 #endif
 
 bool Utility::Random::initialized = false;
+
+std::mt19937 Utility::Random::rand100Generator;
+std::uniform_int_distribution<int> Utility::Random::rand100Dist = std::uniform_int_distribution<int>(0, 100);
