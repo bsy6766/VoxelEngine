@@ -675,6 +675,7 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 	{
 		if (chunk->isActive())
 		{
+
 			// target chunk section
 			auto chunkSection = chunk->getChunkSectionAtY(chunkSectionPos.y);
 			if (chunkSection)
@@ -802,7 +803,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -850,7 +851,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -898,7 +899,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	else
 	{
 		// Player is impossible to place block where chunk doesn't exists.
-		//std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
+		std::cout << "[ChunkMap] Error. Tried to place block where chunk doesn't exists\n";
 		return;
 	}
 }
@@ -1190,6 +1191,13 @@ glm::ivec2 Voxel::ChunkMap::checkPlayerChunkPos(const glm::vec3 & playerPosition
 	if (playerPosition.z < 0) chunkZ -= 1;
 
 	auto newChunkXZ = glm::ivec2(chunkX, chunkZ);
+
+	if (renderChunkBorderMode)
+	{
+		glm::vec3 translate = glm::vec3(newChunkXZ.x, 0, newChunkXZ.y);
+		translate *= Constant::CHUNK_BORDER_SIZE;
+		chunkBorderModelMat = glm::translate(glm::mat4(1.0f), translate);
+	}
 
 	if (newChunkXZ != currentChunkPos)
 	{
