@@ -496,339 +496,419 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 			if (map && meshGenerator)
 			{
-				//std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")\n";
-
+				/**
+				*	PRE_GENERATE
+				*	Pre-generates chunk. Find out which region that chunk is at in block level. 
+				*	Creates region map and store in chunk.
+				*	Based on region map, generates height map. Merge with plain height map and stores in chunk.
+				*	Then mark chunk as not smoothed. 
+				*
+				*	Note: PRE_GENERATE pre-generates all chunks whether they are active or not.
+				*/
 				if (workType == WorkType::PRE_GENERATE)
 				{
 					//auto start = Utility::Time::now();
+
+					// Get chunk
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+
+					// Chunk is valid most of the time to be honest. However, just in case.
 					if (chunk)
 					{
 						//std::cout << "PreGen " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
-						// Get all block world position in XZ axises and find which region the are at
-						std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
-						const float step = 1.0f;	// Block size
-
-						float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
-						float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
-
-						std::unordered_set<unsigned int> regionIDSet;
-						//std::unordered_set<Voxel::TerrainType> terrainTypeSet;
-
-						// iterate all blocks in x and z axis
-						for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
+						// Check if chunk has already pre generated.. 
+						if (chunk->preGenerated.load())
 						{
-							for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
-							{
-								glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
-
-								// First, check if block is in boundary
-								bool inBoundary = world->isPointInBoundary(blockXZPos);
-
-								// init region ID
-								unsigned int regionID = -1;
-
-								if (inBoundary)
-								{
-									// Block is in boundary. Find cloest region to block pos
-									unsigned int closestRegionID = world->findClosestRegionToPoint(blockXZPos);
-
-									// get the region
-									auto region = world->getRegion(closestRegionID);
-
-									// Check if closest region has block 
-									if (region->isPointIsInRegion(blockXZPos))
-									{
-										// found
-										regionID = closestRegionID;
-									}
-									else
-									{
-										// Nope, check if neighbor regions has block
-										if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
-										{
-											// found it.
-										}
-										else
-										{
-											// Even neighbor regions doesn't have this block. Can't figure out why, assert false it.
-											assert(false);
-										}
-									}
-								}
-
-								// convert to index
-								auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
-
-								// This method can't be fail. It will must find closest region unless block is out of boundary
-								regionMap.at(index) = regionID;
-
-								// step z.
-								z += step;
-
-								// Save region id in set. 
-								auto find_it = regionIDSet.find(regionID);
-								if (find_it == regionIDSet.end())
-								{
-									// New region ID
-									if (inBoundary)
-									{
-										if (regionID == -1)
-										{
-											// Failed to find region
-											assert(false);
-										}
-										else
-										{
-											// block is not out of boundary. 
-											// Get terarin type of region
-											auto terrainType = world->getRegion(regionID)->getTerrainType();
-											// Save it
-											map->setRegionTerrainType(regionID, terrainType);
-											//terrainTypeSet.emplace(terrainType.getType());
-										}
-									}
-									else
-									{
-										// block is out of boundary
-										map->setRegionTerrainType(-1, Terrain());
-									}
-
-									// Save region ID
-									regionIDSet.emplace(regionID);
-								}
-							}
-
-							// step x and reset z
-							x += step;
-							z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
-						}
-						
-						// Generate height map.
-						HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
-
-						std::vector<std::vector<int>> plainHeightMap;
-						HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), plainHeightMap);
-
-						chunk->mergeHeightMap(plainHeightMap);
-
-						chunk->smoothed = false;
-						
-						if (regionIDSet.size() == 1)
-						{
-							// There is only 1 region in this chunk.
-							chunk->setRegionMap(regionMap.front());
+							// Chunk is already pre generated and smoothed. Pass to next step. SMOOTH.
+							addSmoothWork(chunkXZ);
 						}
 						else
 						{
-							// Multiple region exists in this chunk. save region map to chunk
-							chunk->setRegionMap(regionMap);
-						}
+							// Chunk has not pre generated and smoothed.
 
-						addSmoothWork(chunkXZ);
+							// Initialize region map with -1
+							std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
+
+							// Block size
+							const float step = 1.0f;	
+
+							// Get first x and z
+							float x = (chunkXZ.x * Constant::CHUNK_BORDER_SIZE);
+							float z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+
+							// region ID look up table
+							std::unordered_set<unsigned int> regionIDSet;
+
+							// iterate all blocks in x and z axis
+							for (int i = 0; i < Constant::CHUNK_SECTION_WIDTH; i++)
+							{
+								for (int j = 0; j < Constant::CHUNK_SECTION_LENGTH; j++)
+								{
+									// get block pos. Add 0.5f because noise returns 0 if input is 0
+									glm::vec2 blockXZPos = glm::vec2(x + 0.5f, z + 0.5f);
+
+									// First, check if block is in boundary
+									bool inBoundary = world->isPointInBoundary(blockXZPos);
+
+									// init region ID
+									unsigned int regionID = -1;
+
+									if (inBoundary)
+									{
+										// Block is in boundary. Find cloest region to block pos
+										unsigned int closestRegionID = world->findClosestRegionToPoint(blockXZPos);
+
+										// get the region
+										auto region = world->getRegion(closestRegionID);
+
+										// Check if closest region has block 
+										if (region->isPointIsInRegion(blockXZPos))
+										{
+											// found
+											regionID = closestRegionID;
+										}
+										else
+										{
+											// Nope, check if neighbor regions has block
+											if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
+											{
+												// found it.
+											}
+											else
+											{
+												// Even neighbor regions doesn't have this block. Can't figure out why, assert false it.
+												assert(false);
+											}
+										}
+									}
+
+									// convert to index
+									auto index = static_cast<int>(i + (Constant::CHUNK_SECTION_WIDTH * j));
+
+									// This method can't be fail. It will must find closest region unless block is out of boundary
+									regionMap.at(index) = regionID;
+
+									// step z.
+									z += step;
+
+									// Save region id in set. 
+									auto find_it = regionIDSet.find(regionID);
+									if (find_it == regionIDSet.end())
+									{
+										// New region ID
+										if (inBoundary)
+										{
+											if (regionID == -1)
+											{
+												// Failed to find region
+												assert(false);
+											}
+											else
+											{
+												// block is not out of boundary. 
+												// Get terarin type of region
+												auto terrainType = world->getRegion(regionID)->getTerrainType();
+
+												// Save it
+												map->setRegionTerrainType(regionID, terrainType);
+											}
+										}
+										else
+										{
+											// block is out of boundary
+											map->setRegionTerrainType(-1, Terrain());
+										}
+
+										// Save region ID
+										regionIDSet.emplace(regionID);
+									}
+								}
+
+								// step x and reset z
+								x += step;
+								z = (chunkXZ.y * Constant::CHUNK_BORDER_SIZE);
+							}
+
+							// Generate height map.
+							HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
+
+							// Generate plain height map
+							std::vector<std::vector<int>> plainHeightMap;
+							HeightMap::generatePlainHeightMapForChunk(chunk->getPosition(), plainHeightMap);
+
+							// Merge height map. Any height map value lower than plain height map will be replaced to plain height map's value.
+							chunk->mergeHeightMap(plainHeightMap);
+
+							// Mark chunk as unsmoothed
+							chunk->smoothed.store(false);
+
+							if (regionIDSet.size() == 1)
+							{
+								// There is only 1 region in this chunk.
+								chunk->setRegionMap(regionMap.front());
+							}
+							else
+							{
+								// Multiple region exists in this chunk. save region map to chunk
+								chunk->setRegionMap(regionMap);
+							}
+
+							// Add to SMOOTH work.
+							addSmoothWork(chunkXZ);
+						}
 					}
+
 					//auto end = Utility::Time::now();
 					//std::cout << "pg t: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 				}
+				/**
+				*	SMOOTH
+				*	Smooths chunk. If chunk has more than 1 region, there is a high chance that 
+				*	chunk needs a interpolation between two different terrain heights.
+				*	SMOOTH is part of pre-generation. So all chunks needs to be smoothed.
+				*
+				*	To smooth the height map, there must be nearby chunks to get nearby heights.
+				*	Therefore, SMOOTH skips if chunk is not active. 
+				*	Once chunk is smoothed, 
+				*/
 				else if (workType == WorkType::SMOOTH)
 				{
 					// There must be a chunk. Chunk loader creates empty chunk.
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 					if (chunk)
 					{
-						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
-						//auto s = Utility::Time::now();
-						//std::cout << "SMooth " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
-
-						if (chunk->hasMultipleRegion())
+						// Check if chunk has already smoothed.
+						if (chunk->smoothed.load())
 						{
-							//std::cout << "Smooth\n";
-							if (chunk->isActive())
-							{
-								std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
-
-								const int q11 = nearByChunks.at(2).at(2)->getQ22();
-								const int q12 = nearByChunks.at(0).at(2)->getQ21();
-								const int q21 = nearByChunks.at(2).at(0)->getQ12();
-								const int q22 = nearByChunks.at(0).at(0)->getQ11();
-
-								chunk->smoothed = true;
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
-
-								/*
-								// Need correct q11, q12, q21, q22
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 8, 8);
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 0, 16, 8);
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 8, 8, 16);
-								HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 8, 16, 16);
-								*/
-							}
-						}
-
-						if (!map->isChunkOnEdge(chunkXZ))
-						{
-							// Only generate chunk that is not on edge
+							// Chunk has already smoothed height map. Pass to next step. GENERATE.
 							addGenerateWork(chunkXZ);
 						}
-					}
-				}
-				else if (workType == WorkType::GENERATE)
-				{
-					// There must be a chunk. Chunk loader creates empty chunk.
-					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
-					if (chunk)
-					{
-						if (!chunk->isGenerated() && chunk->isActive())
+						else
 						{
-							std::cout << "Gen " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
-							//std::cout << "Gen\n";
-
-							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
-							//auto s = Utility::Time::now();
-
-							// Check if chunk is smoothed
-							if (!chunk->smoothed)
+							// Chunk has not smoothed height map yet. Check if it's active
+							if (chunk->isActive())
 							{
-								// Chunk is not smoothed. Check nearby chunk and see if chunk needs to be smoothed
-								std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
-
-								int needSmooth = 0;
-
-								const int cq11 = chunk->getQ11();
-								const int cq12 = chunk->getQ12();
-								const int cq21 = chunk->getQ21();
-								const int cq22 = chunk->getQ22();
-
-								const int diff = 3;
-
-								auto& EChunk = nearByChunks.at(1).at(0);
-								if (EChunk)
+								// check if chunk has multiple regions.
+								if (chunk->hasMultipleRegion())
 								{
-									if (EChunk->isSmoothed())
-									{
-										const int ecQ12 = EChunk->getQ12();
-										const int ecQ11 = EChunk->getQ11();
+									//std::cout << "Smooth " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 
-										const int diffQ12 = glm::abs(ecQ12 - cq22);
-										const int diffQ11 = glm::abs(ecQ11 - cq21);
+									// Get nearby chunks
+									std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
 
-										if (diffQ12 > diff || diffQ11 > diff)
-										{
-											needSmooth++;
-										}
-									}
-								}
-
-								auto& WChunk = nearByChunks.at(1).at(2);
-								if (WChunk)
-								{
-									if (WChunk->isSmoothed())
-									{
-										const int wcQ22 = WChunk->getQ22();
-										const int wcQ21 = WChunk->getQ21();
-
-										const int diffQ22 = glm::abs(wcQ22 - cq12);
-										const int diffQ21 = glm::abs(wcQ21 - cq11);
-
-										if (diffQ22 > diff || diffQ21 > diff)
-										{
-											needSmooth++;
-										}
-									}
-								}
-
-								auto& SChunk = nearByChunks.at(0).at(1);
-								if (SChunk)
-								{
-									if (SChunk->isSmoothed())
-									{
-										const int scQ11 = SChunk->getQ11();
-										const int scQ21 = SChunk->getQ21();
-
-										const int diffQ11 = glm::abs(scQ11 - cq12);
-										const int diffQ21 = glm::abs(scQ21 - cq22);
-
-										if (diffQ11 > diff || diffQ21 > diff)
-										{
-											needSmooth++;
-										}
-									}
-								}
-
-								auto& NChunk = nearByChunks.at(2).at(1);
-								if (NChunk)
-								{
-									if (NChunk->isSmoothed())
-									{
-										const int ncQ22 = NChunk->getQ22();
-										const int ncQ12 = NChunk->getQ12();
-
-										const int diffQ22 = glm::abs(ncQ22 - cq21);
-										const int diffQ12 = glm::abs(ncQ12 - cq11);
-										if (diffQ22 > diff || diffQ12 > diff)
-										{
-											needSmooth++;
-										}
-									}
-								}
-
-								if (needSmooth >= 1)
-								{
-									//std::cout << "Gen smooth\n";
 									const int q11 = nearByChunks.at(2).at(2)->getQ22();
 									const int q12 = nearByChunks.at(0).at(2)->getQ21();
 									const int q21 = nearByChunks.at(2).at(0)->getQ12();
 									const int q22 = nearByChunks.at(0).at(0)->getQ11();
 
+									chunk->smoothed.store(true);
 									HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
+
+									/*
+									// Need correct q11, q12, q21, q22
+									HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, 8, 8);
+									HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 0, 16, 8);
+									HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 8, 8, 16);
+									HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 8, 8, 16, 16);
+									*/
 								}
+								// Else, chunk has single region. Doesn't have to smooth now.
+
+								if (!map->isChunkOnEdge(chunkXZ))
+								{
+									// Only generate chunk that is in render distance
+									addGenerateWork(chunkXZ);
+								}
+								// Else, chunk is on out of render distance. Work is done.
 							}
-
-							chunk->generateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
-
-							// All chunks starts from chunk section 3 because sea level starts at 33.
-							chunk->generate();
-
-							addStructureWork(chunkXZ);
-
-							//auto e = Utility::Time::now();
-							//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+							// Else, chunk is not active. work is done.
 						}
+					}
+				}
+				/**
+				*	GENERATE
+				*	Generates chunk. Even though this step is GENERATE, 
+				*	it smoothes chunks that is near by chunks with multiple regions.
+				*
+				*	Once smoothing is done, it generates chunk. 
+				*	It fills the block based on height map.
+				*/
+				else if (workType == WorkType::GENERATE)
+				{
+					// Get chunk
+					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+
+					if (chunk)
+					{
+						// Check if chunk is active once more.
+						if (chunk->isActive())
+						{
+							// Check if chunk is generated
+							if (!chunk->isGenerated())
+							{
+								// Check if chunk is smoothed
+								if (!chunk->smoothed.load())
+								{
+									// Chunk is not smoothed. Check nearby chunk and see if chunk needs to be smoothed
+									std::vector<std::vector<std::shared_ptr<Chunk>>> nearByChunks = map->getNearByChunks(chunkXZ);
+
+									// Check if there is a chunk that has mutliple region near by
+									bool hasMultiRegionChunk = false;
+
+									auto& EChunk = nearByChunks.at(1).at(0);
+									if (EChunk) if (EChunk->hasMultipleRegion()) hasMultiRegionChunk = true;
+									auto& WChunk = nearByChunks.at(1).at(2);
+									if (WChunk) if (WChunk->hasMultipleRegion()) hasMultiRegionChunk = true;
+									auto& SChunk = nearByChunks.at(0).at(1);
+									if (SChunk) if (SChunk->hasMultipleRegion()) hasMultiRegionChunk = true;
+									auto& NChunk = nearByChunks.at(2).at(1);
+									if (NChunk) if (NChunk->hasMultipleRegion()) hasMultiRegionChunk = true;
+
+									// Check if has multi regioned chunk near by
+									if (hasMultiRegionChunk)
+									{
+										// Has it.
+										int needSmooth = 0;
+
+										// get chunk's Qs
+										const int cq11 = chunk->getQ11();
+										const int cq12 = chunk->getQ12();
+										const int cq21 = chunk->getQ21();
+										const int cq22 = chunk->getQ22();
+
+										// Diff level. 
+										const int diff = 3;
+
+										// Check all the near by chunks
+										if (EChunk)
+										{
+											if (EChunk->isSmoothed())
+											{
+												const int ecQ12 = EChunk->getQ12();
+												const int ecQ11 = EChunk->getQ11();
+
+												const int diffQ12 = glm::abs(ecQ12 - cq22);
+												const int diffQ11 = glm::abs(ecQ11 - cq21);
+
+												if (diffQ12 > diff || diffQ11 > diff)
+												{
+													needSmooth++;
+												}
+											}
+										}
+
+										if (WChunk)
+										{
+											if (WChunk->isSmoothed())
+											{
+												const int wcQ22 = WChunk->getQ22();
+												const int wcQ21 = WChunk->getQ21();
+
+												const int diffQ22 = glm::abs(wcQ22 - cq12);
+												const int diffQ21 = glm::abs(wcQ21 - cq11);
+
+												if (diffQ22 > diff || diffQ21 > diff)
+												{
+													needSmooth++;
+												}
+											}
+										}
+
+										if (SChunk)
+										{
+											if (SChunk->isSmoothed())
+											{
+												const int scQ11 = SChunk->getQ11();
+												const int scQ21 = SChunk->getQ21();
+
+												const int diffQ11 = glm::abs(scQ11 - cq12);
+												const int diffQ21 = glm::abs(scQ21 - cq22);
+
+												if (diffQ11 > diff || diffQ21 > diff)
+												{
+													needSmooth++;
+												}
+											}
+										}
+
+										if (NChunk)
+										{
+											if (NChunk->isSmoothed())
+											{
+												const int ncQ22 = NChunk->getQ22();
+												const int ncQ12 = NChunk->getQ12();
+
+												const int diffQ22 = glm::abs(ncQ22 - cq21);
+												const int diffQ12 = glm::abs(ncQ12 - cq11);
+												if (diffQ22 > diff || diffQ12 > diff)
+												{
+													needSmooth++;
+												}
+											}
+										}
+
+										if (needSmooth >= 1)
+										{
+											const int q11 = nearByChunks.at(2).at(2)->getQ22();
+											const int q12 = nearByChunks.at(0).at(2)->getQ21();
+											const int q21 = nearByChunks.at(2).at(0)->getQ12();
+											const int q22 = nearByChunks.at(0).at(0)->getQ11();
+
+											HeightMap::smoothHelper(chunk->heightMap, q11, q12, q21, q22, 0, 0, Constant::CHUNK_SECTION_WIDTH, Constant::CHUNK_SECTION_LENGTH);
+
+											chunk->smoothed.store(true);
+										}
+									}
+									// Else, there is no multi regioned chunk near by. No need to smooth.
+								}
+								// Else, chunk has already smoothed
+
+								//std::cout << "Gen " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
+
+								// Generate chunk sections
+								chunk->generateChunkSections(2, chunk->findMaxY() / Constant::CHUNK_SECTION_HEIGHT);
+
+								// All chunks starts from chunk section 3 because sea level starts at 33.
+								chunk->generate();
+
+								// Pass to next step. ADD_STRUCTURE
+								addStructureWork(chunkXZ);
+
+								//auto e = Utility::Time::now();
+								//std::cout << "Chunk generation took: " << Utility::Time::toMilliSecondString(s, e) << std::endl;
+							}
+						}
+						// Else, chunk is not active. Do not generate. End of work.
 					}
 					// Else, chunk is nullptr
 				}
+				/**
+				*	ADD_STRUCTURE
+				*	Add structure to chunk. 
+				*	If region has any large strucutures that uses multiple chunk, check if has one. Get block schematic and place it.
+				*	If chunk has large vegitation to add like trees or boulder, to at end of procedure. 
+				*	If chunk is used for large structure, don't spawn trees or boulders.
+				*/
 				else if (workType == WorkType::ADD_STRUCTURE)
 				{
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+
+					// Chunk must be valid and is active (Just in case)
 					if (chunk && chunk->isActive())
 					{
-						std::cout << "AddStructure " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
+						//std::cout << "AddStructure " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 						/*
-						Trick of using random.
+							Trick of using random.
 
-						During this step, we use unique random generator using chunk position as seed.
-						In that way, random generator will be guaranteed to be unique between other chunks
-						Also whenever chunk adds structure on the fly, it will always use same random generator
-						We are going to use same engine.
-						We change dist whenever we need
+							During this step, we use unique random generator using chunk position as seed.
+							In that way, random generator will be guaranteed to be unique between other chunks
+							Also whenever chunk adds structure on the fly, it will always use same random generator
+							We are going to use same engine.
+							We change dist whenever we need
 						*/
-						/*
-						Tree gen process
 
-							dist(0, 100)
-								treeRand = check if tree can spawn in chunk
-								trunkHeightType, trunkWidthType
-
-								dist(0, 4)
-									trunkHeight
-
-									dist(0, 3)
-										tRand = 3 different types of trunk
-
-										dist(0, 2)
-											leaveSize (x3)
-						*/
+						// Get world seed
 						auto worldSeed = world->getSeed();
 
 						std::mt19937 engine(std::hash<std::string>{}(worldSeed + std::to_string(chunkXZ.x) + std::to_string(chunkXZ.y)));
@@ -863,8 +943,8 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 									if (treeRand < 70)
 									{
 										glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
-										//std::cout << "Tree pos = " << Utility::Log::vec2ToStr(treeLocalPos) << std::endl;
-										//glm::ivec2 treePos = glm::ivec2(Utility::Random::randomInt(3, 13), Utility::Random::randomInt(3, 13));
+
+										std::cout << "Adding tree" << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 
 										// Don't spawn tree at the edge of chunk. 
 										//treePos = glm::clamp(treePos, 5, 11);
@@ -933,7 +1013,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							auto mesh = chunk->getMesh();
 							if (mesh)
 							{
-								std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
+								//std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 								// There can be two cases. 
 								// 1. Chunk is newly generated and need mesh.
 								// 2. Chunk already has mesh but need to refresh

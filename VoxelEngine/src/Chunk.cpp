@@ -17,10 +17,12 @@ Chunk::Chunk()
 	, active(false)
 	, visible(false)
 	, timestamp(0)
-	, smoothed(false)
 {
 	chunkMesh = new ChunkMesh();
 	generated.store(false);
+	smoothed.store(false);
+	structureAdded.store(false);
+	preGenerated.store(false);
 }
 
 bool Voxel::Chunk::canGenerate()
@@ -711,7 +713,7 @@ int Voxel::Chunk::getQ22()
 
 bool Voxel::Chunk::isSmoothed()
 {
-	return smoothed;
+	return smoothed.load();
 }
 
 int Voxel::Chunk::getTopY(const int x, const int z)

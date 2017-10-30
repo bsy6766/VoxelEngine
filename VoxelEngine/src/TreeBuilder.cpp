@@ -646,7 +646,7 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p
 		{
 			x = (std::uniform_int_distribution<>((w / 4), w / 2)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
 			y = (std::uniform_int_distribution<>(0, h / 2)(engine));
-			z = (std::uniform_int_distribution<>((l / 4) * 3, l / 2)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
+			z = (std::uniform_int_distribution<>(l / 2, (l / 4) * 3)(engine)) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
 			sidePos = glm::ivec3(x, y, z) + l1;
 		}
 

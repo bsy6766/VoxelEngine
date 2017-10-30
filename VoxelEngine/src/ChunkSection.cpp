@@ -150,7 +150,6 @@ void Voxel::ChunkSection::init(const std::vector<std::vector<int>>& heightMap, c
 	const int single = 1;
 	const int multiple = Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH;
 
-	blocks.clear();
 	blocks.resize(Constant::TOTAL_BLOCKS, nullptr);
 
 	float nx = static_cast<float>(position.x);

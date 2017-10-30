@@ -45,17 +45,20 @@ namespace Voxel
 		// Height map data for each block. Once chunk is generated, this will be cleared
 		std::vector<std::vector<int>> heightMap;
 
-		// true if height map is smoothed
-		bool smoothed;
-
 		// active state. Only active chunk can be queried and gets updated
 		bool active;
 
 		// visible state. True if chunk is visible to player
 		bool visible;
 
-		// Loaded state. True if chunk is loaded(generated). Else, false. If false, worker thread will generate chunk
+		// True if chunk is pre-generated. Using atomic just in case.
+		std::atomic<bool> preGenerated;
+		// True if chunk is smoothed. Using atomic just in case.
+		std::atomic<bool> smoothed;
+		// True if chunk is generated. Generated means chunk has height map and filled blocks with terrain blocks.
 		std::atomic<bool> generated;
+		// True if chunk has added structures. Added structures means chunk has already added strctures.
+		std::atomic<bool> structureAdded;
 
 		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
 		double timestamp;
