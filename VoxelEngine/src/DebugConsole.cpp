@@ -773,6 +773,13 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						chunkMap->printCurrentChunk();
 						return true;
 					}
+					else if (arg1 == "refresh" || arg1 == "r")
+					{
+						game->refreshChunkMap();
+						executedCommandHistory.push_back("Refreshing chunk map");
+						lastCommand = command;
+						return true;
+					}
 				}
 				else if (size == 3)
 				{
@@ -795,12 +802,20 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						lastCommand = command;
 						return true;
 					}
-					else if (arg2 == "refresh" || arg2 == "r")
+					else if (arg1 == "print" || arg1 == "p")
 					{
-						game->refreshChunkMap();
-						executedCommandHistory.push_back("Refreshing chunk map");
-						lastCommand = command;
-						return true;
+						if (arg2 == "all" || arg2 == "a")
+						{
+							chunkMap->printChunkMap();
+							lastCommand = command;
+							return true;
+						}
+						else if (arg2 == "active" || arg2 == "ac")
+						{
+							chunkMap->printActiveChunks();
+							lastCommand = command;
+							return true;
+						}
 					}
 				}
 				else if (size == 4)
