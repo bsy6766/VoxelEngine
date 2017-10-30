@@ -275,6 +275,11 @@ glm::mat4 Voxel::Player::getViewMatrix()
 	}
 	else
 	{
+		// Third person view.
+		// 1) Rotate and traslate in thrid person view. Use cameraDistanceZ to move back (cam pos) and rotate using player's rotation.
+		// 2) Translate new matrix to player's position.
+		// 3) mutliple (1) and (2). 
+		// note: Move world in front of camera. From there, rotate the world. projection * View&Model(rot * trans) -> Trans goes first and rotates, then projected to screen.
 		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));// *glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
 	}
 }
