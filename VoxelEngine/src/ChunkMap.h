@@ -107,7 +107,7 @@ namespace Voxel
 		std::vector<glm::vec2> initChunkNearPlayer(const glm::vec3& playerPosition, const int renderDistance);
 
 		// Initialize active chunks 
-		void initActiveChunks(const int renderDistance);
+		void initActiveChunks();
 
 		// Initialzie chunk border lines
 		void initChunkBorderDebug(Program* program);
@@ -217,6 +217,10 @@ namespace Voxel
 
 		// debug print
 		void printCurrentChunk();
+
+		// debug print
+		void printChunkMap();
+		void printActiveChunks();
 	};
 }
 

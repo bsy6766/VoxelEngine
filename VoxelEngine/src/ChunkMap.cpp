@@ -64,14 +64,26 @@ std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & pl
 	currentChunkPos.x = chunkX;
 	currentChunkPos.y = chunkZ;
 
-	int rd = renderDistance + 1;
-	//int rd = renderDistance;
+	// Add extra 2 rows and 2 cols to min max of active chunk.
+	// The reason why I did this is to avoid bad block placement during the map generation.
+	// Mid size structure like tree and boulders can exceed size of 16 which is larger than single chunk
+	// That is why we add 2 extra row and col to give extra 32 blocks space to place mid size structure.
+	// These extra row and col won't be active and stay inactive.
+	//
+	// This will consume more memory due to number of extra chunks to add.
+	// i.e. Render distance 16 (256 chunks) will have 68 extra chunks to load, resulting total 324 chunks.
+	// The number of extra chunk dramatically increases as render distance increase.
+	// With 32 bits application, memory is limitted. Probably 20 is maximum render distance.
+	// This is why I also want to switch the build to 64 bits since majority of steam user uses 64 bits hardware (based on hardware survay).
+
+	int rd = renderDistance + 2;
 
 	int minX = chunkX - rd;
 	int maxX = chunkX + rd;
 	int minZ = chunkZ - rd;
 	int maxZ = chunkZ + rd;
 
+	// Extra layer is applied when active chunks get initailized
 	minXZ.x = minX;
 	minXZ.y = minZ;
 	maxXZ.x = maxX;
@@ -113,19 +125,26 @@ std::vector<glm::vec2> Voxel::ChunkMap::initChunkNearPlayer(const glm::vec3 & pl
 		}
 	}
 
+	std::cout << "Chunk map size = " << map.size() << std::endl;
+
+	// Returns chunks coordinates that need to be processed (gen, build mesh, etc). Actually all chunks that is generated here.
 	return chunkCoordinates;
 }
 
-void Voxel::ChunkMap::initActiveChunks(const int renderDistance)
+void Voxel::ChunkMap::initActiveChunks()
 {
-	int rd = renderDistance + 1;
+	const int extraLayer = 2;
 
-	const int minX = minXZ.x + 1;
-	const int maxX = maxXZ.x - 1;
+	// Activate chunks that is only in render distance. 
+	const int minX = minXZ.x + extraLayer;
+	const int maxX = maxXZ.x - extraLayer;
 
-	const int minZ = minXZ.y + 1;
-	const int maxZ = maxXZ.y - 1;
+	const int minZ = minXZ.y + extraLayer;
+	const int maxZ = maxXZ.y - extraLayer;
 
+	int count = 0;
+
+	// Initailize 2D list in render distance. Don't count the extra rows and cols. Mark chunks as active.
 	for (int x = minX; x <= maxX; x++)
 	{
 		activeChunks.push_back(std::list<glm::ivec2>());
@@ -135,14 +154,19 @@ void Voxel::ChunkMap::initActiveChunks(const int renderDistance)
 			if (hasChunkAtXZ(x, z))
 			{
 				activeChunks.back().push_back(glm::ivec2(x, z));
-				// Safe to get raw pointer because this is initialization
+
+				// Safe to get raw pointer because this is initialization and guaranteed to have chunk on intializing.
 				Chunk* chunk = getChunkAtXZ(x, z).get();
+
+				// Todo: handle invalid chunk. 
+
+				// set active. that's all for now.
 				chunk->setActive(true);
-				//chunk->setVisibility(true);
-				//chunk->updateTimestamp(time);
 			}
 		}
 	}
+
+	std::cout << "Active chunk size = " << activeChunks.size() * activeChunks.front().size() << std::endl;
 }
 
 void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
@@ -161,8 +185,8 @@ void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
 	float size = Constant::CHUNK_BORDER_SIZE;
 	float yMin = 0;
 	float yMax = 256.0f;
-	
-	std::vector<float> lines = 
+
+	std::vector<float> lines =
 	{
 		// vertical blue chunk lines
 		0, yMin, 0,
@@ -175,7 +199,7 @@ void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
 		size, yMax, size,
 	};
 
-	std::vector<float> colors = 
+	std::vector<float> colors =
 	{
 		// vertical blue chunk lines
 		0, 0, 1.0f, 1.0f,
@@ -458,7 +482,7 @@ std::vector<std::vector<std::shared_ptr<Chunk>>> Voxel::ChunkMap::getNearByChunk
 	{
 		nearBy.at(2).at(2) = NWChunk;
 	}
-	
+
 
 	return nearBy;
 }
@@ -726,7 +750,7 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const Cube::Face & faceDir, ChunkWorkManager* workManager)
 {
 	glm::ivec3 targetPos = blockWorldCoordinate;
-	
+
 	switch (faceDir)
 	{
 	case Cube::Face::FRONT:
@@ -1038,7 +1062,7 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 
 	Cube::Face result = Cube::Face::NONE;
 	auto triangles = blockAABB.toTriangles();
-	
+
 	float minDist = std::numeric_limits<float>::max();
 	unsigned int closestTriangle = 0;
 
@@ -1108,7 +1132,7 @@ int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3
 	glm::vec3    dir, w0, w;           // ray vectors
 	float     r, a, b;              // params to calc ray-plane intersect
 
-	// get triangle edge vectors and plane normal
+									// get triangle edge vectors and plane normal
 	u = tri.p2 - tri.p1;
 	v = tri.p3 - tri.p1;
 	n = glm::cross(u, v);              // cross product
@@ -1133,7 +1157,7 @@ int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3
 
 	intersectingPoint = rayStart + (r * dir);  // intersect point of ray and plane
 
-									// is I inside T?
+											   // is I inside T?
 	float    uu, uv, vv, wu, wv, D;
 	uu = glm::dot(u, u);
 	uv = glm::dot(u, v);
@@ -1236,27 +1260,27 @@ bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * wo
 	currentChunkPos = newChunkXZ;
 
 	// Always modify x first. I think...that.. is.. better....right?
-		
+
 	/*
-		2D std::list
+	2D std::list
 
 										^
 										| -x (West)
-				List 
-					List --------------------------------------
-					List --------------------------------------
-					List --------------------------------------
--z (North) <-		List --------------------------------------		-> +z (South)
-					List --------------------------------------
-					List --------------------------------------
-					List --------------------------------------
-		
+					List
+						List --------------------------------------
+						List --------------------------------------
+						List --------------------------------------
+	-z (North) <-		List --------------------------------------		-> +z (South)
+						List --------------------------------------
+						List --------------------------------------
+						List --------------------------------------
+
 										| +x (east)
 										v
 	*/
 
 	//auto start = Utility::Time::now();
-		
+
 	if (d.x != 0)
 	{
 		// Run move function as much as chunk distance
@@ -1285,7 +1309,7 @@ bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * wo
 	{
 		// Run move function as much as chunk distance
 		int dist = glm::abs(d.y);
-			
+
 		// Moved in z axis
 		for (int i = 0; i < dist; i++)
 		{
@@ -1318,15 +1342,10 @@ void Voxel::ChunkMap::moveWest(ChunkWorkManager* wm)
 	// Remove the last row (East. because moving west)
 	removeRowEast(wm);
 
-	// Pop back row (east)
-	activeChunks.pop_back();
-
 	// Before add new list on front row (west), rebuild mesh for current front. This will be processed after all chunk has been generated.
 	std::vector<ivec2> refreshList;
 	for (auto& chunkXZ : activeChunks.front())
 	{
-		//chunksToReload.push_back(chunkXZ);
-		//wm->addBuildMeshWork(chunkXZ);
 		refreshList.push_back(chunkXZ);
 	}
 
@@ -1348,15 +1367,10 @@ void Voxel::ChunkMap::moveEast(ChunkWorkManager* wm)
 	// Remove the first row (West. because moving east)
 	removeRowWest(wm);
 
-	// Pop front row (west)
-	activeChunks.pop_front();
-
 	// Before add new list on back row (east), rebuild mesh for current back. This will be processed after all chunk has been generated
 	std::vector<ivec2> refreshList;
 	for (auto& chunkXZ : activeChunks.back())
 	{
-		//chunksToReload.push_back(glm::ivec2(pos.x, pos.z));
-		//wm->addBuildMeshWork(chunkXZ);
 		refreshList.push_back(chunkXZ);
 	}
 
@@ -1375,16 +1389,10 @@ void Voxel::ChunkMap::moveEast(ChunkWorkManager* wm)
 
 void Voxel::ChunkMap::moveSouth(ChunkWorkManager* wm)
 {
-	// Remove the first element on each row
+	// Remove the first element on each row (north. because moving south)
 	removeColNorth(wm);
 
-	// Pop first element on each row (north)
-	for (auto& row : activeChunks)
-	{
-		row.pop_front();
-	}
-
-	// Before we add new element on back each row, rebuild mesh for current back element of each row. This will processed after all chunk has been generated
+	// Before we add new element on back each row (south), rebuild mesh for current back element of each row. This will processed after all chunk has been generated
 	std::vector<ivec2> refreshList;
 	for (auto& row : activeChunks)
 	{
@@ -1406,14 +1414,8 @@ void Voxel::ChunkMap::moveSouth(ChunkWorkManager* wm)
 
 void Voxel::ChunkMap::moveNorth(ChunkWorkManager* wm)
 {
-	// Remove the last element on each row
+	// Remove the last element on each row (south. because moving north)
 	removeColSouth(wm);
-
-	// Pop last element on each row (south)
-	for (auto& row : activeChunks)
-	{
-		row.pop_back();
-	}
 
 	// Before we add new element on front of each row, rebuild mesh for current front element of each row. This will be processed after all chunk has been generated
 	std::vector<ivec2> refreshList;
@@ -1437,10 +1439,12 @@ void Voxel::ChunkMap::moveNorth(ChunkWorkManager* wm)
 
 void Voxel::ChunkMap::addRowWest(ChunkWorkManager* wm)
 {
+	// Add row west (negative X)
+
 	//get x. - 1 because we are adding new row on west (negative x)
 	int x = minXZ.x - 1;
 
-	// Same for z.
+	// Same for z. Use min max to add entire row on chunk map. Don't use active chunks
 	int zStart = minXZ.y;
 	int zEnd = maxXZ.y;
 
@@ -1451,7 +1455,6 @@ void Voxel::ChunkMap::addRowWest(ChunkWorkManager* wm)
 		{
 			generateEmptyChunk(x, z);
 
-			//chunksToPreGenerate.push_back(glm::ivec2(x, z));
 			wm->addPreGenerateWork(glm::ivec2(x, z));
 		}
 	}
@@ -1459,37 +1462,39 @@ void Voxel::ChunkMap::addRowWest(ChunkWorkManager* wm)
 	// Add new list on front with empty chunks
 	activeChunks.push_front(std::list<glm::ivec2>());
 
-	// Mark active chunks
-	zStart++;
-	zEnd--;
-	x++;
+	// Recalculate x and z. Use 2 because we have extra 2 rows and cols. Only activate within render distance, not entire row
+	zStart += 2;
+	zEnd -= 2;
+	x += 2;
 
 	for (int z = zStart; z <= zEnd; z++)
 	{
 		auto newChunk = getChunkAtXZ(x, z);
-		
-		// activate
+
+		// activate the chunk
 		newChunk->setActive(true);
-		// Note: The purpose of here is to activate chunk not to find visible chunk
 
 		auto pos = glm::ivec2(x, z);
+		// add active chunk position to grid
 		activeChunks.front().push_back(pos);
 
-		//wm->addGenerateWork(pos);
+		// Also add to preGenerate queue. chunk might be already generated, smoothed, etc and worker thread will handle this.
 		wm->addPreGenerateWork(pos);
 	}
 }
 
 void Voxel::ChunkMap::addRowEast(ChunkWorkManager * wm)
 {
+	// Add row east (positive x)
+
 	// get x. + 1 because we ad adding new row on east (positive x)
 	int x = maxXZ.x + 1;
 
-	// Same for z.
+	// Same for z. Use min max to add entire row on chunk map. Don't use active chunks
 	int zStart = minXZ.y;
 	int zEnd = maxXZ.y;
 
-	// Generate empty chunk and add to pre load list
+	// Generate empty chunk. Add to preGenerate queue so it generates chunks even it's inactive chunk
 	for (int z = zStart; z <= zEnd; z++)
 	{
 		if (!hasChunkAtXZ(x, z))
@@ -1503,33 +1508,35 @@ void Voxel::ChunkMap::addRowEast(ChunkWorkManager * wm)
 	// Add new list on back with empty chunks
 	activeChunks.push_back(std::list<glm::ivec2>());
 
-	// Mark active chunks
-	zStart++;
-	zEnd--;
-	x--;
+	// Recalculate x and z. Use 2 because we have extra 2 rows and cols. Only activate within render distance, not entire row
+	zStart += 2;
+	zEnd -= 2;
+	x -= 2;
 
 	for (int z = zStart; z <= zEnd; z++)
 	{
 		auto newChunk = getChunkAtXZ(x, z);
 
-		// activate
+		// activate the chunk
 		newChunk->setActive(true);
-		// Note: The purpose of here is to activate chunk not to find visible chunk
 
 		auto pos = glm::ivec2(x, z);
+		// add active chunk position to grid
 		activeChunks.back().push_back(pos);
 
-		//wm->addGenerateWork(pos);
+		// Also add to preGenerate queue. chunk might be already generated, smoothed, etc and worker thread will handle this.
 		wm->addPreGenerateWork(pos);
 	}
 }
 
 void Voxel::ChunkMap::addColSouth(ChunkWorkManager * wm)
 {
+	// Add element on the back of the row (positive z)
+
 	// get z. + 1 because we are adding new element on each row toward souht (positive z)
 	int z = maxXZ.y + 1;
 
-	// iterate all x
+	// Same for x. Use min max to add entire row on chunk map. Don't use active chunks
 	int xStart = minXZ.x;
 	int xEnd = maxXZ.x;
 
@@ -1543,25 +1550,26 @@ void Voxel::ChunkMap::addColSouth(ChunkWorkManager * wm)
 			wm->addPreGenerateWork(glm::ivec2(x, z));
 		}
 	}
+	
+	// Unlike east and west, no need to add row. 
 
-	// Mark active chunks
-	z--;
+	// Re calculate z.
+	z -= 2;
 
 	for (auto& row : activeChunks)
 	{
-		auto& frontPos = row.front();
-
-		auto pos = glm::ivec2(frontPos.x, z);
+		// get position. Use same x as the row. z remains the same
+		auto pos = glm::ivec2(row.front().x, z);
 
 		auto newChunk = getChunkAtXZ(pos.x, pos.y);
 
-		// activate
+		// activate the chunk
 		newChunk->setActive(true);
-		// Note: The purpose of here is to activate chunk not to find visible chunk
 
+		// add active chunk position to grid
 		row.push_back(pos);
 
-		//wm->addGenerateWork(pos);
+		// Also add to preGenerate queue. chunk might be already generated, smoothed, etc and worker thread will handle this.
 		wm->addPreGenerateWork(pos);
 	}
 }
@@ -1585,60 +1593,68 @@ void Voxel::ChunkMap::addColNorth(ChunkWorkManager * wm)
 			wm->addPreGenerateWork(glm::ivec2(x, z));
 		}
 	}
-	
-	// Mark active chunks
-	z++;
+
+	// Unlike east and west, no need to add row. 
+
+	// Re calculate z.
+	z += 2;
 
 	for (auto& row : activeChunks)
 	{
-		auto& frontPos = row.front();
-
-		auto pos = glm::ivec2(frontPos.x, z);
+		// get position. Use same x as the row. z remains the same
+		auto pos = glm::ivec2(row.front().x, z);
 
 		auto newChunk = getChunkAtXZ(pos.x, pos.y);
-
-		// activate
+		
+		// activate the chunk
 		newChunk->setActive(true);
-		// Note: The purpose of here is to activate chunk not to find visible chunk
 
+		// add active chunk position to grid
 		row.push_front(pos);
 
-		//wm->addGenerateWork(pos);
+		// Also add to preGenerate queue. chunk might be already generated, smoothed, etc and worker thread will handle this.
 		wm->addPreGenerateWork(pos);
 	}
 }
 
 void Voxel::ChunkMap::removeRowWest(ChunkWorkManager* wm)
 {
-	//get x.
+	// Remove row west (negative X)
+
+	//get x. Use min, not active chunk
 	int x = minXZ.x;
 
-	// Same for z.
+	// Same for z. use min max to remove entire row from map, not on active chunks
 	int zStart = minXZ.y;
 	int zEnd = maxXZ.y;
 
-	// Instead of adding to unload list, just release the mesh here and add to finished queue.
+	// Called by main thread. Iterate through entire row, clear buffer. These chunks will get removed from map. So add to finished queue.
 	for (int z = zStart; z <= zEnd; z++)
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(x, z);
 
+		// Make sure deactivates.
 		chunk->setActive(false);
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
 		{
+			// Clear mesh. This doesn't releases vao. 
 			mesh->clearBuffers();
 		}
 
+		// Add to queue and let main thread to release it
 		wm->addFinishedQueue(glm::ivec2(x, z));
 	}
 
-	// Also deactivate first row on active chunk
+	// Before chunk map add new row on postive x (east), deactivate front row (west) from active chunk
+	// We don't release mesh, there is no need to. Leave as generated, smoothed, structure added.
 	for (auto& chunkXZ : activeChunks.front())
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		/*
 		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
@@ -1647,41 +1663,52 @@ void Voxel::ChunkMap::removeRowWest(ChunkWorkManager* wm)
 			mesh->clearBuffers();
 		}
 
+		*/
 		// instead of removing, we keep it because now these chunks become edge.
 	}
+
+	// After deactivting front row, pop it from grid.
+	activeChunks.pop_front();
 }
 
 void Voxel::ChunkMap::removeRowEast(ChunkWorkManager* wm)
 {
-	//get x.
+	// Remove row east (positive x)
+
+	//get x. Use max, not active chunk.
 	int x = maxXZ.x;
 
-	// Same for z.
+	// Same for z. use min max to remove entire row from map, not on active chunks
 	int zStart = minXZ.y;
 	int zEnd = maxXZ.y;
 
-	// Instead of adding to unload list, just release the mesh here and add to finished queue.
+	// Called by main thread. Iterate through entire row, clear buffer. These chunks will get removed from map. So add to finished queue.
 	for (int z = zStart; z <= zEnd; z++)
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(x, z);
 
+		// Make sure deactivates.
 		chunk->setActive(false);
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
 		{
+			// Clear mesh. This doesn't releases vao. 
 			mesh->clearBuffers();
 		}
 
+		// Add to queue and let main thread to release it
 		wm->addFinishedQueue(glm::ivec2(x, z));
 	}
 
-	// Also deactivate last row on active chunk
+	// Before chunk map add new row on negative x (west), deactivate back row (east) from active chunk
+	// We don't release mesh, there is no need to. Leave as generated, smoothed, structure added.
 	for (auto& chunkXZ : activeChunks.back())
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		/*
 		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
@@ -1689,43 +1716,55 @@ void Voxel::ChunkMap::removeRowEast(ChunkWorkManager* wm)
 		{
 			mesh->clearBuffers();
 		}
+		*/
 
 		// instead of removing, we keep it because now these chunks become edge.
 	}
+
+	// After deactivting back row, pop it from grid.
+	activeChunks.pop_back();
 }
 
-void Voxel::ChunkMap::removeColSouth(ChunkWorkManager * wm)
+void Voxel::ChunkMap::removeColSouth(ChunkWorkManager* wm)
 {
-	// Iterating all rows
+	// Remove last element on each row (psotive z)
+
+	// get x. Use min max because we are removing entire col
 	int xStart = minXZ.x;
 	int xEnd = maxXZ.x;
 
-	// Last column
+	// Get z. Use max z.
 	int z = maxXZ.y;
 
-	// Instead of adding to unload list, just release the mesh erhe and add to finished queue
+	// Called by main thread. Iterate through entire col, clear buffer. These chunks will get removed from map. So add to finished queue.
 	for (int x = xStart; x <= xEnd; x++)
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(x, z);
 
+		// Make sure deactivates.
 		chunk->setActive(false);
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
 		{
+			// Clear mesh. This doesn't releases vao. 
 			mesh->clearBuffers();
 		}
 
+		// Add to queue and let main thread to release it
 		wm->addFinishedQueue(glm::ivec2(x, z));
 	}
 
-	// Also deactivate last element on each row on active chunk
+	// Before chunk map add new col on negative z (north), deactivate back col (south) from active chunk
+	// We don't release mesh, there is no need to. Leave as generated, smoothed, structure added.
 	for (auto& row : activeChunks)
 	{
+		// get back (south)
 		auto chunkXZ = row.back();
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		/*
 		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
@@ -1733,43 +1772,58 @@ void Voxel::ChunkMap::removeColSouth(ChunkWorkManager * wm)
 		{
 			mesh->clearBuffers();
 		}
+		*/
 
 		// instead of removing, we keep it because now these chunks become edge.
+	}
+
+	// Pop last element on each row (south)
+	for (auto& row : activeChunks)
+	{
+		row.pop_back();
 	}
 }
 
 void Voxel::ChunkMap::removeColNorth(ChunkWorkManager * wm)
 {
-	// Iterating all rows
+	// Remove first element on each row (negative z)
+
+	// get x. Use min max because we are removing entire col
 	int xStart = minXZ.x;
 	int xEnd = maxXZ.x;
 
-	// Last column
+	// Get z. Use min z.
 	int z = minXZ.y;
 
-	// Instead of adding to unload list, just release the mesh erhe and add to finished queue
+	// Called by main thread. Iterate through entire col, clear buffer. These chunks will get removed from map. So add to finished queue.
 	for (int x = xStart; x <= xEnd; x++)
 	{
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(x, z);
 
+		// Make sure deactivates.
 		chunk->setActive(false);
 
 		auto mesh = chunk->getMesh();
 		if (mesh)
 		{
+			// Clear mesh. This doesn't releases vao. 
 			mesh->clearBuffers();
 		}
 
+		// Add to queue and let main thread to release it
 		wm->addFinishedQueue(glm::ivec2(x, z));
 	}
 
-	// Also deactivate last element on each row on active chunk
+	// Before chunk map add new col on postiive z (south), deactivate front col (north) from active chunk
+	// We don't release mesh, there is no need to. Leave as generated, smoothed, structure added.
 	for (auto& row : activeChunks)
 	{
+		// get front (north)
 		auto chunkXZ = row.front();
 		std::shared_ptr<Chunk> chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 
 		chunk->setActive(false);
+		/*
 		chunk->smoothed = false;
 
 		auto mesh = chunk->getMesh();
@@ -1777,20 +1831,30 @@ void Voxel::ChunkMap::removeColNorth(ChunkWorkManager * wm)
 		{
 			mesh->clearBuffers();
 		}
+		*/
 
 		// instead of removing, we keep it because now these chunks become edge.
+	}
+
+	// Pop first element on each row (north)
+	for (auto& row : activeChunks)
+	{
+		row.pop_front();
 	}
 }
 
 bool Voxel::ChunkMap::isChunkOnEdge(const glm::ivec2 & chunkXZ)
 {
+	// Check if chunk is on edge. Edge means end of render distance. Doesn't incldues extra rows and cols in active chunk.
 	return chunkXZ.x == minXZ.x || chunkXZ.y == minXZ.y || chunkXZ.x == maxXZ.x || chunkXZ.y == maxXZ.y;
 }
 
 int Voxel::ChunkMap::findVisibleChunk()
 {
+	// Count number of visible chunk for debug
 	int count = 0;
 
+	// iterate chunk map
 	for (auto& e : map)
 	{
 		auto chunk = e.second;
@@ -1799,6 +1863,7 @@ int Voxel::ChunkMap::findVisibleChunk()
 			auto chunkXZ = chunk->getCoordinate();
 			if (isChunkOnEdge(chunkXZ))
 			{
+				// Don't render chunks that is out of render distance.
 				continue;
 			}
 			else
@@ -2005,7 +2070,7 @@ void Voxel::ChunkMap::queryNearByCollidableBlocksInXZ(const glm::vec3 & playerPo
 
 void Voxel::ChunkMap::queryBottomCollidableBlocksInY(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
 {
- 	auto standingBlockWorldPos = glm::ivec3(0);
+	auto standingBlockWorldPos = glm::ivec3(0);
 	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
 	standingBlockWorldPos.y = static_cast<int>((playerPosition.y >= 0) ? playerPosition.y : 0);
 	standingBlockWorldPos.z = static_cast<int>((playerPosition.z >= 0) ? playerPosition.z : glm::floor(playerPosition.z));
@@ -2171,4 +2236,33 @@ void Voxel::ChunkMap::printCurrentChunk()
 {
 	auto chunk = getChunkAtXZ(currentChunkPos.x, currentChunkPos.y);
 	chunk->print();
+}
+
+void Voxel::ChunkMap::printChunkMap()
+{
+	for (int x = minXZ.x; x <= maxXZ.x; ++x)
+	{
+		for (int z = minXZ.y; z<= maxXZ.y; ++z)
+		{
+			auto chunk = map.find(glm::ivec2(x, z))->second;
+
+			std::cout << "(" << x << ", " << z << ")" << ((chunk->isActive()) ? std::string("A") : std::string(" ")) << "\t";
+		}
+		std::cout << "\n";
+	}
+
+	std::cout << "\n";
+}
+
+void Voxel::ChunkMap::printActiveChunks()
+{
+	for (auto& row : activeChunks)
+	{
+		for (auto& chunkXZ : row)
+		{
+			std::cout << "(" << chunkXZ.x << ", " << chunkXZ.y << ")\t";
+		}
+
+		std::cout << "\n";
+	}
 }

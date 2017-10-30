@@ -5,7 +5,7 @@ videoSetting
 			width 1920
 			height 1080
 	vsync false
-	renderDistance 16
+	renderDistance 2
 	fieldOfView 70
 	blockShade 2
 	plantWave false

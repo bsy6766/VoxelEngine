@@ -357,20 +357,19 @@ void Game::createPlayer()
 
 void Game::createChunkMap()
 {
-	auto playerPosition = player->getPosition();
+	// Debug: measure time
 	auto start = Utility::Time::now();
-
-	// create chunks for region -1 ~ 1.
-	// For now, test with 0, 0
-	//chunkMap->generateRegion(glm::ivec2(0, 0));
-	auto rd = settingPtr->getRenderDistance();
-
+	
 	// Initilize chunks near player based on render distance
-	auto chunkCoordinates = chunkMap->initChunkNearPlayer(playerPosition, rd);
+	auto chunkCoordinates = chunkMap->initChunkNearPlayer(player->getPosition(), settingPtr->getRenderDistance());
 
 	// Initilize active chunks.
-	chunkMap->initActiveChunks(rd);
+	chunkMap->initActiveChunks();
 
+	// debug print
+	chunkMap->printChunkMap();
+
+	// Sort chunk coordinates closer to player
 	glm::vec2 p = chunkCoordinates.front();
 	std::sort(chunkCoordinates.begin(), chunkCoordinates.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
 
@@ -379,14 +378,16 @@ void Game::createChunkMap()
 		chunkWorkManager->addPreGenerateWork(glm::ivec2(xz));
 	}
 
+	// Get line program for debug
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
 
 	// for debug
 	chunkMap->initChunkBorderDebug(program);
 
-	// block outline
+	// block outline. this is not debug. Required for building.
 	chunkMap->initBlockOutline(program);
 
+	// End measure
 	auto end = Utility::Time::now();
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }

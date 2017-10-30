@@ -504,7 +504,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 					if (chunk)
 					{
-						//std::cout << "PreGen\n";
+						//std::cout << "PreGen " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 						// Get all block world position in XZ axises and find which region the are at
 						std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
@@ -639,6 +639,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					{
 						//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
 						//auto s = Utility::Time::now();
+						//std::cout << "SMooth " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 
 						if (chunk->hasMultipleRegion())
 						{
@@ -680,6 +681,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					{
 						if (!chunk->isGenerated() && chunk->isActive())
 						{
+							std::cout << "Gen " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 							//std::cout << "Gen\n";
 
 							//std::cout << "Thraed #" << std::this_thread::get_id() << " generating chunk\n";
@@ -787,7 +789,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 							// All chunks starts from chunk section 3 because sea level starts at 33.
 							chunk->generate();
-							
+
 							addStructureWork(chunkXZ);
 
 							//auto e = Utility::Time::now();
@@ -801,6 +803,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					auto chunk = map->getChunkAtXZ(chunkXZ.x, chunkXZ.y);
 					if (chunk && chunk->isActive())
 					{
+						std::cout << "AddStructure " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 						/*
 						Trick of using random.
 
@@ -930,6 +933,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							auto mesh = chunk->getMesh();
 							if (mesh)
 							{
+								std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 								// There can be two cases. 
 								// 1. Chunk is newly generated and need mesh.
 								// 2. Chunk already has mesh but need to refresh
