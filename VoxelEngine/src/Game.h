@@ -64,9 +64,15 @@ namespace Voxel
 		enum class ReloadState
 		{
 			NONE = 0,
-			CHUNK_MAP,
-			CHUNK_MESH,
-			WORLD,
+			CHUNK_MAP,		// Reload chunk map
+			CHUNK_MESH,		// Reload chunk meshes only
+			WORLD,			// Reload world
+		};
+
+		enum class RenderingState
+		{
+			WORLD = 0,		// Renders world
+			WORLD_MAP,		// Renders world map
 		};
 	private:
 		// Camera modes
