@@ -1,6 +1,7 @@
 #include <InputHandler.h>
 #include <iostream>
 #include <string>
+#include <Setting.h>
 
 using namespace Voxel;
 
@@ -12,6 +13,20 @@ InputHandler::InputHandler()
 	, bufferEnabled(false)
 	, mouseScrollValue(0)
 {
+	// Initialize default key map
+	defaultKeyBindMap = 
+	{ 
+		{ KEY_INPUT::MOVE_FOWARD, GLFW_KEY_W },
+		{ KEY_INPUT::MOVE_BACKWARD	, GLFW_KEY_S },
+		{ KEY_INPUT::MOVE_LEFT, GLFW_KEY_A },
+		{ KEY_INPUT::MOVE_RIGHT, GLFW_KEY_D },
+		{ KEY_INPUT::JUMP, GLFW_KEY_SPACE },
+		{ KEY_INPUT::SNEAK, GLFW_KEY_LEFT_SHIFT },
+		{ KEY_INPUT::TOGGLE_MAP, GLFW_KEY_M },
+		// Debug.
+		{ KEY_INPUT::MOVE_UP, GLFW_KEY_SPACE },
+		{ KEY_INPUT::MOVE_DOWN, GLFW_KEY_LEFT_SHIFT },
+	};
 }
 
 Voxel::InputHandler::~InputHandler()
@@ -102,6 +117,19 @@ void Voxel::InputHandler::onControllerConnected(ControllerID id)
 void Voxel::InputHandler::onControllerDisconnected(ControllerID id)
 {
 	std::cout << "[InputHandler] Controller #" << id << " is disconnected\n";
+}
+
+int Voxel::InputHandler::getKeyFromUserKeyBind(const KEY_INPUT keyInput)
+{
+	auto find = userKeyBindMap.find(keyInput);
+	if (find == userKeyBindMap.end())
+	{
+		return -1;
+	}
+	else
+	{
+		return find->second;
+	}
 }
 
 void InputHandler::updateMousePosition(double x, double y)
@@ -226,6 +254,34 @@ bool InputHandler::getKeyUp(int key, const bool tick)
 	}
 }
 
+bool Voxel::InputHandler::getKeyDown(const KEY_INPUT keyInput, const bool tick)
+{
+	// Check if user has key bind for this
+	int glfwKey = getKeyFromUserKeyBind(keyInput);
+	if (glfwKey == -1)
+	{
+		// Has no bind. Use default key
+		auto find = defaultKeyBindMap.find(keyInput);
+		if (find == defaultKeyBindMap.end())
+		{
+			// Wasn't able to find key
+			std::cout << "[InputHandler] Wasn't able to find default key for KEY_INPUT: " << (int)keyInput << "\n";
+			return false;
+		}
+		else
+		{
+			// Found default key
+			return getKeyDown(find->second);
+		}
+	}
+	else
+	{
+		// User bound the key for this KEY_INPUT
+		return getKeyDown(glfwKey);
+	}
+}
+
+/*
 bool InputHandler::getKeyRepeat(int key, const bool tick)
 {
 	if (tick)
@@ -253,6 +309,7 @@ bool InputHandler::getKeyRepeat(int key, const bool tick)
 		}
 	}
 }
+*/
 
 int Voxel::InputHandler::getMods()
 {
@@ -315,6 +372,7 @@ bool InputHandler::getMouseUp(int button, const bool tick)
 	}
 }
 
+/*
 bool InputHandler::getMouseRepeat(int button, const bool tick)
 {
 	if (tick)
@@ -342,6 +400,7 @@ bool InputHandler::getMouseRepeat(int button, const bool tick)
 		}
 	}
 }
+*/
 
 int Voxel::InputHandler::getMouseScrollValue()
 {

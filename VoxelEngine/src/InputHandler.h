@@ -16,6 +16,21 @@ namespace Voxel
 	*/
 	class InputHandler
 	{
+	public:
+		enum class KEY_INPUT
+		{
+			MOVE_FOWARD = 0,
+			MOVE_BACKWARD,
+			MOVE_LEFT,
+			MOVE_RIGHT,
+			JUMP,
+			SNEAK,
+			TOGGLE_MAP,	
+
+			// Debug
+			MOVE_UP,
+			MOVE_DOWN,
+		};
 	protected:
 		InputHandler();
 		~InputHandler();
@@ -34,6 +49,12 @@ namespace Voxel
 		// Keyboard map that saves input state for only single frame
 		std::unordered_map<int/*GLFW Key*/, int> keyTickMap;
 
+		// Default key setting
+		std::unordered_map<KEY_INPUT, int/*GLFW key*/> defaultKeyBindMap;
+		// User key setting. Empty means default.
+		// Note: may be use vector?
+		std::unordered_map<KEY_INPUT, int/*user GLFW key*/> userKeyBindMap;
+
 		// glfw modifier bit. 
 		int mods;
 
@@ -43,6 +64,9 @@ namespace Voxel
 
 		// Controller
 		ControllerManager* controllerManager;
+
+		// Checks if player has custom key bind. Returns -1 if didn't.
+		int getKeyFromUserKeyBind(const KEY_INPUT keyInput);
 
 		void updateMousePosition(double x, double y);
 		void updateMouseButton(int button, int action, int mods);
@@ -79,16 +103,64 @@ namespace Voxel
 		// InputHandler functions. 
 		// Get mouse position. Pass x, y as reference
 		void getMousePosition(double& x, double& y);
-		// Check if key is down. Set tick true to check if it's pressed on current tick(frame)
-		bool getKeyDown(int key, const bool tick = false);
-		bool getKeyUp(int key, const bool tick = false);
-		bool getKeyRepeat(int key, const bool tick = false);
-		int getMods();
-		bool getMouseDown(int button, const bool tick = false);
-		bool getMouseUp(int button, const bool tick = false);
-		bool getMouseRepeat(int button, const bool tick = false);
 
-		// mouse scroll. up = 1, down = -1
+		/**
+		*	Checks if key is down
+		*	@param [in] key GLFW key code to check
+		*	@param [in] tick If it's true, it checks if key was down on current frame. Else, generally checks if key is down
+		*	@return True if key is down. Else, false.
+		*/
+		bool getKeyDown(int key, const bool tick = false);
+
+		/**
+		*	Checks if key is up
+		*	@param [in] key GLFW key code to check
+		*	@param [in] tick If it's true, it checks if key was up on current frame. Else, generally checks if key is up
+		*	@return True if key is up. Else, false.
+		*/
+		bool getKeyUp(int key, const bool tick = false);
+
+		/**
+		*	Check is key for specific action is down
+		*	@param [in] keyInput KEY_INPUT to check.
+		*	@param [in] tick If it's true, it checks if key was down on current frame. Else, generally checks if key is down
+		*	@return True if key is down. Else, false.
+		*/
+		bool getKeyDown(const KEY_INPUT keyInput, const bool tick = false);
+
+		//bool getKeyRepeat(int key, const bool tick = false);
+
+		/**
+		*	Get currently pressed modifier keys.
+		*	GLFW_MOD_SHIFT = 1
+		*	GLFW_MOD_CONTROL = 2
+		*	GLFW_MOD_ALT = 4
+		*	@return Value of mod. 0 means nothing. 7 means all.
+		*/
+		int getMods();
+
+		/**
+		*	Checks if mouse is down
+		*	@param [in] button GLFW mouse button to check
+		*	@param [in] tick If it's true, it checks if mouse button was down on current frame. Else, generally checks if mouse button is down
+		*	@return True if mouse button is down. Else, false.
+		*/
+		bool getMouseDown(int button, const bool tick = false);
+
+		/**
+		*	Checks if mouse is up
+		*	@param [in] button GLFW mouse button to check
+		*	@param [in] tick If it's true, it checks if mouse button was up on current frame. Else, generally checks if mouse button is up
+		*	@return True if mouse button is up. Else, false.
+		*/
+		bool getMouseUp(int button, const bool tick = false);
+
+		//bool getMouseRepeat(int button, const bool tick = false);
+
+		/**
+		*	Get mouse scroll value
+		*	@return 1 if scrolled up. -1 if scrolled down. 0 if none.
+		*/
 		int getMouseScrollValue();
 
 		// TODO: Controller id can be change at connection and disctionection. save id to player and update
@@ -97,7 +169,13 @@ namespace Voxel
 		float getAxisValue(IO::XBOX_360::AXIS axis);
 		bool hasController();
 
+		// For now, simple updates controller manager
 		void update();
+
+		/**
+		*	Post updates input states.
+		*	Wipes all inputs that were pressed current frame. 
+		*/
 		void postUpdate();
 
 		void setCursorToCenter();

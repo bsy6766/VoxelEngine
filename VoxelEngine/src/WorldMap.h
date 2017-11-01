@@ -1,8 +1,33 @@
 #ifndef WORLD_MAP_H
 #define WORLD_MAP_H
 
+#include <GL\glew.h>
+#include <glm\glm.hpp>
+
 namespace Voxel
 {
+	// Foward declaration
+	class World;
+	namespace UI
+	{
+		class Canvas;
+		class Text;
+		class Image;
+	}
+
+	/**
+	*	@struct RegionMesh
+	*	@brief Mesh for single region
+	*/
+	struct RegionMesh
+	{
+	public:
+		GLuint vao;
+		glm::mat4 modelMat;
+
+		glm::vec3 position;
+	};
+
 	/**
 	*	@class WorldMap
 	*	@breif Renders world map
@@ -11,8 +36,33 @@ namespace Voxel
 	class WorldMap
 	{
 	private:
-	public:
+		// OpenGL
+		GLuint vao;
 
+		// UI canvas
+		UI::Canvas* uiCanvas;
+		// Images
+		UI::Image* compass;
+		UI::Image* cameraIcon;
+		// Texts
+		UI::Text* worldName;
+
+		// position of the map
+		glm::vec3 position;
+
+		// Release all the mesh. This is called on destructor.
+		void releaseMesh();
+	public:
+		WorldMap();
+		~WorldMap();
+
+		/**
+		*	Initialize world map. 
+		*	@param [in] world A world instance to access region data
+		*/
+		void init(World* world);
+
+		void updateWorld(World* world);
 	};
 }
 

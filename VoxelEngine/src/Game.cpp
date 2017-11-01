@@ -671,6 +671,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
+		/*
 		std::mt19937 generator;
 		std::binomial_distribution<int> dist(9, 0.5);
 
@@ -694,6 +695,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			}
 			std::cout << "   (" << freq.at(i) << ")\n";
 		}
+		*/
 	}
 	
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -704,20 +706,20 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")\n";
 	}
 
-	if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == 0)
+	if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == 0)
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(1);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
 		debugConsole->updateResolution(1920, 1080);
 	}
-	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == GLFW_MOD_CONTROL)
+	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == GLFW_MOD_CONTROL)
 	{
 		Application::getInstance().getGLView()->setWindowed(1280, 720);
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 		defaultCanvas->setSize(glm::vec2(1280, 720));
 		debugConsole->updateResolution(1280, 720);
 	}
-	else if (input->getKeyDown(GLFW_KEY_M, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
+	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(0);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
@@ -738,29 +740,29 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	// Keyboard
 	if (cameraControlMode)
 	{
-		if (input->getKeyDown(GLFW_KEY_W))
+		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
 		{
 			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), delta));
 		}
-		else if (input->getKeyDown(GLFW_KEY_S))
+		else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_BACKWARD))
 		{
 			Camera::mainCamera->addPosition(getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), delta));
 		}
 
-		if (input->getKeyDown(GLFW_KEY_A))
+		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_LEFT))
 		{
 			Camera::mainCamera->addPosition(getMovedDistByKeyInput(90.0f, glm::vec3(0, 1, 0), delta));
 		}
-		else if (input->getKeyDown(GLFW_KEY_D))
+		else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_RIGHT))
 		{
 			Camera::mainCamera->addPosition(getMovedDistByKeyInput(-90.0f, glm::vec3(0, 1, 0), delta));
 		}
 
-		if (input->getKeyDown(GLFW_KEY_SPACE))
+		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_UP))
 		{
 			Camera::mainCamera->addPosition(glm::vec3(0, delta, 0));
 		}
-		else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+		else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_DOWN))
 		{
 			Camera::mainCamera->addPosition(glm::vec3(0, -delta, 0));
 		}
@@ -769,32 +771,31 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		if (gameState == GameState::IDLE)
 		{
-			if (input->getKeyDown(GLFW_KEY_W))
+			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
 			{
 				player->moveFoward(delta);
-				//std::cout << "!\n";
 			}
-			else if (input->getKeyDown(GLFW_KEY_S))
+			else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_BACKWARD))
 			{
 				player->moveBackward(delta);
 			}
 
-			if (input->getKeyDown(GLFW_KEY_A))
+			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_LEFT))
 			{
 				player->moveLeft(delta);
 			}
-			else if (input->getKeyDown(GLFW_KEY_D))
+			else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_RIGHT))
 			{
 				player->moveRight(delta);
 			}
 
 			if (player->isFlying())
 			{
-				if (input->getKeyDown(GLFW_KEY_SPACE))
+				if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_UP))
 				{
 					player->moveUp(delta);
 				}
-				else if (input->getKeyDown(GLFW_KEY_LEFT_SHIFT))
+				else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_DOWN))
 				{
 					player->moveDown(delta);
 				}
@@ -803,23 +804,22 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			{
 				if (player->isOnGround())
 				{
-					if (input->getKeyDown(GLFW_KEY_SPACE, true))
+					if (input->getKeyDown(InputHandler::KEY_INPUT::JUMP, true))
 					{
-						//std::cout << "j\n";
 						player->jump();
 						physics->applyJumpForceToPlayer(glm::vec3(0, 2.2f, 0));
 					}
 				}
 			}
-
-			if (input->getKeyDown(GLFW_KEY_BACKSPACE))
-			{
-				Camera::mainCamera->print();
-			}
 		}
 	}
 
 	// For debug
+	if (input->getKeyDown(GLFW_KEY_BACKSPACE))
+	{
+		Camera::mainCamera->print();
+	}
+
 	if (input->getKeyDown(GLFW_KEY_C, true))
 	{
 		cameraMode = !cameraMode;

@@ -11,3 +11,10 @@ videoSetting
 	plantWave false
 control
 	autoJump true
+	keyBind
+		moveFoward W
+		moveBackward S
+		moveLeft A
+		moveRight D
+		jump SPACE
+		toggleMap M

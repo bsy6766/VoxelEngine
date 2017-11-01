@@ -73,3 +73,8 @@ void Voxel::Setting::setAutoJumpMode(const bool mode)
 {
 	autoJump = mode;
 }
+
+std::string Voxel::Setting::getString(const std::string & key)
+{
+	return gameSetting->getString(key);
+}

@@ -50,6 +50,8 @@ namespace Voxel
 
 		bool getAutoJumpMode();
 		void setAutoJumpMode(const bool mode);
+
+		std::string getString(const std::string& key);
 	};
 
 }
