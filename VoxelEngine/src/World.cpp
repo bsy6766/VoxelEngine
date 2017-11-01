@@ -583,6 +583,7 @@ void Voxel::World::initRegions(std::mt19937& engine)
 
 		Region* newRegion = new Region(cell);
 		cell->setRegion(newRegion);
+		newRegion->setSeed(this->seed);
 
 		regions.emplace(cellID, newRegion);
 	}

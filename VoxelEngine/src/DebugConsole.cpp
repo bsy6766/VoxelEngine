@@ -784,9 +784,16 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						chunkMap->printCurrentChunk();
 						return true;
 					}
-					else if (arg1 == "refresh" || arg1 == "r")
+					else if (arg1 == "rebuild" || arg1 == "rb")
 					{
 						game->rebuildChunkMap();
+						executedCommandHistory.push_back("Refreshing chunk map");
+						lastCommand = command;
+						return true;
+					}
+					else if (arg1 == "refresh" || arg1 == "rf")
+					{
+						game->refreshChunkMap();
 						executedCommandHistory.push_back("Refreshing chunk map");
 						lastCommand = command;
 						return true;

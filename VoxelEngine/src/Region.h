@@ -31,6 +31,9 @@ namespace Voxel
 		// Name of region
 		std::string name;
 
+		// Region seed
+		std::string seed;
+
 		// Main biome 
 		Biome biomeType;
 
@@ -78,6 +81,9 @@ namespace Voxel
 
 		// Get cell id
 		unsigned int getID();
+
+		// set seed
+		void setSeed(const std::string& seed);
 	};
 }
 

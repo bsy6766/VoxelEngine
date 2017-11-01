@@ -455,26 +455,6 @@ void Voxel::HeightMap::generateHeightMapForChunk(const glm::vec3 & chunkPosition
 			// Get height 
 			float val = HeightMap::getNoise2D(nx, nz, terrain);
 
-			/*
-			if (terrain.getType() == Voxel::TerrainType::PLAIN)
-			{
-				val = glm::round(val);
-			}
-			else
-			{
-				int rand = Utility::Random::randomInt100();
-
-				if (rand > 1)
-				{
-					val = glm::round(val);
-				}
-				else
-				{
-					val = glm::ceil(val);
-				}
-			}
-			*/
-
 			val = glm::round(val);
 
 			// The lowest block level is 30. The range of terrain in y axis is 120 (30 

@@ -199,6 +199,9 @@ void Voxel::ChunkMesh::releaseVAO()
 	cbo = 0;
 	nbo = 0;
 	ibo = 0;
+
+	renderable.store(false);
+	loadable.store(false);
 }
 
 void Voxel::ChunkMesh::clearBuffers()

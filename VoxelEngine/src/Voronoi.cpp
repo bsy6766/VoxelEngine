@@ -1626,17 +1626,14 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy(std::mt19937& engine)
 void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::vec2 & e1, const glm::vec2 & c0, const glm::vec2 & c1, std::vector<glm::vec2>& points, int level, const int startLevel, std::mt19937& engine)
 {
 	auto division = 0.0f;
-
-	auto& random = Random::getInstance();
 	
 	if (startLevel == level)
 	{
-		division = random.getRandGenBool() ? Utility::Random::randomReal<float>(0.6f, 0.7f) : Utility::Random::randomReal<float>(0.3f, 0.4f);
+		division = (std::uniform_int_distribution<>(0, 1)(engine)) ? (std::uniform_real_distribution<float>(0.6f, 0.7f)(engine)) : (std::uniform_real_distribution<float>(0.3f, 0.4f)(engine));
 	}
 	else
 	{
-		division = random.getRandGenBool() ? Utility::Random::randomReal<float>(0.55f, 0.6f) : Utility::Random::randomReal<float>(0.4f, 0.45f);
-		//division = 0.5f;
+		division = (std::uniform_int_distribution<>(0, 1)(engine)) ? (std::uniform_real_distribution<float>(0.55f, 0.6f)(engine)) : (std::uniform_real_distribution<float>(0.4f, 0.45f)(engine));
 	}
 
 	auto cd = c1 - c0;

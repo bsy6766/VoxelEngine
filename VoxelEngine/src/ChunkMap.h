@@ -117,6 +117,10 @@ namespace Voxel
 
 		// Clears all the chunk in the map
 		void clear();
+		// Clears all mesh in the chunk
+		void clearAllMeshes();
+		// Rebuilds all mesh
+		void rebuildAllMeshes(ChunkWorkManager* wm);
 
 		// Check if has chunk in x and z coordinate
 		bool hasChunkAtXZ(int x, int z);

@@ -78,7 +78,7 @@ std::string Voxel::Terrain::terrainTypeToString(Terrain terrainType)
 	return terrainTypeToString(terrainType.type, terrainType.modifier);
 }
 
-void Voxel::Terrain::setTypeByBiome(Voxel::BiomeType biomeType)
+void Voxel::Terrain::setTypeByBiome(Voxel::BiomeType biomeType, std::mt19937& engine)
 {
 	auto find_it = Terrain::biomeTerrainMap.find(biomeType);
 	if (find_it == Terrain::biomeTerrainMap.end())
@@ -89,7 +89,7 @@ void Voxel::Terrain::setTypeByBiome(Voxel::BiomeType biomeType)
 	{
 		auto& terrainTypeList = find_it->second;
 		
-		int randIndex = Utility::Random::randomInt(0, static_cast<int>(terrainTypeList.size() - 1));
+		int randIndex = std::uniform_int_distribution<>(0, static_cast<int>(terrainTypeList.size() - 1))(engine);
 
 		setType(terrainTypeList.at(randIndex));
 

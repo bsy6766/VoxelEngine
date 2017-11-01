@@ -70,6 +70,7 @@ Game::Game()
 	, settingPtr(nullptr)
 	, gameState(GameState::IDLE)
 	, loadingState(LoadingState::INITIALIZING)
+	, reloadState(ReloadState::NONE)
 {
 	// init instances
 	init();
@@ -325,20 +326,6 @@ void Game::createPlayer()
 {
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init();
-	//player->setPosition(glm::vec3(0, 800, 0));
-	//player->setPosition(glm::vec3(0, 300, 0));
-	//player->setPosition(glm::vec3(-570, 100, 457));
-	//player->setPosition(glm::vec3(665, 132, -85));
-	//player->setPosition(glm::vec3(859, 132, -28));
-	//player->setPosition(glm::vec3(921, 132, 121));
-	//player->setPosition(glm::vec3(2965, 132, -292));
-	//player->setPosition(glm::vec3(681, 132, -85));
-	//player->setPosition(glm::vec3(539, 160, 11));
-	//player->setPosition(glm::vec3(-690, 150, 128));
-	//player->setRotation(glm::vec3(-90, 0, 0));
-	//player->setRotation(glm::vec3(320, 270, 0));
-	//player->setRotation(glm::vec3(287, 113, 0));
-	// Todo: load player's last direction
 
 	// Todo: set this to false. For now, set ture for debug
 	player->setFly(true);
@@ -376,6 +363,7 @@ void Game::createChunkMap()
 	for (auto xz : chunkCoordinates)
 	{
 		chunkWorkManager->addPreGenerateWork(glm::ivec2(xz));
+		//std::cout << "(" << xz.x << ", " << xz.y << ")" << std::endl;
 	}
 
 	// Get line program for debug
@@ -433,8 +421,9 @@ void Game::update(const float delta)
 			auto playerPosition = player->getPosition();
 			float topY = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.5f;
 			playerPosition.y = topY;
-
+			playerPosition.y += 450.0f;
 			player->setPosition(playerPosition, false);
+			player->setRotation(glm::vec3(270, 180, 0), false);
 
 			//player->setPosition(glm::vec3(365.244, 68 + 1.5f, -117.754), false);
 			//player->setRotation(glm::vec3(291.5, 302.25, 0), false);
@@ -449,14 +438,33 @@ void Game::update(const float delta)
 		}
 		else if (chunkWorkManager->isWaitingMainThread())
 		{
-			std::cout << "Chunk work manager is waiting for main thread\n. Clearing chunk map";
-			chunkMap->clear();
-
-			std::cout << "Done. Regenerate chunk map and get chunk work manager back to work\n";
+			std::cout << "Chunk work manager is waiting for main thread\n.";
 
 			Utility::Random::resetGenerator();
 			Random::getInstance().resetAll();
-			createChunkMap();
+
+			if (reloadState == ReloadState::CHUNK_MAP)
+			{
+				chunkMap->clear();
+
+				std::cout << "Regenerating chunk map and get chunk work manager back to work\n";
+
+				createChunkMap();
+			}
+			else if (reloadState == ReloadState::CHUNK_MESH)
+			{
+				chunkMap->clearAllMeshes();
+
+				chunkMap->rebuildAllMeshes(chunkWorkManager);
+
+				std::cout << "Regenerating meshes and get chunk work manager back to work\n";
+			}
+			else if (reloadState == ReloadState::WORLD)
+			{
+				world->rebuildWorldMap();
+				chunkMap->clear();
+				createChunkMap();
+			}
 
 			chunkWorkManager->resumeWork();
 
@@ -471,6 +479,7 @@ void Game::update(const float delta)
 			else
 			{
 				loadingState = LoadingState::FINISHED;
+				reloadState = ReloadState::NONE;
 			}
 		}
 	}
@@ -646,8 +655,6 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "testLocal: " << Utility::Log::vec3ToStr(testLocal) << std::endl;
 		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
 		*/
-
-		//world->rebuildWorldMap();
 
 		/*
 		std::vector<Block*> collidableBlocks;
@@ -1202,10 +1209,9 @@ void Voxel::Game::checkUnloadedChunks()
 	}
 }
 
-void Voxel::Game::rebuildChunkMap()
+void Voxel::Game::refreshChunkMap()
 {
-	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
-	std::cout << "Refreshing chunk map\n";
+	std::cout << "Refreshing all chunk meshes" << std::endl;
 
 	player->setLookingBlock(nullptr, Cube::Face::NONE);
 	player->setRotation(glm::vec3(0), false);
@@ -1214,12 +1220,36 @@ void Voxel::Game::rebuildChunkMap()
 	chunkWorkManager->notify();
 
 	loadingState = LoadingState::RELOADING;
+	reloadState = ReloadState::CHUNK_MESH;
+}
+
+void Voxel::Game::rebuildChunkMap()
+{
+	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
+	std::cout << "Rebuilding chunk map\n";
+
+	player->setLookingBlock(nullptr, Cube::Face::NONE);
+	player->setRotation(glm::vec3(0), false);
+
+	chunkWorkManager->clear();
+	chunkWorkManager->notify();
+
+	loadingState = LoadingState::RELOADING;
+	reloadState = ReloadState::CHUNK_MAP;
 }
 
 void Voxel::Game::rebuildWorld()
 {
-	world->rebuildWorldMap();
-	rebuildChunkMap();
+	std::cout << "Rebuiling the world\n";
+
+	player->setLookingBlock(nullptr, Cube::Face::NONE);
+	player->setRotation(glm::vec3(0), false);
+
+	chunkWorkManager->clear();
+	chunkWorkManager->notify();
+
+	loadingState = LoadingState::RELOADING;
+	reloadState = ReloadState::WORLD;
 }
 
 void Game::render(const float delta)

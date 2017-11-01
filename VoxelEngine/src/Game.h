@@ -60,6 +60,14 @@ namespace Voxel
 			RELOADING,
 			FINISHED,
 		};
+
+		enum class ReloadState
+		{
+			NONE = 0,
+			CHUNK_MAP,
+			CHUNK_MESH,
+			WORLD,
+		};
 	private:
 		// Camera modes
 		bool cameraMode;
@@ -71,6 +79,7 @@ namespace Voxel
 		// States
 		GameState gameState;
 		LoadingState loadingState;
+		ReloadState reloadState;
 		
 		// global seed
 		std::string globalSeed;

@@ -6,6 +6,7 @@
 
 #include <Biome.h>
 #include <TerrainType.h>
+#include <random>
 
 namespace Voxel
 {
@@ -41,7 +42,7 @@ namespace Voxel
 		static std::string terrainTypeToString(Terrain terrainType);
 
 		// getter
-		void setTypeByBiome(Voxel::BiomeType biomeType);
+		void setTypeByBiome(Voxel::BiomeType biomeType, std::mt19937& engine);
 		void setType(Voxel::TerrainType type);
 		Voxel::TerrainType getType() const;
 

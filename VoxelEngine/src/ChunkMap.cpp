@@ -389,6 +389,30 @@ void ChunkMap::clear()
 	maxXZ = glm::ivec2(0);
 }
 
+void Voxel::ChunkMap::clearAllMeshes()
+{
+	for (auto& e : map)
+	{
+		(e.second)->releaseMesh();
+	}
+}
+
+void Voxel::ChunkMap::rebuildAllMeshes(ChunkWorkManager * wm)
+{
+	if (wm)
+	{
+		for (auto& e : map)
+		{
+			if ((e.second)->isActive())
+			{
+				wm->addBuildMeshWork(e.first, false);
+			}
+		}
+	}
+	
+	wm->sortBuildMeshQueue(currentChunkPos);
+}
+
 bool Voxel::ChunkMap::hasChunkAtXZ(int x, int z)
 {
 	std::unique_lock<std::mutex> lock(mapMutex);

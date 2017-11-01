@@ -159,7 +159,8 @@ Biome Voxel::Region::getBiomeType()
 
 void Voxel::Region::initTerrainType()
 {
-	terrainType.setTypeByBiome(this->biomeType.getType());
+	std::mt19937 engine(std::hash<std::string>{}(seed));
+	terrainType.setTypeByBiome(this->biomeType.getType(), engine);
 }
 
 void Voxel::Region::initTerrainType(Voxel::TerrainType type)
@@ -241,4 +242,9 @@ std::vector<unsigned int> Voxel::Region::getNeighborRegionIDList()
 unsigned int Voxel::Region::getID()
 {
 	return cell->getID();
+}
+
+void Voxel::Region::setSeed(const std::string & seed)
+{
+	this->seed = seed + std::to_string(getID());
 }
