@@ -35,7 +35,7 @@ namespace Voxel
 		double elapsedTime;
 		int fps;
 		double fpsElapsedTime;
-
+		
 		// vsync
 		bool vsync;
 

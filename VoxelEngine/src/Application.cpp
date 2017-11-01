@@ -24,6 +24,7 @@ Application::Application()
 	: game(nullptr)
 	, glView(nullptr)
 	, internalSetting(nullptr)
+	, needToSkipFrame(true)
 {
 	cout << "Creating Application" << endl;
 
@@ -134,9 +135,16 @@ void Application::run()
 		
 		float delta = static_cast<float>(glView->getElaspedTime());
 		
-		input.update();
+		if (needToSkipFrame)
+		{
+			needToSkipFrame = false;
+		}
+		else
+		{
+			input.update();
 
-		game->update(delta);
+			game->update(delta);
+		}
 
 		// Wipe input data for current frame
 		input.postUpdate();
@@ -152,6 +160,11 @@ void Application::run()
 void Voxel::Application::end()
 {
 	glView->close();
+}
+
+void Voxel::Application::skipFrame()
+{
+	needToSkipFrame = true;
 }
 
 GLView * Voxel::Application::getGLView()

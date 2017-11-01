@@ -42,6 +42,8 @@ namespace Voxel
 		// game
 		Game* game;
 
+		bool needToSkipFrame;
+
 		// internal setting
 		DataTree* internalSetting;
 
@@ -63,6 +65,8 @@ namespace Voxel
 
 		// end the main loop
 		void end();
+
+		void skipFrame();
 
 		// Get OpenGL
 		GLView* getGLView();

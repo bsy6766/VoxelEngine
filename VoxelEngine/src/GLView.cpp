@@ -699,6 +699,7 @@ void Voxel::GLView::glfwWindowFocusCallback(GLFWwindow * window, int focus)
 	if (focus == GLFW_TRUE)
 	{
 		std::cout << "Gained focus\n";
+		Application::getInstance().skipFrame();
 	}
 	else
 	{
