@@ -719,6 +719,22 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 	//std::cout << "Player is falling" << std::endl;
 }
 
+bool Voxel::Physics::checkCollisionWithBlocks(const Geometry::AABB & boundingBox, const std::vector<Block*>& nearByBlocks)
+{
+	for (auto block : nearByBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		// Check intersection
+		if (blockBB.doesIntersectsWith(boundingBox))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Voxel::Physics::applyJumpForceToPlayer(const glm::vec3 & force)
 {
 	if (force.y >= 0.0f)

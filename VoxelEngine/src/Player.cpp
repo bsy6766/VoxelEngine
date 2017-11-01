@@ -38,6 +38,7 @@ Player::Player()
 	, cameraDistanceTargetZ(Player::MaxCameraDistanceX)
 	, viewMode(ViewMode::FIRST_PERSON_VIEW)
 	, jumpState(JumpState::FALLING)
+	, cameraColliding(false)
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
@@ -331,6 +332,12 @@ bool Voxel::Player::didRotateThisFrame()
 	return rotated;
 }
 
+float Voxel::Player::getCameraDistanceZ()
+{
+	//return Voxel::Player::MaxCameraDistanceX;
+	return cameraDistanceTargetZ;
+}
+
 void Voxel::Player::setMovementSpeed(float speed)
 {
 	if (speed < 0)
@@ -512,6 +519,24 @@ void Voxel::Player::setJumpState(const JumpState jumpState)
 	this->jumpState = jumpState;
 }
 
+void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
+{
+	if (dist < cameraDistanceTargetZ)
+	{
+		auto adjust = dist - 1.0f;
+		if (adjust < 0.0f)
+		{
+			adjust = 0.0f;
+		}
+		cameraDistanceZ = adjust;
+	}
+}
+
+void Voxel::Player::setCameraColliding(const bool value)
+{
+	cameraColliding = value;
+}
+
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;
@@ -604,15 +629,6 @@ void Voxel::Player::update(const float delta)
 		updateDirMatrix();
 		updateDirection();
 	}
-	
-	if (cameraDistanceZ != cameraDistanceTargetZ)
-	{
-		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 10.0f * delta);
-		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.01f)
-		{
-			cameraDistanceZ = cameraDistanceTargetZ;
-		}
-	}
 
 	if (cameraY != Player::EyeHeight)
 	{
@@ -649,6 +665,22 @@ void Voxel::Player::updateMovement(const float delta)
 	{
 		moved = false;
 	}
+}
+
+void Voxel::Player::updateCameraDistanceZ(const float delta)
+{
+	if (cameraColliding) return;
+
+	if (cameraDistanceZ != cameraDistanceTargetZ)
+	{
+		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 4.0f * delta);
+		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.01f)
+		{
+			cameraDistanceZ = cameraDistanceTargetZ;
+		}
+	}
+	//std::cout << "cameraDistanceZ = " << cameraDistanceZ << "\n";
+	//std::cout << "cameraDistanceTargetZ = " << cameraDistanceTargetZ << "\n";
 }
 
 void Voxel::Player::renderDebugLines(Program* lineProgram)

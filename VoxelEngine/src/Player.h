@@ -71,6 +71,7 @@ namespace Voxel
 		float cameraY;
 		float cameraDistanceZ;
 		float cameraDistanceTargetZ;
+		bool cameraColliding;
 
 		// True if player can fly
 		bool fly;
@@ -148,6 +149,7 @@ namespace Voxel
 
 		void update(const float delta);
 		void updateMovement(const float delta);
+		void updateCameraDistanceZ(const float delta);
 		void renderDebugLines(Program* lineProgram);
 
 		//glm::mat4 getVP(const glm::mat4& projection);
@@ -162,6 +164,8 @@ namespace Voxel
 		bool didMoveThisFrame();
 		// Check if player rotated this frame
 		bool didRotateThisFrame();
+
+		float getCameraDistanceZ();
 
 		// Set player movementspeed
 		void setMovementSpeed(float speed);
@@ -209,6 +213,9 @@ namespace Voxel
 		bool isFalling();
 
 		void setJumpState(const JumpState jumpState);
+
+		void setResolvedCameraDistanceZ(const float dist);
+		void setCameraColliding(const bool value);
 	};
 }
 

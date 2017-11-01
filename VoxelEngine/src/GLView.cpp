@@ -176,6 +176,8 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	*/
 	this->vsync = vsync;
 
+	setVsync(vsync);
+
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Set callbacks

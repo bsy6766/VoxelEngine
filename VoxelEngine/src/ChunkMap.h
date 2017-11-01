@@ -165,10 +165,12 @@ namespace Voxel
 		
 		// From rayStart to rayEnd, visit all blocks
 		RayResult raycastBlock(const glm::vec3& playerEyePosition, const glm::vec3& playerDirection, const float playerRange);
+		float raycastCamera(const glm::vec3& rayStart, const glm::vec3& rayEnd, const float cameraRange);
 
 		// Check which face of block(cube) did ray hit
 		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
 		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::Triangle& tri, glm::vec3& intersectingPoint);
+		float raycastIntersectingDistance(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
 
 		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);
@@ -205,6 +207,7 @@ namespace Voxel
 		void queryNearByCollidableBlocksInXZ(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 		void queryBottomCollidableBlocksInY(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
 		void queryTopCollidableBlocksInY(const glm::vec3& playerPosition, std::vector<Block*>& collidableBlocks);
+		void queryNearByBlocks(const glm::vec3& position, std::vector<Block*>& collidableBlocks);
 
 		// Get top y at 
 		int getTopYAt(const glm::vec2& position);

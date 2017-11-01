@@ -1082,6 +1082,66 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 	return result;
 }
 
+float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3& rayEnd, const float cameraRange)
+{
+	glm::vec3 dirVec = rayEnd - rayStart;
+
+	float div = 700.0f;
+	glm::vec3 step = dirVec / div;
+
+	//std::cout << "step = " << step.x << ", " << step.y << ", " << step.z << ")\n";
+
+	int threshold = 1000;
+
+	glm::vec3 curRayPoint = rayStart;
+
+	glm::ivec3 startBlockPos = glm::ivec3(Utility::Math::fastFloor(rayStart.x), Utility::Math::fastFloor(rayStart.y), Utility::Math::fastFloor(rayStart.z));
+	glm::ivec3 curBlockPos = startBlockPos;
+
+	//std::cout << "start block (" << startBlockPos.x << ", " << startBlockPos.y << ", " << startBlockPos.z << ")\n";
+
+	while (threshold >= 0)
+	{
+		curRayPoint += step;
+
+		if (glm::distance(curRayPoint, rayStart) > cameraRange)
+		{
+			return cameraRange;
+		}
+		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")\n";
+
+		auto visitingBlockPos = glm::ivec3(Utility::Math::fastFloor(curRayPoint.x), Utility::Math::fastFloor(curRayPoint.y), Utility::Math::fastFloor(curRayPoint.z));
+
+		if (visitingBlockPos != curBlockPos)
+		{
+			curBlockPos = visitingBlockPos;
+
+			//std::cout << "cur block (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")\n";
+			Block* curBlock = getBlockAtWorldXYZ(curBlockPos.x, curBlockPos.y, curBlockPos.z);
+
+			if (curBlock)
+			{
+				if (curBlock->isEmpty() == false)
+				{
+					// raycasted block not empty. 
+					if (curBlockPos != startBlockPos)
+					{
+						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")\n";
+
+						// Check which face did ray hit on cube.
+						return raycastIntersectingDistance(rayStart, curRayPoint, curBlock->getBoundingBox());
+					}
+				}
+			}
+		}
+
+
+		threshold--;
+	}
+
+	return cameraRange;
+}
+
 Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
 {
 	// Check if ray hits each triangle of cube. 
@@ -1203,6 +1263,32 @@ int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3
 		return 0;
 
 	return 1;                       // I is in T
+}
+
+float Voxel::ChunkMap::raycastIntersectingDistance(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
+{
+	auto triangles = blockAABB.toTriangles();
+
+	float minDist = std::numeric_limits<float>::max();
+
+	for (unsigned int i = 0; i < triangles.size(); i++)
+	{
+		glm::vec3 intersectingPoint;
+		int rayResult = raycastTriangle(rayStart, rayEnd, triangles.at(i), intersectingPoint);
+
+		if (rayResult == 1)
+		{
+			//std::cout << "hit: " << i << std::endl;
+			//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint)<< std::endl;
+			float dist = glm::abs(glm::distance(intersectingPoint, rayStart));
+			if (dist < minDist)
+			{
+				minDist = dist;
+			}
+		}
+	}
+
+	return minDist;
 }
 
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
@@ -2138,6 +2224,41 @@ void Voxel::ChunkMap::queryTopCollidableBlocksInY(const glm::vec3 & playerPositi
 	int startZ = standingBlockWorldPos.z - 1;
 	int endX = standingBlockWorldPos.x + 1;
 	int endY = standingBlockWorldPos.y + 3;
+	int endZ = standingBlockWorldPos.z + 1;
+
+	for (int x = startX; x <= endX; x++)
+	{
+		for (int z = startZ; z <= endZ; z++)
+		{
+			for (int y = startY; y <= endY; y++)
+			{
+				Block* block = getBlockAtWorldXYZ(x, y, z);
+				if (block)
+				{
+					if (block->isCollidable())
+					{
+						collidableBlocks.push_back(block);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Voxel::ChunkMap::queryNearByBlocks(const glm::vec3 & position, std::vector<Block*>& collidableBlocks)
+{
+	auto standingBlockWorldPos = glm::ivec3(0);
+	standingBlockWorldPos.x = static_cast<int>((position.x >= 0) ? position.x : glm::floor(position.x));
+	standingBlockWorldPos.y = static_cast<int>((position.y >= 0) ? position.y : 0);
+	standingBlockWorldPos.z = static_cast<int>((position.z >= 0) ? position.z : glm::floor(position.z));
+
+	// Query only near by in XZ axis. Bottom of over top blocks aren't counted
+
+	int startX = standingBlockWorldPos.x - 1;
+	int startY = standingBlockWorldPos.y - 1;
+	int startZ = standingBlockWorldPos.z - 1;
+	int endX = standingBlockWorldPos.x + 1;
+	int endY = standingBlockWorldPos.y + 1;
 	int endZ = standingBlockWorldPos.z + 1;
 
 	for (int x = startX; x <= endX; x++)

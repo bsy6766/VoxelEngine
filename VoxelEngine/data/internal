@@ -1,5 +1,5 @@
-buildNumber 4106
+buildNumber 4151
 windowTitle Voxel Engine
 Camera 
-	near 0.05f
+	near 0.01f
 	far 2000.0f

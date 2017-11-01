@@ -548,6 +548,76 @@ void Game::update(const float delta)
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
 
 		player->update(delta);
+
+		if (playerMoved || playerRotated)
+		{
+			// update camera ray
+			auto playerEyePos = player->getEyePosition();
+			auto playerDir = player->getDirection();
+
+			auto rayStart = playerEyePos;
+			auto rayEnd = rayStart + (-playerDir * player->getCameraDistanceZ());
+
+			/*
+			std::vector<glm::vec3> rayEnds;
+			float pad = 0.75f;
+			float padY = 0.5f;
+			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y + pad, rayEnd.z));
+			rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y + padY, rayEnd.z));
+			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y + pad, rayEnd.z));
+			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y, rayEnd.z));
+			rayEnds.push_back(rayEnd);
+			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y, rayEnd.z));
+			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y - pad, rayEnd.z));
+			rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y - padY, rayEnd.z));
+			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y - pad, rayEnd.z));
+
+			auto minCamDist = player->getCameraDistanceZ();
+
+			for (auto& re : rayEnds)
+			{
+				float dist = chunkMap->raycastCamera(rayStart, re, player->getCameraDistanceZ());
+				minCamDist = std::min(minCamDist, dist);
+			}
+			*/
+
+			float minCamDist = chunkMap->raycastCamera(rayStart, rayEnd, player->getCameraDistanceZ());
+
+			std::vector<Block*> nearByBlock;
+			auto camPos = rayStart + (-playerDir * minCamDist);
+			chunkMap->queryNearByBlocks(camPos, nearByBlock);
+
+			bool result = true;
+			while (result && minCamDist > 0.0f)
+			{
+				camPos = rayStart + (-playerDir * minCamDist);
+				result = physics->checkCollisionWithBlocks(Geometry::AABB(camPos, glm::vec3(0.25f)), nearByBlock);
+
+				if (result)
+				{
+					minCamDist -= 0.25f;
+				}
+			}
+
+			// raycastCamera takes 10 micro seconds for single ray.
+			//std::cout << "dist = " << minCamDist << std::endl;
+
+			if (minCamDist == player->getCameraDistanceZ())
+			{
+				player->setCameraColliding(false);
+			}
+			else
+			{
+				player->setCameraColliding(true);
+			}
+
+			player->setResolvedCameraDistanceZ(minCamDist);
+
+
+			player->updateCameraDistanceZ(delta);
+		}
+
+
 		skybox->update(delta);
 
 		calendar->update(delta);
