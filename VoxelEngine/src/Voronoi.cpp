@@ -492,10 +492,10 @@ void Voxel::Voronoi::Diagram::buildCells(boost::polygon::voronoi_diagram<double>
 	std::cout << "Voronoi build took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
+void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l, std::mt19937& engine)
 {
 	// randomly omit outer cells in grid. 
-	int omittingCellCount = Utility::Random::randomInt(w, w + (w/4));
+	int omittingCellCount = std::uniform_int_distribution<>(w, w + (w / 4))(engine);
 	// Get candidates
 	std::vector<unsigned int> candidates;
 
@@ -593,7 +593,7 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 				{
 					if (hasOmittedNeighbor)
 					{
-						int rand = Utility::Random::randomInt(0, 100);
+						int rand = std::uniform_int_distribution<>(0, 100)(engine);
 						if (rand < 50)
 						{
 							index++;
@@ -646,8 +646,10 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l)
 					*/
 
 					cell->setValidation(false);
+
 					//cell->clearEdges();
 					//cell->clearNeighbors();
+
 					cell->updateSiteType(Site::Type::OMITTED);
 					totalRemoved++;
 					totalValidCells--;
@@ -1442,7 +1444,7 @@ bool Voxel::Voronoi::Diagram::isConnected(const std::list<std::shared_ptr<Edge>>
 	return false;
 }
 
-void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
+void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy(std::mt19937& engine)
 {
 	auto start = Utility::Time::now();
 	struct edgeData
@@ -1524,7 +1526,7 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
 						visited.back().edgePtr = edge;
 
 						// Make shared edge noisy
-						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, level, level);
+						buildNoisyEdge(edge->getStart(), edge->getEnd(), cell->getSitePosition(), coOwner->getSitePosition(), visited.back().points, level, level, engine);
 						// add end of edge
 						visited.back().points.push_back(edge->getEnd());
 					}
@@ -1621,7 +1623,7 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy()
 	std::cout << "Edge noise took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::vec2 & e1, const glm::vec2 & c0, const glm::vec2 & c1, std::vector<glm::vec2>& points, int level, const int startLevel)
+void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::vec2 & e1, const glm::vec2 & c0, const glm::vec2 & c1, std::vector<glm::vec2>& points, int level, const int startLevel, std::mt19937& engine)
 {
 	auto division = 0.0f;
 
@@ -1664,10 +1666,10 @@ void Voxel::Voronoi::Diagram::buildNoisyEdge(const glm::vec2 & e0, const glm::ve
 		auto e1c1Mid = (c1 + e1) * 0.5f;
 
 		// left
-		buildNoisyEdge(e0, cMid, e0c0Mid, e0c1Mid, points, level - 1, startLevel);
+		buildNoisyEdge(e0, cMid, e0c0Mid, e0c1Mid, points, level - 1, startLevel, engine);
 
 		// right
-		buildNoisyEdge(cMid, e1, e1c0Mid, e1c1Mid, points, level - 1, startLevel);
+		buildNoisyEdge(cMid, e1, e1c0Mid, e1c1Mid, points, level - 1, startLevel, engine);
 	}
 	else
 	{

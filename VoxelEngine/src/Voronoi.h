@@ -4,6 +4,7 @@
 #include <glm\glm.hpp>
 #include <vector>
 #include <list>
+#include <random>
 #include <unordered_map>
 #include <unordered_set>
 #include <polygon\voronoi.hpp>
@@ -193,7 +194,7 @@ namespace Voxel
 			*	@param [in] c1 CoOwner cell position of edge
 			*	@param level A level of recursion.
 			*/
-			void buildNoisyEdge(const glm::vec2& e0, const glm::vec2& e1, const glm::vec2& c0, const glm::vec2& c1, std::vector<glm::vec2>& points, int level, const int startLevel);
+			void buildNoisyEdge(const glm::vec2& e0, const glm::vec2& e1, const glm::vec2& c0, const glm::vec2& c1, std::vector<glm::vec2>& points, int level, const int startLevel, std::mt19937& engine);
 			
 			// For inifinite edges
 			void clipInfiniteEdge(const EdgeType& edge, glm::vec2& e0, glm::vec2& e1, const float bound);
@@ -210,13 +211,13 @@ namespace Voxel
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
 			void buildCells(boost::polygon::voronoi_diagram<double>& vd);
 			// Randomize cells by removing cells
-			void randomizeCells(const int w, const int l);
+			void randomizeCells(const int w, const int l, std::mt19937& engine);
 			// Build graph based on cells.
 			void buildGraph(const int w, const int l);
 			// Remove duplicated edges
 			void removeDuplicatedEdges();
 			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
-			void makeSharedEdgesNoisy();
+			void makeSharedEdgesNoisy(std::mt19937& engine);
 			// Intialize debug lines of diagram
 			void initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border);
 

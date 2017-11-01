@@ -46,10 +46,16 @@ void Voxel::World::init(const int gridWidth, const int gridLength, const unsigne
 	this->gridLength = gridLength;
 
 	this->seed = globalSeed + "W" + std::to_string(id);
+
+	std::cout << "[World] Using seed: " << seed << "\n";
+
 	this->id = id;
 
-	initVoronoi();
-	initRegions();
+	// By creating local engine, we can get same result from all random during world initialization
+	std::mt19937 engine(std::hash<std::string>{}(this->seed));
+
+	initVoronoi(engine);
+	initRegions(engine);
 	initRegionDifficulty();
 	initRegionBiome();
 	initRegionTerrain();
@@ -59,8 +65,11 @@ void Voxel::World::init(const int gridWidth, const int gridLength, const unsigne
 
 void Voxel::World::rebuildWorldMap()
 {
-	rebuildVoronoi();
-	rebuildRegions();
+	// By recreating local engine, we can get same result from all random during world initialization
+	std::mt19937 engine(std::hash<std::string>{}(this->seed));
+
+	rebuildVoronoi(engine);
+	rebuildRegions(engine);
 	initVoronoiDebug();
 }
 
@@ -361,7 +370,7 @@ std::string Voxel::World::getSeed()
 	return seed;
 }
 
-void Voxel::World::initVoronoi()
+void Voxel::World::initVoronoi(std::mt19937& engine)
 {
 	// Generate random grid
 	std::vector<std::vector<int>> grid;
@@ -449,6 +458,9 @@ void Voxel::World::initVoronoi()
 
 	std::vector<Voronoi::Site> points;
 
+	// dist
+	std::uniform_int_distribution<> dist(randMin, randMax);
+
 	for (auto x : grid)
 	{
 		for (auto z : x)
@@ -459,8 +471,8 @@ void Voxel::World::initVoronoi()
 			{
 			case MARKED:
 			{
-				int randX = Utility::Random::randomInt(randMin, randMax);
-				int randZ = Utility::Random::randomInt(randMin, randMax);
+				int randX = dist(engine);
+				int randZ = dist(engine);
 
 				randPos = glm::ivec2(randX, randZ);
 
@@ -470,13 +482,8 @@ void Voxel::World::initVoronoi()
 			break;
 			case OMITTED:
 			{
-				//int randX = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
-				//int randZ = Utility::Random::randomInt(omittedRandMin, omittedRandMax);
-
-				//randPos = glm::ivec2(randX, randZ);
-
-				int randX = Utility::Random::randomInt(randMin, randMax);
-				int randZ = Utility::Random::randomInt(randMin, randMax);
+				int randX = dist(engine);
+				int randZ = dist(engine);
 
 				randPos = glm::ivec2(randX, randZ);
 
@@ -523,10 +530,12 @@ void Voxel::World::initVoronoi()
 	//vd->buildCells(minBound, maxBound);
 
 	vd->buildGraph(gridWidth, gridLength);
-	vd->randomizeCells(gridWidth, gridLength);
+	vd->randomizeCells(gridWidth, gridLength, engine);
+
 	//vd->removeDuplicatedEdges();
 	//vd->makeEdgesNoisy();
-	vd->makeSharedEdgesNoisy();
+
+	vd->makeSharedEdgesNoisy(engine);
 }
 
 void Voxel::World::initVoronoiDebug()
@@ -537,7 +546,7 @@ void Voxel::World::initVoronoiDebug()
 	}
 }
 
-void Voxel::World::initRegions()
+void Voxel::World::initRegions(std::mt19937& engine)
 {
 	auto& cells = vd->getCells();
 
@@ -559,7 +568,9 @@ void Voxel::World::initRegions()
 		}
 	}
 
-	int randIndex = Utility::Random::randomInt(0, candidates.size() - 1);
+	std::uniform_int_distribution<> dist(0, candidates.size() - 1);
+
+	int randIndex = dist(engine);
 
 	startingRegionID = candidates.at(randIndex);
 
@@ -704,19 +715,20 @@ void Voxel::World::printRegionBiomeAndTerrain()
 	}
 }
 
-void Voxel::World::rebuildVoronoi()
+void Voxel::World::rebuildVoronoi(std::mt19937& engine)
 {
 	if (vd)
 	{
 		delete vd;
 	}
 
-	initVoronoi();
+	initVoronoi(engine);
 }
 
-void Voxel::World::rebuildRegions()
+void Voxel::World::rebuildRegions(std::mt19937& engine)
 {
 	currentRegion = nullptr;
+
 	for (auto e : regions)
 	{
 		if ((e.second) != nullptr)
@@ -727,10 +739,11 @@ void Voxel::World::rebuildRegions()
 
 	regions.clear();
 
-	initRegions();
+	initRegions(engine);
 	initRegionDifficulty();
 	initRegionBiome();
 	initRegionTerrain();
+	printRegionBiomeAndTerrain();
 }
 
 void Voxel::World::render()

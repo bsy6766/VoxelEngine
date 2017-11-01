@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <Voronoi.h>
+#include <random>
 
 namespace Voxel
 {
@@ -46,15 +47,15 @@ namespace Voxel
 		bool renderVoronoiMode;
 
 		// Voronoi 
-		void initVoronoi();
-		void rebuildVoronoi();
+		void initVoronoi(std::mt19937& engine);
+		void rebuildVoronoi(std::mt19937& engine);
 
 		// Voronoi debug
 		void initVoronoiDebug(); // Must call after building region
 
 		// regions
-		void initRegions();
-		void rebuildRegions();
+		void initRegions(std::mt19937& engine);
+		void rebuildRegions(std::mt19937& engine);
 		void initRegionDifficulty();
 		void initRegionBiome();
 		void initRegionTerrain();
