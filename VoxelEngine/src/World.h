@@ -73,7 +73,7 @@ namespace Voxel
 		// Getters
 		Region* getCurrentRegion();
 		Voronoi::Diagram* getVoronoi();
-
+		 
 		// Find region that contains the bounding box and return the region(Cell) id. If success, returns true. Else, false.
 		/*
 		bool findRegionWithAABB(const AABB& boundingBox, unsigned int& regionID) const;
@@ -111,6 +111,9 @@ namespace Voxel
 
 		// Get world seed
 		std::string getSeed();
+
+		// Get grid size
+		unsigned int getGridSize();
 
 		// Renders visible chunk
 		void render();

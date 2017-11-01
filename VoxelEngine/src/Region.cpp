@@ -239,6 +239,10 @@ std::vector<unsigned int> Voxel::Region::getNeighborRegionIDList()
 	return ids;
 }
 
+void Voxel::Region::getVoronoiEdgePoints(std::vector<float>& edgePoints)
+{
+}
+
 unsigned int Voxel::Region::getID()
 {
 	return cell->getID();

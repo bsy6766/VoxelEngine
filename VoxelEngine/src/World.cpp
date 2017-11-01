@@ -370,6 +370,11 @@ std::string Voxel::World::getSeed()
 	return seed;
 }
 
+unsigned int Voxel::World::getGridSize()
+{
+	return gridWidth * gridLength;
+}
+
 void Voxel::World::initVoronoi(std::mt19937& engine)
 {
 	// Generate random grid

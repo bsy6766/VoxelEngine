@@ -24,8 +24,13 @@ namespace Voxel
 	public:
 		GLuint vao;
 		glm::mat4 modelMat;
-
 		glm::vec3 position;
+
+		RegionMesh() : vao(0), modelMat(glm::mat4(1.0f)), position(glm::vec3(0.0f)) {}
+		~RegionMesh()
+		{
+
+		}
 	};
 
 	/**
@@ -38,7 +43,7 @@ namespace Voxel
 	private:
 		// OpenGL
 		GLuint vao;
-
+		
 		// UI canvas
 		UI::Canvas* uiCanvas;
 		// Images
@@ -61,7 +66,7 @@ namespace Voxel
 		*	@param [in] world A world instance to access region data
 		*/
 		void init(World* world);
-
+		
 		void updateWorld(World* world);
 	};
 }
