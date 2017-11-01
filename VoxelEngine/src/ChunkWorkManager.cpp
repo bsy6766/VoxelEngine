@@ -213,6 +213,8 @@ void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2& currentChunkX
 {
 	glm::vec2 p = glm::vec2(currentChunkXZ);
 
+	//std::cout << "Sorting build mesh work with (" << currentChunkXZ.x << ", " << currentChunkXZ.y << ")" << std::endl;
+
 	std::vector<glm::vec2> loadQueueFloat;
 
 	for (auto xz : buildMeshQueue)
@@ -224,9 +226,12 @@ void Voxel::ChunkWorkManager::sortBuildMeshQueue(const glm::ivec2& currentChunkX
 
 	buildMeshQueue.clear();
 
+	//std::cout << "Sort done" << std::endl;
+
 	for (auto xz : loadQueueFloat)
 	{
 		buildMeshQueue.push_back(glm::ivec2(xz));
+		//std::cout << "(" << xz.x << ", " << xz.y << ")" << std::endl;
 	}
 }
 
@@ -493,15 +498,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 					chunkXZ = addStructureQueue.front();
 					addStructureQueue.pop_front();
 					workType = WorkType::ADD_STRUCTURE;
-
-					if (addStructureQueue.empty())
-					{
-						sortBuildMeshQueue(map->getCurrentChunkXZ());
-						if (firstInitDone.load() == false)
-						{
-							firstInitDone.store(true);
-						}
-					}
 				}
 				// If there is nothing to generate, start to build mesh
 				else if (!buildMeshQueue.empty())
@@ -1028,6 +1024,16 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						
 						// Finally, build mesh.
 						addBuildMeshWork(chunkXZ, true);
+
+						if (addStructureQueue.empty())
+						{
+							// Add structure is done. sort build mesh
+							sortBuildMeshQueue(map->getCurrentChunkXZ());
+							if (firstInitDone.load() == false)
+							{
+								firstInitDone.store(true);
+							}
+						}
 					}
 				}
 				else if (workType == WorkType::BUILD_MESH)
@@ -1043,7 +1049,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							auto mesh = chunk->getMesh();
 							if (mesh)
 							{
-								// std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
+								//std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 								// There can be two cases. 
 								// 1. Chunk is newly generated and need mesh.
 								// 2. Chunk already has mesh but need to refresh
