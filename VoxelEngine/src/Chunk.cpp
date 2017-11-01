@@ -23,6 +23,7 @@ Chunk::Chunk()
 	smoothed.store(false);
 	structureAdded.store(false);
 	preGenerated.store(false);
+	needNewMesh.store(false);
 }
 
 bool Voxel::Chunk::canGenerate()

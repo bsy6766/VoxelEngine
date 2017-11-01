@@ -59,6 +59,8 @@ namespace Voxel
 		std::atomic<bool> generated;
 		// True if chunk has added structures. Added structures means chunk has already added strctures.
 		std::atomic<bool> structureAdded;
+		// True if chunk has been modified. Either world generation or player can modify the chunk. 
+		std::atomic<bool> needNewMesh;
 
 		// Timestamp. If chunk hasn't been activated for long time, it gets removed from map.
 		double timestamp;
