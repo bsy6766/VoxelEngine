@@ -179,8 +179,13 @@ namespace Voxel
 		void update(const float delta);
 		void updateInput(const float delta);
 
-		// refresh chunk map
+		// refresh chunk map. Release all meshes and rebuild mesh only.
 		void refreshChunkMap();
+		// wipe out entire chunk map and re construct the chunk map
+		void rebuildChunkMap();
+
+		// Rebuilds world. It also rebuilds chunk map
+		void rebuildWorld();
 
 		void render(const float delta);
 		void renderGameWorld(const float delta);

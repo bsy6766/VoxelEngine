@@ -649,6 +649,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 		//world->rebuildWorldMap();
 
+		/*
 		std::vector<Block*> collidableBlocks;
 		//chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
 		chunkMap->queryTopCollidableBlocksInY(player->getPosition(), collidableBlocks);
@@ -658,6 +659,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		{
 			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
 		}
+		*/
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -1200,7 +1202,7 @@ void Voxel::Game::checkUnloadedChunks()
 	}
 }
 
-void Voxel::Game::refreshChunkMap()
+void Voxel::Game::rebuildChunkMap()
 {
 	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
 	std::cout << "Refreshing chunk map\n";
@@ -1212,6 +1214,12 @@ void Voxel::Game::refreshChunkMap()
 	chunkWorkManager->notify();
 
 	loadingState = LoadingState::RELOADING;
+}
+
+void Voxel::Game::rebuildWorld()
+{
+	world->rebuildWorldMap();
+	rebuildChunkMap();
 }
 
 void Game::render(const float delta)

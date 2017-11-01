@@ -1,5 +1,6 @@
 #include "Biome.h"
 #include <iostream>
+#include <random>
 
 using namespace Voxel;
 
@@ -248,6 +249,8 @@ void Voxel::Biome::initVegitation()
 {
 	// init vegitation. 
 	// when initialize vegitation with weight, use base weight and randomly modify the weight.
+	// For now, just use the base weight
+	
 }
 
 bool Voxel::Biome::hasTree()
