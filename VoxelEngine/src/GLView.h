@@ -63,6 +63,7 @@ namespace Voxel
 
 		// GLFW callback func
 		static void glfwErrorCallback(int error, const char* description);
+		static void glfwWindowFocusCallback(GLFWwindow* window, int focus);
 
 		// Intiialize opengl
 		void init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync); 
@@ -140,6 +141,8 @@ namespace Voxel
 		void setFullScreen(const int monitorIndex);
 		void setFullScreen(GLFWmonitor* monitor);
 
+		void reopenWindow();
+
 		GLFWmonitor* getMonitorFromIndex(const int monitorIndex);
 
 		bool isWindowed();
@@ -154,6 +157,9 @@ namespace Voxel
 		void setVsync(const bool vsync);
 
 		bool isWindowDecorated();
+		void setWindowDecoration(const bool mode);
+
+		void setWindowFloating(const bool mode);
 
 		bool doesCountDrawCalls();
 		bool doesCountVerticesSize();
@@ -164,6 +170,8 @@ namespace Voxel
 		void addVerticesSize(const int size);
 
 		glm::ivec2 getScreenSize();
+
+		void setWindowSize(const int width, const int height);
 
 		bool isVsyncEnabled();
 

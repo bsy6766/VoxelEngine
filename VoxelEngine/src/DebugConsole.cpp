@@ -125,7 +125,7 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addText("resolutionNumber", resolutionNumber, 0);
 
 	auto vsync = Application::getInstance().getGLView()->isVsyncEnabled();
-	vsyncMode = UI::Text::createWithOutline("vsync: false", glm::vec2(5.0f, -33.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	vsyncMode = UI::Text::createWithOutline("vsync: " + (vsync ? std::string("true") : std::string("false")), glm::vec2(5.0f, -33.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
 	vsyncMode->setPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
@@ -722,7 +722,18 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 			}
 			else if (commandStr == "world")
 			{
-				if (size == 3)
+				if (size == 2)
+				{
+					auto arg1 = split.at(1);
+					if (arg1 == "rebuild" || arg1 == "rb")
+					{
+						game->rebuildWorld();
+						executedCommandHistory.push_back("Refreshing chunk map");
+						lastCommand = command;
+						return true;
+					}
+				}
+				else if (size == 3)
 				{
 					// world arg1 arg2
 					auto arg1 = split.at(1);
@@ -775,7 +786,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					}
 					else if (arg1 == "refresh" || arg1 == "r")
 					{
-						game->refreshChunkMap();
+						game->rebuildChunkMap();
 						executedCommandHistory.push_back("Refreshing chunk map");
 						lastCommand = command;
 						return true;
@@ -945,6 +956,165 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						executedCommandHistory.push_back("Reseting random generator");
 						lastCommand = command;
 						return true;
+					}
+				}
+			}
+			else if (commandStr == "app")
+			{
+				if (size == 3)
+				{
+					auto arg1 = split.at(1);
+					// app rs [mode] 
+					if (arg1 == "resolution" || arg1 == "rs")
+					{
+						auto arg2 = split.at(2);
+						if (arg2 == "fullscreen" || arg2 == "f")
+						{
+							Application::getInstance().getGLView()->setFullScreen();
+							return true;
+						}
+						else if (arg2 == "borderless" || arg2 == "b")
+						{
+							Application::getInstance().getGLView()->setWindowedFullScreen();
+							return true;
+						}
+					}
+				}
+				else if (size == 4)
+				{
+					auto arg1 = split.at(1);
+					// app rs [mode] [monitor#] 
+					if (arg1 == "resolution" || arg1 == "rs")
+					{
+						auto arg2 = split.at(2); 
+						int monitorNum;
+						try
+						{
+							monitorNum = std::stoi(split.at(3));
+						}
+						catch (...)
+						{
+							return false;
+						}
+
+						if (arg2 == "fullscreen" || arg2 == "f")
+						{
+							Application::getInstance().getGLView()->setFullScreen(monitorNum);
+							return true;
+						}
+						else if (arg2 == "borderless" || arg2 == "b")
+						{
+							Application::getInstance().getGLView()->setWindowedFullScreen(monitorNum);
+							return true;
+						}
+					}
+					else if (arg1 == "window" || arg1 == "w")
+					{
+						auto arg2 = split.at(2);
+						if (arg2 == "decoration" || arg2 == "d")
+						{
+							bool arg3Bool = split.at(3) == "true" ? true : false;
+
+							Application::getInstance().getGLView()->setWindowDecoration(arg3Bool);
+							return true;
+						}
+						else if (arg2 == "floating" || arg2 == "f")
+						{
+							bool arg3Bool = split.at(3) == "true" ? true : false;
+
+							Application::getInstance().getGLView()->setWindowDecoration(arg3Bool);
+							return true;
+						}
+					}
+				}
+				else if (size == 5)
+				{
+					// app rs w width height
+					auto arg1 = split.at(1);
+					// app rs [mode] 
+					if (arg1 == "resolution" || arg1 == "rs")
+					{
+						auto arg2 = split.at(2);
+						if (arg2 == "windowed" || arg2 == "w")
+						{
+							int width;
+							try
+							{
+								width = std::stoi(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							int height;
+							try
+							{
+								height = std::stoi(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Application::getInstance().getGLView()->setWindowed(width, height);
+							return true;
+						}
+					}
+					// app window pos x y
+					else if (arg1 == "window" || arg1 == "w")
+					{
+						auto arg2 = split.at(2);
+						if (arg2 == "position" || arg2 == "pos")
+						{
+							int x;
+							try
+							{
+								x = std::stoi(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							int y;
+							try
+							{
+								y = std::stoi(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Application::getInstance().getGLView()->setWindowPosition(x, y);
+							return true;
+						}
+						else if (arg2 == "size")
+							{
+								int w;
+								try
+								{
+									w = std::stoi(split.at(3));
+								}
+								catch (...)
+								{
+									return false;
+								}
+
+								int h;
+								try
+								{
+									h = std::stoi(split.at(4));
+								}
+								catch (...)
+								{
+									return false;
+								}
+
+								Application::getInstance().getGLView()->setWindowSize(w, h);
+								return true;
+							}
 					}
 				}
 			}

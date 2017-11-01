@@ -100,23 +100,34 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	this->screenWidth = screenWidth;
 	this->screenHeight = screenHeight;
 
-	monitor = nullptr;
+	const GLFWvidmode* videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+	auto w = videoMode->width;
+	auto h = videoMode->height;
 
 	if (windowMode == 0)
 	{
-		// windowed
+		// windowed. Must be decorated.
+		// Auto iconify is ignored
 		glfwWindowHint(GLFW_DECORATED, GL_TRUE);
 	}
 	else if (windowMode == 1)
 	{
 		// fullscreen
+		// Must auto iconify.
+		// Decoration is ignored.
+		// Start from primary monitor
+		// Todo: Save monitor location. If valid, open window on saved monitor. Else, start from primary window
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_TRUE);
+		monitor = glfwGetPrimaryMonitor();
 	}
 	else if (windowMode == 2)
 	{
 		// borderless fullscreen
+		// A windowed, size of monitor.
+		// No decoration
+		// Auto iconify is ignored
 		glfwWindowHint(GLFW_DECORATED, GL_FALSE);
-		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 	}
 	else
 	{
@@ -127,7 +138,6 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	}
 
 	window = glfwCreateWindow(this->screenWidth, this->screenHeight, windowTitle.c_str(), monitor, nullptr);
-	//glfwSetWindowPos(window, 100 - 1920, 100);
 
 	if (!window)
 	{
@@ -137,17 +147,34 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 
 	// if window successfully made, make it current window
 	glfwMakeContextCurrent(window);
-
-
+	
+	/*
+	*	Vsync. 
+	*	Vsync synchronizes game's frame rate to monitors frame rate.
+	*
+	*	Notes on vsync...
+	*	Setting glfwSwapInterval(1) enables GLFW vsync and gives 60 fps on my monitor.
+	*	Setting glfwSwapInterval(0) disables GLFW vsync, but DOES NOT switch vsync off (http://www.glfw.org/docs/latest/group__context.html#ga6d4e0cdf151b5e579bd67f13202994ed).
+	*
+	*	There is a screen tearing in the game while window is windowed fullscreen mode.
+	*	Here's some researches that I have done so far.
+	*	In Windows 10, there are mutiple ways to use vsync.
+	*	First, you can decide on application level. (glfwSwapInterval I guess)
+	*	Second, graphics card can change the vsync (In nvidia control panel with more option)
+	*	Last, OS (Windows 10 in my case) overrides the vsync seeting.
+	*
+	*	Windows 10
+	*	WIndows 10 uses DWM (Display Window Manager). DWM manages all the windows on the screen.
+	*	This includes windowed mode and windowed fullscreen. 
+	*	Like said, all windowed application is managed by DWM and will forced to triple buffer.
+	*	Only exclusive fullscreen will override DWM by graphics card. This means that fullscreen's vsync won't be affected by OS.
+	*	Meanwhile, windowed has some issue with vsync, especially while windowed window's size equal to monitor size and it's on primary monitor(with taskbar)
+	*	Tearing happens when the vsync is applied and that's basically it. It happens to lots of game and people are confused too.
+	*	
+	*	For now, I'm just going to let user decide to use vsync or not.
+	*	Best option is fullscreen with desired vsync mode, windowed without vsync (no tearing with vsync though) or windowed fullscreen without vsyc (tearing with vsync)
+	*/
 	this->vsync = vsync;
-	if (vsync)
-	{
-		glfwSwapInterval(1);
-	}
-	else
-	{
-		glfwSwapInterval(0);
-	}
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -158,6 +185,7 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	glfwSetCursorPosCallback(window, InputHandler::glfwCursorPosCallback);
 	glfwSetMouseButtonCallback(window, InputHandler::glfwMouseButtonCallback);
 	glfwSetScrollCallback(window, InputHandler::glfwScrollCallback);
+	glfwSetWindowFocusCallback(window, GLView::glfwWindowFocusCallback);
 }
 
 void Voxel::GLView::initGLEW()
@@ -378,7 +406,7 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 	}
 
 	this->monitor = monitor;
-
+	
 	const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
 
 	auto w = videoMode->width;
@@ -387,11 +415,24 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 	screenWidth = w;
 	screenHeight = h;
 
-	glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, GLFW_TRUE);
+	//glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, GLFW_TRUE);
 	glfwSetWindowMonitor(window, monitor, 0, 0, w, h, videoMode->refreshRate);
 	glViewport(0, 0, w, h);
+	/*
+	const GLFWvidmode* videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	auto w = videoMode->width;
+	auto h = videoMode->height;
+	glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, w, h, videoMode->refreshRate);
+	glViewport(0, 0, w, h);
+	*/
 
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
+}
+
+void Voxel::GLView::reopenWindow()
+{
+	glfwDestroyWindow(window);
+	initWindow(1920, 1080, "reopend", 1, false);
 }
 
 GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
@@ -433,6 +474,7 @@ void Voxel::GLView::setWindowed(int width, int height)
 
 		int xpos = 0, ypos = 0;
 		glfwGetMonitorPos(monitor, &xpos, &ypos);
+
 		xpos += (videoMode->width - width) / 2;
 		ypos += (videoMode->height - height) / 2;
 
@@ -441,8 +483,22 @@ void Voxel::GLView::setWindowed(int width, int height)
 		screenWidth = width;
 		screenHeight = height;
 
-		glfwSetWindowMonitor(window, monitor, xpos, ypos, width, height, GLFW_DONT_CARE);
+		glfwSetWindowMonitor(window, nullptr, xpos, ypos, width, height, GLFW_DONT_CARE);
+
+		int newWidth, newHeight;
+		glfwGetWindowSize(window, &newWidth, &newHeight);
+
+		std::cout << "nw = " << newWidth << ", nh = " << newHeight << std::endl;
+
+		glViewport(0, 0, newWidth, newHeight);
+
+		glfwSetWindowPos(window, 0, 31);
+
+		/*
+		glfwSetWindowMonitor(window, nullptr, 0, 0, width, height, GLFW_DONT_CARE);
 		glViewport(0, 0, width, height);
+		*/
+
 		Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(width), static_cast<float>(height));
 	}
 }
@@ -500,8 +556,23 @@ void Voxel::GLView::setWindowedFullScreen(GLFWmonitor * monitor)
 
 	glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
 	glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, GLFW_FALSE);
-	glfwSetWindowMonitor(window, nullptr, xpos, ypos, w, h, videoMode->refreshRate);
+
+	glfwSetWindowMonitor(window, nullptr, xpos, ypos, w, h, GLFW_DONT_CARE);
+	
 	glViewport(0, 0, w, h);
+
+	/*
+	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+	glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+	glViewport(0, 0, mode->width, mode->height);
+	*/
+
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
 }
 
@@ -522,6 +593,16 @@ void Voxel::GLView::setVsync(const bool vsync)
 bool Voxel::GLView::isWindowDecorated()
 {
 	return glfwGetWindowAttrib(window, GLFW_DECORATED);
+}
+
+void Voxel::GLView::setWindowDecoration(const bool mode)
+{
+	glfwSetWindowAttrib(window, GLFW_DECORATED, mode);
+}
+
+void Voxel::GLView::setWindowFloating(const bool mode)
+{
+	glfwSetWindowAttrib(window, GLFW_FLOATING, mode);
 }
 
 bool Voxel::GLView::doesCountDrawCalls()
@@ -562,6 +643,16 @@ glm::ivec2 Voxel::GLView::getScreenSize()
 	return glm::ivec2(screenWidth, screenHeight);
 }
 
+void Voxel::GLView::setWindowSize(const int width, const int height)
+{
+	if (isWindowed() || isWindowedFullScreen())
+	{
+	}
+	std::cout << "[GLView] Changing window size to (" << width << ", " << height << ") in windowed mode\n";
+	glfwSetWindowSize(window, width, height);
+	glViewport(0, 0, width, height);
+}
+
 bool Voxel::GLView::isVsyncEnabled()
 {
 	return vsync;
@@ -600,4 +691,17 @@ std::string Voxel::GLView::getGPURenderer()
 void GLView::glfwErrorCallback(int error, const char * description)
 {
 	std::cout << "[GLFW] Error: " << std::string(description) << std::endl;
+}
+
+void Voxel::GLView::glfwWindowFocusCallback(GLFWwindow * window, int focus)
+{
+	std::cout << "[GLView] ";
+	if (focus == GLFW_TRUE)
+	{
+		std::cout << "Gained focus\n";
+	}
+	else
+	{
+		std::cout << "Lost focus\n";
+	}
 }
