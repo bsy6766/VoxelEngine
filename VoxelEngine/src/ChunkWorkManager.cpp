@@ -18,6 +18,11 @@
 
 using namespace Voxel;
 
+bool Voxel::ChunkWorkManager::isAllWorkQueueEmpty()
+{
+	return preGenerateQueue.empty() && addStructureQueue.empty() && smoothQueue.empty() && generateQueue.empty() && buildMeshQueue.empty() && refreshMeshQueue.empty();
+}
+
 ChunkWorkManager::ChunkWorkManager()
 {
 	running.store(false);
@@ -182,6 +187,23 @@ void Voxel::ChunkWorkManager::addBuildMeshWorks(const std::vector<glm::ivec2>& c
 		{
 			buildMeshQueue.push_back(xz);
 		}
+	}
+
+	cv.notify_one();
+}
+
+void Voxel::ChunkWorkManager::addRefreshWork(const glm::ivec2 & coordinate, const bool highPriority)
+{
+	// Scope lock
+	std::unique_lock<std::mutex> lock(queueMutex);
+
+	if (highPriority)
+	{
+		refreshMeshQueue.push_front(coordinate);
+	}
+	else
+	{
+		refreshMeshQueue.push_back(coordinate);
 	}
 
 	cv.notify_one();
@@ -371,6 +393,7 @@ std::string Voxel::ChunkWorkManager::getDebugOutput()
 		log += "G: " + std::to_string(generateQueue.size()) + " / ";
 		log += "A: " + std::to_string(addStructureQueue.size()) + " / ";
 		log += "B: " + std::to_string(buildMeshQueue.size()) + " / ";
+		log += "R: " + std::to_string(refreshMeshQueue.size()) + " / ";
 	}
 
 	{
@@ -418,6 +441,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 			generateQueue.clear();
 			addStructureQueue.clear();
 			buildMeshQueue.clear();
+			refreshMeshQueue.clear();
 
 			workState.store(WORK_STATE::WAITING_MAIN_THREAD);
 		}
@@ -431,7 +455,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				std::unique_lock<std::mutex> lock(queueMutex);
 
 				// wait if both queue are empty. Must be running.
-				while (running && preGenerateQueue.empty() && addStructureQueue.empty() && smoothQueue.empty() && generateQueue.empty() && buildMeshQueue.empty() && workState.load() == WORK_STATE::RUNNING)
+				while (running && isAllWorkQueueEmpty() && workState.load() == WORK_STATE::RUNNING)
 				{
 					cv.wait(lock);
 				}
@@ -484,6 +508,12 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 				{
 					chunkXZ = buildMeshQueue.front();
 					buildMeshQueue.pop_front();
+					workType = WorkType::BUILD_MESH;
+				}
+				else if (!refreshMeshQueue.empty())
+				{
+					chunkXZ = refreshMeshQueue.front();
+					refreshMeshQueue.pop_front();
 					workType = WorkType::BUILD_MESH;
 				}
 				//Else, flag is 0. 
@@ -944,7 +974,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 									{
 										glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
 
-										std::cout << "Adding tree" << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
+										//std::cout << "Adding tree" << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 
 										// Don't spawn tree at the edge of chunk. 
 										//treePos = glm::clamp(treePos, 5, 11);
@@ -997,7 +1027,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						}
 						
 						// Finally, build mesh.
-						addBuildMeshWork(chunkXZ);
+						addBuildMeshWork(chunkXZ, true);
 					}
 				}
 				else if (workType == WorkType::BUILD_MESH)
@@ -1013,7 +1043,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							auto mesh = chunk->getMesh();
 							if (mesh)
 							{
-								//std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
+								// std::cout << "Build mesh " << Utility::Log::vec2ToStr(chunkXZ) << "\n";
 								// There can be two cases. 
 								// 1. Chunk is newly generated and need mesh.
 								// 2. Chunk already has mesh but need to refresh
@@ -1148,6 +1178,7 @@ void Voxel::ChunkWorkManager::joinThread()
 		generateQueue.clear();
 		smoothQueue.clear();
 		buildMeshQueue.clear();
+		refreshMeshQueue.clear();
 	}
 
 	cv.notify_one();

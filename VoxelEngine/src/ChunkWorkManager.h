@@ -65,6 +65,8 @@ namespace Voxel
 		std::list<glm::ivec2> addStructureQueue;
 		// Queue with chunk coordinates that need to build mesh
 		std::list<glm::ivec2> buildMeshQueue;
+		// Queue with chunk coordinates that need to refresh mesh. This is always processed after buildMeshQueue is processed.
+		std::list<glm::ivec2> refreshMeshQueue;
 
 		// Queue with chunk coordinate that needs to get unloaded by main thread.
 		std::list<glm::ivec2> unloadFinishedQueue;
@@ -92,6 +94,9 @@ namespace Voxel
 
 		// For mesh build thread
 		void work(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world);
+
+		// True if all work queue is empty
+		bool isAllWorkQueueEmpty();
 	public:
 		ChunkWorkManager();
 		~ChunkWorkManager() = default;
@@ -113,6 +118,9 @@ namespace Voxel
 		void addBuildMeshWork(const glm::ivec2& coordinate, const bool highPriority = false);
 		// Add mutliple build mesh works to unload queue. locked by queueMutex
 		void addBuildMeshWorks(const std::vector<glm::ivec2>& coordinates, const bool highPriority = false);
+
+		// Add single rebuild mesh work to build mesh queue. locked by queueMutex
+		void addRefreshWork(const glm::ivec2& coordinate, const bool highPriority = false);
 
 		// sort load queue based on chunk position that player is on. Locked by queueMutex
 		//void sortBuildMeshQueue(const glm::vec3& playerPosition);

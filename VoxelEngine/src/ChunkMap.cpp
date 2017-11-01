@@ -581,7 +581,7 @@ void Voxel::ChunkMap::blockWorldCoordinateToLocalAndChunkSectionCoordinate(const
 std::vector<glm::ivec2> Voxel::ChunkMap::getChunksNearByBlock(const glm::ivec3 & blockLocalPos, const glm::ivec3& blockChunkPos)
 {
 	std::vector<glm::ivec2> list;
-
+	
 	auto edgeX = Constant::CHUNK_SECTION_WIDTH - 1;
 	auto edgeZ = Constant::CHUNK_SECTION_LENGTH - 1;
 
@@ -784,7 +784,7 @@ void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate
 	placeBlockAt(targetPos, blockID, workManager);
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm, const bool overwrite)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -819,6 +819,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 			if (wm)
 			{
 				std::vector<glm::ivec2> refreshList = getChunksNearByBlock(blockLocalPos, chunkSectionPos);
+				// If this block was added by player, rebuild the mesh all the nearby chunks. 
 				wm->addBuildMeshWorks(refreshList, true);
 			}
 		}
@@ -832,7 +833,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	}
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, ChunkWorkManager * wm, const bool overwrite)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -880,7 +881,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	}
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, ChunkWorkManager * wm, const bool overwrite)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -1343,21 +1344,21 @@ void Voxel::ChunkMap::moveWest(ChunkWorkManager* wm)
 	// Remove the last row (East. because moving west)
 	removeRowEast(wm);
 
-	// Before add new list on front row (west), rebuild mesh for current front. This will be processed after all chunk has been generated.
-	std::vector<ivec2> refreshList;
-	for (auto& chunkXZ : activeChunks.front())
+	// Before add new list on front row (west), rebuild mesh for current front and the next one. We are refreshing two rows because world gen can add blocks up to 2 near by chunks.
+	//This will be processed after all chunk has been generated.
+	auto it = activeChunks.begin();
+	for (auto& chunkXZ : (*it))
 	{
-		refreshList.push_back(chunkXZ);
+		wm->addRefreshWork(chunkXZ);
+	}
+	it = std::next(it);
+	for (auto& chunkXZ : (*it))
+	{
+		wm->addRefreshWork(chunkXZ);
 	}
 
 	// Then, add row on front (west)
 	addRowWest(wm);
-
-	// now add build mesh work
-	for (auto& chunkXZ : refreshList)
-	{
-		wm->addBuildMeshWork(chunkXZ);
-	}
 
 	minXZ.x -= 1;
 	maxXZ.x -= 1;
@@ -1368,21 +1369,22 @@ void Voxel::ChunkMap::moveEast(ChunkWorkManager* wm)
 	// Remove the first row (West. because moving east)
 	removeRowWest(wm);
 
-	// Before add new list on back row (east), rebuild mesh for current back. This will be processed after all chunk has been generated
-	std::vector<ivec2> refreshList;
-	for (auto& chunkXZ : activeChunks.back())
+	// Before add new list on back row (east), rebuild mesh for current backand the next one. We are refreshing two rows because world gen can add blocks up to 2 near by chunks.
+	//This will be processed after all chunk has been generated.
+	auto it = activeChunks.end();
+	it = std::prev(it);
+	for (auto& chunkXZ : (*it))
 	{
-		refreshList.push_back(chunkXZ);
+		wm->addRefreshWork(chunkXZ);
+	}
+	it = std::prev(it);
+	for (auto& chunkXZ : (*it))
+	{
+		wm->addRefreshWork(chunkXZ);
 	}
 
 	// Then, add row on back (east)
 	addRowEast(wm);
-
-	// now add build mesh work
-	for (auto& chunkXZ : refreshList)
-	{
-		wm->addBuildMeshWork(chunkXZ);
-	}
 
 	minXZ.x += 1;
 	maxXZ.x += 1;
@@ -1393,22 +1395,19 @@ void Voxel::ChunkMap::moveSouth(ChunkWorkManager* wm)
 	// Remove the first element on each row (north. because moving south)
 	removeColNorth(wm);
 
-	// Before we add new element on back each row (south), rebuild mesh for current back element of each row. This will processed after all chunk has been generated
-	std::vector<ivec2> refreshList;
+	// Before we add new element on back each row (south), rebuild mesh for current back element and the next one on each row. We are refreshing two rows because world gen can add blocks up to 2 near by chunks.
+	//This will be processed after all chunk has been generated.
 	for (auto& row : activeChunks)
 	{
-		refreshList.push_back(row.back());
+		auto it = std::prev(row.end());
+		wm->addRefreshWork(*it);
+		it = std::prev(it);
+		wm->addRefreshWork(*it);
 	}
 
 	// Then, add new element on back of each row
 	addColSouth(wm);
-
-	// now add build mesh work
-	for (auto& chunkXZ : refreshList)
-	{
-		wm->addBuildMeshWork(chunkXZ);
-	}
-
+	
 	minXZ.y += 1;
 	maxXZ.y += 1;
 }
@@ -1418,21 +1417,18 @@ void Voxel::ChunkMap::moveNorth(ChunkWorkManager* wm)
 	// Remove the last element on each row (south. because moving north)
 	removeColSouth(wm);
 
-	// Before we add new element on front of each row, rebuild mesh for current front element of each row. This will be processed after all chunk has been generated
-	std::vector<ivec2> refreshList;
+	// Before we add new element on front of each row, rebuild mesh for current back element and the next one on each row. We are refreshing two rows because world gen can add blocks up to 2 near by chunks.
+	//This will be processed after all chunk has been generated.
 	for (auto& row : activeChunks)
 	{
-		refreshList.push_back(row.front());
+		auto it = row.begin();
+		wm->addRefreshWork(*it);
+		it = std::next(it);
+		wm->addRefreshWork(*it);
 	}
 
 	// Then, add new element on front of each row
 	addColNorth(wm);
-
-	// now add build mesh work
-	for (auto& chunkXZ : refreshList)
-	{
-		wm->addBuildMeshWork(chunkXZ);
-	}
 
 	minXZ.y -= 1;
 	maxXZ.y -= 1;
