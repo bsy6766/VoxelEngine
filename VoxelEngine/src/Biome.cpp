@@ -257,3 +257,57 @@ bool Voxel::Biome::hasTree()
 {
 	return Biome::biomeTreeMap.find(this->type) != Biome::biomeTreeMap.end();
 }
+
+int Voxel::Biome::getTreeSpawnRate()
+{
+	int chance = 0;
+
+	switch (type)
+	{
+	case Voxel::BiomeType::TUNDRA:
+		chance = 1;
+		break;
+	case Voxel::BiomeType::ICY_TAIGA:
+		chance = 5;
+		break;
+	case Voxel::BiomeType::TAIGA:
+		chance = 20;
+		break;
+	case Voxel::BiomeType::WOODS:
+		chance = 10;
+		break;
+	case Voxel::BiomeType::SAVANNA:
+		chance = 10;
+		break;
+	case Voxel::BiomeType::TAIGA_FOREST:
+		chance = 70;
+		break;
+	case Voxel::BiomeType::FOREST:
+		chance = 70;
+		break;
+	case Voxel::BiomeType::SEASONAL_FOREST:
+		chance = 70;
+		break;
+	case Voxel::BiomeType::SWAMP:
+		chance = 10;
+		break;
+	case Voxel::BiomeType::RAIN_FOREST:
+		chance = 85;
+		break;
+	case Voxel::BiomeType::GRASS_DESERT:
+	case Voxel::BiomeType::DESERT:
+	case Voxel::BiomeType::OCEAN:
+	case Voxel::BiomeType::NONE:
+	case Voxel::BiomeType::ERROR:
+	default:
+		break;
+	}
+
+	return chance;
+}
+
+TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
+{
+	// For now, only oak
+	return TreeBuilder::TreeType::OAK;
+}

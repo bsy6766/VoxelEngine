@@ -352,10 +352,7 @@ void Game::createChunkMap()
 
 	// Initilize active chunks.
 	chunkMap->initActiveChunks();
-
-	// debug print
-	chunkMap->printChunkMap();
-
+	
 	// Sort chunk coordinates closer to player
 	glm::vec2 p = chunkCoordinates.front();
 	std::sort(chunkCoordinates.begin(), chunkCoordinates.end(), [p](const glm::vec2& lhs, const glm::vec2& rhs) { return glm::distance(p, lhs) < glm::distance(p, rhs); });
@@ -363,7 +360,6 @@ void Game::createChunkMap()
 	for (auto xz : chunkCoordinates)
 	{
 		chunkWorkManager->addPreGenerateWork(glm::ivec2(xz));
-		//std::cout << "(" << xz.x << ", " << xz.y << ")" << std::endl;
 	}
 
 	// Get line program for debug
@@ -421,12 +417,7 @@ void Game::update(const float delta)
 			auto playerPosition = player->getPosition();
 			float topY = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.5f;
 			playerPosition.y = topY;
-			playerPosition.y += 450.0f;
 			player->setPosition(playerPosition, false);
-			player->setRotation(glm::vec3(270, 180, 0), false);
-
-			//player->setPosition(glm::vec3(365.244, 68 + 1.5f, -117.754), false);
-			//player->setRotation(glm::vec3(291.5, 302.25, 0), false);
 		}
 	}
 	else if (loadingState == LoadingState::RELOADING)
@@ -1003,16 +994,30 @@ void Voxel::Game::updateControllerInput(const float delta)
 			player->moveBackward(delta);
 		}
 
-		auto valueLeftTrigger = input->getAxisValue(IO::XBOX_360::AXIS::LT);
-		if (valueLeftTrigger > 0.0f)
+		if (player->isFlying())
 		{
-			player->moveUp(delta);
-		}
+			auto valueLeftTrigger = input->getAxisValue(IO::XBOX_360::AXIS::LT);
+			if (valueLeftTrigger > 0.0f)
+			{
+				player->moveUp(delta);
+			}
 
-		auto valueRightTrigger = input->getAxisValue(IO::XBOX_360::AXIS::RT);
-		if (valueRightTrigger > 0.0f)
+			auto valueRightTrigger = input->getAxisValue(IO::XBOX_360::AXIS::RT);
+			if (valueRightTrigger > 0.0f)
+			{
+				player->moveDown(delta);
+			}
+		}
+		else
 		{
-			player->moveDown(delta);
+			if (player->isOnGround())
+			{
+				if (input->isControllerButtonDown(Voxel::IO::XBOX_360::BUTTON::B))
+				{
+					player->jump();
+					physics->applyJumpForceToPlayer(glm::vec3(0, 2.2f, 0));
+				}
+			}
 		}
 
 		auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);

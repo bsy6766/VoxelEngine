@@ -10,7 +10,7 @@ const unsigned int Physics::X_AXIS = 0;
 const unsigned int Physics::Z_AXIS = 1;
 
 const float Physics::Gravity = 9.80665f;
-const float Physics::GravityModifier = 5.0f;
+const float Physics::GravityModifier = 3.0f;
 
 Voxel::Physics::Physics()
 {
@@ -45,6 +45,7 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 	//std::cout << "pos.y = " << pos.y << std::endl;
 
 	player->setPosition(pos, true);
+	//player->setNextPosition(pos);
 
 	player->setFallDuration(fallDuration + delta);
 	player->setFallDistance(fallDistance + player->getFallDistance());
@@ -487,7 +488,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollisionInXZAxis(Player * player, con
 
 	if (resolved)
 	{
-		player->setNextPosition(glm::vec3(resolvingPos.x, playerNextPos.y, resolvingPos.z));
+		player->setResolvedNextPosition(glm::vec3(resolvingPos.x, playerNextPos.y, resolvingPos.z));
 	}
 }
 
@@ -542,7 +543,7 @@ void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::ve
  				player->setOnGround(true);
 				player->setJumpState(Player::JumpState::IDLE);
 
-				player->setNextPosition(resolvingPos);
+				player->setResolvedNextPosition(resolvingPos);
 
 				//std::cout << "Player moved down. resolved\n";
 
@@ -611,7 +612,7 @@ void Voxel::Physics::resolvePlayerTopCollision(Player * player, const std::vecto
 				resolvingPos.y -= (intersectingAABB.getSize().y);
 				//std::cout << "resolving y = " << resolvingPos.y << std::endl;
 				
-				player->setNextPosition(resolvingPos);
+				player->setResolvedNextPosition(resolvingPos);
 
 				//std::cout << "Player moved up. resolved\n";
 
@@ -764,6 +765,7 @@ bool Voxel::Physics::updatePlayerJumpForce(Player * player, const float delta)
 
 			auto pNextPos = player->getNextPosition();
 			pNextPos += forceDelta;
+			player->addCameraY(-forceDelta.y * 0.5f);
 
 			if (playerJumpForce.y <= 0.0f)
 			{

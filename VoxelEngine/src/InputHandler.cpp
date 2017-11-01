@@ -535,6 +535,11 @@ float Voxel::InputHandler::getAxisValue(IO::XBOX_360::AXIS axis)
 	return controllerManager->getAxisValue(0, axis);
 }
 
+bool Voxel::InputHandler::isControllerButtonDown(IO::XBOX_360::BUTTON button)
+{
+	return controllerManager->isButtonPressed(0, button);
+}
+
 bool Voxel::InputHandler::hasController()
 {
 	return controllerManager->hasController();

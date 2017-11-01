@@ -20,6 +20,18 @@ void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const Tree
 	}
 }
 
+void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937 & engine)
+{
+	switch (type)
+	{
+	case TreeBuilder::TreeType::OAK:
+		TreeBuilder::createOakTree(chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
+		break;
+	default:
+		break;
+	}
+}
+
 void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937& engine)
 {
 	int trunkHeight = 0;
@@ -545,6 +557,45 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
 		}
 	}
+}
+
+void Voxel::TreeBuilder::createOakTree(ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937 & engine)
+{
+TreeBuilder::TrunkHeight trunkHeight;
+
+	std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
+	int hRand = dist(engine);
+	if (hRand > 65)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::SMALL;
+	}
+	else if (hRand <= 65 && hRand > 33)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
+	}
+	else if (hRand <= 33)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::LARGE;
+	}
+
+	// Get tree width. 
+	TreeBuilder::TrunkWidth trunkWidth;
+
+	int wRand = dist(engine);
+	if (wRand > 65)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::SMALL;
+	}
+	else if (wRand <= 65 && wRand > 33)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
+	}
+	else if (wRand <= 33)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::LARGE;
+	}
+
+	createOakTree(trunkHeight, trunkWidth, chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
 }
 
 void Voxel::TreeBuilder::addTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY)

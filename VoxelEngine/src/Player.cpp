@@ -488,10 +488,11 @@ void Voxel::Player::autoJump(const float y)
 {
 	position.y += y;
 	nextPosition.y += y;
-	cameraY -= y;
+	cameraY -= (y * 0.75f);
 
-	position.x = nextPosition.x;
-	position.z = nextPosition.z;
+	// Not sure why I added. this. Removing this solves weird stutter looking after auto jump
+	//position.x = nextPosition.x;
+	//position.z = nextPosition.z;
 
 	moved = true;
 }
@@ -621,41 +622,6 @@ void Voxel::Player::update(const float delta)
 			cameraY = Player::EyeHeight;
 		}
 	}
-
-	/*
-	if (jumpState == JumpState::JUMPING)
-	{
-		//float jumpDist = glm::lerp(jumpDistance, 0.0f, 30.0f * delta);
-		float jumpDist = glm::lerp(0.0f, jumpDistance, 15.0f * delta);
-		jumpDistance -= jumpDist;
-
-		if (jumpDistance <= 0.01f)
-		{
-			jumpDist += jumpDistance;
-			jumpDistance = 0;
-
-			jumpState = JumpState::FALLING;
-		}
-
-		std::cout << "jumpDistance = " << jumpDistance << std::endl;
-
-		nextPosition.y += jumpDist;
-	}
-
-	if (jumpCooldown < Player::DefaultJumpCooldown)
-	{
-		jumpCooldown += delta;
-		//std::cout << "jump cd = " << jumpCooldown << std::endl;
-		if (jumpCooldown >= Player::DefaultJumpCooldown)
-		{
-			jumpCooldown = Player::DefaultJumpCooldown;
-			// refill jump distance
-			jumpDistance = Player::DefaultJumpDistance;
-			jumpState = JumpState::IDLE;
-			std::cout << "Player can jump again" << std::endl;
-		}
-	}
-	*/
 }
 
 void Voxel::Player::updateMovement(const float delta)
@@ -759,6 +725,9 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition, const bool smooth
 {
 	if (smoothMovement)
 	{
+		float y = glm::abs(newPosition.y - nextPosition.y);
+		cameraY += y;
+
 		nextPosition = newPosition;
 	}
 	else
@@ -773,6 +742,23 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition, const bool smooth
 void Voxel::Player::setNextPosition(const glm::vec3 & nextPosition)
 {
 	this->nextPosition = nextPosition;
+}
+
+void Voxel::Player::setResolvedNextPosition(const glm::vec3 & resolvedNextPosition)
+{
+	/*
+	if (moved)
+	{
+		float y = glm::abs(resolvedNextPosition.y - position.y);
+		cameraY += y;
+	}
+	*/
+	this->nextPosition = resolvedNextPosition;
+}
+
+void Voxel::Player::addCameraY(const float y)
+{
+	cameraY += y;
 }
 
 void Voxel::Player::applyNextPosition()

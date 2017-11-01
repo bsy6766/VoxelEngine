@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <BiomeType.h>
+#include <TreeBuilder.h>
 
 namespace Voxel
 {
@@ -24,9 +25,16 @@ namespace Voxel
 			Voxel::Vegitation::Tree tree;
 			int weight;
 		};
+
+		struct PlantPair
+		{
+			Voxel::Vegitation::Plant plant;
+			int weight;
+		};
 	public:
 		// Store types of vegitation that can grow in biome
 		static const std::unordered_map<BiomeType, std::vector<TreePair>> biomeTreeMap;
+		//static const std::unordered_map<BiomeType, std::vector<PlantPair>> biomePlantMap;
 		// Store types of living entity that can live in biome
 		// Store types of structure that can be spawned in biome
 		
@@ -64,6 +72,12 @@ namespace Voxel
 		bool hasTree();
 		// Check if this biome has grass
 		bool hasGrass();
+
+		// Get tree spawn rate (0 ~ 100)
+		int getTreeSpawnRate();
+		// Get random tree type
+		TreeBuilder::TreeType getRandomTreeType(std::mt19937& engine);
+			
 	};
 }
 

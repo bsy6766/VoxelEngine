@@ -167,6 +167,11 @@ namespace Voxel
 		// For now, assume it's 0
 		// L_AXIS_X. Left = -1, Right = 1
 		float getAxisValue(IO::XBOX_360::AXIS axis);
+
+		// Check if controller button is down
+		bool isControllerButtonDown(IO::XBOX_360::BUTTON button);
+
+		// check if controller is connected
 		bool hasController();
 
 		// For now, simple updates controller manager

@@ -119,6 +119,8 @@ namespace Voxel
 		glm::vec3 getPosition();
 		void setPosition(const glm::vec3& newPosition, const bool smoothMovement);
 		void setNextPosition(const glm::vec3& nextPosition);
+		void setResolvedNextPosition(const glm::vec3& resolvedNextPosition);
+		void addCameraY(const float y);
 		void applyNextPosition();
 		glm::vec3 getNextPosition();
 		glm::vec3 getEyePosition();

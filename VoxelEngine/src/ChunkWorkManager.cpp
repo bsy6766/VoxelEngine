@@ -962,11 +962,10 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 									// roll
 									int treeRand = dist(engine);
-
-									//std::cout << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << "),  rand = " << treeRand << std::endl;
-
-									// check chance. For now, it's 70
-									if (treeRand < 70)
+									
+									// check chance.
+									int treeChance = biomeType.getTreeSpawnRate();
+									if (treeRand < treeChance)
 									{
 										glm::ivec2 treeLocalPos = HeightMap::getTreePosition(chunk->getPosition());
 
@@ -979,40 +978,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 										int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
 
-										TreeBuilder::TrunkHeight trunkHeight;
-
-										int hRand = dist(engine);
-										if (hRand > 65)
-										{
-											trunkHeight = TreeBuilder::TrunkHeight::SMALL;
-										}
-										else if (hRand <= 65 && hRand > 33)
-										{
-											trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
-										}
-										else if (hRand <= 33)
-										{
-											trunkHeight = TreeBuilder::TrunkHeight::LARGE;
-										}
-
-										// Get tree width. 
-										TreeBuilder::TrunkWidth trunkWidth;
-
-										int wRand = dist(engine);
-										if (wRand > 65)
-										{
-											trunkWidth = TreeBuilder::TrunkWidth::SMALL;
-										}
-										else if (wRand <= 65 && wRand > 33)
-										{
-											trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
-										}
-										else if (wRand <= 33)
-										{
-											trunkWidth = TreeBuilder::TrunkWidth::LARGE;
-										}
-
-										TreeBuilder::createTree(TreeBuilder::TreeType::OAK, trunkHeight, trunkWidth, map, chunkXZ, treeLocalPos, treeY, engine);
+										TreeBuilder::createTree(biomeType.getRandomTreeType(engine), map, chunkXZ, treeLocalPos, treeY, engine);
 
 										//auto treeEnd = Utility::Time::now();
 

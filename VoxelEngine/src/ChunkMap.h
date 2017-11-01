@@ -22,8 +22,7 @@ namespace Voxel
 	class Program;
 
 	// Raycast result
-	struct RayResult
-	{
+	struct RayResult	{
 		// Nullptr if ray didn't hit
 		Block* block;
 		// The face that ray hit

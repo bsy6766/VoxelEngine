@@ -54,8 +54,10 @@ namespace Voxel
 		static void addOakBranch(ChunkMap* map, std::vector<glm::ivec3>& p, const int branchBaseY);
 		
 		static void createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine);
+		static void createOakTree(ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine);
 	public:
 		static void createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine);
+		static void createTree(const TreeBuilder::TreeType type, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine);
 
 		~TreeBuilder() = delete;
 	};
