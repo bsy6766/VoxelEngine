@@ -978,7 +978,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 										int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
 
-										TreeBuilder::createTree(biomeType.getRandomTreeType(engine), map, chunkXZ, treeLocalPos, treeY, engine);
+										TreeBuilder::createTree(biomeType.getRandomTreeType(engine), map, chunkXZ, glm::ivec3(treeLocalPos.x, treeY, treeLocalPos.y), engine);
 
 										//auto treeEnd = Utility::Time::now();
 

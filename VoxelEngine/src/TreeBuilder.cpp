@@ -8,31 +8,79 @@
 
 using namespace Voxel;
 
-void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec2& treeLocalXZ, const int treeY, std::mt19937& engine)
+void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937 & engine)
 {
 	switch (type)
 	{
 	case TreeBuilder::TreeType::OAK:
-		TreeBuilder::createOakTree(h, w, chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
+		TreeBuilder::createOakTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
 	default:
 		break;
 	}
 }
 
-void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937 & engine)
+void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine)
 {
 	switch (type)
 	{
 	case TreeBuilder::TreeType::OAK:
-		TreeBuilder::createOakTree(chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
+		TreeBuilder::createOakTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
 	default:
 		break;
 	}
 }
 
-void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937& engine)
+void Voxel::TreeBuilder::createOakTree(ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937 & engine)
+{
+	TreeBuilder::TrunkHeight trunkHeight;
+
+	std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
+
+	int hRand = dist(engine);
+
+	if (hRand > 60)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::SMALL;
+	}
+	else if (hRand <= 60 && hRand > 10)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
+	}
+	else if (hRand <= 10)
+	{
+		trunkHeight = TreeBuilder::TrunkHeight::LARGE;
+	}
+
+	// Get tree width. 
+	TreeBuilder::TrunkWidth trunkWidth;
+
+	int wRand = dist(engine);
+
+	if (wRand > 90)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::SMALL;
+	}
+	else if (wRand <= 90 && wRand > 33)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
+	}
+	else if (wRand <= 33)
+	{
+		trunkWidth = TreeBuilder::TrunkWidth::LARGE;
+		
+		// If width is large, promote height to at least medium
+		if (trunkHeight == TreeBuilder::TrunkHeight::SMALL)
+		{
+			trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
+		}
+	}
+
+	createOakTree(trunkHeight, trunkWidth, chunkMap, chunkXZ, treeLocalPos, engine);
+}
+
+void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine)
 {
 	int trunkHeight = 0;
 
@@ -60,7 +108,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 		return;
 	}
 
-	auto pivot = glm::ivec3(treeLocalXZ.x, treeY, treeLocalXZ.y);
+	auto pivot = treeLocalPos;
 	pivot.x += (chunkXZ.x * Constant::CHUNK_SECTION_WIDTH);
 	pivot.z += (chunkXZ.y * Constant::CHUNK_SECTION_LENGTH);
 
@@ -232,7 +280,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 		//auto l1 = glm::ivec3(p1.x, pivot.y + trunkHeight + (leavesHeight / 2), p1.z);
 		auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-		addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
+		addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, l1, engine);
 
 		// Add more blocks around top of trunk, below the leaves
 		/*
@@ -366,7 +414,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 
 			auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
+			addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, l1, engine);
 		}
 		else if (w == TreeBuilder::TrunkWidth::LARGE)
 		{
@@ -554,26 +602,26 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeight h, const T
 
 			auto l1 = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + 2, p.at(1).z);
 
-			addOakLeaves(chunkMap, p, leavesWidth, leavesHeight, leavesLength, l1, engine);
+			addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, l1, engine);
 		}
 	}
 }
 
-void Voxel::TreeBuilder::createOakTree(ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec2 & treeLocalXZ, const int treeY, std::mt19937 & engine)
+void Voxel::TreeBuilder::createBirchTree(ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
 {
-TreeBuilder::TrunkHeight trunkHeight;
+	TreeBuilder::TrunkHeight trunkHeight;
 
 	std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
 	int hRand = dist(engine);
-	if (hRand > 65)
+	if (hRand > 90)
 	{
 		trunkHeight = TreeBuilder::TrunkHeight::SMALL;
 	}
-	else if (hRand <= 65 && hRand > 33)
+	else if (hRand <= 90 && hRand > 40)
 	{
 		trunkHeight = TreeBuilder::TrunkHeight::MEDIUM;
 	}
-	else if (hRand <= 33)
+	else if (hRand <= 40)
 	{
 		trunkHeight = TreeBuilder::TrunkHeight::LARGE;
 	}
@@ -582,20 +630,20 @@ TreeBuilder::TrunkHeight trunkHeight;
 	TreeBuilder::TrunkWidth trunkWidth;
 
 	int wRand = dist(engine);
-	if (wRand > 65)
+	if (wRand > 10)
 	{
 		trunkWidth = TreeBuilder::TrunkWidth::SMALL;
 	}
-	else if (wRand <= 65 && wRand > 33)
+	else if (wRand <= 10)
 	{
 		trunkWidth = TreeBuilder::TrunkWidth::MEDIUM;
 	}
-	else if (wRand <= 33)
-	{
-		trunkWidth = TreeBuilder::TrunkWidth::LARGE;
-	}
 
-	createOakTree(trunkHeight, trunkWidth, chunkMap, chunkXZ, treeLocalXZ, treeY, engine);
+	createBirchTree(trunkHeight, trunkWidth, chunkMap, chunkXZ, treeLocalPos, engine);
+}
+
+void Voxel::TreeBuilder::createBirchTree(const TreeBuilder::TrunkHeight h, const TreeBuilder::TrunkWidth w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
+{
 }
 
 void Voxel::TreeBuilder::addTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY)
@@ -642,7 +690,7 @@ void Voxel::TreeBuilder::addTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, gl
 	}
 }
 
-void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, std::vector<glm::ivec3>& p, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine)
+void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine)
 {
 	auto dist = std::uniform_int_distribution<>(0, 100);
 
