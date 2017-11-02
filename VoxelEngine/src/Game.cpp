@@ -403,6 +403,7 @@ void Voxel::Game::teleportPlayer(const glm::vec3 & position)
 	chunkWorkManager->notify();
 
 	loadingState = LoadingState::RELOADING;
+	reloadState = ReloadState::CHUNK_MAP;
 }
 
 void Game::update(const float delta)
@@ -549,73 +550,17 @@ void Game::update(const float delta)
 
 		player->update(delta);
 
-		if (playerMoved || playerRotated)
+		if (player->isOnTPViewMode())
 		{
-			// update camera ray
-			auto playerEyePos = player->getEyePosition();
-			auto playerDir = player->getDirection();
-
-			auto rayStart = playerEyePos;
-			auto rayEnd = rayStart + (-playerDir * player->getCameraDistanceZ());
-
-			/*
-			std::vector<glm::vec3> rayEnds;
-			float pad = 0.75f;
-			float padY = 0.5f;
-			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y + pad, rayEnd.z));
-			rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y + padY, rayEnd.z));
-			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y + pad, rayEnd.z));
-			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y, rayEnd.z));
-			rayEnds.push_back(rayEnd);
-			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y, rayEnd.z));
-			//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y - pad, rayEnd.z));
-			rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y - padY, rayEnd.z));
-			//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y - pad, rayEnd.z));
-
-			auto minCamDist = player->getCameraDistanceZ();
-
-			for (auto& re : rayEnds)
+			if (playerMoved || playerRotated)
 			{
-				float dist = chunkMap->raycastCamera(rayStart, re, player->getCameraDistanceZ());
-				minCamDist = std::min(minCamDist, dist);
 			}
-			*/
-
-			float minCamDist = chunkMap->raycastCamera(rayStart, rayEnd, player->getCameraDistanceZ());
-
-			std::vector<Block*> nearByBlock;
-			auto camPos = rayStart + (-playerDir * minCamDist);
-			chunkMap->queryNearByBlocks(camPos, nearByBlock);
-
-			bool result = true;
-			while (result && minCamDist > 0.0f)
-			{
-				camPos = rayStart + (-playerDir * minCamDist);
-				result = physics->checkCollisionWithBlocks(Geometry::AABB(camPos, glm::vec3(0.25f)), nearByBlock);
-
-				if (result)
-				{
-					minCamDist -= 0.25f;
-				}
-			}
-
-			// raycastCamera takes 10 micro seconds for single ray.
-			//std::cout << "dist = " << minCamDist << std::endl;
-
-			if (minCamDist == player->getCameraDistanceZ())
-			{
-				player->setCameraColliding(false);
-			}
-			else
-			{
-				player->setCameraColliding(true);
-			}
-
-			player->setResolvedCameraDistanceZ(minCamDist);
-
-
-			player->updateCameraDistanceZ(delta);
+			updatePlayerCameraCollision();
 		}
+
+
+
+		player->updateCameraDistanceZ(delta);
 
 
 		skybox->update(delta);
@@ -1261,6 +1206,153 @@ void Voxel::Game::updatePlayerRaycast()
 		debugConsole->setPlayerLookingAtVisibility(false);
 		player->setLookingBlock(nullptr, Cube::Face::NONE);
 	}
+}
+
+void Voxel::Game::updatePlayerCameraCollision()
+{
+	// auto start = Utility::Time::now();
+
+	// update camera ray
+	auto playerEyePos = player->getNextEyePosition();
+	//auto playerEyePos = player->getEyePosition();
+	//auto playerDir = player->getNextDirection();
+	auto playerDir = player->getDirection();
+
+	auto rayStart = playerEyePos;
+	auto rayEnd = rayStart + (-playerDir * player->getCameraDistanceZ());
+
+	auto camYOffset = Player::EyeHeight - player->getCameraY();
+
+	rayStart.y -= camYOffset;
+	rayEnd.y -= camYOffset;
+
+	/*
+	std::vector<glm::vec3> rayEnds;
+	float pad = 0.75f;
+	float padY = 0.5f;
+	//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y + pad, rayEnd.z));
+	rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y + padY, rayEnd.z));
+	//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y + pad, rayEnd.z));
+	//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y, rayEnd.z));
+	rayEnds.push_back(rayEnd);
+	//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y, rayEnd.z));
+	//rayEnds.push_back(glm::vec3(rayEnd.x + pad, rayEnd.y - pad, rayEnd.z));
+	rayEnds.push_back(glm::vec3(rayEnd.x, rayEnd.y - padY, rayEnd.z));
+	//rayEnds.push_back(glm::vec3(rayEnd.x - pad, rayEnd.y - pad, rayEnd.z));
+
+	auto minCamDist = player->getCameraDistanceZ();
+
+	for (auto& re : rayEnds)
+	{
+		float dist = chunkMap->raycastCamera(rayStart, re, player->getCameraDistanceZ());
+		minCamDist = std::min(minCamDist, dist);
+	}
+	*/
+
+	/*
+	//float minCamDist = chunkMap->raycastCamera(rayStart, rayEnd, player->getCameraDistanceZ());
+
+	std::vector<Block*> nearByBlock;
+	//auto camPos = rayStart + (-playerDir * minCamDist);
+	//chunkMap->queryNearByBlocks(camPos, nearByBlock);
+
+	bool result = false;
+	float curCamDist = 0;
+	auto camPos = rayStart + (-playerDir * curCamDist);
+	chunkMap->queryNearByBlocks(camPos, nearByBlock);
+	float maxDist = player->getCameraDistanceZ();
+	
+	while (result == false && curCamDist < maxDist)
+	{
+		camPos = rayStart + (-playerDir * curCamDist);
+		//result = physics->checkCollisionWithBlocks(Geometry::AABB(camPos, glm::vec3(0.5f)), nearByBlock);
+		result = physics->checkSphereCollisionWithBlocks(Geometry::Sphere(0.5f, camPos), nearByBlock);
+
+		if (result)
+		{
+			//minCamDist -= 0.05f;
+		}
+
+		if (result == false)
+		{
+			curCamDist += 0.25f;
+			nearByBlock.clear();
+			chunkMap->queryNearByBlocks(camPos, nearByBlock);
+		}
+	}
+
+	if (result == false)
+	{
+		curCamDist = maxDist;
+	}
+
+
+	// raycastCamera takes 10 micro seconds for single ray.
+	//std::cout << "dist = " << minCamDist << std::endl;
+
+	if (curCamDist >= maxDist)
+	{
+		player->setCameraColliding(false);
+	}
+	else
+	{
+		player->setCameraColliding(true);
+	}
+	*/
+
+	// get max cam dist
+	float maxDist = player->getMaxCameraDistanceZ();
+	// using max dist, get closest position where ray hits
+	float minCamDist = chunkMap->raycastCamera(rayStart, rayEnd, maxDist);
+
+	/*
+	if (minCamDist != maxDist)
+	{
+		// Get near by blocks from the point where ray hit
+		std::vector<Block*> nearByBlock;
+		auto camPos = rayStart + (-playerDir * minCamDist);
+		chunkMap->queryNearByBlocks(camPos, nearByBlock);
+
+		bool result = true;
+		// repeat until there is no collision or cam dist gets less than 0
+		while (result && minCamDist > 0)
+		{
+			// recalculate pos
+			camPos = rayStart + (-playerDir * minCamDist);
+			// Check collision
+			result = physics->checkSphereCollisionWithBlocks(Geometry::Sphere(0.5f, camPos), nearByBlock);
+
+			// If collided, update
+			if (result)
+			{
+				minCamDist -= 0.25f;
+				nearByBlock.clear();
+				camPos = rayStart + (-playerDir * minCamDist);
+				chunkMap->queryNearByBlocks(camPos, nearByBlock);
+			}
+		}
+
+		// Can't be negative
+		if (minCamDist < 0)
+		{
+			minCamDist = 0;
+		}
+	}
+	*/
+
+	if (minCamDist >= maxDist)
+	{
+		player->setCameraColliding(false);
+	}
+	else
+	{
+		player->setCameraColliding(true);
+	}
+
+	player->setResolvedCameraDistanceZ(minCamDist);
+
+	//auto end = Utility::Time::now();
+	//std::cout << "t: " << Utility::Time::toMicroSecondString(start, end) << "\n";
 }
 
 void Voxel::Game::checkUnloadedChunks()

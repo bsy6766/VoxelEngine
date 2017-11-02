@@ -181,6 +181,31 @@ bool Geometry::AABB::doesIntersectsWith(const AABB & other)
 		(min.z <= oMax.z && max.z >= oMin.z);
 }
 
+bool Voxel::Geometry::AABB::doesIntersectsWith(const Sphere & other)
+{
+	float distSquared = other.radius * other.radius;
+
+	auto min = getMin();
+	auto max = getMax();
+
+	if (other.position.x < min.x)
+		distSquared -= (other.position.x - min.x) * (other.position.x - min.x);
+	else if (other.position.x > max.x)
+		distSquared -= (other.position.x - max.x) * (other.position.x - max.x);
+
+	if (other.position.y < min.y)
+		distSquared -= (other.position.y - min.y) * (other.position.y - min.y);
+	else if (other.position.y > max.y)
+		distSquared -= (other.position.y - max.y) * (other.position.y - max.y);
+
+	if (other.position.z < min.z)
+		distSquared -= (other.position.z - min.z) * (other.position.z - min.z);
+	else if (other.position.z > max.z)
+		distSquared -= (other.position.z - max.z) * (other.position.z - max.z);
+
+	return distSquared > 0;
+}
+
 bool Voxel::Geometry::AABB::isZero(const bool all) const
 {
 	if (all)
@@ -198,4 +223,14 @@ void Geometry::AABB::print()
 	std::cout << "[BoundingBox] center: (" << center.x << ", " << center.y << ", " << center.z << "), size: (" << size.x << ", " << size.y << ", " << size.z << ")\n";
 }
 
+Voxel::Geometry::Sphere::Sphere()
+	: radius(0)
+	, position(0)
+{
+}
 
+Voxel::Geometry::Sphere::Sphere(const float radius, const glm::vec3 & position)
+	: radius(radius)
+	, position(position)
+{
+}

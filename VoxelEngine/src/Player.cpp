@@ -334,8 +334,17 @@ bool Voxel::Player::didRotateThisFrame()
 
 float Voxel::Player::getCameraDistanceZ()
 {
-	//return Voxel::Player::MaxCameraDistanceX;
 	return cameraDistanceTargetZ;
+}
+
+float Voxel::Player::getMaxCameraDistanceZ()
+{
+	return Voxel::Player::MaxCameraDistanceX;
+}
+
+float Voxel::Player::getCameraY()
+{
+	return cameraY;
 }
 
 void Voxel::Player::setMovementSpeed(float speed)
@@ -412,6 +421,16 @@ bool Voxel::Player::isFlying()
 glm::vec3 Voxel::Player::getDirection()
 {
 	return direction;
+}
+
+glm::vec3 Voxel::Player::getNextDirection()
+{
+	auto nextDirMatrix = mat4(1.0f);
+	nextDirMatrix = glm::rotate(nextDirMatrix, glm::radians(-rotationTarget.y), glm::vec3(0, 1, 0));
+	nextDirMatrix = glm::rotate(nextDirMatrix, glm::radians(rotationTarget.x), glm::vec3(1, 0, 0));
+	nextDirMatrix = glm::rotate(nextDirMatrix, glm::radians(-rotationTarget.z), glm::vec3(0, 0, 1));
+
+	return vec3(nextDirMatrix * vec4(0, 0, -1, 1));
 }
 
 float Voxel::Player::getRange()
@@ -523,7 +542,7 @@ void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
 {
 	if (dist < cameraDistanceTargetZ)
 	{
-		auto adjust = dist - 1.0f;
+		auto adjust = dist - 1.5f;
 		if (adjust < 0.0f)
 		{
 			adjust = 0.0f;
@@ -535,6 +554,16 @@ void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
 void Voxel::Player::setCameraColliding(const bool value)
 {
 	cameraColliding = value;
+}
+
+bool Voxel::Player::isOnFPViewMode()
+{
+	return this->viewMode == ViewMode::FIRST_PERSON_VIEW;
+}
+
+bool Voxel::Player::isOnTPViewMode()
+{
+	return this->viewMode == ViewMode::THIRD_PERSON_VIEW;
 }
 
 glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
@@ -632,7 +661,7 @@ void Voxel::Player::update(const float delta)
 
 	if (cameraY != Player::EyeHeight)
 	{
-		cameraY = glm::lerp(cameraY, Player::EyeHeight, 5.0f * delta);
+		cameraY = glm::lerp(cameraY, Player::EyeHeight, 3.0f * delta);
 		if (glm::abs(cameraY - Player::EyeHeight) < 0.01f)
 		{
 			cameraY = Player::EyeHeight;
@@ -673,7 +702,8 @@ void Voxel::Player::updateCameraDistanceZ(const float delta)
 
 	if (cameraDistanceZ != cameraDistanceTargetZ)
 	{
-		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 4.0f * delta);
+		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 2.0f * delta);
+
 		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.01f)
 		{
 			cameraDistanceZ = cameraDistanceTargetZ;
@@ -806,6 +836,11 @@ glm::vec3 Voxel::Player::getNextPosition()
 glm::vec3 Voxel::Player::getEyePosition()
 {
 	return glm::vec3(position.x, position.y + Player::EyeHeight, position.z);
+}
+
+glm::vec3 Voxel::Player::getNextEyePosition()
+{
+	return glm::vec3(nextPosition.x, nextPosition.y + Player::EyeHeight, nextPosition.z);
 }
 
 void Voxel::Player::addRotationX(const float x)

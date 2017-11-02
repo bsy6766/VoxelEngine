@@ -167,6 +167,7 @@ namespace Voxel
 		// Check if chunk loader needs to be updated
 		void updateChunks();
 		void updatePlayerRaycast();
+		void updatePlayerCameraCollision();
 		
 		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();

@@ -22,7 +22,7 @@ namespace Voxel
 	*/
 	class Player
 	{
-	private:
+	public:
 		static const float MaxCameraDistanceX;
 		static const float EyeHeight;
 	public:
@@ -125,6 +125,7 @@ namespace Voxel
 		void applyNextPosition();
 		glm::vec3 getNextPosition();
 		glm::vec3 getEyePosition();
+		glm::vec3 getNextEyePosition();
 
 		void addRotationX(const float x);
 		void addRotationY(const float y);
@@ -166,6 +167,8 @@ namespace Voxel
 		bool didRotateThisFrame();
 
 		float getCameraDistanceZ();
+		float getMaxCameraDistanceZ();
+		float getCameraY();
 
 		// Set player movementspeed
 		void setMovementSpeed(float speed);
@@ -183,6 +186,7 @@ namespace Voxel
 
 		// Get direction of player
 		glm::vec3 getDirection();
+		glm::vec3 getNextDirection();
 		// Get ray range of player
 		float getRange();
 		// Get end point of player's raycast
@@ -216,6 +220,9 @@ namespace Voxel
 
 		void setResolvedCameraDistanceZ(const float dist);
 		void setCameraColliding(const bool value);
+
+		bool isOnFPViewMode();
+		bool isOnTPViewMode();
 	};
 }
 

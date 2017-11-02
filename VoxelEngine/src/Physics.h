@@ -88,6 +88,7 @@ namespace Voxel
 		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
 
 		bool checkCollisionWithBlocks(const Geometry::AABB& boundingBox, const std::vector<Block*>& nearByBlocks);
+		bool checkSphereCollisionWithBlocks(const Geometry::Sphere& sphere, const std::vector<Block*>& nearByBlocks);
 
 		bool updatePlayerJumpForce(Player* player, const float delta);
 	};

@@ -735,6 +735,20 @@ bool Voxel::Physics::checkCollisionWithBlocks(const Geometry::AABB & boundingBox
 	return false;
 }
 
+bool Voxel::Physics::checkSphereCollisionWithBlocks(const Geometry::Sphere& sphere, const std::vector<Block*>& nearByBlocks)
+{
+	for (auto block : nearByBlocks)
+	{
+		auto blockBB = block->getBoundingBox();
+
+		// Check intersection
+		if (blockBB.doesIntersectsWith(sphere))
+		{
+			return true;
+		}
+	}
+}
+
 void Voxel::Physics::applyJumpForceToPlayer(const glm::vec3 & force)
 {
 	if (force.y >= 0.0f)

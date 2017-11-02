@@ -45,6 +45,17 @@ namespace Voxel
 			glm::vec2 size;
 		};
 
+		class Sphere
+		{
+		public:
+			Sphere();
+			Sphere(const float radius, const glm::vec3& position);
+			~Sphere() = default;
+
+			float radius;
+			glm::vec3 position;
+		};
+
 		/**
 		*	@class AABB
 		*	@brief Simple Axis Aligned Bounding box
@@ -98,6 +109,8 @@ namespace Voxel
 			*	@return true if this AABB intersects other AABB. Else, false.
 			*/
 			bool doesIntersectsWith(const AABB& other);
+
+			bool doesIntersectsWith(const Sphere& other);
 
 			/**
 			*	Checks if this AABB has any or all axis equal to zero
