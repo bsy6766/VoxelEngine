@@ -972,7 +972,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										//std::cout << "Adding tree" << "Chunk (" << chunkXZ.x << ", " << chunkXZ.y << ")" << std::endl;
 
 										// Don't spawn tree at the edge of chunk. 
-										//treePos = glm::clamp(treePos, 5, 11);
+										treeLocalPos = glm::clamp(treeLocalPos, 2, 14);
 
 										//auto treeStart = Utility::Time::now();
 

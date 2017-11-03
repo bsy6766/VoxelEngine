@@ -309,5 +309,13 @@ int Voxel::Biome::getTreeSpawnRate()
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
 	// For now, only oak
-	return TreeBuilder::TreeType::OAK;
+	auto rand = Utility::Random::randomInt100();
+	if (rand < 50)
+	{
+		return TreeBuilder::TreeType::OAK;
+	}
+	else
+	{
+		return TreeBuilder::TreeType::BIRCH;
+	}
 }

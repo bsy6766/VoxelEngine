@@ -26,6 +26,9 @@ namespace Voxel
 			STONE,
 			OAK_WOOD,
 			OAK_LEAVES,
+			BIRCH_WOOD_WHITE,
+			BIRCH_WOOD_BLACK,
+			BIRCH_LEAVES,
 			WATER,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
 			SHORT_GRASS,
