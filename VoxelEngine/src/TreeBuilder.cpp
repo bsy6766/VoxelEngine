@@ -683,6 +683,25 @@ void Voxel::TreeBuilder::createBirchTree(const TreeBuilder::TrunkHeightType h, c
 	}
 }
 
+std::string Voxel::TreeBuilder::treeTypeToString(TreeBuilder::TreeType type)
+{
+	switch (type)
+	{
+		break;
+	case Voxel::TreeBuilder::TreeType::OAK:
+		return "OAK";
+	case Voxel::TreeBuilder::TreeType::BIRCH:
+		return "BIRCH";
+	case Voxel::TreeBuilder::TreeType::SPRUCE:
+		return "SPRUCE";
+	case Voxel::TreeBuilder::TreeType::PINE:
+		return "PINE";
+	case Voxel::TreeBuilder::TreeType::NONE:
+	default:
+		return "NONE";
+	}
+}
+
 void Voxel::TreeBuilder::addPosLayer(std::vector<glm::ivec3>& p, const int level)
 {
 	auto pivot = p.front();

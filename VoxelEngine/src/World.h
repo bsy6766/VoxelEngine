@@ -57,8 +57,9 @@ namespace Voxel
 		void initRegions(std::mt19937& engine);
 		void rebuildRegions(std::mt19937& engine);
 		void initRegionDifficulty();
-		void initRegionBiome();
-		void initRegionTerrain();
+		void initRegionBiomeAndTerrain();
+		void initRegionBiome(std::mt19937& engine);
+		void initRegionTerrain(std::mt19937& engine);
 
 		// debug
 		void printRegionBiomeAndTerrain();

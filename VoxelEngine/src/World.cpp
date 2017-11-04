@@ -57,8 +57,9 @@ void Voxel::World::init(const int gridWidth, const int gridLength, const unsigne
 	initVoronoi(engine);
 	initRegions(engine);
 	initRegionDifficulty();
-	initRegionBiome();
-	initRegionTerrain();
+	initRegionBiomeAndTerrain();
+	//initRegionBiome();
+	//initRegionTerrain();
 	printRegionBiomeAndTerrain();
 	initVoronoiDebug();
 }
@@ -680,17 +681,38 @@ void Voxel::World::initRegionDifficulty()
 	}
 }
 
-void Voxel::World::initRegionBiome()
+void Voxel::World::initRegionBiomeAndTerrain()
 {
 	for (auto& r : regions)
 	{
 		auto region = r.second;
 
-		region->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture);
+		std::mt19937 engine(std::hash<std::string>{}(region->getSeed()));
+
+		region->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture, engine);
+
+		if (region->isCellValid())
+		{
+			region->initTerrainType(engine);
+		}
+		else
+		{
+			region->initTerrainType(Voxel::TerrainType::BORDER);
+		}
 	}
 }
 
-void Voxel::World::initRegionTerrain()
+void Voxel::World::initRegionBiome(std::mt19937& engine)
+{
+	for (auto& r : regions)
+	{
+		auto region = r.second;
+
+		region->initBiomeType(minTemperature, maxTemperature, minMoisture, maxMoisture, engine);
+	}
+}
+
+void Voxel::World::initRegionTerrain(std::mt19937& engine)
 {
 	for (auto& r : regions)
 	{
@@ -698,7 +720,7 @@ void Voxel::World::initRegionTerrain()
 
 		if (region->isCellValid())
 		{
-			region->initTerrainType();
+			region->initTerrainType(engine);
 		}
 		else
 		{
@@ -716,7 +738,7 @@ void Voxel::World::printRegionBiomeAndTerrain()
 		auto bt = region->getBiomeType();
 
 		std::cout << "Region #" << region->getID() << std::endl;
-		std::cout << "Biome: " << Biome::biomeTypeToString(bt.getType()) << ", t: " << bt.getTemperature() << ", m: " << bt.getMoisture() << std::endl;
+		bt.print();
 		std::cout << "Terrain: " << Terrain::terrainTypeToString(region->getTerrainType()) << std::endl;
 	}
 }
@@ -747,8 +769,7 @@ void Voxel::World::rebuildRegions(std::mt19937& engine)
 
 	initRegions(engine);
 	initRegionDifficulty();
-	initRegionBiome();
-	initRegionTerrain();
+	initRegionBiomeAndTerrain();
 	printRegionBiomeAndTerrain();
 }
 

@@ -61,11 +61,11 @@ namespace Voxel
 		void setAsStartingRegion();
 
 		// init temperature and moisture = biome
-		void initBiomeType(const float minT, const float maxT, const float minM, const float maxM);
+		void initBiomeType(const float minT, const float maxT, const float minM, const float maxM, std::mt19937& engine);
 		Biome getBiomeType();
 
 		// init terrain type
-		void initTerrainType();
+		void initTerrainType(std::mt19937& engine);
 		void initTerrainType(Voxel::TerrainType type);
 		Terrain getTerrainType();
 
@@ -86,6 +86,7 @@ namespace Voxel
 
 		// set seed
 		void setSeed(const std::string& seed);
+		std::string getSeed();
 	};
 }
 

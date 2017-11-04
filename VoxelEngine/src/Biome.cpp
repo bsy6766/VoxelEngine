@@ -4,12 +4,12 @@
 
 using namespace Voxel;
 
-const std::unordered_map<BiomeType, std::vector<Biome::TreePair>> Biome::biomeTreeMap =
+const std::unordered_map<BiomeType, std::vector<Biome::TreePair>> Biome::biomeTreeWeightMap =
 {
-	{BiomeType::WOODS, {{Voxel::Vegitation::Tree::OAK, 100}}},
-	{BiomeType::FOREST, {{Voxel::Vegitation::Tree::OAK, 50}, {Voxel::Vegitation::Tree::BIRCH, 50}}},
-	{BiomeType::TAIGA, {{Voxel::Vegitation::Tree::SPRUCE, 100}}},
-	{BiomeType::TAIGA_FOREST, {{Voxel::Vegitation::Tree::SPRUCE, 100}}}
+	{ BiomeType::WOODS,{ { Voxel::Vegitation::Tree::OAK_BIRCH, 1 },{ Voxel::Vegitation::Tree::OAK, 1 },{ Voxel::Vegitation::Tree::BIRCH, 1 } } },
+	{ BiomeType::FOREST,{ { Voxel::Vegitation::Tree::OAK_BIRCH, 1 },{ Voxel::Vegitation::Tree::OAK, 1 },{ Voxel::Vegitation::Tree::BIRCH, 1 } } },
+	{ BiomeType::TAIGA,{ { Voxel::Vegitation::Tree::SPRUCE_PINE, 1 },{ Voxel::Vegitation::Tree::SPRUCE, 1 },{ Voxel::Vegitation::Tree::PINE, 1 } } },
+	{ BiomeType::TAIGA_FOREST,{ { Voxel::Vegitation::Tree::SPRUCE_PINE, 1 },{ Voxel::Vegitation::Tree::SPRUCE, 1 },{ Voxel::Vegitation::Tree::PINE, 1 } } },
 };
 
 Voxel::Biome::Biome()
@@ -245,17 +245,84 @@ float Voxel::Biome::getMoisture()
 	return moisture;
 }
 
-void Voxel::Biome::initVegitation()
+void Voxel::Biome::initVegitation(std::mt19937& engine)
 {
-	// init vegitation. 
-	// when initialize vegitation with weight, use base weight and randomly modify the weight.
-	// For now, just use the base weight
-	
+	/*
+		Initialize vegitation.
+		Each biome has different vegitations based on the type.
+		Each vegitation has own weight value that used in random generation.
+		Higher weight will have higher chance to spawn. 
+		This applies to all type of vegitation.
+	*/
+
+	// Init tree
+	auto find = Biome::biomeTreeWeightMap.find(type);
+
+	if (find != Biome::biomeTreeWeightMap.end())
+	{
+		auto& treeWeights = find->second;
+
+		int size = static_cast<int>(treeWeights.size());
+
+		if (size > 0)
+		{
+			TreePair treePair;
+
+			if (size == 1)
+			{
+				treePair = (find->second).front();
+			}
+			else
+			{
+				std::vector<int> weights;
+				for (auto& pair : find->second)
+				{
+					weights.push_back(pair.weight);
+				}
+
+				std::discrete_distribution<> dist(weights.begin(), weights.end());
+
+				int rand = dist(engine);
+				if (rand >= size)
+				{
+					rand = size - 1;
+				}
+
+				treePair = (find->second).at(rand);
+			}
+
+			switch (treePair.tree)
+			{
+			case Voxel::Vegitation::Tree::OAK:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
+				break;
+			case Voxel::Vegitation::Tree::BIRCH:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::BIRCH, 1 });
+				break;
+			case Voxel::Vegitation::Tree::SPRUCE:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
+				break;
+			case Voxel::Vegitation::Tree::PINE:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
+				break;
+			case Voxel::Vegitation::Tree::OAK_BIRCH:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::BIRCH, 1 });
+				break;
+			case Voxel::Vegitation::Tree::SPRUCE_PINE:
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
+				break;
+			default:
+				break;
+			}
+		}
+	}
 }
 
 bool Voxel::Biome::hasTree()
 {
-	return Biome::biomeTreeMap.find(this->type) != Biome::biomeTreeMap.end();
+	return trees.empty() == false;
 }
 
 int Voxel::Biome::getTreeSpawnRate()
@@ -308,14 +375,57 @@ int Voxel::Biome::getTreeSpawnRate()
 
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
-	// For now, only oak
-	auto rand = Utility::Random::randomInt100();
-	if (rand < 50)
+	if (hasTree())
 	{
-		return TreeBuilder::TreeType::OAK;
+		int size = static_cast<int>(trees.size());
+
+		if (size == 1)
+		{
+			return trees.front().type;
+		}
+		else
+		{
+			std::vector<int> weights;
+			for (auto& pair : trees)
+			{
+				weights.push_back(pair.weight);
+			}
+
+			std::discrete_distribution<> dist(weights.begin(), weights.end());
+			
+			int rand = dist(engine);
+
+			if (rand >= size)
+			{
+				rand = size - 1;
+			}
+
+			return trees.at(rand).type;
+		}
 	}
 	else
 	{
-		return TreeBuilder::TreeType::BIRCH;
+		return TreeBuilder::TreeType::NONE;
 	}
+}
+
+void Voxel::Biome::print()
+{
+	std::cout << "Biome info\n";
+	std::cout << "Type: " << Biome::biomeTypeToString(type) << "\tM: " << moisture << ", T: " << temperature << "\n";
+	std::cout << "Vegitations\n";
+	std::cout << "Trees: ";
+	if (trees.empty())
+	{
+		std::cout << "None\n";
+	}
+	else
+	{
+		std::cout << "\n";
+		for (auto& e : trees)
+		{
+			std::cout << Voxel::TreeBuilder::treeTypeToString(e.type) << " (" << e.weight << ")\n";
+		}
+	}
+	std::cout << "\n";
 }

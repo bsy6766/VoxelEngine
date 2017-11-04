@@ -312,6 +312,11 @@ void Voxel::Game::createNew(const std::string & worldName)
 
 	// Then based init chunks
 	createChunkMap();
+
+	Region* curRegion = world->getCurrentRegion();
+	debugConsole->updateRegion(curRegion->getID());
+	Biome biomeType = curRegion->getBiomeType();
+	debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 	
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;

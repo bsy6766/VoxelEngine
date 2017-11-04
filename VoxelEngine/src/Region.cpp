@@ -128,7 +128,7 @@ void Voxel::Region::setAsStartingRegion()
 	std::cout << "Setting region #" << cell->getID() << " to starting region.\n";
 }
 
-void Voxel::Region::initBiomeType(const float minT, const float maxT, const float minM, const float maxM)
+void Voxel::Region::initBiomeType(const float minT, const float maxT, const float minM, const float maxM, std::mt19937& engine)
 {
 	auto sitePos = cell->getSitePosition();
 	auto t = HeightMap::getTemperatureNoise2D(sitePos.x, sitePos.y);
@@ -150,6 +150,7 @@ void Voxel::Region::initBiomeType(const float minT, const float maxT, const floa
 	newM += minM;
 
 	biomeType.setType(newT, newM);
+	biomeType.initVegitation(engine);
 }
 
 Biome Voxel::Region::getBiomeType()
@@ -157,9 +158,8 @@ Biome Voxel::Region::getBiomeType()
 	return biomeType;
 }
 
-void Voxel::Region::initTerrainType()
+void Voxel::Region::initTerrainType(std::mt19937& engine)
 {
-	std::mt19937 engine(std::hash<std::string>{}(seed));
 	terrainType.setTypeByBiome(this->biomeType.getType(), engine);
 }
 
@@ -251,4 +251,9 @@ unsigned int Voxel::Region::getID()
 void Voxel::Region::setSeed(const std::string & seed)
 {
 	this->seed = seed + std::to_string(getID());
+}
+
+std::string Voxel::Region::getSeed()
+{
+	return seed;
 }

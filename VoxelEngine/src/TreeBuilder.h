@@ -4,6 +4,7 @@
 #include <vector>
 #include <Block.h>
 #include <Utility.h>
+#include <BiomeType.h>
 
 namespace Voxel
 {
@@ -41,10 +42,14 @@ namespace Voxel
 		// Type of tree.
 		enum class TreeType
 		{
-			OAK = 0,
-			SPRUCE,
+			NONE = 0,
+			OAK,
 			BIRCH,
+			SPRUCE,
+			PINE,
 		};
+
+		static std::string treeTypeToString(TreeBuilder::TreeType type);
 
 		// Height of tree
 		enum class TrunkHeightType
@@ -65,7 +70,6 @@ namespace Voxel
 			LARGE,
 			MEGA,
 		};
-
 	private:
 		TreeBuilder() = delete;
 
