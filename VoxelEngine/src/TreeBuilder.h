@@ -46,7 +46,7 @@ namespace Voxel
 			OAK,
 			BIRCH,
 			SPRUCE,
-			PINE,
+			FIR,
 		};
 
 		static std::string treeTypeToString(TreeBuilder::TreeType type);
@@ -143,6 +143,7 @@ namespace Voxel
 		*	vector p's y position is set back to original position.
 		*	@param [in] map Pointer to chunk map.
 		*	@param [in] p List of points to add tree block in XZ space.
+		*	@param [in] widthType Trunk width type of tree
 		*	@param [in] trunkColor Color of the trunk
 		*	@param [in] colorStep Amount of color to add to trunk. Gives gradiant through trunk.
 		*	@param [in] markColor Color of the marks
@@ -152,18 +153,18 @@ namespace Voxel
 		*	@param [in] startY First y position to add up trunk.
 		*	@param [in] engine Reference of chunk's local random engine for random marks
 		*/
-		static void addBirchTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 trunkColor, const glm::vec3& colorStep, const glm::vec3& markColor, const int pStart, const int pEnd, const int trunkHeight, const int startY, std::mt19937& engine);
+		static void addBirchTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, const TreeBuilder::TrunkWidthType widthType, glm::vec3 trunkColor, const glm::vec3& colorStep, const glm::vec3& markColor, const int pStart, const int pEnd, const int trunkHeight, const int startY, std::mt19937& engine);
 
 		/**
 		*	Add multiple birch leaves
 		*	Birch leaves have multiple side leaves compared to oak tree. Also main leave is long ellipsoid.
 		*	@param [in] map Pointer to chunk map.
-		*	@param [in] w Width of leaves
-		*	@param [in] h Height of leaves
-		*	@param [in] l Length of leaves
-		*	@param [in] pos Center position of leaves
+		*	@param [in] widthType Trunk width type of tree
+		*	@param [in] trunkTopPos Top position of the trunk
+		*	@param [in] trunkMidPos mid position of the trunk
+		*	@param [in] engine Reference of chunk's local random engine
 		*/
-		static void addBirchLeaves(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine);
+		static void addBirchLeaves(ChunkMap* map, const TreeBuilder::TrunkWidthType widthType, const glm::ivec3& trunkTopPos, const glm::ivec3& trunkMidPos, std::mt19937& engine);
 
 		/**
 		*	Add single birch leave
@@ -214,6 +215,46 @@ namespace Voxel
 		*	@param [in] engine Reference of chunk's local random engine
 		*/
 		static void createBirchTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+
+		/**
+		*	Create birch tree
+		*	@param [in] chunkMap Pointer to chunk map.
+		*	@param [in] chunkXZ Position of chunk to add tree.
+		*	@param [in] treeLocalPos Tree's local position in chunk.
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		static void createSpruceTree(ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+
+		/**
+		*	Create birch tree
+		*	@param [in] chunkMap Pointer to chunk map.
+		*	@param [in] h Trunk height of tree.
+		*	@param [in] w Trunk width of tree.
+		*	@param [in] chunkXZ Position of chunk to add tree.
+		*	@param [in] treeLocalPos Tree's local position in chunk.
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		static void createSpruceTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+
+		/**
+		*	Create birch tree
+		*	@param [in] chunkMap Pointer to chunk map.
+		*	@param [in] chunkXZ Position of chunk to add tree.
+		*	@param [in] treeLocalPos Tree's local position in chunk.
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		//static void createPineTree(ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+
+		/**
+		*	Create birch tree
+		*	@param [in] chunkMap Pointer to chunk map.
+		*	@param [in] h Trunk height of tree.
+		*	@param [in] w Trunk width of tree.
+		*	@param [in] chunkXZ Position of chunk to add tree.
+		*	@param [in] treeLocalPos Tree's local position in chunk.
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		//static void createPineTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
 
 	public:
 		/**

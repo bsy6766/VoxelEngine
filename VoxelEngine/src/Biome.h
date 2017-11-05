@@ -41,10 +41,7 @@ namespace Voxel
 	public:
 		// Store types of vegitation that can grow in biome
 		static const std::unordered_map<BiomeType, std::vector<TreePair>> biomeTreeWeightMap;
-
-		//static const std::unordered_map<BiomeType, std::vector<PlantPair>> biomePlantMap;
-		// Store types of living entity that can live in biome
-		// Store types of structure that can be spawned in biome
+		static const std::unordered_map<BiomeType, std::vector<PlantPair>> biomePlantWeightMap;
 		
 		float temperature;
 		float moisture;

@@ -1289,7 +1289,7 @@ bool Voxel::UI::Cursor::init()
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertLoc);	// error count 1
+	glEnableVertexAttribArray(vertLoc);	// error count 2
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint colorLoc = program->getAttribLocation("color");

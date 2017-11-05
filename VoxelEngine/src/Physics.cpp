@@ -747,6 +747,8 @@ bool Voxel::Physics::checkSphereCollisionWithBlocks(const Geometry::Sphere& sphe
 			return true;
 		}
 	}
+
+	return false;
 }
 
 void Voxel::Physics::applyJumpForceToPlayer(const glm::vec3 & force)

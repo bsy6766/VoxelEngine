@@ -74,16 +74,33 @@ namespace Voxel
 			MAPLE
 		};
 		
+		/**
+		*	@enum Plant
+		*
+		*	Plants are small vegitation that takes up to 1 block size
+		*/
 		enum class Plant
 		{
 			NONE = 0,
 			SHORT_GRASS,
 			TALL_GRASS,
+			FERN,
+			KORU,
 			CAT_TAIL,
 			CACTUS,
 			SHRUB,
 		};
 
+		/**
+		*	@enum Flower
+		*	
+		*	Flowers naturally grows through out the world. Different types of flower can be found on different biomes.
+		*	Once player founds flower field, they can collect all the flowers nearby by holding the key.
+		*	
+		*	Flowers are main source of pigment. Once they are looted, it autoamtically converts to pigment.
+		*	For example, rose become red pigment and sunflower becomes yellow pigment.
+		*	Pigments are main source to unlock different colors of block. 
+		*/
 		enum class Flower
 		{
 			NONE = 0,

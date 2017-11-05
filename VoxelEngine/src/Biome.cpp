@@ -12,6 +12,14 @@ const std::unordered_map<BiomeType, std::vector<Biome::TreePair>> Biome::biomeTr
 	{ BiomeType::TAIGA_FOREST,{ { Voxel::Vegitation::Tree::SPRUCE_PINE, 1 },{ Voxel::Vegitation::Tree::SPRUCE, 1 },{ Voxel::Vegitation::Tree::PINE, 1 } } },
 };
 
+const std::unordered_map<BiomeType, std::vector<Biome::PlantPair>> Biome::biomePlantWeightMap = 
+{
+	{ BiomeType::WOODS,{ { Voxel::Vegitation::Plant::SHORT_GRASS, 1 } } },
+	{ BiomeType::FOREST,{ { Voxel::Vegitation::Plant::SHORT_GRASS, 1 } } },
+	{ BiomeType::TAIGA,{ { Voxel::Vegitation::Plant::FERN, 1 } } },
+	{ BiomeType::TAIGA_FOREST,{ { Voxel::Vegitation::Plant::FERN, 1 } } },
+};
+
 Voxel::Biome::Biome()
 	: temperature(0)
 	, moisture(0)
@@ -303,7 +311,7 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
 				break;
 			case Voxel::Vegitation::Tree::PINE:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::FIR, 1 });
 				break;
 			case Voxel::Vegitation::Tree::OAK_BIRCH:
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
@@ -311,7 +319,7 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				break;
 			case Voxel::Vegitation::Tree::SPRUCE_PINE:
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::FIR, 1 });
 				break;
 			default:
 				break;
@@ -375,6 +383,8 @@ int Voxel::Biome::getTreeSpawnRate()
 
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
+	return TreeBuilder::TreeType::BIRCH;
+
 	if (hasTree())
 	{
 		int size = static_cast<int>(trees.size());
