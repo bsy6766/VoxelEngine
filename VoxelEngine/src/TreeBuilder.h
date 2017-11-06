@@ -176,6 +176,12 @@ namespace Voxel
 		*/
 		static void addBirchLeave(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine);
 
+		static void addSpruceTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY);
+
+		static void addSpruceLeaves(ChunkMap* map, const glm::ivec3& trunkTopPos, const int trunkHeight, std::mt19937& engine);
+
+		static void addSpruceLeave(ChunkMap* map, const glm::ivec3& leavePos, const int dir, const int level, std::mt19937& engine);
+
 		/**
 		*	Create oak tree
 		*	@param [in] chunkMap Pointer to chunk map.

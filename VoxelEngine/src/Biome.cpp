@@ -383,7 +383,7 @@ int Voxel::Biome::getTreeSpawnRate()
 
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
-	return TreeBuilder::TreeType::BIRCH;
+	return TreeBuilder::TreeType::SPRUCE;
 
 	if (hasTree())
 	{

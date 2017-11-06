@@ -153,7 +153,7 @@ Block::BLOCK_ID Voxel::Block::getBlockID()
 void Voxel::Block::setBlockID(const BLOCK_ID blockID)
 {
 	this->id = blockID;
-	setColorU3(Color::getColorU3FromBlockID(blockID));
+	//setColorU3(Color::getColorU3FromBlockID(blockID));
 }
 
 Geometry::AABB Voxel::Block::getBoundingBox()

@@ -29,6 +29,8 @@ namespace Voxel
 			BIRCH_WOOD_WHITE,
 			BIRCH_WOOD_BLACK,
 			BIRCH_LEAVES,
+			SPRUCE_WOOD,
+			SPRUCE_LEAVES,
 			WATER,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
 			SHORT_GRASS,
@@ -87,6 +89,13 @@ namespace Voxel
 
 		// Get block ID
 		BLOCK_ID getBlockID();
+
+		/**
+		*	Sets block ID.
+		*	Color doesn't changes.
+		*	@see setColor, setColorRGB, setColorU3
+		*	@param [in] blockID ID of the block to set.
+		*/
 		void setBlockID(const BLOCK_ID blockID);
 
 		// Get AABB

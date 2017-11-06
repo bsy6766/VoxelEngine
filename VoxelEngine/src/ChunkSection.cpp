@@ -717,6 +717,7 @@ void Voxel::ChunkSection::setBlockAt(const glm::ivec3 & localCoordinate, const B
 
 void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, const Block::BLOCK_ID blockID, const bool overwrite)
 {
+	//Todo: Specify the color of the block when placing it.
 	unsigned int index = localBlockXYZToIndex(x, y, z);
 	if (index >= 0 && index < blocks.size())
 	{
