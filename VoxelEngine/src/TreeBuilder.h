@@ -176,12 +176,41 @@ namespace Voxel
 		*/
 		static void addBirchLeave(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine);
 
+		/**
+		*	add spruce trunk
+		*	@param [in] map Pointer to chunk map.
+		*	@param [in] p List of points to add tree block in XZ space.
+		*	@param [in] color Color of the trunk
+		*	@param [in] colorStep Amount of color to add to trunk. Gives gradiant through trunk.
+		*	@param [in] pStart Start index of vector p
+		*	@param [in] pEnd Last index of vector p
+		*	@param [in] trunkHeight Height of the trunk
+		*	@param [in] startY First y position to add up trunk.
+		*/
 		static void addSpruceTrunk(ChunkMap* map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3& colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY);
 
-		static void addSpruceLeaves(ChunkMap* map, const glm::ivec3& trunkTopPos, const int trunkHeight, std::mt19937& engine);
+		/**
+		*	Add spruce leaves.
+		*	@param [in] map Pointer to chunk map.
+		*	@param [in] trunkTopPos Top position of the trunk
+		*	@param [in] trunkHeight Height of the trunk.
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		static void addSpruceLeaves(ChunkMap* map, const TreeBuilder::TrunkWidthType w, const glm::ivec3& trunkTopPos, const int trunkHeight, std::mt19937& engine);
 
-		static void addSpruceLeave(ChunkMap* map, const glm::ivec3& leavePos, const int dir, const int level, std::mt19937& engine);
+		/**
+		*	Add spruce leave.
+		*	@param [in] map Pointer to chunk map.
+		*	@param [in] leavePos Pivot position of the leave.
+		*	@param [in] color Color of the trunk
+		*	@param [in] dir Direction of leaves to add
+		*	@param [in] level Level of leaves to add. Higher the level, less leaves to add
+		*	@param [in] engine Reference of chunk's local random engine
+		*/
+		static void addSpruceLeave(ChunkMap* map, const TreeBuilder::TrunkWidthType w, const glm::ivec3& leavePos, const glm::vec3& color, const int dir, const int level, std::mt19937& engine);
 
+
+		
 		/**
 		*	Create oak tree
 		*	@param [in] chunkMap Pointer to chunk map.
