@@ -377,12 +377,13 @@ int Voxel::Biome::getTreeSpawnRate()
 	default:
 		break;
 	}
-	chance = 30;
+
 	return chance;
 }
 
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
+	/*
 	switch (std::uniform_int_distribution<>(0, 3)(engine))
 	{
 	case 1:
@@ -395,6 +396,7 @@ TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 	default:
 		return TreeBuilder::TreeType::OAK;
 	}
+	*/
 
 	if (hasTree())
 	{

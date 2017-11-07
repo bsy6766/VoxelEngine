@@ -514,7 +514,7 @@ void Voxel::Player::autoJump(const float y)
 {
 	position.y += y;
 	nextPosition.y += y;
-	cameraY -= (y * 0.75f);
+	cameraY -= y;
 
 	// Not sure why I added. this. Removing this solves weird stutter looking after auto jump
 	//position.x = nextPosition.x;
