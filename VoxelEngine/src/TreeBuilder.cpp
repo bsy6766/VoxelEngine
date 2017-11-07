@@ -139,10 +139,6 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, con
 	// Add layer 4 (p21 ~ p24)
 	addPosLayer(p, 4);
 
-	// get leaves size
-	int leavesWidth, leavesHeight, leavesLength;
-	getRandomLeavesSize(TreeBuilder::TreeType::OAK, w, leavesWidth, leavesHeight, leavesLength, engine);
-
 	// Poll random.
 	int tRand = std::uniform_int_distribution<>(0, 3)(engine);
 
@@ -262,9 +258,9 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, con
 		}
 		
 		// Calculate leave center pos. 
-		auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + leavesHeight / 2, p.at(1).z);
+		auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight, p.at(1).z);
 
-		addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, leavesCenterPos, engine);
+		addOakLeaves(chunkMap, w, h, leavesCenterPos, engine);
 
 		// Add more blocks around top of trunk, below the leaves
 		/*
@@ -293,7 +289,7 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, con
 		if (branchRand > 50)
 		{
 			// add branch
-			addOakBranch(chunkMap, p, pivot.y + trunkHeight - leavesHeight, engine);
+			//addOakBranch(chunkMap, p, pivot.y + trunkHeight - leavesHeight, engine);
 		}
 	}
 	else
@@ -380,9 +376,9 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, con
 			}
 
 			// Calculate leave center pos. 
-			auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + (leavesHeight / 2), p.at(1).z);
+			auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight, p.at(1).z);
 
-			addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, leavesCenterPos, engine);
+			addOakLeaves(chunkMap, w, h, leavesCenterPos, engine);
 		}
 		else if (w == TreeBuilder::TrunkWidthType::LARGE)
 		{
@@ -500,9 +496,9 @@ void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, con
 			}
 
 			// Calculate leave center pos. 
-			auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight + (leavesHeight / 2), p.at(1).z);
+			auto leavesCenterPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight, p.at(1).z);
 
-			addOakLeaves(chunkMap, leavesWidth, leavesHeight, leavesLength, leavesCenterPos, engine);
+			addOakLeaves(chunkMap, w, h, leavesCenterPos, engine);
 		}
 	}
 }
@@ -582,11 +578,7 @@ void Voxel::TreeBuilder::createBirchTree(const TreeBuilder::TrunkHeightType h, c
 	addPosLayer(p, 3);
 	// Add layer 4 (p21 ~ p24)
 	addPosLayer(p, 4);
-
-	// get leaves size
-	int leavesWidth, leavesHeight, leavesLength;
-	getRandomLeavesSize(TreeBuilder::TreeType::BIRCH, w, leavesWidth, leavesHeight, leavesLength, engine);
-
+	
 	// Poll random.
 	int tRand = std::uniform_int_distribution<>(0, 5)(engine);
 
@@ -1430,7 +1422,7 @@ void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeT
 	width = 0;
 	height = 0;
 	length = 0;
-
+	
 	switch (treeType)
 	{
 	case TreeBuilder::TreeType::OAK:
@@ -1439,30 +1431,32 @@ void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeT
 		{
 		case TreeBuilder::TrunkWidthType::SMALL:
 		{
-			auto dist = std::uniform_int_distribution<>(0, 2);
+			auto dist = std::uniform_int_distribution<>(6, 8);
+			auto hDist = std::uniform_int_distribution<>(3, 4);
 
-			// Get leaves size
-			width = dist(engine) + 8;		// 8 ~ 10
-			height = dist(engine) + 5;		// 5 ~ 7
-			length = dist(engine) + 8;		// 8 ~ 10
+			width = dist(engine);
+			height = hDist(engine);
+			length = dist(engine);
 		}
 		break;
 		case TreeBuilder::TrunkWidthType::MEDIUM:
 		{
-			auto dist = std::uniform_int_distribution<>(0, 2);
+			auto dist = std::uniform_int_distribution<>(7, 9);
+			auto hDist = std::uniform_int_distribution<>(4, 5);
 
-			width = dist(engine) + 12;		// 12 ~ 14
-			height = dist(engine) + 6;		// 6 ~ 8
-			length = dist(engine) + 12;		// 12 ~ 14
+			width = dist(engine);
+			height = hDist(engine);
+			length = dist(engine);
 		}
 		break;
 		case TreeBuilder::TrunkWidthType::LARGE:
 		{
-			auto dist = std::uniform_int_distribution<>(0, 2);
+			auto dist = std::uniform_int_distribution<>(8, 10);
+			auto hDist = std::uniform_int_distribution<>(5, 6);
 
-			width = dist(engine) + 14;		// 14 ~ 16
-			height = dist(engine) + 8;		// 8 ~ 10
-			length = dist(engine) + 14;		// 14 ~ 16
+			width = dist(engine);
+			height = hDist(engine);
+			length = dist(engine);
 		}
 		break;
 		default:
@@ -1479,18 +1473,18 @@ void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeT
 			auto dist = std::uniform_int_distribution<>(0, 2);
 
 			// Get leaves size
-			width = dist(engine) + 3;		// 8 ~ 10
-			height = ((dist(engine) <= 1) ? 2 : 3);		// 5 ~ 7
-			length = dist(engine) + 3;		// 8 ~ 10
+			width = dist(engine) + 2;
+			height = ((dist(engine) <= 1) ? 4 : 5);
+			length = dist(engine) + 2;
 		}
 		break;
 		case TreeBuilder::TrunkWidthType::MEDIUM:
 		{
 			auto dist = std::uniform_int_distribution<>(0, 2);
 
-			width = dist(engine) + 5;		// 12 ~ 14
-			height = dist(engine) + 2;		// 6 ~ 8
-			length = dist(engine) + 5;		// 12 ~ 14
+			width = dist(engine) + 3;
+			height = ((dist(engine) <= 1) ? 5 : 6);
+			length = dist(engine) + 3;
 		}
 		break;
 		case TreeBuilder::TrunkWidthType::LARGE:
@@ -1547,9 +1541,97 @@ void Voxel::TreeBuilder::addOakTrunk(ChunkMap * map, std::vector<glm::ivec3>& p,
 	}
 }
 
-void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine)
+void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const TreeBuilder::TrunkWidthType widthType, const TreeBuilder::TrunkHeightType heightType, const glm::ivec3& pos, std::mt19937& engine)
 {
 	// Add oak leaves
+
+	float randAngle0 = std::uniform_real_distribution<float>(10.0f, 80.0f)(engine);
+	float randAngle1 = std::uniform_real_distribution<float>(100.0f, 170.0f)(engine);
+	float randAngle2 = std::uniform_real_distribution<float>(190.0f, 260.0f)(engine);
+	float randAngle3 = std::uniform_real_distribution<float>(280.0f, 350.0f)(engine);
+
+	glm::ivec3 leavesPos = pos;
+
+	switch (heightType)
+	{
+	case TreeBuilder::TrunkHeightType::MEDIUM:
+		leavesPos.y -= 3;
+		break;
+	case TreeBuilder::TrunkHeightType::LARGE:
+		leavesPos.y -= 5;
+		break;
+	case TreeBuilder::TrunkHeightType::SMALL:
+	default:
+		leavesPos.y -= 1;
+		break;
+	}
+
+	auto yDist = std::uniform_int_distribution<>(-3, 2);
+
+	int width = 0;
+	int height = 0;
+	int length = 0;
+	
+	{
+		glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(randAngle0), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(std::uniform_int_distribution<>(2, 4)(engine), 0, 0));
+
+		glm::vec4 posF = glm::vec4(leavesPos, 1.0f);
+		glm::vec4 shift = rotMat * transMat * glm::vec4(1.0f);
+		posF.x += shift.x;
+		posF.z += shift.z;
+		posF.y += yDist(engine);
+
+		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
+	}
+
+	{
+		glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(randAngle1), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(std::uniform_int_distribution<>(2, 4)(engine), 0, 0));
+
+		glm::vec4 posF = glm::vec4(leavesPos, 1.0f);
+		glm::vec4 shift = rotMat * transMat * glm::vec4(1.0f);
+		posF.x += shift.x;
+		posF.z += shift.z;
+		posF.y += yDist(engine);
+
+		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
+	}
+
+	{
+		glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(randAngle2), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(std::uniform_int_distribution<>(2, 4)(engine), 0, 0));
+
+		glm::vec4 posF = glm::vec4(leavesPos, 1.0f);
+		glm::vec4 shift = rotMat * transMat * glm::vec4(1.0f);
+		posF.x += shift.x;
+		posF.z += shift.z;
+		posF.y += yDist(engine);
+
+		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
+	}
+
+	{
+		glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(randAngle3), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transMat = glm::translate(glm::mat4(1.0f), glm::vec3(std::uniform_int_distribution<>(2, 4)(engine), 0, 0));
+
+		glm::vec4 posF = glm::vec4(leavesPos, 1.0f);
+		glm::vec4 shift = rotMat * transMat * glm::vec4(1.0f);
+		posF.x += shift.x;
+		posF.z += shift.z;
+		posF.y += yDist(engine);
+
+		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
+	}
+
+	getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+	addOakLeaf(map, width + 1, height + 1, length + 1, pos, engine);
+
+	/*
 	// Oak tree usually has round shape of leaves around the trunk.
 	// Oak tree has main leaves and small sub leaves around.
 	// Sometimes branches have their own leaves too.
@@ -1613,6 +1695,7 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const int w, const int h, 
 
 		addOakLeaf(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos, engine);
 	}
+	*/
 }
 
 void Voxel::TreeBuilder::addOakLeaf(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937& engine)
@@ -2009,20 +2092,7 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 
 	// get random top leave size.
 	int width, height, length;
-	auto dist = std::uniform_int_distribution<>(0, 2);
-
-	if (widthType == TreeBuilder::TrunkWidthType::SMALL)
-	{
-		width = dist(engine) + 2;
-		height = ((dist(engine) <= 1) ? 4 : 5);	
-		length = dist(engine) + 2;
-	}
-	else
-	{
-		width = dist(engine) + 3;
-		height = ((dist(engine) <= 1) ? 5 : 6);	
-		length = dist(engine) + 3;	
-	}
+	getRandomLeavesSize(TreeBuilder::TreeType::BIRCH, widthType, width, height, length, engine);
 
 	topLeaveCenterPos.y += (height / 2);
 	addBirchLeaf(map, width, height, length, topLeaveCenterPos, engine);
@@ -2055,11 +2125,11 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 
 		if ((std::uniform_int_distribution<>(0, 100)(engine)) < 50)
 		{
-			addBirchLeaf(map, width, height, length, glm::ivec3(posF.x, posF.y, posF.z), engine);
+			addBirchLeaf(map, width, height, length, glm::ivec3(posF), engine);
 		}
 		else
 		{
-			addBirchLeaf(map, length, height, width, glm::ivec3(posF.x, posF.y, posF.z), engine);
+			addBirchLeaf(map, length, height, width, glm::ivec3(posF), engine);
 		}
 
 		if ((std::uniform_int_distribution<>(0, 100)(engine)) < 6)

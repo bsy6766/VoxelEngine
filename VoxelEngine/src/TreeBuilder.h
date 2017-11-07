@@ -111,12 +111,10 @@ namespace Voxel
 		/**
 		*	Add multiple oak leaves
 		*	@param [in] map Pointer to chunk map.
-		*	@param [in] w Width of leaves
-		*	@param [in] h Height of leaves
-		*	@param [in] l Length of leaves
+		*	@param [in] widthType Trunk width type of tree
 		*	@param [in] pos Center position of leaves
 		*/
-		static void addOakLeaves(ChunkMap* map, const int w, const int h, const int l, const glm::ivec3& pos, std::mt19937& engine);
+		static void addOakLeaves(ChunkMap* map, const TreeBuilder::TrunkWidthType widthType, const TreeBuilder::TrunkHeightType heightType, const glm::ivec3& pos, std::mt19937& engine);
 
 		/**
 		*	Add single oak leave
