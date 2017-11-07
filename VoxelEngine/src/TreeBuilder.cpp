@@ -22,6 +22,9 @@ void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap *
 	case TreeBuilder::TreeType::SPRUCE:
 		TreeBuilder::createSpruceTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
+	case TreeBuilder::TreeType::PINE:
+		TreeBuilder::createPineTree(chunkMap, chunkXZ, treeLocalPos, engine);
+		break;
 	default:
 		break;
 	}
@@ -39,6 +42,9 @@ void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const Tree
 		break;
 	case TreeBuilder::TreeType::SPRUCE:
 		TreeBuilder::createSpruceTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
+		break;
+	case TreeBuilder::TreeType::PINE:
+		TreeBuilder::createPineTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
 	default:
 		break;
@@ -955,6 +961,204 @@ void Voxel::TreeBuilder::createSpruceTree(const TreeBuilder::TrunkHeightType h, 
 	}
 }
 
+void Voxel::TreeBuilder::createPineTree(ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
+{
+	TreeBuilder::TrunkHeightType trunkHeight;
+
+	std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
+
+	int hRand = dist(engine);
+
+	if (hRand > 40)
+	{
+		trunkHeight = TreeBuilder::TrunkHeightType::MEDIUM;
+	}
+	else if (hRand <= 40)
+	{
+		trunkHeight = TreeBuilder::TrunkHeightType::LARGE;
+	}
+
+	// Get tree width. 
+	TreeBuilder::TrunkWidthType trunkWidth;
+
+	int wRand = dist(engine);
+
+	if (wRand > 50)
+	{
+		trunkWidth = TreeBuilder::TrunkWidthType::SMALL;
+	}
+	else if (wRand <= 50)
+	{
+		trunkWidth = TreeBuilder::TrunkWidthType::MEDIUM;
+	}
+
+	createPineTree(trunkHeight, trunkWidth, chunkMap, chunkXZ, treeLocalPos, engine);
+}
+
+void Voxel::TreeBuilder::createPineTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
+{
+	// get height of trunk
+	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::OAK, h, engine);
+
+	if (trunkHeight == 0)
+	{
+		// Something is wrong. cancel.
+		return;
+	}
+
+	// Copy local pos as pivot
+	auto pivot = treeLocalPos;
+	// shift to chunk's position
+	pivot.x += (chunkXZ.x * Constant::CHUNK_SECTION_WIDTH);
+	pivot.z += (chunkXZ.y * Constant::CHUNK_SECTION_LENGTH);
+
+	// Start from bottom 10 to make sure it renders trunk and root even it's on steep mountain
+	const int rootHeight = 10;
+	int trunkY = pivot.y - rootHeight;
+
+	// Add pivot
+	std::vector<glm::ivec3> p = { pivot };
+
+	// Add layer 1 (p1 ~ p4)
+	addPosLayer(p, 1);
+
+	// Get oak wood color
+	auto pineWoodColor = Color::colorU3TocolorV3(Color::PINE_WOOD);
+	auto colorStep = pineWoodColor * 0.05f;
+
+	pineWoodColor = pineWoodColor - (colorStep * (static_cast<float>(trunkHeight) * 0.5f));
+
+	// Add layer 2 (p5 ~ p12)
+	addPosLayer(p, 2);
+	// Add layer 3 (p13 ~ p20)
+	addPosLayer(p, 3);
+	// Add layer 4 (p21 ~ p24)
+	addPosLayer(p, 4);
+
+	// Poll random.
+	int tRand = std::uniform_int_distribution<>(0, 3)(engine);
+
+	if (w == TreeBuilder::TrunkWidthType::SMALL)
+	{
+		// Add small trunk
+		/*
+			p4 p3
+			p2 p1
+		*/
+		addPineTrunk(chunkMap, p, pineWoodColor, colorStep, 1, 4, trunkHeight, trunkY);
+
+		// from p1 ~ p12, add blocks 
+		for (int i = 1; i <= 12; ++i)
+		{
+			chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+		}
+
+		// Based on trunk random, add more blocks around.
+		if (tRand < 3)
+		{
+			if (tRand == 0)
+			{
+				/*
+						p9  p10
+					p8  p4  p3  p11
+					p7  p2  p1  p12
+						p6  p5
+				*/
+				// All 3 type of rand needs p1 ~ p12. So already done.
+			}
+			else if (tRand == 1)
+			{
+				/*
+							p17 p18
+							p9  p10
+					p16 p8  p4  p3  p11 p19
+					p15 p7  p2  p1  p12 p20
+							p6  p5
+							p14 p13
+				*/
+
+				for (int i = 1; i <= 12; ++i)
+				{
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+					p.at(i).y--;
+				}
+
+				for (int i = 13; i <= 20; i++)
+				{
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+				}
+
+			}
+			else if (tRand == 2)
+			{
+				/*
+							p17 p18
+						p23	p9  p10 p24
+					p16 p8  p4  p3  p11 p19
+					p15 p7  p2  p1  p12 p20
+						p22	p6  p5  p21
+							p14 p13
+				*/
+
+				for (int i = 1; i <= 12; ++i)
+				{
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+					p.at(i).y -= 2;
+				}
+
+				for (int i = 13; i <= 20; i++)
+				{
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+				}
+
+				for (int i = 21; i <= 24; i++)
+				{
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+					p.at(i).y++;
+					chunkMap->placeBlockAt(p.at(i), Block::BLOCK_ID::PINE_WOOD, pineWoodColor, nullptr, true);
+					p.at(i).y--;
+				}
+			}
+		}
+		// Else, tRand is 3. No additioanl block around bttom of trunk
+				
+		// Root time
+		/*
+					p17 p18
+				p23	p9  p10 p24
+			p16 p8  p4  p3  p11 p19
+			p15 p7  p2  p1  p12 p20
+				p22	p6  p5  p21
+					p14 p13
+		*/
+		
+		// Current y is the first block of tree trunk. Decrement by 1 to start adding root
+
+		// go 10 block deep
+		for (unsigned int i = 1; i <= 24; i++)
+		{
+			p.at(i).y--;
+		}
+
+		for (int i = 0; i < rootHeight; i++)
+		{
+			for (unsigned int j = 1; j <= 24; j++)
+			{
+				chunkMap->placeBlockAt(p.at(j), Block::BLOCK_ID::OAK_WOOD, pineWoodColor, nullptr, false);
+				p.at(j).y--;
+			}
+		}
+
+		auto trunkTopPos = glm::ivec3(p.at(1).x, pivot.y + trunkHeight, p.at(1).z);
+
+		addPineLeaves(chunkMap, trunkTopPos, trunkHeight, engine);
+	}
+}
+
 std::string Voxel::TreeBuilder::treeTypeToString(TreeBuilder::TreeType type)
 {
 	switch (type)
@@ -966,7 +1170,7 @@ std::string Voxel::TreeBuilder::treeTypeToString(TreeBuilder::TreeType type)
 		return "BIRCH";
 	case Voxel::TreeBuilder::TreeType::SPRUCE:
 		return "SPRUCE";
-	case Voxel::TreeBuilder::TreeType::FIR:
+	case Voxel::TreeBuilder::TreeType::PINE:
 		return "PINE";
 	case Voxel::TreeBuilder::TreeType::NONE:
 	default:
@@ -1191,6 +1395,28 @@ int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & t
 		}
 	}
 	break;
+	case TreeBuilder::TreeType::PINE:
+	{
+		std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 2);
+
+		if (trunkHeight == TreeBuilder::TrunkHeightType::SMALL)
+		{
+			height = dist(engine) + 17;
+		}
+		else if (trunkHeight == TreeBuilder::TrunkHeightType::MEDIUM)
+		{
+			height = dist(engine) + 21;
+		}
+		else if (trunkHeight == TreeBuilder::TrunkHeightType::LARGE)
+		{
+			height = dist(engine) + 25;
+		}
+		else if (trunkHeight == TreeBuilder::TrunkHeightType::MEGA)
+		{
+			height = dist(engine) + 35;
+		}
+	}
+	break;
 	default:
 		break;
 	}
@@ -1336,20 +1562,20 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const int w, const int h, 
 
 	if (mlRand < 50)
 	{
-		addOakLeave(map, w, h, l, l1, engine);
+		addOakLeaf(map, w, h, l, l1, engine);
 	}
 	else
 	{
 		l1.x -= 1;
 		l1.y -= 2;
-		addOakLeave(map, w, h / 3 * 2, l, l1, engine);
+		addOakLeaf(map, w, h / 3 * 2, l, l1, engine);
 
 		l1.x += 1;
 		
 		l1.z += std::uniform_int_distribution<>(3, 4)(engine) * ((std::uniform_int_distribution<>(0, 1)(engine)) ? -1 : 1);
 		l1.y += 3;
 
-		addOakLeave(map, w, h / 3 * 2, l, l1, engine);
+		addOakLeaf(map, w, h / 3 * 2, l, l1, engine);
 	}
 
 	// Add additional leaves near main leaves
@@ -1385,11 +1611,11 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const int w, const int h, 
 			sidePos = glm::ivec3(x, y, z) + l1;
 		}
 
-		addOakLeave(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos, engine);
+		addOakLeaf(map, sideLeavesWidth, sideLeavesHeight, sideLeavesLength, sidePos, engine);
 	}
 }
 
-void Voxel::TreeBuilder::addOakLeave(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937& engine)
+void Voxel::TreeBuilder::addOakLeaf(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937& engine)
 {
 	float aa = static_cast<float>(w * w);
 	float bb = static_cast<float>(h * h);
@@ -1799,7 +2025,7 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 	}
 
 	topLeaveCenterPos.y += (height / 2);
-	addBirchLeave(map, width, height, length, topLeaveCenterPos, engine);
+	addBirchLeaf(map, width, height, length, topLeaveCenterPos, engine);
 
 	// from the mid point of tree, randomly add leveas around birch tree
 	// Advance y by 2 every time until it reaches top.
@@ -1829,11 +2055,11 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 
 		if ((std::uniform_int_distribution<>(0, 100)(engine)) < 50)
 		{
-			addBirchLeave(map, width, height, length, glm::ivec3(posF.x, posF.y, posF.z), engine);
+			addBirchLeaf(map, width, height, length, glm::ivec3(posF.x, posF.y, posF.z), engine);
 		}
 		else
 		{
-			addBirchLeave(map, length, height, width, glm::ivec3(posF.x, posF.y, posF.z), engine);
+			addBirchLeaf(map, length, height, width, glm::ivec3(posF.x, posF.y, posF.z), engine);
 		}
 
 		if ((std::uniform_int_distribution<>(0, 100)(engine)) < 6)
@@ -1846,7 +2072,7 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 	}
 }
 
-void Voxel::TreeBuilder::addBirchLeave(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937 & engine)
+void Voxel::TreeBuilder::addBirchLeaf(ChunkMap * map, const int w, const int h, const int l, const glm::ivec3 & pos, std::mt19937 & engine)
 {
 	float aa = static_cast<float>(w * w);
 	float bb = static_cast<float>(h * h);
@@ -1971,19 +2197,19 @@ void Voxel::TreeBuilder::addSpruceLeaves(ChunkMap * map, const TreeBuilder::Trun
 	{
 		if (diagonal)
 		{
-			addSpruceLeave(map, w, leavePositions.at(1), leaveColorMix, 4, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(3), leaveColorMix, 5, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(4), leaveColorMix, 6, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(2), leaveColorMix, 7, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(1), leaveColorMix, 4, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(3), leaveColorMix, 5, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(4), leaveColorMix, 6, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(2), leaveColorMix, 7, level, engine);
 
 			level++;
 		}
 		else
 		{
-			addSpruceLeave(map, w, leavePositions.at(1), leaveColor, 0, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(3), leaveColor, 1, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(4), leaveColor, 2, level, engine);
-			addSpruceLeave(map, w, leavePositions.at(2), leaveColor, 3, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(1), leaveColor, 0, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(3), leaveColor, 1, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(4), leaveColor, 2, level, engine);
+			addSpruceLeaf(map, w, leavePositions.at(2), leaveColor, 3, level, engine);
 		}
 
 		for (auto& pos : leavePositions)
@@ -2001,10 +2227,10 @@ void Voxel::TreeBuilder::addSpruceLeaves(ChunkMap * map, const TreeBuilder::Trun
 
 	level++;
 
-	addSpruceLeave(map, w, leavePositions.at(1), leaveColor, 0, level, engine);
-	addSpruceLeave(map, w, leavePositions.at(3), leaveColor, 1, level, engine);
-	addSpruceLeave(map, w, leavePositions.at(4), leaveColor, 2, level, engine);
-	addSpruceLeave(map, w, leavePositions.at(2), leaveColor, 3, level, engine);
+	addSpruceLeaf(map, w, leavePositions.at(1), leaveColor, 0, level, engine);
+	addSpruceLeaf(map, w, leavePositions.at(3), leaveColor, 1, level, engine);
+	addSpruceLeaf(map, w, leavePositions.at(4), leaveColor, 2, level, engine);
+	addSpruceLeaf(map, w, leavePositions.at(2), leaveColor, 3, level, engine);
 
 	for (auto& pos : leavePositions)
 	{
@@ -2044,7 +2270,7 @@ void Voxel::TreeBuilder::addSpruceLeaves(ChunkMap * map, const TreeBuilder::Trun
 	}
 }
 
-void Voxel::TreeBuilder::addSpruceLeave(ChunkMap * map, const TreeBuilder::TrunkWidthType w, const glm::ivec3 & leavePos, const glm::vec3& color, const int dir, const int level, std::mt19937 & engine)
+void Voxel::TreeBuilder::addSpruceLeaf(ChunkMap * map, const TreeBuilder::TrunkWidthType w, const glm::ivec3 & leavePos, const glm::vec3& color, const int dir, const int level, std::mt19937 & engine)
 {		
 	/*
 			dir
@@ -2227,6 +2453,154 @@ void Voxel::TreeBuilder::addSpruceLeave(ChunkMap * map, const TreeBuilder::Trunk
 			if (leaveSize > 2)
 			{
 				leaveSize--;
+			}
+		}
+	}
+}
+
+void Voxel::TreeBuilder::addPineTrunk(ChunkMap * map, std::vector<glm::ivec3>& p, glm::vec3 color, const glm::vec3 & colorStep, const int pStart, const int pEnd, const int trunkHeight, const int startY)
+{
+	int size = trunkHeight + 10;
+
+	auto indexMid = 10 + (trunkHeight / 2);
+
+	int originalY = p.at(0).y;
+
+	for (int i = pStart; i <= pEnd; ++i)
+	{
+		p.at(i).y = startY;
+	}
+
+	for (int i = 0; i < size; i++)
+	{
+		if (i >= 10)
+		{
+			if (i <= indexMid)
+			{
+				color += colorStep;
+			}
+			else
+			{
+				color -= colorStep;
+			}
+
+			color = glm::clamp(color, 0.0f, 1.0f);
+		}
+
+		for (int i = pStart; i <= pEnd; i++)
+		{
+			map->placeBlockAt(p.at(i), Block::BLOCK_ID::OAK_WOOD, color, nullptr, true);
+
+			p.at(i).y++;
+		}
+	}
+
+	for (int i = pStart; i <= pEnd; ++i)
+	{
+		p.at(i).y = originalY;
+	}
+}
+
+void Voxel::TreeBuilder::addPineLeaves(ChunkMap * map, const glm::ivec3& trunkTopPos, const int trunkHeight, std::mt19937 & engine)
+{
+	glm::ivec3 curPos = trunkTopPos;
+	curPos.y -= ((trunkHeight * 3) / 4);
+
+	// 0 = large, 1 = mid, 2 = small
+	int type = 0;	
+
+	int width = 0;
+	int length = 0;
+
+	glm::vec3 leavesColor = Color::colorU3TocolorV3(Color::PINE_LEAVES);
+
+	int level = 0;
+
+	int levelOffset = 0;
+
+	while (curPos.y <= trunkTopPos.y)
+	{
+		switch (type)
+		{
+		case 0:
+			width = std::uniform_int_distribution<>(6, 7)(engine) - levelOffset;
+			length = std::uniform_int_distribution<>(6, 7)(engine) - levelOffset;
+			break;
+		case 1:
+			width = std::uniform_int_distribution<>(3, 4)(engine) - (levelOffset / 2);
+			length = std::uniform_int_distribution<>(3, 4)(engine) - (levelOffset / 2);
+			break;
+		case 2:
+			width = 2;
+			length = 2;
+			break;
+		default:
+			return;
+		}
+
+		addPineLeaf(map, width, length, curPos, leavesColor, engine);
+
+		type++;
+
+		if (type == 3)
+		{
+			type = 0;
+			levelOffset++;
+		}
+
+		curPos.y++;
+	}
+
+	auto topColor = leavesColor;
+
+	std::vector<glm::ivec3> leavePositions;
+	leavePositions.push_back(trunkTopPos);
+
+	addPosLayer(leavePositions, 1);
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (auto& pos : leavePositions)
+		{
+			map->placeBlockAt(pos, Block::BLOCK_ID::PINE_LEAVES, topColor, nullptr, false);
+			pos.y++;
+		}
+		topColor += (topColor * 0.05f);
+	}
+}
+
+void Voxel::TreeBuilder::addPineLeaf(ChunkMap * map, const int width, const int length, const glm::ivec3& leavesPos, const glm::vec3& color, std::mt19937& engine)
+{
+	glm::ivec3 offset(0);
+
+	float aa = static_cast<float>(width * width);
+	float cc = static_cast<float>(length * length);
+
+	float aacc = aa * cc;
+
+	int xStart = -width;
+	int zStart = -length;
+
+	int xEnd = width;
+	int zEnd = length;
+
+	for (int x = xStart; x <= xEnd; x++)
+	{
+		float xf = static_cast<float>(x) - 0.5f;
+		float xx = xf * xf;
+
+		for (int z = zStart; z <= zEnd; z++)
+		{
+			float zf = static_cast<float>(z) - 0.5f;
+			float zz = zf * zf;
+
+			auto lp = leavesPos + glm::ivec3(x, ((std::uniform_int_distribution<>(0, 100)(engine) < 30) ? 0 : -1), z);
+
+			float val = (xx * cc) + (zz * aa);
+
+			if (val <= aacc)
+			{
+				map->placeBlockAt(lp, Block::BLOCK_ID::SPRUCE_LEAVES, color, nullptr, false);
 			}
 		}
 	}

@@ -31,6 +31,8 @@ namespace Voxel
 			BIRCH_LEAVES,
 			SPRUCE_WOOD,
 			SPRUCE_LEAVES,
+			PINE_WOOD,
+			PINE_LEAVES,
 			WATER,
 			BEDROCK,		// Block that is indestructable. Placed at the very bottom of world
 			SHORT_GRASS,

@@ -36,8 +36,10 @@ namespace Voxel
 		const glm::uvec3 BIRCH_WOOD_WHITE = glm::uvec3(214, 218, 221);
 		const glm::uvec3 BIRCH_WOOD_BLACK = glm::uvec3(22, 25, 30);
 		const glm::uvec3 BIRCH_LEAVES = glm::uvec3(116, 154, 51);
-		const glm::uvec3 SPRUCE_WOOD = glm::uvec3(52, 33, 11);
+		const glm::uvec3 SPRUCE_WOOD = glm::uvec3(40, 25, 9);
 		const glm::uvec3 SPRUCE_LEAVES = glm::uvec3(7, 66, 0);
+		const glm::uvec3 PINE_WOOD = glm::uvec3(52, 33, 11);
+		const glm::uvec3 PINE_LEAVES = glm::uvec3(7, 44, 3);
 
 		// biome colors
 		const glm::uvec3 OCEAN = glm::uvec3(46, 59, 182);

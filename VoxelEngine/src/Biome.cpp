@@ -311,7 +311,7 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
 				break;
 			case Voxel::Vegitation::Tree::PINE:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::FIR, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
 				break;
 			case Voxel::Vegitation::Tree::OAK_BIRCH:
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
@@ -319,7 +319,7 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				break;
 			case Voxel::Vegitation::Tree::SPRUCE_PINE:
 				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::FIR, 1 });
+				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
 				break;
 			default:
 				break;
@@ -377,13 +377,13 @@ int Voxel::Biome::getTreeSpawnRate()
 	default:
 		break;
 	}
-
+	chance = 70;
 	return chance;
 }
 
 TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
-	return TreeBuilder::TreeType::SPRUCE;
+	return TreeBuilder::TreeType::PINE;
 
 	if (hasTree())
 	{
