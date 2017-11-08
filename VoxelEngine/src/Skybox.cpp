@@ -62,7 +62,8 @@ void Voxel::Skybox::init(const int renderDistance)
 		0.5f, divider, 0.5f,
 		0.5f, 0.5f, 0.5f,
 	};
-	
+	//std::vector<float> vertices = Cube::getVertices();
+
 	setFogDistanceByRenderDistance(renderDistance, false);
 
 	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
@@ -86,6 +87,8 @@ void Voxel::Skybox::init(const int renderDistance)
 		12, 13, 8, 13, 8, 9,
 		9, 13, 11, 13, 11, 15
 	};
+
+	//std::vector<unsigned int> indices = Cube::getIndices(Cube::Face::ALL, 0);
 
 	indicesSize = static_cast<int>(indices.size());
 	// 1. VAO
