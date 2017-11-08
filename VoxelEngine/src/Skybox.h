@@ -117,6 +117,9 @@ namespace Voxel
 
 		// Get mixblend color
 		glm::vec3 getMidBlendColor();
+
+		// Get ambient color based on time
+		float getAmbientColor(const int hour, const int minute, const float second);
 	};
 }
 

@@ -3,7 +3,7 @@
 using namespace Voxel;
 
 const int Calendar::DAYS_PER_WEEK = 7;
-const float Calendar::MIN_TICK = 0.25f;
+const float Calendar::MIN_TICK = 0.125f;
 
 Calendar::Calendar()
 	: curDAY(DAY::MONDAY)
@@ -37,16 +37,16 @@ void Voxel::Calendar::update(const float delta)
 			minute++;
 			second -= Calendar::MIN_TICK;
 
-			if (minute >= 60)
+			while (minute >= 60)
 			{
 				hour++;
-				minute = 0;
+				minute -= 60;
 
-				if (hour >= 24)
+				while (hour >= 24)
 				{
 					day++;
 					curDAY = getNextDAY();
-					hour = 0;
+					hour -= 24;
 				}
 			}
 		}

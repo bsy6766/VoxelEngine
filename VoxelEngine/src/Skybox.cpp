@@ -412,3 +412,33 @@ glm::vec3 Voxel::Skybox::getMidBlendColor()
 {
 	return midBlend;
 }
+
+float Voxel::Skybox::getAmbientColor(const int hour, const int minute, const float second)
+{
+	// Max ambient light (12:00pm) is glm::vec3(1.0f)
+	// Min ambient light (12:00am) is glm::vec3(0.3f)
+	// So we get value between 0.3f and 1.0f based on time.
+
+	float ratio = (static_cast<float>(minute) + second) + static_cast<float>(hour * 60);
+
+	float value = 1.0f;
+
+	if (ratio < 720.0f)
+	{
+		// 12am to 12pm (0 ~ 719)
+	}
+	else
+	{
+		// 12pm to 12am (720 ~ 1439)
+		// convert to 0 ~ 719
+		ratio -= 720.0f;
+		// flip to 719 ~ 0
+		ratio = 719.0f - ratio;
+	}
+
+	value = glm::mix(0.15f, 1.0f, ratio * 0.0013888888888889f); /* div by 720.0f*/
+
+	//std::cout << "Time = " << hour << ":" << minute << ":" << second << ", r = " << ratio << ", v = " << value << "\n";
+
+	return value;
+}

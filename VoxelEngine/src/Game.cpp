@@ -1476,7 +1476,8 @@ void Voxel::Game::renderGameWorld(const float delta)
 	program->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	// Light
-	program->setUniformVec3("pointLights[0].lightPosition", player->getPosition());
+	program->setUniformVec4("ambientColor", glm::vec4(skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds())));
+	program->setUniformVec3("pointLights[0].lightPosition", player->getEyePosition());
 
 	// fog
 	if (skybox->isFogEnabled())
