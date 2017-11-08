@@ -18,6 +18,8 @@ using namespace Voxel;
 			2---------0
 		Front
 			    Bottom
+
+				^ outdated
 */
 
 /*
@@ -160,12 +162,12 @@ const std::vector<unsigned int> Cube::faceIndices = {
 const std::vector<unsigned int> Cube::indices = {
 	// Front
 	0, 1, 2, 1, 2, 3,
-	// Left
-	0, 1, 4, 1, 4, 5,
-	// Back
-	4, 5, 6, 5, 6, 7,
 	// Right
 	2, 3, 6, 3, 6, 7,
+	// Back
+	6, 7, 4, 7, 4, 5,
+	// Left
+	4, 5, 0, 5, 0, 1,
 	// Top
 	1, 5, 3, 5, 3, 7,
 	// Bot

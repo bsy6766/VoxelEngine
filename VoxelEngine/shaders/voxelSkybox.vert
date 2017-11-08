@@ -10,9 +10,9 @@ out vec4 vertColor;
 
 void main()
 {
-	gl_Position =  MVP_Matrix * vec4(vert, 1);
+	gl_Position =  MVP_Matrix * vec4(vert, 1.0);
 
-	if(vert.y > 0)
+	if (vert.y > 0.0)
 	{
 		vertColor = vec4(topColor, 1.0);
 	}
