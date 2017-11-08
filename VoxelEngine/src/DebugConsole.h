@@ -22,6 +22,7 @@ namespace Voxel
 	class ChunkMap;
 	class World;
 	class Setting;
+	class Calendar;
 
 	class DebugConsole
 	{
@@ -76,6 +77,7 @@ namespace Voxel
 		World* world;
 		ChunkMap* chunkMap;
 		Setting* settingPtr;
+		Calendar* calendar;
 
 		void init();
 

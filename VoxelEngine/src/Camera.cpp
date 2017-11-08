@@ -86,11 +86,11 @@ void Voxel::Camera::setFovy(const float fovy)
 {
 	this->fovy = fovy;
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 	program->use(true);
 	program->setUniformMat4("projMat", getProjection());
 
-	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 	lineProgram->setUniformMat4("projMat", getProjection());
 

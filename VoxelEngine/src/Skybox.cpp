@@ -7,6 +7,8 @@
 #include <Utility.h>
 #include <iostream>
 #include <Application.h>
+#include <Color.h>
+#include <glm\gtx\transform.hpp>
 
 using namespace Voxel;
 
@@ -19,6 +21,9 @@ Skybox::Skybox()
 	, curFogDistance(0)
 	, fogAnimationSpeed(0.25f)
 	, fogEnabled(true)
+	, skyboxProgram(nullptr)
+	, size(0)
+	, midBlend(0)
 {
 }
 
@@ -30,26 +35,15 @@ Skybox::~Skybox()
 	}
 }
 
-void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
+void Voxel::Skybox::init(const int renderDistance)
 {
 	// 3 times than render distance. making sure it renders everthing.
-	std::vector<float> vertices = Cube::getVertices(static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE);
+	size = static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE;
+	std::vector<float> vertices = Cube::getVertices();
 	
-	std::vector<float> colors;
-	auto len = vertices.size();
-	for (unsigned int i = 0; i < len; i += 3)
-	{
-		colors.push_back(skyColor.r);
-		colors.push_back(skyColor.g);
-		colors.push_back(skyColor.b);
-		colors.push_back(skyColor.a);
-	}
-
-	this->skyColor = this->curSkyColor = skyColor;
 	setFogDistanceByRenderDistance(renderDistance, false);
 
 	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
-	std::cout << "[Skybox] Sky color = " << this->skyColor.r << ", " << this->skyColor.g << ", " << this->skyColor.b << std::endl;
 
 	std::vector<unsigned int> indices = Cube::getIndices(Cube::Face::ALL, 0);
 
@@ -70,29 +64,15 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 
 	// Get program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	skyboxProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SKYBOX_SHADER);
 
 	// Enable vertices attrib
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
+	GLint vertLoc = skyboxProgram->getAttribLocation("vert");
 
 	// vert
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	// 3. CBO
-	GLuint cbo;
-	// Generate buffer boejct
-	glGenBuffers(1, &cbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	// load color data
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
+	
 	// 4. IBO
 	GLuint ibo;
 	// Generate indices object
@@ -106,7 +86,6 @@ void Voxel::Skybox::init(const glm::vec4 & skyColor, const int renderDistance)
 
 	// Delte buffers
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &ibo);
 }
 
@@ -128,8 +107,205 @@ void Voxel::Skybox::update(const float delta)
 	}
 }
 
+void Voxel::Skybox::updateColor(const int hour, const int minute, const float seconds)
+{
+	float minuteRatio = ((static_cast<float>(minute) + seconds) * 0.0166666666666667f);
+		
+	glm::vec3 topColor;
+	glm::vec3 bottomColor;
+
+	switch (hour)
+	{
+	case 0:
+	{
+		// 12:00 am
+		topColor = glm::mix(Color::SC_12_00_AM.topColor, Color::SC_1_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_12_00_AM.bottomColor, Color::SC_1_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 1:
+	{
+		// 1:00 am
+		topColor = glm::mix(Color::SC_1_00_AM.topColor, Color::SC_2_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_1_00_AM.bottomColor, Color::SC_2_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 2:
+	{
+		// 2:00 am
+		topColor = glm::mix(Color::SC_2_00_AM.topColor, Color::SC_3_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_2_00_AM.bottomColor, Color::SC_3_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 3:
+	{
+		// 3:00 am
+		topColor = glm::mix(Color::SC_3_00_AM.topColor, Color::SC_4_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_3_00_AM.bottomColor, Color::SC_4_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 4:
+	{
+		// 4:00 am
+		topColor = glm::mix(Color::SC_4_00_AM.topColor, Color::SC_5_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_4_00_AM.bottomColor, Color::SC_5_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 5:
+	{
+		// 5:00 am
+		topColor = glm::mix(Color::SC_5_00_AM.topColor, Color::SC_6_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_5_00_AM.bottomColor, Color::SC_6_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 6:
+	{
+		// 6:00 am
+		topColor = glm::mix(Color::SC_6_00_AM.topColor, Color::SC_7_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_6_00_AM.bottomColor, Color::SC_7_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 7:
+	{
+		// 7:00 am
+		topColor = glm::mix(Color::SC_7_00_AM.topColor, Color::SC_8_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_7_00_AM.bottomColor, Color::SC_8_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 8:
+	{
+		// 8:00 am
+		topColor = glm::mix(Color::SC_8_00_AM.topColor, Color::SC_9_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_8_00_AM.bottomColor, Color::SC_9_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 9:
+	{
+		// 9:00 am
+		topColor = glm::mix(Color::SC_9_00_AM.topColor, Color::SC_10_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_9_00_AM.bottomColor, Color::SC_10_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 10:
+	{
+		// 10:00 am
+		topColor = glm::mix(Color::SC_10_00_AM.topColor, Color::SC_11_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_10_00_AM.bottomColor, Color::SC_11_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	case 11:
+	{
+		// 11:00 am
+		topColor = glm::mix(Color::SC_11_00_AM.topColor, Color::SC_12_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_11_00_AM.bottomColor, Color::SC_12_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 12:
+	{
+		// 12:00 pm
+		topColor = glm::mix(Color::SC_12_00_PM.topColor, Color::SC_1_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_12_00_PM.bottomColor, Color::SC_1_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 13:
+	{
+		// 1:00 pm
+		topColor = glm::mix(Color::SC_1_00_PM.topColor, Color::SC_2_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_1_00_PM.bottomColor, Color::SC_2_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 14:
+	{
+		// 2:00 pm
+		topColor = glm::mix(Color::SC_2_00_PM.topColor, Color::SC_3_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_2_00_PM.bottomColor, Color::SC_3_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 15:
+	{
+		// 3:00 pm
+		topColor = glm::mix(Color::SC_3_00_PM.topColor, Color::SC_4_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_3_00_PM.bottomColor, Color::SC_4_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 16:
+	{
+		// 4:00 pm
+		topColor = glm::mix(Color::SC_4_00_PM.topColor, Color::SC_5_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_4_00_PM.bottomColor, Color::SC_5_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 17:
+	{
+		// 5:00 pm
+		topColor = glm::mix(Color::SC_5_00_PM.topColor, Color::SC_6_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_5_00_PM.bottomColor, Color::SC_6_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 18:
+	{
+		// 6:00 pm
+		topColor = glm::mix(Color::SC_6_00_PM.topColor, Color::SC_7_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_6_00_PM.bottomColor, Color::SC_7_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 19:
+	{
+		// 7:00 pm
+		topColor = glm::mix(Color::SC_7_00_PM.topColor, Color::SC_8_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_7_00_PM.bottomColor, Color::SC_8_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 20:
+	{
+		// 8:00 pm
+		topColor = glm::mix(Color::SC_8_00_PM.topColor, Color::SC_9_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_8_00_PM.bottomColor, Color::SC_9_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 21:
+	{
+		// 9:00 pm
+		topColor = glm::mix(Color::SC_9_00_PM.topColor, Color::SC_10_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_9_00_PM.bottomColor, Color::SC_10_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 22:
+	{
+		// 10:00 pm
+		topColor = glm::mix(Color::SC_10_00_PM.topColor, Color::SC_11_00_PM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_10_00_PM.bottomColor, Color::SC_11_00_PM.bottomColor, minuteRatio);
+	}
+	break;
+	case 23:
+	{
+		// 11:00 pm
+		topColor = glm::mix(Color::SC_11_00_PM.topColor, Color::SC_12_00_AM.topColor, minuteRatio);
+		bottomColor = glm::mix(Color::SC_11_00_PM.bottomColor, Color::SC_12_00_AM.bottomColor, minuteRatio);
+	}
+	break;
+	default:
+		break;
+	}
+
+	skyboxProgram->use(true);
+	
+	skyboxProgram->setUniformVec3("topColor", topColor);
+	skyboxProgram->setUniformVec3("bottomColor", bottomColor);
+
+	midBlend = glm::mix(topColor, bottomColor, 0.5f);
+}
+
+void Voxel::Skybox::updateMatrix(const glm::mat4 & mat)
+{
+	MVP_Matrix = mat * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+}
+
 void Voxel::Skybox::render()
 {
+	skyboxProgram->use(true);
+	skyboxProgram->setUniformMat4("MVP_Matrix", MVP_Matrix);
+
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 
@@ -145,11 +321,6 @@ void Voxel::Skybox::render()
 	{
 		glView->addVerticesSize(indicesSize);
 	}
-}
-
-glm::vec4 Voxel::Skybox::getColor()
-{
-	return skyColor;
 }
 
 float Voxel::Skybox::getFogDistance()
@@ -192,4 +363,9 @@ bool Voxel::Skybox::isFogEnabled()
 void Voxel::Skybox::setFogEnabled(const bool enabled)
 {
 	this->fogEnabled = enabled;
+}
+
+glm::vec3 Voxel::Skybox::getMidBlendColor()
+{
+	return midBlend;
 }

@@ -14,6 +14,7 @@
 #include <Camera.h>
 #include <ChunkMap.h>
 #include <Setting.h>
+#include <Calendar.h>
 
 using namespace Voxel;
 
@@ -978,11 +979,15 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						if (arg2 == "fullscreen" || arg2 == "f")
 						{
 							Application::getInstance().getGLView()->setFullScreen();
+							executedCommandHistory.push_back("Setting window to fullscreen on primary monitor");
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "borderless" || arg2 == "b")
 						{
 							Application::getInstance().getGLView()->setWindowedFullScreen();
+							executedCommandHistory.push_back("Setting window to windowed fullscreen on primary monitor");
+							lastCommand = command;
 							return true;
 						}
 					}
@@ -1007,11 +1012,15 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						if (arg2 == "fullscreen" || arg2 == "f")
 						{
 							Application::getInstance().getGLView()->setFullScreen(monitorNum);
+							executedCommandHistory.push_back("Setting window to fullscreen on monitor #" + std::to_string(monitorNum));
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "borderless" || arg2 == "b")
 						{
 							Application::getInstance().getGLView()->setWindowedFullScreen(monitorNum);
+							executedCommandHistory.push_back("Setting window to windowed fullscreen on monitor #" + std::to_string(monitorNum));
+							lastCommand = command;
 							return true;
 						}
 					}
@@ -1065,6 +1074,8 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							}
 
 							Application::getInstance().getGLView()->setWindowed(width, height);
+							executedCommandHistory.push_back("Setting window to windowed (" + std::to_string(width) + ", " + std::to_string(height) + ") on primary monitor");
+							lastCommand = command;
 							return true;
 						}
 					}
@@ -1095,6 +1106,8 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							}
 
 							Application::getInstance().getGLView()->setWindowPosition(x, y);
+							executedCommandHistory.push_back("Setting window position to (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+							lastCommand = command;
 							return true;
 						}
 						else if (arg2 == "size")
@@ -1120,8 +1133,63 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								}
 
 								Application::getInstance().getGLView()->setWindowSize(w, h);
+								executedCommandHistory.push_back("Setting window size to (" + std::to_string(w) + ", " + std::to_string(h) + ")");
+								lastCommand = command;
 								return true;
 							}
+					}
+				}
+			}
+			else if (commandStr == "time")
+			{
+				if (size == 3)
+				{
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+
+					std::vector<std::string> split;
+
+					std::stringstream ss(arg2);
+					std::string token;
+
+					while (std::getline(ss, token, ':'))
+					{
+						split.push_back(token);
+					}
+
+					int h;
+					try
+					{
+						h = std::stoi(split.at(0));
+					}
+					catch (...)
+					{
+						return false;
+					}
+
+					int m;
+					try
+					{
+						m = std::stoi(split.at(1));
+					}
+					catch (...)
+					{
+						return false;
+					}
+				
+					if (arg1 == "set")
+					{
+						calendar->setTime(h, m);
+						executedCommandHistory.push_back("Time set to (" + std::to_string(h) + ", " + std::to_string(m) + ")");
+						lastCommand = command;
+						return true;
+					}
+					else if (arg1 == "add")
+					{
+						calendar->addTime(h, m);
+						executedCommandHistory.push_back("Time added by (" + std::to_string(h) + ", " + std::to_string(m) + ")");
+						lastCommand = command;
+						return true;
 					}
 				}
 			}

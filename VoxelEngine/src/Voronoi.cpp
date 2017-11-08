@@ -978,7 +978,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 	}
 
 	// Enable vertices attrib
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 	GLint vertLoc = defaultProgram->getAttribLocation("vert");
 	GLint colorLoc = defaultProgram->getAttribLocation("color");
 

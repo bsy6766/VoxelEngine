@@ -105,7 +105,7 @@ void Voxel::Game::init()
 	initSpriteSheets();
 
 	// program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 	// use it
 	program->use(true);
 
@@ -123,13 +123,19 @@ void Voxel::Game::init()
 	// player
 	player = new Player();
 
-	// Skybox
-	initSkyBox(glm::vec4(Color::DAYTIME, 1.0f), program);
-
 	// Lights
 	program->setUniformVec4("ambientColor", glm::vec4(1.0f));
 	program->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
 	program->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+	// Skybox
+	initSkyBox();
+
+	// Initialize fog uniforms
+	program->setUniformVec3("playerPosition", player->getPosition());
+	program->setUniformFloat("fogDistance", skybox->getFogDistance());
+	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
+	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
 
 	// stop use
 	program->use(false);
@@ -258,6 +264,7 @@ void Voxel::Game::initDebugConsole()
 	debugConsole->game = this;
 	debugConsole->chunkMap = chunkMap;
 	debugConsole->world = world;
+	debugConsole->calendar = calendar;
 }
 
 void Voxel::Game::initCursor()
@@ -266,19 +273,11 @@ void Voxel::Game::initCursor()
 	cursor = UI::Cursor::create();
 }
 
-void Voxel::Game::initSkyBox(const glm::vec4 & skyColor, Program* program)
+void Voxel::Game::initSkyBox()
 {
 	skybox = new Skybox();
 	// Always set skybox with max render distance
-	skybox->init(skyColor, settingPtr->getRenderDistance());
-
-	program->setUniformVec3("playerPosition", player->getPosition());
-	program->setUniformFloat("fogDistance", skybox->getFogDistance());
-	program->setUniformVec4("fogColor", skybox->getColor());
-	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
-	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
-
-	skybox->setFogEnabled(false);
+	skybox->init(settingPtr->getRenderDistance());
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -368,7 +367,7 @@ void Game::createChunkMap()
 	}
 
 	// Get line program for debug
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 
 	// for debug
 	chunkMap->initChunkBorderDebug(program);
@@ -546,7 +545,7 @@ void Game::update(const float delta)
 				debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 			}
 
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
 		}
@@ -557,20 +556,15 @@ void Game::update(const float delta)
 
 		if (player->isOnTPViewMode())
 		{
-			if (playerMoved || playerRotated)
-			{
-			}
 			updatePlayerCameraCollision();
 		}
-
-
-
+		
 		player->updateCameraDistanceZ(delta);
 
+		calendar->update(delta);
 
 		skybox->update(delta);
-
-		calendar->update(delta);
+		skybox->updateColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 
 		defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
 	}
@@ -1448,7 +1442,7 @@ void Voxel::Game::renderGameWorld(const float delta)
 {
 	auto& pm = ProgramManager::getInstance();
 
-	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 	program->use(true);
 
 	glm::mat4 worldMat = glm::mat4(1.0f);
@@ -1488,23 +1482,25 @@ void Voxel::Game::renderGameWorld(const float delta)
 	if (skybox->isFogEnabled())
 	{
 		program->setUniformBool("fogEnabled", true);
+		program->setUniformVec4("fogColor", glm::vec4(skybox->getMidBlendColor(), 1.0f));
 	}
 
 	// Render chunk. Doesn't need molde matrix for each chunk. All vertices are translated.
 	chunkMap->render();
 
+	// render skybox
+	skybox->updateMatrix(Camera::mainCamera->getProjection() * worldMat * player->getTranslationXZMat());
+	skybox->render();
+
 	// Render skybox
-	program->setUniformMat4("modelMat", player->getTranslationMat());
+	//program->setUniformMat4("modelMat", player->getTranslationMat());
 
 	// turn off the fog with sky box
-	program->setUniformBool("fogEnabled", false);
-
-	// render skybox
-	skybox->render();
+	//program->setUniformBool("fogEnabled", false);
 	// --------------------------------------------------------------------------------------
 
 	// ------------------------------ Render Lines ------------------------------------------
-	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
 	lineProgram->setUniformMat4("worldMat", worldMat);
@@ -1552,8 +1548,9 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
 	program->use(true);
+
 	// fog
 	if (skybox->isFogEnabled())
 	{

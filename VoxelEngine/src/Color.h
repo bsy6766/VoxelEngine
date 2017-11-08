@@ -17,9 +17,40 @@ namespace Voxel
 
 		// skybox
 		const glm::vec3 SKYBOX = glm::vec3(150.0f / 255.0f, 210.0f / 255.0f, 1.0f);
-		const glm::vec3 DAYTIME = glm::vec3(150.0f / 255.0f, 210.0f / 255.0f, 1.0f);
-		const glm::vec3 NIGHTTIME = glm::vec3(15.0f / 255.0f, 21.0f / 255.0f, 25.0f / 255.0f);
 
+		struct SkyboxColor
+		{
+			glm::vec3 topColor;
+			glm::vec3 bottomColor;
+
+			SkyboxColor(const glm::vec3& topColor, const glm::vec3& bottomColor) : topColor(topColor), bottomColor(bottomColor) {}
+		};
+
+		const SkyboxColor SC_12_00_AM = SkyboxColor(glm::vec3(0.0f, 0.0f, 12.0f / 255.0f), glm::vec3(0.0f, 0.0f, 12.0f / 255.0f));
+		const SkyboxColor SC_1_00_AM = SkyboxColor(glm::vec3(2.0f / 255.0f, 1.0f / 255.0f, 17.0f / 255.0f), glm::vec3(25.0f / 255.0f, 22.0f / 255.0f, 33.0f / 255.0f));
+		const SkyboxColor SC_2_00_AM = SkyboxColor(glm::vec3(2.0f / 255.0f, 1.0f / 255.0f, 17.0f / 255.0f), glm::vec3(32.0f / 255.0f, 32.0f / 255.0f, 44.0f / 255.0f));
+		const SkyboxColor SC_3_00_AM = SkyboxColor(glm::vec3(2.0f / 255.0f, 1.0f / 255.0f, 17.0f / 255.0f), glm::vec3(58.0f / 255.0f, 58.0f / 255.0f, 82.0f / 255.0f));
+		const SkyboxColor SC_4_00_AM = SkyboxColor(glm::vec3(32.0f / 255.0f, 32.0f / 255.0f, 44.0f / 255.0f), glm::vec3(81.0f / 255.0f, 81.0f / 255.0f, 117.0f / 255.0f));
+		const SkyboxColor SC_5_00_AM = SkyboxColor(glm::vec3(64.0f / 255.0f, 64.0f / 255.0f, 92.0f / 255.0f), glm::vec3(138.0f / 255.0f, 118.0f / 255.0f, 171.0f / 255.0f));
+		const SkyboxColor SC_6_00_AM = SkyboxColor(glm::vec3(74.0f / 255.0f, 73.0f / 255.0f, 105.0f / 255.0f), glm::vec3(205.0f / 255.0f, 130.0f / 255.0f, 160.0f / 255.0f));
+		const SkyboxColor SC_7_00_AM = SkyboxColor(glm::vec3(117.0f / 255.0f, 122.0f / 255.0f, 191.0f / 255.0f), glm::vec3(234.0f / 255.0f, 176.0f / 255.0f, 209.0f / 255.0f));
+		const SkyboxColor SC_8_00_AM = SkyboxColor(glm::vec3(234.0f / 255.0f, 176.0f / 255.0f, 209.0f / 255.0f), glm::vec3(235.0f / 255.0f, 178.0f / 255.0f, 177.0f / 255.0f));
+		const SkyboxColor SC_9_00_AM = SkyboxColor(glm::vec3(148.0f / 255.0f, 197.0f / 255.0f, 248.0f / 255.0f), glm::vec3(177.0f / 255.0f, 181.0f / 255.0f, 234.0f / 255.0f));
+		const SkyboxColor SC_10_00_AM = SkyboxColor(glm::vec3(183.0f / 255.0f, 234.0f / 255.0f, 255.0f / 255.0f), glm::vec3(148.0f / 255.0f, 223.0f / 255.0f, 255.0f / 255.0f));
+		const SkyboxColor SC_11_00_AM = SkyboxColor(glm::vec3(155.0f / 255.0f, 226.0f / 255.0f, 254.0f / 255.0f), glm::vec3(103.0f / 255.0f, 209.0f / 255.0f, 251.0f / 255.0f));
+		const SkyboxColor SC_12_00_PM = SkyboxColor(glm::vec3(144.0f / 255.0f, 223.0f / 255.0f, 254.0f / 255.0f), glm::vec3(56.0f / 255.0f, 163.0f / 255.0f, 209.0f / 255.0f));
+		const SkyboxColor SC_1_00_PM = SkyboxColor(glm::vec3(87.0f / 255.0f, 193.0f / 255.0f, 235.0f / 255.0f), glm::vec3(36.0f / 255.0f, 111.0f / 255.0f, 168.0f / 255.0f));
+		const SkyboxColor SC_2_00_PM = SkyboxColor(glm::vec3(45.0f / 255.0f, 145.0f / 255.0f, 194.0f / 255.0f), glm::vec3(30.0f / 255.0f, 82.0f / 255.0f, 142.0f / 255.0f));
+		const SkyboxColor SC_3_00_PM = SkyboxColor(glm::vec3(36.0f / 255.0f, 115.0f / 255.0f, 171.0f / 255.0f), glm::vec3(91.0f / 255.0f, 121.0f / 255.0f, 131.0f / 255.0f));
+		const SkyboxColor SC_4_00_PM = SkyboxColor(glm::vec3(30.0f / 255.0f, 82.0f / 255.0f, 142.0f / 255.0f), glm::vec3(157.0f / 255.0f, 166.0f / 255.0f, 113.0f / 255.0f));
+		const SkyboxColor SC_5_00_PM = SkyboxColor(glm::vec3(30.0f / 255.0f, 82.0f / 255.0f, 142.0f / 255.0f), glm::vec3(233.0f / 255.0f, 206.0f / 255.0f, 93.0f / 255.0f));
+		const SkyboxColor SC_6_00_PM = SkyboxColor(glm::vec3(21.0f / 255.0f, 66.0f / 255.0f, 119.0f / 255.0f), glm::vec3(178.0f / 255.0f, 99.0f / 255.0f, 57.0f / 255.0f));
+		const SkyboxColor SC_7_00_PM = SkyboxColor(glm::vec3(22.0f / 255.0f, 60.0f / 255.0f, 82.0f / 255.0f), glm::vec3(183.0f / 255.0f, 73.0f / 255.0f, 15.0f / 255.0f));
+		const SkyboxColor SC_8_00_PM = SkyboxColor(glm::vec3(7.0f / 255.0f, 27.0f / 255.0f, 38.0f / 255.0f), glm::vec3(138.0f / 255.0f, 59.0f / 255.0f, 18.0f / 255.0f));
+		const SkyboxColor SC_9_00_PM = SkyboxColor(glm::vec3(1.0f / 255.0f, 10.0f / 255.0f, 16.0f / 255.0f), glm::vec3(47.0f / 255.0f, 17.0f / 255.0f, 7.0f / 255.0f));
+		const SkyboxColor SC_10_00_PM = SkyboxColor(glm::vec3(1.0f / 255.0f, 6.0f / 255.0f, 27.0f / 255.0f), glm::vec3(28.0f / 255.0f, 8.0f / 255.0f, 2.0f / 255.0f));
+		const SkyboxColor SC_11_00_PM = SkyboxColor(glm::vec3(0.0f, 0.0f, 12.0f / 255.0f), glm::vec3(13.0f / 255.0f, 5.0f / 255.0f, 0.0f));
+		
 		// block colors
 		//const glm::vec3 GRASS = glm::vec3(28.0f / 255.0f, 192.0f / 255.0f, 11.0f / 255.0f);
 		//const glm::vec3 GRASS = glm::vec3(54.0f / 255.0f, 185.0f / 255.0f, 41.0f / 255.0f);

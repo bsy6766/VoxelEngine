@@ -710,7 +710,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);
@@ -1078,7 +1078,7 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 		return false;
 	}
 
-	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 
 	position = screenPosition;
 
@@ -1092,7 +1092,7 @@ bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& scr
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -1146,7 +1146,7 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 {
 	this->texture = ss->getTexture();
 
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 
 	position = screenPosition;
 
@@ -1171,7 +1171,7 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -1253,7 +1253,7 @@ bool Voxel::UI::Cursor::init()
 	// pointer
 	this->texture = ss->getTexture();
 
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 
 	auto size = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 
@@ -1282,7 +1282,7 @@ bool Voxel::UI::Cursor::init()
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -1430,7 +1430,7 @@ void Voxel::UI::Cursor::render()
 	{
 		if (vao)
 		{
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 			program->use(true);
 			program->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -1561,7 +1561,7 @@ void Voxel::UI::Canvas::render()
 {
 	if (!visible) return;
 
-	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	imageShader->use(true);
 	imageShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -1578,7 +1578,7 @@ void Voxel::UI::Canvas::render()
 		(image.second)->render(uiMat, canvasMat, imageShader);
 	}
 
-	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 	textShader->use(true);
 	textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 

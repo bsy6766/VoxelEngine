@@ -357,7 +357,7 @@ void Voxel::NewUI::UIBatch::load(const std::vector<float>& vertices, const std::
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -446,7 +446,7 @@ void Voxel::NewUI::UITextBatch::load(const std::vector<float>& vertices, const s
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);
@@ -584,7 +584,7 @@ bool Voxel::NewUI::Image::init(const std::string & textureName, const glm::vec2 
 			return false;
 		}
 
-		texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+		texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	}
 
 	auto size = texture->getTextureSize();
@@ -749,7 +749,7 @@ bool Voxel::NewUI::Cursor::init()
 	// pointer
 	this->texture = ss->getTexture();
 
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 
 	auto size = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 
@@ -778,7 +778,7 @@ bool Voxel::NewUI::Cursor::init()
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -934,7 +934,7 @@ void Voxel::NewUI::Cursor::render()
 	{
 		if (vao)
 		{
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 			program->use(true);
 			program->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -1775,7 +1775,7 @@ void Voxel::NewUI::Canvas::updateBatch()
 			{
 				auto textBatch = new UITextBatch();
 				textBatch->texture = textObj->getTexture();
-				textBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+				textBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 
 				std::vector<float> tVertices;
 				std::vector<unsigned int> tIndices;
@@ -1832,7 +1832,7 @@ void Voxel::NewUI::Canvas::updateBatch()
 						{
 							curTextureID = texture->getID();
 							curBatch->texture = texture;
-							curBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+							curBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 
 							// batch it
 							auto parentPivotMat = node->getParentPivot();
@@ -1878,7 +1878,7 @@ void Voxel::NewUI::Canvas::updateBatch()
 
 								curTextureID = texture->getID();
 
-								curBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXTURE_COLOR);
+								curBatch->program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 							}
 						}
 					}
@@ -1917,7 +1917,7 @@ void Voxel::NewUI::Canvas::render()
 
 	if (temp)
 	{
-		auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+		auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 		textShader->use(true);
 		textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -2592,7 +2592,7 @@ void Voxel::NewUI::Text::loadBuffers(const std::vector<float>& vertices, const s
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);

@@ -39,25 +39,29 @@ void Voxel::ProgramManager::initDefaultPrograms()
 	auto voxelShaderLineVert = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.vert", GL_VERTEX_SHADER);
 	auto voxelShaderLineFrag = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderLineProgram = Program::create(voxelShaderLineVert, voxelShaderLineFrag);
-	defaultPrograms.emplace(SHADER_LINE, voxelShaderLineProgram);
+	defaultPrograms.emplace(LINE_SHADER, voxelShaderLineProgram);
 
 	auto voxelShaderColorVert = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.vert", GL_VERTEX_SHADER);
 	auto voxelShaderColorFrag = shaderManager.createShader("voxelShaderColor", "shaders/voxelShaderColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderColorProgram = Program::create(voxelShaderColorVert, voxelShaderColorFrag);
-	defaultPrograms.emplace(SHADER_COLOR, voxelShaderColorProgram);
+	defaultPrograms.emplace(COLOR_SHADER, voxelShaderColorProgram);
 
 	auto voxelShaderTextureColorVert = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.vert", GL_VERTEX_SHADER);
 	auto voxelShaderTextureColorFrag = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextureColorProgram = Program::create(voxelShaderTextureColorVert, voxelShaderTextureColorFrag);
-	defaultPrograms.emplace(SHADER_TEXTURE_COLOR, voxelShaderTextureColorProgram);
+	defaultPrograms.emplace(TEXTURE_SHADER, voxelShaderTextureColorProgram);
 
 	auto voxelShaderTextVert = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.vert", GL_VERTEX_SHADER);
 	auto voxelShaderTextFrag = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextProgram = Program::create(voxelShaderTextVert, voxelShaderTextFrag);
-	defaultPrograms.emplace(SHADER_TEXT, voxelShaderTextProgram);
+	defaultPrograms.emplace(TEXT_SHADER, voxelShaderTextProgram);
+	
+	auto voxelSkyboxVert = shaderManager.createShader("voxelShaderSkybox", "shaders/voxelSkybox.vert", GL_VERTEX_SHADER);
+	auto voxelSkyboxFrag = shaderManager.createShader("voxelShaderSkybox", "shaders/voxelSkybox.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderSkyboxProgram = Program::create(voxelSkyboxVert, voxelSkyboxFrag);
+	defaultPrograms.emplace(SKYBOX_SHADER, voxelShaderSkyboxProgram);
 
 	shaderManager.releaseAll();
-
 }
 
 Program * Voxel::ProgramManager::getDefaultProgram(PROGRAM_NAME programID)

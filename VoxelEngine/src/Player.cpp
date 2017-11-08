@@ -89,7 +89,7 @@ void Voxel::Player::initYLine()
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 
@@ -128,7 +128,7 @@ void Voxel::Player::initRayLine()
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 	// vert
@@ -197,7 +197,7 @@ void Voxel::Player::initBoundingBoxLine()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
 
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SHADER_LINE);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 
@@ -305,6 +305,11 @@ glm::mat4 Voxel::Player::getOrientation()
 glm::mat4 Voxel::Player::getTranslationMat()
 {
 	return glm::translate(glm::mat4(1.0f), position);
+}
+
+glm::mat4 Voxel::Player::getTranslationXZMat()
+{
+	return glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 0, position.z));
 }
 
 glm::mat4 Voxel::Player::getDirMatrix()

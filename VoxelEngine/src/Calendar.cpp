@@ -3,13 +3,13 @@
 using namespace Voxel;
 
 const int Calendar::DAYS_PER_WEEK = 7;
-const float Calendar::MIN_TICK = 1.0f;
+const float Calendar::MIN_TICK = 0.25f;
 
 Calendar::Calendar()
 	: curDAY(DAY::MONDAY)
 	, minute(0)
 	, hour(0)
-	, elapsedTime(0)
+	, second(0)
 {
 
 }
@@ -23,19 +23,19 @@ void Voxel::Calendar::init()
 {
 	curDAY = DAY::MONDAY;
 	minute = 0;
-	hour = 9;
+	hour = 7;
 }
 
 void Voxel::Calendar::update(const float delta)
 {
-	elapsedTime += delta;
+	second += delta;
 	
-	if (elapsedTime > Calendar::MIN_TICK)
+	if (second > Calendar::MIN_TICK)
 	{
-		while (elapsedTime > Calendar::MIN_TICK)
+		while (second > Calendar::MIN_TICK)
 		{
 			minute++;
-			elapsedTime -= Calendar::MIN_TICK;
+			second -= Calendar::MIN_TICK;
 
 			if (minute >= 60)
 			{
@@ -94,6 +94,58 @@ std::string Voxel::Calendar::getTimeInStr(const bool twelveHour)
 int Voxel::Calendar::getTime()
 {
 	return (hour * 100) + minute;
+}
+
+int Voxel::Calendar::getHour()
+{
+	return hour;
+}
+
+int Voxel::Calendar::getMinutes()
+{
+	return minute;
+}
+
+float Voxel::Calendar::getSeconds()
+{
+	return second;
+}
+
+void Voxel::Calendar::setTime(const int hour, const int minute)
+{
+	this->hour = hour;
+	this->minute = minute;
+	this->second = 0.0f;
+
+	if (this->hour >= 24)
+	{
+		this->hour = this->hour % 24;
+	}
+
+	if (this->minute >= 60)
+	{
+		this->minute = this->minute % 60;
+	}
+}
+
+void Voxel::Calendar::addTime(const int hour, const int minute)
+{
+	this->hour += hour;
+	this->minute += minute;
+
+	while (this->minute >= 60)
+	{
+		this->hour++;
+		this->minute -= 60;
+	}
+
+	while (this->hour >= 24)
+	{
+		this->day++;
+		curDAY = getNextDAY();
+
+		this->hour -= 24;
+	}
 }
 
 Calendar::DAY Voxel::Calendar::getNextDAY()

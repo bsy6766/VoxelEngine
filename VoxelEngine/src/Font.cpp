@@ -161,7 +161,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	}
 
 	texture = Texture2D::createFontTexture(textureName, pow2Width, pow2Height, GL_TEXTURE_2D);
-	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::SHADER_TEXT);
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 
 	// bind font texture
 	texture->bind();

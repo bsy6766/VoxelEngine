@@ -46,7 +46,7 @@ namespace Voxel
 		int hour;
 
 		// Game tick measurement
-		float elapsedTime;
+		float second;
 
 		DAY getNextDAY();
 	public:
@@ -63,8 +63,24 @@ namespace Voxel
 
 		// Get time in string
 		std::string getTimeInStr(const bool twelveHour);
+
 		// Get time in number. HHMM. i.e.) 1000 = 10am, 2330 = 11:30pm
 		int getTime();
+
+		// Get current housr
+		int getHour();
+
+		// Get current minutes
+		int getMinutes();
+
+		// get seconds
+		float getSeconds();
+
+		// Set time
+		void setTime(const int hour, const int minute);
+
+		// add time
+		void addTime(const int hour, const int minute);
 	};
 
 }

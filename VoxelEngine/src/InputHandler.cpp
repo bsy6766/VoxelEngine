@@ -526,6 +526,17 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 	{
 		return "-";
 	}
+	else if (key == GLFW_KEY_SEMICOLON)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return ":";
+		}
+		else
+		{
+			return ";";
+		}
+	}
 
 	return "";
 }

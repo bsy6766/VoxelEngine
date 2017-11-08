@@ -152,7 +152,7 @@ namespace Voxel
 		void initDefaultCanvas();
 		void initDebugConsole();
 		void initCursor();
-		void initSkyBox(const glm::vec4& skyColor, Program* program);
+		void initSkyBox();
 
 		// Update inputs
 		void updateKeyboardInput(const float delta);
