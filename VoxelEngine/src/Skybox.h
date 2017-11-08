@@ -42,6 +42,10 @@ namespace Voxel
 		GLuint vao;
 		int indicesSize;
 
+		// sun (textured quad)
+		GLuint sunVao;
+		glm::vec3 sunColor;
+
 		// Color blend between top color and bottom color
 		glm::vec3 midBlend;
 
@@ -53,6 +57,10 @@ namespace Voxel
 
 		// Speed of fog animation
 		float fogAnimationSpeed;
+
+		void initSkybox();
+		void initSun();
+		void initMoonPhases();
 	public:
 		// Constructor
 		Skybox();

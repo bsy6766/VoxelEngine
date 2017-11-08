@@ -40,6 +40,17 @@ void Voxel::Skybox::init(const int renderDistance)
 	// 3 times than render distance. making sure it renders everthing.
 	size = static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE;
 
+	setFogDistanceByRenderDistance(renderDistance, false);
+
+	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
+
+	initSkybox();
+
+	initSun();
+}
+
+void Voxel::Skybox::initSkybox()
+{
 	const float divider = 0.1f;
 
 	std::vector<float> vertices =
@@ -52,7 +63,7 @@ void Voxel::Skybox::init(const int renderDistance)
 		-0.5f, -divider, 0.5f,
 		0.5f, -0.5f, 0.5f,
 		0.5f, -divider, 0.5f,
-		
+
 		-0.5f, divider, -0.5f,
 		-0.5f, 0.5f, -0.5f,
 		0.5f, divider, -0.5f,
@@ -64,11 +75,7 @@ void Voxel::Skybox::init(const int renderDistance)
 	};
 	//std::vector<float> vertices = Cube::getVertices();
 
-	setFogDistanceByRenderDistance(renderDistance, false);
-
-	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
-
-	std::vector<unsigned int> indices = 
+	std::vector<unsigned int> indices =
 	{
 		0, 1, 2, 1, 2, 3,
 		2, 3, 6, 3, 6, 7,
@@ -115,7 +122,7 @@ void Voxel::Skybox::init(const int renderDistance)
 	// vert
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	
+
 	// 4. IBO
 	GLuint ibo;
 	// Generate indices object
@@ -130,6 +137,15 @@ void Voxel::Skybox::init(const int renderDistance)
 	// Delte buffers
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ibo);
+}
+
+void Voxel::Skybox::initSun()
+{
+
+}
+
+void Voxel::Skybox::initMoonPhases()
+{
 }
 
 void Voxel::Skybox::update(const float delta)

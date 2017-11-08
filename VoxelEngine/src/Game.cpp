@@ -188,6 +188,7 @@ void Voxel::Game::initSpriteSheets()
 
 	ssm.addSpriteSheet("UISpriteSheet.json");
 	ssm.addSpriteSheet("CursorSpriteSheet.json");
+	ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
 }
 
 void Voxel::Game::initRandoms()
