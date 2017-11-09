@@ -990,7 +990,7 @@ void Voxel::TreeBuilder::createPineTree(ChunkMap * chunkMap, const glm::ivec2 & 
 void Voxel::TreeBuilder::createPineTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
 {
 	// get height of trunk
-	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::OAK, h, engine);
+	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::PINE, h, engine);
 
 	if (trunkHeight == 0)
 	{

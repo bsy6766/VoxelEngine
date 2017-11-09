@@ -888,17 +888,17 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return false;
 						}
 
-						int y = 0;
+						int z = 0;
 						try
 						{
-							y = std::stoi(split.at(3));
+							z = std::stoi(split.at(3));
 						}
 						catch (...)
 						{
 							return false;
 						}
 
-						//chunkMap->printChunk(x, z);
+						chunkMap->printChunk(glm::ivec2(x, z));
 					}
 				}
 			}
@@ -1273,7 +1273,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return false;
 						}
 
-						TreeBuilder::createTree(type, chunkMap, glm::ivec2(chunkPos.x, chunkPos.z), treeLocalPos, std::mt19937());
+						TreeBuilder::createTree(type, h, w, chunkMap, glm::ivec2(chunkPos.x, chunkPos.z), treeLocalPos, std::mt19937());
 						return true;
 					}
 				}

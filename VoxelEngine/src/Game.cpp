@@ -713,10 +713,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
-		Camera::mainCamera->print();
 		auto playerPos = player->getPosition();
 		auto playerRot = player->getRotation();
 		std::cout << "Player is at (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << "), rotated (" << playerRot.x << ", " << playerRot.y << ", " << playerRot.z << ")\n";
+	}
+	else if (input->getKeyDown(GLFW_KEY_O, true))
+	{
+		Camera::mainCamera->print();
+
 	}
 
 	if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == 0)

@@ -405,6 +405,7 @@ void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 {
 	if (chunkSections.empty())
 	{
+		// Chunk sections are empty. Fill new.
 		for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 		{
 			// Temp. All blocks above chunk section y 3 will be air.
@@ -419,6 +420,7 @@ void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 				auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
 				if (newChucnkSection)
 				{
+					// Add new chunk section
 					chunkSections.push_back(newChucnkSection);
 				}
 				else
@@ -430,26 +432,41 @@ void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 	}
 	else
 	{
-		for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+		// chunk section was generated before. Check size.
+		if (chunkSections.size() == Constant::TOTAL_CHUNK_SECTION_PER_CHUNK)
 		{
-			// Temp. All blocks above chunk section y 3 will be air.
-			if (i > maxY || i < minY)
+			// valid. add new only to empty chunk sections
+			for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 			{
-				continue;
-			}
-			else
-			{
-				//std::cout << "++ chunksection: " << i << std::endl;
-				auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
-				if (newChucnkSection)
+				if (i > maxY || i < minY)
 				{
-					chunkSections.at(i) = newChucnkSection;
+					// out of bound. skip.
+					continue;
 				}
 				else
 				{
-					throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+					//std::cout << "++ chunksection: " << i << std::endl;
+					// Check if chunk section is empty
+					if (chunkSections.at(i) == nullptr)
+					{
+						auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
+						if (newChucnkSection)
+						{
+							// add new.
+							chunkSections.at(i) = newChucnkSection;
+						}
+						else
+						{
+							throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+						}
+					}
+					// else, chunk section exists. skip
 				}
 			}
+		}
+		else
+		{
+			throw std::runtime_error("Invalid size of chunksection: " + std::to_string(chunkSections.size()));
 		}
 	}
 }
@@ -734,6 +751,7 @@ void Voxel::Chunk::print()
 	std::cout << "Active: " << (active ? "True" : "False") << std::endl;
 	std::cout << "Visible: " << (visible ? "True" : "False") << std::endl;
 	std::cout << "Generated: " << (generated.load() ? "True" : "False") << std::endl;
+
 	if (regionMap.size() == 1)
 	{
 		std::cout << "Region: " << regionMap.front() << std::endl;
@@ -752,4 +770,6 @@ void Voxel::Chunk::print()
 			}
 		}
 	}
+
+	std::cout << "ChunkSections: " << chunkSections.size() << "\n";
 }

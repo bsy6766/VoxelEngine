@@ -204,4 +204,12 @@ void Camera::print()
 {
 	std::cout << "[Camera] position = (" << this->position.x << ", " << this->position.y << ", " << this->position.z << ")\n";
 	std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")\n";
+
+	int chunkX = static_cast<int>(position.x) / Constant::CHUNK_SECTION_WIDTH;
+	int chunkZ = static_cast<int>(position.z) / Constant::CHUNK_SECTION_LENGTH;
+
+	if (position.x < 0) chunkX -= 1;
+	if (position.z < 0) chunkZ -= 1;
+
+	std::cout << "[Camera] chunk pos = (" << chunkX << ", " << chunkZ << ")\n";
 }

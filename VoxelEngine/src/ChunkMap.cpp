@@ -2380,6 +2380,19 @@ void Voxel::ChunkMap::printCurrentChunk()
 	chunk->print();
 }
 
+void Voxel::ChunkMap::printChunk(const glm::ivec2 & chunkXZ)
+{
+	auto chunk = getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+	if (chunk)
+	{
+		chunk->print();
+	}
+	else
+	{
+		std::cout << "[ChunkMap] Can't print empty chunk (" << chunkXZ.x << ", " << chunkXZ.y << ")\n";
+	}
+}
+
 void Voxel::ChunkMap::printChunkMap()
 {
 	for (int x = minXZ.x; x <= maxXZ.x; ++x)

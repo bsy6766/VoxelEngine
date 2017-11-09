@@ -223,6 +223,7 @@ namespace Voxel
 
 		// debug print
 		void printCurrentChunk();
+		void printChunk(const glm::ivec2& chunkXZ);
 
 		// debug print
 		void printChunkMap();
