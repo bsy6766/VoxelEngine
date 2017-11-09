@@ -48,9 +48,6 @@
 
 using namespace Voxel;
 
-// Temporary. 
-// Todo: Move this to game settings
-
 Game::Game()
 	: world(nullptr)
 	, chunkMap(nullptr)
@@ -71,6 +68,7 @@ Game::Game()
 	, gameState(GameState::IDLE)
 	, loadingState(LoadingState::INITIALIZING)
 	, reloadState(ReloadState::NONE)
+	, skipUpdate(false)
 {
 	// init instances
 	init();
@@ -409,6 +407,8 @@ void Voxel::Game::teleportPlayer(const glm::vec3 & position)
 
 	loadingState = LoadingState::RELOADING;
 	reloadState = ReloadState::CHUNK_MAP;
+
+	skipUpdate = true;
 }
 
 void Game::update(const float delta)
@@ -464,6 +464,7 @@ void Game::update(const float delta)
 			}
 
 			chunkWorkManager->resumeWork();
+			chunkWorkManager->notify();
 
 			return;
 		}
@@ -488,6 +489,12 @@ void Game::update(const float delta)
 		updateMouseClickInput();
 		updateMouseScrollInput(delta);
 		updateControllerInput(delta);
+
+		if (skipUpdate)
+		{
+			skipUpdate = false;
+			return;
+		}
 
 		checkUnloadedChunks();
 

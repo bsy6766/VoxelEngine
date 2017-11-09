@@ -78,7 +78,7 @@ namespace Voxel
 		// Camera modes
 		bool cameraMode;
 		bool cameraControlMode;
-
+		
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
@@ -123,6 +123,9 @@ namespace Voxel
 		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
 		double mouseX;
 		double mouseY;
+
+		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
+		bool skipUpdate;
 
 		// Initialize/release instances
 		void init();

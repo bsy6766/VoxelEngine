@@ -547,7 +547,7 @@ void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
 {
 	if (dist < cameraDistanceTargetZ)
 	{
-		auto adjust = dist - 1.5f;
+		auto adjust = dist - 0.75f;
 		if (adjust < 0.0f)
 		{
 			adjust = 0.0f;
@@ -666,7 +666,7 @@ void Voxel::Player::update(const float delta)
 
 	if (cameraY != Player::EyeHeight)
 	{
-		cameraY = glm::lerp(cameraY, Player::EyeHeight, 3.0f * delta);
+		cameraY = glm::lerp(cameraY, Player::EyeHeight, 6.0f * delta);
 		if (glm::abs(cameraY - Player::EyeHeight) < 0.01f)
 		{
 			cameraY = Player::EyeHeight;

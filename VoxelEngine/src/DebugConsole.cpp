@@ -15,6 +15,7 @@
 #include <ChunkMap.h>
 #include <Setting.h>
 #include <Calendar.h>
+#include <TreeBuilder.h>
 
 using namespace Voxel;
 
@@ -1189,6 +1190,90 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						calendar->addTime(h, m);
 						executedCommandHistory.push_back("Time added by (" + std::to_string(h) + ", " + std::to_string(m) + ")");
 						lastCommand = command;
+						return true;
+					}
+				}
+			}
+			else if (commandStr == "tree")
+			{
+				// tree type w h
+				if (size == 4)
+				{
+					if (player->isLookingAtBlock())
+					{
+						auto pos = player->getLookingBlock()->getWorldCoordinate();
+						pos.y++;
+
+						glm::ivec3 treeLocalPos;
+						glm::ivec3 chunkPos;
+						chunkMap->blockWorldCoordinateToLocalAndChunkSectionCoordinate(pos, treeLocalPos, chunkPos);
+						treeLocalPos.y = pos.y;
+
+						auto arg1 = split.at(1);
+						auto arg2 = split.at(2);
+						auto arg3 = split.at(3);
+
+						TreeBuilder::TrunkWidthType w;
+						TreeBuilder::TrunkHeightType h;
+
+						if (arg2 == "small" || arg2 == "s")
+						{
+							w = TreeBuilder::TrunkWidthType::SMALL;
+						}
+						else if (arg2 == "medium" || arg2 == "m")
+						{
+							w = TreeBuilder::TrunkWidthType::MEDIUM;
+						}
+						else if (arg2 == "large" || arg2 == "l")
+						{
+							w = TreeBuilder::TrunkWidthType::LARGE;
+						}
+						else
+						{
+							return false;
+						}
+
+						if (arg3 == "small" || arg3 == "s")
+						{
+							h = TreeBuilder::TrunkHeightType::SMALL;
+						}
+						else if (arg3 == "medium" || arg3 == "m")
+						{
+							h = TreeBuilder::TrunkHeightType::MEDIUM;
+						}
+						else if (arg3 == "large" || arg3 == "l")
+						{
+							h = TreeBuilder::TrunkHeightType::LARGE;
+						}
+						else
+						{
+							return false;
+						}
+
+						TreeBuilder::TreeType type;
+
+						if (arg1 == "oak")
+						{
+							type = TreeBuilder::TreeType::OAK;
+						}
+						else if (arg1 == "birch")
+						{
+							type = TreeBuilder::TreeType::BIRCH;
+						}
+						else if (arg1 == "spruce")
+						{
+							type = TreeBuilder::TreeType::SPRUCE;
+						}
+						else if (arg1 == "pine")
+						{
+							type = TreeBuilder::TreeType::PINE;
+						}
+						else
+						{
+							return false;
+						}
+
+						TreeBuilder::createTree(type, chunkMap, glm::ivec2(chunkPos.x, chunkPos.z), treeLocalPos, std::mt19937());
 						return true;
 					}
 				}
