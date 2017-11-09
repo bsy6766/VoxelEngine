@@ -104,9 +104,8 @@ namespace Voxel
 		enum class Flower
 		{
 			NONE = 0,
-			SUNFLOWER,
-			ROSE,
-			DAISY,
+			ROSE,			// Red
+			DAISY,			// White
 		};
 	}
 

@@ -3,7 +3,7 @@
 using namespace Voxel;
 
 const int Calendar::DAYS_PER_WEEK = 7;
-const float Calendar::MIN_TICK = 0.125f;
+const float Calendar::MIN_TICK = 1.0f;
 
 Calendar::Calendar()
 	: curDAY(DAY::MONDAY)
