@@ -1432,7 +1432,7 @@ void Voxel::Cube::getIndices(Face face, const int cubeOffset, std::vector<unsign
 		{
 			int num = countFaceBit(face);
 
-			int offset = 0 + cubeOffset;
+			int offset = cubeOffset;
 
 			for (int i = 0; i < num; i++)
 			{

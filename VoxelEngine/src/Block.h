@@ -39,7 +39,7 @@ namespace Voxel
 			TALL_GRASS,
 			INVALID = 255
 		};
-	private:
+	protected:
 		Block();
 
 		// Position of block in the world.
@@ -55,7 +55,7 @@ namespace Voxel
 
 		bool init(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
 	public:
-		~Block();
+		virtual ~Block();
 
 		// Creates block
 		static Block* create(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
@@ -68,6 +68,9 @@ namespace Voxel
 		
 		// Cehck if block is collidable 
 		bool isCollidable();
+
+		// Check if block is solid block (cube with size of 1)
+		virtual bool isSolid();
 
 		// Check if block is solid. Solid blocks are 1 sized cube. anything else that isn't complete cube (that is transparent, or size is less than 1) is not solid
 		//bool isSolid();
@@ -102,6 +105,20 @@ namespace Voxel
 
 		// Get AABB
 		Geometry::AABB getBoundingBox();
+	};
+
+	class PlantBlock : public Block
+	{
+	private:
+		PlantBlock();
+	public:
+		~PlantBlock() = default;
+
+		// Creates block
+		static PlantBlock* create(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
+
+		// override
+		bool isSolid() override;
 	};
 }
 

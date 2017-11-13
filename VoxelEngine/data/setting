@@ -7,7 +7,7 @@ videoSetting
 	vsync false
 	renderDistance 16
 	fieldOfView 70
-	blockShade 2
+	blockShade 1
 	plantWave false
 control
 	autoJump true

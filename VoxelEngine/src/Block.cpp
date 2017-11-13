@@ -104,6 +104,11 @@ bool Voxel::Block::isCollidable()
 	}
 }
 
+bool Voxel::Block::isSolid()
+{
+	return true;
+}
+
 void Voxel::Block::setColor(const glm::vec3 & color)
 {
 	r = static_cast<unsigned char>(color.r * 255.0f);
@@ -159,4 +164,31 @@ void Voxel::Block::setBlockID(const BLOCK_ID blockID)
 Geometry::AABB Voxel::Block::getBoundingBox()
 {
 	return Geometry::AABB(this->getWorldPosition(), glm::vec3(1.0f));
+}
+
+
+
+
+Voxel::PlantBlock::PlantBlock()
+	: Block()
+{
+}
+
+PlantBlock * Voxel::PlantBlock::create(const glm::ivec3 & position, const glm::ivec3 & chunkSectionPosition)
+{
+	PlantBlock* newPlantBlock = new PlantBlock();
+	if (newPlantBlock->init(position, chunkSectionPosition))
+	{
+		return newPlantBlock;
+	}
+	else
+	{
+		delete newPlantBlock;
+		return nullptr;
+	}
+}
+
+bool Voxel::PlantBlock::isSolid()
+{
+	return false;
 }
