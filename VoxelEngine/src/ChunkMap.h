@@ -148,7 +148,7 @@ namespace Voxel
 		Block* getBlockAtWorldXYZ(const glm::vec3& worldPosition);
 		
 		// Check if block is opaque.
-		enum class BLOCK_QUERY_RESULT
+		enum class BLOCK_QUERY_RESULT : int
 		{
 			NONE = -1,
 			EXIST_TRANSPARENT = 0,		// block exists and it's transparent

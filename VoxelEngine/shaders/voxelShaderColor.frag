@@ -4,7 +4,7 @@ uniform vec3 playerPosition;
 uniform float fogDistance;
 uniform vec4 fogColor;
 uniform bool fogEnabled;
-uniform float chunkBorderSize;
+uniform float fogLength;
 
 // Directional light. Only 1 directional light exists
 // uniform vec3 directionalVector;
@@ -36,6 +36,7 @@ float getDiffuseBrightness()
 	float fadeRatio = 1.0;
 
 	float lightDistance = abs(distance(pointLights[0].lightPosition, worldCoord.xyz));
+
 	// Check light distance to intensity
 	if(lightDistance <= pointLights[0].lightIntensity)
 	{
@@ -45,18 +46,11 @@ float getDiffuseBrightness()
 	else
 	{
 		// Light fades out if goes further than intensity
-		if(pointLights[0].lightIntensity == 0)
+		float fadeDist = lightDistance - pointLights[0].lightIntensity;
+		fadeRatio = 1.0 - (fadeDist / (pointLights[0].lightIntensity * 0.5));
+		if(fadeRatio < 0) 
 		{
 			fadeRatio = 0;
-		}
-		else
-		{
-			float fadeDist = lightDistance - pointLights[0].lightIntensity;
-			fadeRatio = 1.0 - (fadeDist / (pointLights[0].lightIntensity * 0.5));
-			if(fadeRatio < 0) 
-			{
-				fadeRatio = 0;
-			}
 		}
 	}
 
@@ -79,10 +73,18 @@ void main()
 {
 	// Get light color
 	vec4 finalLight = vec4(1, 1, 1, 1);
-	float brightness = getDiffuseBrightness();
 
-	vec4 diffuseColor = pointLights[0].lightColor * vec4(brightness, brightness, brightness, 1.0);
-	finalLight = clamp(ambientColor + diffuseColor, 0, 1);
+	if(pointLights[0].lightColor == 0.0)
+	{
+		finalLight = ambientColor;
+	}
+	else
+	{
+		float brightness = getDiffuseBrightness();
+
+		vec4 diffuseColor = pointLights[0].lightColor * vec4(brightness, brightness, brightness, 1.0);
+		finalLight = clamp(ambientColor + diffuseColor, 0, 1);
+	}
 
 	if(fogEnabled)
 	{
@@ -93,7 +95,7 @@ void main()
 		if(dist > fogDistance)
 		{
 			// Out of fog distance. Fade out color by distance
-			float fogRatio = (dist - fogDistance) / chunkBorderSize;
+			float fogRatio = (dist - fogDistance) / fogLength;
 
 			if(fogRatio > 1.0f)
 			{
@@ -102,7 +104,7 @@ void main()
 			}
 
 			// Mix color with fog color and multiply with light
-			fragColor = mix(vertColor, fogColor, fogRatio) * finalLight;
+			fragColor = mix(vertColor * finalLight, fogColor, fogRatio);
 		}
 		else
 		{

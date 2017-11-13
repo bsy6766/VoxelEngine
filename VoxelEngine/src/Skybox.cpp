@@ -18,6 +18,7 @@ Skybox::Skybox()
 	, fogState(FOG_STATE::IDLE)
 	, skycolorState(SKYCOLOR_STATE::IDLE)
 	, fogDistance(0)
+	, fogLength(0)
 	, curFogDistance(0)
 	, fogAnimationSpeed(0.25f)
 	, fogEnabled(true)
@@ -38,8 +39,9 @@ Skybox::~Skybox()
 void Voxel::Skybox::init(const int renderDistance)
 {
 	// 3 times than render distance. making sure it renders everthing.
-	size = static_cast<float>(renderDistance * 2) * Constant::CHUNK_BORDER_SIZE;
+	size = static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE;
 
+	setFogLength(2);
 	setFogDistanceByRenderDistance(renderDistance, false);
 
 	std::cout << "[Skybox] Fog distance = " << fogDistance << std::endl;
@@ -51,8 +53,8 @@ void Voxel::Skybox::init(const int renderDistance)
 
 void Voxel::Skybox::initSkybox()
 {
-	const float topDivider = 0.25f;
-	const float botDivider = 0.05f;
+	const float topDivider = 0.3f;
+	const float botDivider = 0.3f;
 
 	std::vector<float> vertices =
 	{
@@ -354,11 +356,12 @@ void Voxel::Skybox::updateColor(const int hour, const int minute, const float se
 	skyboxProgram->setUniformVec3("bottomColor", bottomColor);
 
 	midBlend = glm::mix(topColor, bottomColor, 0.5f);
+	//midBlend = bottomColor;
 }
 
 void Voxel::Skybox::updateMatrix(const glm::mat4 & mat)
 {
-	MVP_Matrix = mat * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+	MVP_Matrix = mat * glm::scale(glm::mat4(1.0f), glm::vec3(size, size * 0.25f, size * 0.5f));
 }
 
 void Voxel::Skybox::render()
@@ -395,9 +398,19 @@ float Voxel::Skybox::getFogDistance()
 	}
 }
 
+float Voxel::Skybox::getFogLength()
+{
+	return fogLength * Constant::CHUNK_BORDER_SIZE;
+}
+
+void Voxel::Skybox::setFogLength(const int chunkSize)
+{
+	fogLength = static_cast<float>(chunkSize);
+}
+
 void Voxel::Skybox::setFogDistanceByRenderDistance(const int renderDistance, const bool animate)
 {
-	setFogDistance((static_cast<float>(renderDistance - 1) - 0.5f) * Constant::CHUNK_BORDER_SIZE, animate);
+	setFogDistance((static_cast<float>(renderDistance) - fogLength) * Constant::CHUNK_BORDER_SIZE, animate);
 }
 
 void Voxel::Skybox::setFogDistance(const float distance, const bool animate)

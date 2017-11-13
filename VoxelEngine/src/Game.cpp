@@ -133,7 +133,7 @@ void Voxel::Game::init()
 	program->setUniformVec3("playerPosition", player->getPosition());
 	program->setUniformFloat("fogDistance", skybox->getFogDistance());
 	program->setUniformBool("fogEnabled", skybox->isFogEnabled());
-	program->setUniformFloat("chunkBorderSize", Constant::CHUNK_BORDER_SIZE);
+	program->setUniformFloat("fogLength", skybox->getFogLength());
 
 	// stop use
 	program->use(false);
@@ -1492,7 +1492,7 @@ void Voxel::Game::renderGameWorld(const float delta)
 	chunkMap->render();
 
 	// render skybox
-	skybox->updateMatrix(Camera::mainCamera->getProjection() * worldMat * player->getTranslationXZMat());
+	skybox->updateMatrix(Camera::mainCamera->getProjection() * worldMat * player->getSkyboxMat());
 	skybox->render();
 
 	// Render skybox

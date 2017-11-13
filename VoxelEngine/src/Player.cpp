@@ -318,6 +318,11 @@ glm::mat4 Voxel::Player::getTranslationXZMat()
 	return glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 0, position.z));
 }
 
+glm::mat4 Voxel::Player::getSkyboxMat()
+{
+	return glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 70.0f, position.z)), glm::radians(-rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
 glm::mat4 Voxel::Player::getDirMatrix()
 {
 	return dirMatrix;

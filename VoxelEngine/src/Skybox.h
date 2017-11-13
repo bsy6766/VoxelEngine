@@ -51,6 +51,7 @@ namespace Voxel
 
 		// Distance of fog
 		float fogDistance;
+		float fogLength;
 		
 		// current distance of fog. For Fog animation
 		float curFogDistance;
@@ -102,6 +103,10 @@ namespace Voxel
 
 		// Get fog distance
 		float getFogDistance();
+
+		float getFogLength();
+
+		void setFogLength(const int chunkSize);
 
 		/**
 		*	Set fog distance by render distance.

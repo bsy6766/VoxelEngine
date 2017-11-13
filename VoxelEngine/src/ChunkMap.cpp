@@ -1984,7 +1984,7 @@ int Voxel::ChunkMap::findVisibleChunk(const int renderDistance)
 					{
 						int distFromCenter = static_cast<int>(glm::abs(glm::distance(glm::vec2(currentChunkPos), glm::vec2(e.first))));
 						
-						if (distFromCenter < renderDistance)
+						if (distFromCenter <= renderDistance)
 						{
 							chunk->setVisibility(true);
 
@@ -1997,7 +1997,6 @@ int Voxel::ChunkMap::findVisibleChunk(const int renderDistance)
 
 							continue;
 						}
-
 					}
 				}
 
