@@ -1525,15 +1525,11 @@ void Voxel::Game::renderGameWorld(const float delta)
 
 	// Render voronoi diagram
 	world->renderVoronoi(lineProgram);
-
-	glm::mat4 rayMat = mat4(1.0f);
-	rayMat = glm::translate(rayMat, player->getPosition());
-	auto playerRotation = player->getRotation();
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
-	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
-
-	Camera::mainCamera->getFrustum()->render(rayMat, lineProgram);
+	
+	if (cameraMode)
+	{
+		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
+	}
 	// --------------------------------------------------------------------------------------
 
 	// --------------------------------- Render UI ------------------------------------------

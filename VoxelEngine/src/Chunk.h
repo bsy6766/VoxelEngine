@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 #include <atomic>
 #include <Geometry.h>
+#include <random>
 
 namespace Voxel
 {
@@ -73,10 +74,15 @@ namespace Voxel
 	public:
 		~Chunk();
 
+		// Random engine. Keep 1 for each chunk
+		std::mt19937 randomEngine;
+
 		// Create chunk and initailize
 		static Chunk* create(const int x, const int z);
 		// Create empty chunk
 		static Chunk* createEmpty(const int x, const int z);
+
+		void initRandomEngine(const std::string& worldSeed);
 
 		// Generates chunk.
 		bool generate();

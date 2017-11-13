@@ -41,7 +41,7 @@ namespace Voxel
 		~ChunkMeshGenerator() = default;
 
 		// Generates mesh for single chunk
-		void generateSingleChunkMesh(Chunk* chunk, ChunkMap* chunkMap);
+		void generateChunkMesh(Chunk* chunk, ChunkMap* chunkMap);
 	};
 }
 

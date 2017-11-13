@@ -1250,23 +1250,23 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return false;
 						}
 
-						TreeBuilder::TreeType type;
+						Voxel::Vegitation::Tree type;
 
 						if (arg1 == "oak")
 						{
-							type = TreeBuilder::TreeType::OAK;
+							type = Voxel::Vegitation::Tree::OAK;
 						}
 						else if (arg1 == "birch")
 						{
-							type = TreeBuilder::TreeType::BIRCH;
+							type = Voxel::Vegitation::Tree::BIRCH;
 						}
 						else if (arg1 == "spruce")
 						{
-							type = TreeBuilder::TreeType::SPRUCE;
+							type = Voxel::Vegitation::Tree::SPRUCE;
 						}
 						else if (arg1 == "pine")
 						{
-							type = TreeBuilder::TreeType::PINE;
+							type = Voxel::Vegitation::Tree::PINE;
 						}
 						else
 						{

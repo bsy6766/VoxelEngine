@@ -285,6 +285,12 @@ glm::mat4 Voxel::Player::getViewMatrix()
 	}
 }
 
+glm::mat4 Voxel::Player::getFrustumViewMatrix()
+{
+	// In this case, inverse rotation
+	return glm::translate(glm::mat4(1.0f), position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0)) * glm::inverse(viewMatrix);
+}
+
 /*
 glm::mat4 Voxel::Player::getVP(const glm::mat4& projection)
 {
@@ -295,12 +301,12 @@ glm::mat4 Voxel::Player::getDirVP(const glm::mat4 & projection)
 {
 	return glm::translate(projection * dirMatrix, -position);
 }
-*/
 
 glm::mat4 Voxel::Player::getOrientation()
 {
 	return viewMatrix;
 }
+*/
 
 glm::mat4 Voxel::Player::getTranslationMat()
 {
@@ -595,7 +601,7 @@ void Voxel::Player::updateViewMatrix()
 	viewMatrix = mat4(1.0f);
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(-rotation.x), vec3(1, 0, 0));
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.y), vec3(0, 1, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.z), vec3(0, 0, 1));
+	//viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.z), vec3(0, 0, 1));
 }
 
 void Voxel::Player::updateDirMatrix()

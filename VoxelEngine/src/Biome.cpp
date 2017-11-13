@@ -263,27 +263,27 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 		This applies to all type of vegitation.
 	*/
 
-	// Init tree
-	auto find = Biome::biomeTreeWeightMap.find(type);
+	// init plants
+	auto findPlant = Biome::biomePlantWeightMap.find(type);
 
-	if (find != Biome::biomeTreeWeightMap.end())
+	if (findPlant != Biome::biomePlantWeightMap.end())
 	{
-		auto& treeWeights = find->second;
+		auto& plantWeights = findPlant->second;
 
-		int size = static_cast<int>(treeWeights.size());
+		const int size = static_cast<int>(plantWeights.size());
 
 		if (size > 0)
 		{
-			TreePair treePair;
+			PlantPair plantPair;
 
 			if (size == 1)
 			{
-				treePair = (find->second).front();
+				plantPair = (findPlant->second).front();
 			}
 			else
 			{
 				std::vector<int> weights;
-				for (auto& pair : find->second)
+				for (auto& pair : findPlant->second)
 				{
 					weights.push_back(pair.weight);
 				}
@@ -296,34 +296,95 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 					rand = size - 1;
 				}
 
-				treePair = (find->second).at(rand);
+				plantPair = (findPlant->second).at(rand);
 			}
 
-			switch (treePair.tree)
+			plants.push_back(plantPair);
+
+			/*
+			switch (plantPair.plant)
 			{
-			case Voxel::Vegitation::Tree::OAK:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
+			case Voxel::Vegitation::Plant::SHORT_GRASS:
+				plants.push_back()
 				break;
-			case Voxel::Vegitation::Tree::BIRCH:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::BIRCH, 1 });
+			case Voxel::Vegitation::Plant::TALL_GRASS:
 				break;
-			case Voxel::Vegitation::Tree::SPRUCE:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
+			case Voxel::Vegitation::Plant::FERN:
 				break;
-			case Voxel::Vegitation::Tree::PINE:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
-				break;
-			case Voxel::Vegitation::Tree::OAK_BIRCH:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::OAK, 1 });
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::BIRCH, 1 });
-				break;
-			case Voxel::Vegitation::Tree::SPRUCE_PINE:
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::SPRUCE, 1 });
-				trees.push_back(TreeTypePair{ TreeBuilder::TreeType::PINE, 1 });
+			case Voxel::Vegitation::Plant::KORU:
 				break;
 			default:
 				break;
 			}
+			*/
+		}
+	}
+
+	// Init tree
+	auto findTree = Biome::biomeTreeWeightMap.find(type);
+
+	if (findTree != Biome::biomeTreeWeightMap.end())
+	{
+		auto& treeWeights = findTree->second;
+
+		const int size = static_cast<int>(treeWeights.size());
+
+		if (size > 0)
+		{
+			TreePair treePair;
+
+			if (size == 1)
+			{
+				treePair = (findTree->second).front();
+			}
+			else
+			{
+				std::vector<int> weights;
+				for (auto& pair : findTree->second)
+				{
+					weights.push_back(pair.weight);
+				}
+
+				std::discrete_distribution<> dist(weights.begin(), weights.end());
+
+				int rand = dist(engine);
+				if (rand >= size)
+				{
+					rand = size - 1;
+				}
+
+				treePair = (findTree->second).at(rand);
+			}
+
+			trees.push_back(treePair);
+
+			/*
+			switch (treePair.tree)
+			{
+			case Voxel::Vegitation::Tree::OAK:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::OAK, 1 });
+				break;
+			case Voxel::Vegitation::Tree::BIRCH:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::BIRCH, 1 });
+				break;
+			case Voxel::Vegitation::Tree::SPRUCE:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::SPRUCE, 1 });
+				break;
+			case Voxel::Vegitation::Tree::PINE:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::PINE, 1 });
+				break;
+			case Voxel::Vegitation::Tree::OAK_BIRCH:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::OAK, 1 });
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::BIRCH, 1 });
+				break;
+			case Voxel::Vegitation::Tree::SPRUCE_PINE:
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::SPRUCE, 1 });
+				trees.push_back(TreePair{ Voxel::Vegitation::Tree::PINE, 1 });
+				break;
+			default:
+				break;
+			}
+			*/
 		}
 	}
 }
@@ -331,6 +392,11 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 bool Voxel::Biome::hasTree()
 {
 	return trees.empty() == false;
+}
+
+bool Voxel::Biome::hasPlants()
+{
+	return plants.empty() == false;
 }
 
 int Voxel::Biome::getTreeSpawnRate()
@@ -381,20 +447,20 @@ int Voxel::Biome::getTreeSpawnRate()
 	return chance;
 }
 
-TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
+Voxel::Vegitation::Tree Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 {
 	/*
 	switch (std::uniform_int_distribution<>(0, 3)(engine))
 	{
 	case 1:
-		return TreeBuilder::TreeType::BIRCH;
+		return Voxel::Vegitation::Tree::BIRCH;
 	case 2:
-		return TreeBuilder::TreeType::SPRUCE;
+		return Voxel::Vegitation::Tree::SPRUCE;
 	case 3:
-		return TreeBuilder::TreeType::PINE;
+		return Voxel::Vegitation::Tree::PINE;
 	case 0:
 	default:
-		return TreeBuilder::TreeType::OAK;
+		return Voxel::Vegitation::Tree::OAK;
 	}
 	*/
 
@@ -404,7 +470,7 @@ TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 
 		if (size == 1)
 		{
-			return trees.front().type;
+			return trees.front().tree;
 		}
 		else
 		{
@@ -423,12 +489,12 @@ TreeBuilder::TreeType Voxel::Biome::getRandomTreeType(std::mt19937 & engine)
 				rand = size - 1;
 			}
 
-			return trees.at(rand).type;
+			return trees.at(rand).tree;
 		}
 	}
 	else
 	{
-		return TreeBuilder::TreeType::NONE;
+		return Voxel::Vegitation::Tree::NONE;
 	}
 }
 
@@ -437,6 +503,21 @@ void Voxel::Biome::print()
 	std::cout << "Biome info\n";
 	std::cout << "Type: " << Biome::biomeTypeToString(type) << "\tM: " << moisture << ", T: " << temperature << "\n";
 	std::cout << "Vegitations\n";
+
+	std::cout << "Plants: ";
+	if (plants.empty())
+	{
+		std::cout << "None\n";
+	}
+	else
+	{
+		std::cout << "\n";
+		for (auto& e : plants)
+		{
+			std::cout << Voxel::Vegitation::plantToString(e.plant) << " (" << e.weight << ")\n";
+		}
+	}
+
 	std::cout << "Trees: ";
 	if (trees.empty())
 	{
@@ -447,7 +528,7 @@ void Voxel::Biome::print()
 		std::cout << "\n";
 		for (auto& e : trees)
 		{
-			std::cout << Voxel::TreeBuilder::treeTypeToString(e.type) << " (" << e.weight << ")\n";
+			std::cout << Voxel::Vegitation::treeToString(e.tree) << " (" << e.weight << ")\n";
 		}
 	}
 	std::cout << "\n";

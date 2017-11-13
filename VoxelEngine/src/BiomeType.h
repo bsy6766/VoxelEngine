@@ -84,8 +84,10 @@ namespace Voxel
 			NONE = 0,
 			SHORT_GRASS,
 			TALL_GRASS,
+			SHORT_TALL_GRASS,
 			FERN,
 			KORU,
+			FERN_KORU,
 			CAT_TAIL,
 			CACTUS,
 			SHRUB,
@@ -122,6 +124,43 @@ namespace Voxel
 			BLUE_IRIS,
 			LILAC,
 		};
+
+		// enum to string converter
+		static inline std::string treeToString(const Voxel::Vegitation::Tree tree)
+		{
+			switch (tree)
+			{
+			case Voxel::Vegitation::Tree::OAK:
+				return "OAK";
+			case Voxel::Vegitation::Tree::BIRCH:
+				return "BIRCH";
+			case Voxel::Vegitation::Tree::SPRUCE:
+				return "SPRUCE";
+			case Voxel::Vegitation::Tree::PINE:
+				return "PINE";
+			case Voxel::Vegitation::Tree::NONE:
+			default:
+				return "NONE";
+			}
+		}
+
+		static inline std::string plantToString(const Voxel::Vegitation::Plant plant)
+		{
+			switch (plant)
+			{
+			case Voxel::Vegitation::Plant::SHORT_GRASS:
+				return "SHORT_GRASS";
+			case Voxel::Vegitation::Plant::TALL_GRASS:
+				return "TALL_GRASS";
+			case Voxel::Vegitation::Plant::FERN:
+				return "FERN";
+			case Voxel::Vegitation::Plant::KORU:
+				return "KORU";
+			case Voxel::Vegitation::Plant::NONE:
+			default:
+				break;
+			}
+		}
 	}
 
 	// Types of living entity for biomes. 

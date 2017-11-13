@@ -13,7 +13,7 @@
 
 using namespace Voxel;
 
-void Voxel::ChunkMeshGenerator::generateSingleChunkMesh(Chunk * chunk, ChunkMap * chunkMap)
+void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chunkMap)
 {
 	std::vector<float> vertices;
 	std::vector<float> colors;

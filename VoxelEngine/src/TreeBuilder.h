@@ -40,6 +40,7 @@ namespace Voxel
 	{
 	public:
 		// Type of tree.
+		/*
 		enum class TreeType
 		{
 			NONE = 0,
@@ -48,8 +49,7 @@ namespace Voxel
 			SPRUCE,
 			PINE,
 		};
-
-		static std::string treeTypeToString(TreeBuilder::TreeType type);
+		*/
 
 		// Height of tree
 		enum class TrunkHeightType
@@ -81,7 +81,7 @@ namespace Voxel
 		*	@param [in] engine Reference of chunk's local random engine
 		*	@return An integer of tree trunk height.
 		*/
-		static int getRandomTreeTrunkHeight(const TreeBuilder::TreeType& treeType, const TreeBuilder::TrunkHeightType& trunkHeight, std::mt19937& engine);
+		static int getRandomTreeTrunkHeight(const Voxel::Vegitation::Tree& treeType, const TreeBuilder::TrunkHeightType& trunkHeight, std::mt19937& engine);
 
 		/**
 		*	Get random leave size
@@ -92,7 +92,7 @@ namespace Voxel
 		*	@param [out] length Length of leaves
 		*	@param [in] engine Reference of chunk's local random engine
 		*/
-		static void getRandomLeavesSize(const TreeBuilder::TreeType& treeType, const TreeBuilder::TrunkWidthType& trunkWidthType, int& width, int& height, int& length, std::mt19937& engine);
+		static void getRandomLeavesSize(const Voxel::Vegitation::Tree& treeType, const TreeBuilder::TrunkWidthType& trunkWidthType, int& width, int& height, int& length, std::mt19937& engine);
 
 		/**
 		*	Add oak tree trunk.
@@ -317,7 +317,7 @@ namespace Voxel
 		*	@param [in] treeLocalPos Tree's local position in chunk.
 		*	@param [in] engine Reference of chunk's local random engine
 		*/
-		static void createTree(const TreeBuilder::TreeType type, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+		static void createTree(const Voxel::Vegitation::Tree type, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
 
 		/**
 		*	Creates tree.
@@ -329,7 +329,7 @@ namespace Voxel
 		*	@param [in] treeLocalPos Tree's local position in chunk.
 		*	@param [in] engine Reference of chunk's local random engine
 		*/
-		static void createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
+		static void createTree(const Voxel::Vegitation::Tree type, const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine);
 
 		~TreeBuilder() = delete;
 	};

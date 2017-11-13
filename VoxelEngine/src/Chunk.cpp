@@ -98,6 +98,11 @@ Chunk * Voxel::Chunk::createEmpty(const int x, const int z)
 	return nullptr;
 }
 
+void Voxel::Chunk::initRandomEngine(const std::string & worldSeed)
+{
+	randomEngine.seed(std::hash<std::string>{}(worldSeed + std::to_string(position.x) + std::to_string(position.z)));
+}
+
 void Voxel::Chunk::unload()
 {
 	if (chunkMesh)
@@ -146,14 +151,7 @@ bool Voxel::Chunk::generate()
 	// For terrain color variation. Repeating all same color for large amount of area gives bad visual. so use this noise to smoothly mix color
 	std::vector<std::vector<float>> colorMap;
 	HeightMap::getHeightMapForColor(position, colorMap);
-
-	// Add grass and flower. Grass and flowers are represented as single block, even if they are higher than 1 block (never gets bigger than 1 block wide & len). 
-
-	// Grass doesn't need 
-
-	// Flower noise. Flowers are spawned based on this noise. Spawns flower if value is higher than specific value. If region has multiple type of flower, 
-	std::vector<std::vector<float>> flowerMap;
-
+	
 	for (auto chunkSection : chunkSections)
 	{
 		if (chunkSection != nullptr)

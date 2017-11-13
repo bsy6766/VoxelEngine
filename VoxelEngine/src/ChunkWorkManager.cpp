@@ -553,6 +553,9 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 						{
 							// Chunk has not pre generated and smoothed.
 
+							// Intiailzie random engine for chunk
+							chunk->initRandomEngine(world->getSeed());
+
 							// Initialize region map with -1
 							std::vector<unsigned int> regionMap(Constant::CHUNK_SECTION_WIDTH * Constant::CHUNK_SECTION_LENGTH, -1);
 
@@ -936,10 +939,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 						// Get world seed
 						auto worldSeed = world->getSeed();
-
-						std::mt19937 engine(std::hash<std::string>{}(worldSeed + std::to_string(chunkXZ.x) + std::to_string(chunkXZ.y)));
-						std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 100);
-
+						
 						// First, add small structures like grass, flower, etc
 						// Then, add mid sized structures like stone, 
 						// Then, check if chunk has structure. If so, add structure
@@ -955,15 +955,20 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							if (region)
 							{
 								auto biomeType = region->getBiomeType();
+
+								// Check if biome can spawn grasses
+								if (biomeType.hasPlants())
+								{
+									// Biome can spawn plants. Add plants
+								}
+
+								// Check if biome can spawn tree
 								if (biomeType.hasTree())
 								{
-									// biome can spawn tree. Get tree weight and randomly pick tree type
-									// For now, it's oak.
-
-									// roll
-									int treeRand = dist(engine);
+									// biome can spawn tree. 
+									int treeRand = std::uniform_int_distribution<>(0, 100)(chunk->randomEngine);
 									
-									// check chance.
+									// check chance. Only 1 tree per chunk maximum
 									int treeChance = biomeType.getTreeSpawnRate();
 									if (treeRand < treeChance)
 									{
@@ -978,7 +983,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 
 										int treeY = chunk->heightMap.at(treeLocalPos.x).at(treeLocalPos.y) + 1;
 
-										TreeBuilder::createTree(biomeType.getRandomTreeType(engine), map, chunkXZ, glm::ivec3(treeLocalPos.x, treeY, treeLocalPos.y), engine);
+										TreeBuilder::createTree(biomeType.getRandomTreeType(chunk->randomEngine), map, chunkXZ, glm::ivec3(treeLocalPos.x, treeY, treeLocalPos.y), chunk->randomEngine);
 
 										//auto treeEnd = Utility::Time::now();
 
@@ -1020,7 +1025,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								// 1. Chunk is newly generated and need mesh.
 								// 2. Chunk already has mesh but need to refresh
 								//auto s = Utility::Time::now();
-								meshGenerator->generateSingleChunkMesh(chunk.get(), map);
+								meshGenerator->generateChunkMesh(chunk.get(), map);
 								//std::cout << "Done\n";
 								//auto e = Utility::Time::now();
 								//std::cout << "m t: " << Utility::Time::toMilliSecondString(s, e) << std::endl;

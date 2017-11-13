@@ -155,8 +155,9 @@ namespace Voxel
 
 		//glm::mat4 getVP(const glm::mat4& projection);
 		glm::mat4 getViewMatrix();
+		glm::mat4 getFrustumViewMatrix();
 		//glm::mat4 getDirVP(const glm::mat4& projection);
-		glm::mat4 getOrientation();
+		//glm::mat4 getOrientation();
 		glm::mat4 getTranslationMat();
 		glm::mat4 getTranslationXZMat();
 		glm::mat4 getDirMatrix();

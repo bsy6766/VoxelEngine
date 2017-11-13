@@ -26,18 +26,13 @@ namespace Voxel
 			int weight;
 		};
 
-		struct TreeTypePair
-		{
-		public:
-			TreeBuilder::TreeType type;
-			int weight;
-		};
-
 		struct PlantPair
 		{
+		public:
 			Voxel::Vegitation::Plant plant;
 			int weight;
 		};
+
 	public:
 		// Store types of vegitation that can grow in biome
 		static const std::unordered_map<BiomeType, std::vector<TreePair>> biomeTreeWeightMap;
@@ -49,9 +44,9 @@ namespace Voxel
 		Voxel::BiomeType type;
 		
 		// Possible tree and the weight of tree. Higher the weight, higher the chance to spawn
-		std::vector<TreeTypePair> trees;
+		std::vector<TreePair> trees;
 		// Possible plant and the weight of plant.
-		std::unordered_map<Voxel::Vegitation::Plant, int> plants;
+		std::vector<PlantPair> plants;
 		// Possible flowers and the weight of flowers.
 		std::unordered_map<Voxel::Vegitation::Flower, int> flowers;
 	public:
@@ -76,12 +71,12 @@ namespace Voxel
 		// Check if this biome has tree
 		bool hasTree();
 		// Check if this biome has grass
-		bool hasGrass();
+		bool hasPlants();
 
 		// Get tree spawn rate (0 ~ 100)
 		int getTreeSpawnRate();
 		// Get random tree type
-		TreeBuilder::TreeType getRandomTreeType(std::mt19937& engine);
+		Voxel::Vegitation::Tree getRandomTreeType(std::mt19937& engine);
 			
 
 		// print biome data

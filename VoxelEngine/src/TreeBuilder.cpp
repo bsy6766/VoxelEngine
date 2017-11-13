@@ -9,20 +9,20 @@
 
 using namespace Voxel;
 
-void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937 & engine)
+void Voxel::TreeBuilder::createTree(const Voxel::Vegitation::Tree type, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937 & engine)
 {
 	switch (type)
 	{
-	case TreeBuilder::TreeType::OAK:
+	case Voxel::Vegitation::Tree::OAK:
 		TreeBuilder::createOakTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::BIRCH:
+	case Voxel::Vegitation::Tree::BIRCH:
 		TreeBuilder::createBirchTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::SPRUCE:
+	case Voxel::Vegitation::Tree::SPRUCE:
 		TreeBuilder::createSpruceTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::PINE:
+	case Voxel::Vegitation::Tree::PINE:
 		TreeBuilder::createPineTree(chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
 	default:
@@ -30,20 +30,20 @@ void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, ChunkMap *
 	}
 }
 
-void Voxel::TreeBuilder::createTree(const TreeBuilder::TreeType type, const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine)
+void Voxel::TreeBuilder::createTree(const Voxel::Vegitation::Tree type, const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap* chunkMap, const glm::ivec2& chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine)
 {
 	switch (type)
 	{
-	case TreeBuilder::TreeType::OAK:
+	case Voxel::Vegitation::Tree::OAK:
 		TreeBuilder::createOakTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::BIRCH:
+	case Voxel::Vegitation::Tree::BIRCH:
 		TreeBuilder::createBirchTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::SPRUCE:
+	case Voxel::Vegitation::Tree::SPRUCE:
 		TreeBuilder::createSpruceTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
-	case TreeBuilder::TreeType::PINE:
+	case Voxel::Vegitation::Tree::PINE:
 		TreeBuilder::createPineTree(h, w, chunkMap, chunkXZ, treeLocalPos, engine);
 		break;
 	default:
@@ -102,7 +102,7 @@ void Voxel::TreeBuilder::createOakTree(ChunkMap * chunkMap, const glm::ivec2 & c
 void Voxel::TreeBuilder::createOakTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3& treeLocalPos, std::mt19937& engine)
 {
 	// get height of trunk
-	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::OAK, h, engine);
+	int trunkHeight = getRandomTreeTrunkHeight(Voxel::Vegitation::Tree::OAK, h, engine);
 
 	if (trunkHeight == 0)
 	{
@@ -541,7 +541,7 @@ void Voxel::TreeBuilder::createBirchTree(ChunkMap * chunkMap, const glm::ivec2 &
 void Voxel::TreeBuilder::createBirchTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
 {
 	// get height of trunk
-	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::BIRCH, h, engine);
+	int trunkHeight = getRandomTreeTrunkHeight(Voxel::Vegitation::Tree::BIRCH, h, engine);
 
 	if (trunkHeight == 0)
 	{
@@ -767,7 +767,7 @@ void Voxel::TreeBuilder::createSpruceTree(ChunkMap * chunkMap, const glm::ivec2 
 void Voxel::TreeBuilder::createSpruceTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
 {
 	// get height of trunk
-	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::SPRUCE, h, engine);
+	int trunkHeight = getRandomTreeTrunkHeight(Voxel::Vegitation::Tree::SPRUCE, h, engine);
 
 	if (trunkHeight == 0)
 	{
@@ -990,7 +990,7 @@ void Voxel::TreeBuilder::createPineTree(ChunkMap * chunkMap, const glm::ivec2 & 
 void Voxel::TreeBuilder::createPineTree(const TreeBuilder::TrunkHeightType h, const TreeBuilder::TrunkWidthType w, ChunkMap * chunkMap, const glm::ivec2 & chunkXZ, const glm::ivec3 & treeLocalPos, std::mt19937 & engine)
 {
 	// get height of trunk
-	int trunkHeight = getRandomTreeTrunkHeight(TreeBuilder::TreeType::PINE, h, engine);
+	int trunkHeight = getRandomTreeTrunkHeight(Voxel::Vegitation::Tree::PINE, h, engine);
 
 	if (trunkHeight == 0)
 	{
@@ -1151,25 +1151,6 @@ void Voxel::TreeBuilder::createPineTree(const TreeBuilder::TrunkHeightType h, co
 	}
 }
 
-std::string Voxel::TreeBuilder::treeTypeToString(TreeBuilder::TreeType type)
-{
-	switch (type)
-	{
-		break;
-	case Voxel::TreeBuilder::TreeType::OAK:
-		return "OAK";
-	case Voxel::TreeBuilder::TreeType::BIRCH:
-		return "BIRCH";
-	case Voxel::TreeBuilder::TreeType::SPRUCE:
-		return "SPRUCE";
-	case Voxel::TreeBuilder::TreeType::PINE:
-		return "PINE";
-	case Voxel::TreeBuilder::TreeType::NONE:
-	default:
-		return "NONE";
-	}
-}
-
 void Voxel::TreeBuilder::addPosLayer(std::vector<glm::ivec3>& p, const int level)
 {
 	auto pivot = p.front();
@@ -1314,13 +1295,13 @@ void Voxel::TreeBuilder::addPosLayer(std::vector<glm::ivec3>& p, const int level
 	}
 }
 
-int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & treeType, const TreeBuilder::TrunkHeightType& trunkHeight, std::mt19937 & engine)
+int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const Voxel::Vegitation::Tree & treeType, const TreeBuilder::TrunkHeightType& trunkHeight, std::mt19937 & engine)
 {
 	int height = 0;
 
 	switch (treeType)
 	{
-	case TreeBuilder::TreeType::OAK:
+	case Voxel::Vegitation::Tree::OAK:
 	{
 		std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 2);
 
@@ -1343,7 +1324,7 @@ int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & t
 		}
 	}
 	break;
-	case TreeBuilder::TreeType::BIRCH:
+	case Voxel::Vegitation::Tree::BIRCH:
 	{
 		std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 2);
 
@@ -1365,7 +1346,7 @@ int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & t
 		}
 	}
 	break;
-	case TreeBuilder::TreeType::SPRUCE:
+	case Voxel::Vegitation::Tree::SPRUCE:
 	{
 		std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 2);
 
@@ -1387,7 +1368,7 @@ int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & t
 		}
 	}
 	break;
-	case TreeBuilder::TreeType::PINE:
+	case Voxel::Vegitation::Tree::PINE:
 	{
 		std::uniform_int_distribution<int> dist = std::uniform_int_distribution<>(0, 2);
 
@@ -1416,7 +1397,7 @@ int Voxel::TreeBuilder::getRandomTreeTrunkHeight(const TreeBuilder::TreeType & t
 	return height;
 }
 
-void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeType, const TreeBuilder::TrunkWidthType& trunkWidthType, int & width, int & height, int & length, std::mt19937 & engine)
+void Voxel::TreeBuilder::getRandomLeavesSize(const Voxel::Vegitation::Tree & treeType, const TreeBuilder::TrunkWidthType& trunkWidthType, int & width, int & height, int & length, std::mt19937 & engine)
 {
 	// init
 	width = 0;
@@ -1425,7 +1406,7 @@ void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeT
 	
 	switch (treeType)
 	{
-	case TreeBuilder::TreeType::OAK:
+	case Voxel::Vegitation::Tree::OAK:
 	{
 		switch (trunkWidthType)
 		{
@@ -1464,7 +1445,7 @@ void Voxel::TreeBuilder::getRandomLeavesSize(const TreeBuilder::TreeType & treeT
 		}
 	}
 	break;
-	case TreeBuilder::TreeType::BIRCH:
+	case Voxel::Vegitation::Tree::BIRCH:
 	{
 		switch (trunkWidthType)
 		{
@@ -1582,7 +1563,7 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const TreeBuilder::TrunkWi
 		posF.z += shift.z;
 		posF.y += yDist(engine);
 
-		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		getRandomLeavesSize(Voxel::Vegitation::Tree::OAK, widthType, width, height, length, engine);
 		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
 	}
 
@@ -1596,7 +1577,7 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const TreeBuilder::TrunkWi
 		posF.z += shift.z;
 		posF.y += yDist(engine);
 
-		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		getRandomLeavesSize(Voxel::Vegitation::Tree::OAK, widthType, width, height, length, engine);
 		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
 	}
 
@@ -1610,7 +1591,7 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const TreeBuilder::TrunkWi
 		posF.z += shift.z;
 		posF.y += yDist(engine);
 
-		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		getRandomLeavesSize(Voxel::Vegitation::Tree::OAK, widthType, width, height, length, engine);
 		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
 	}
 
@@ -1624,11 +1605,11 @@ void Voxel::TreeBuilder::addOakLeaves(ChunkMap * map, const TreeBuilder::TrunkWi
 		posF.z += shift.z;
 		posF.y += yDist(engine);
 
-		getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+		getRandomLeavesSize(Voxel::Vegitation::Tree::OAK, widthType, width, height, length, engine);
 		addOakLeaf(map, width, height, length, glm::ivec3(posF), engine);
 	}
 
-	getRandomLeavesSize(TreeBuilder::TreeType::OAK, widthType, width, height, length, engine);
+	getRandomLeavesSize(Voxel::Vegitation::Tree::OAK, widthType, width, height, length, engine);
 	addOakLeaf(map, width + 1, height + 1, length + 1, pos, engine);
 
 	/*
@@ -2092,7 +2073,7 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 
 	// get random top leave size.
 	int width, height, length;
-	getRandomLeavesSize(TreeBuilder::TreeType::BIRCH, widthType, width, height, length, engine);
+	getRandomLeavesSize(Voxel::Vegitation::Tree::BIRCH, widthType, width, height, length, engine);
 
 	topLeaveCenterPos.y += (height / 2);
 	addBirchLeaf(map, width, height, length, topLeaveCenterPos, engine);
@@ -2112,7 +2093,7 @@ void Voxel::TreeBuilder::addBirchLeaves(ChunkMap * map, const TreeBuilder::Trunk
 		glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(randAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 transMat = glm::mat4(1.0f);
 
-		getRandomLeavesSize(TreeBuilder::TreeType::BIRCH, widthType, width, height, length, engine);
+		getRandomLeavesSize(Voxel::Vegitation::Tree::BIRCH, widthType, width, height, length, engine);
 
 		int randOffset = std::uniform_int_distribution<>(2, width)(engine);
 
