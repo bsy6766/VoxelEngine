@@ -156,12 +156,6 @@ void Frustum::update(const glm::mat4& playerVP)
 	updateFrustumPlanes(MVP);
 }
 
-void Voxel::Frustum::update(const glm::vec3 & playerPosition, const glm::mat4 & playerOrientation)
-{
-	auto MVP = glm::translate(projection * playerOrientation, -playerPosition);
-	updateFrustumPlanes(MVP);
-}
-
 void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & MVP)
 {
 	// left

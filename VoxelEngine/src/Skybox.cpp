@@ -38,7 +38,7 @@ Skybox::~Skybox()
 void Voxel::Skybox::init(const int renderDistance)
 {
 	// 3 times than render distance. making sure it renders everthing.
-	size = static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE;
+	size = static_cast<float>(renderDistance * 2) * Constant::CHUNK_BORDER_SIZE;
 
 	setFogDistanceByRenderDistance(renderDistance, false);
 
@@ -51,26 +51,27 @@ void Voxel::Skybox::init(const int renderDistance)
 
 void Voxel::Skybox::initSkybox()
 {
-	const float divider = 0.1f;
+	const float topDivider = 0.25f;
+	const float botDivider = 0.05f;
 
 	std::vector<float> vertices =
 	{
 		-0.5f, -0.5f, -0.5f,
-		-0.5f, -divider, -0.5f,
+		-0.5f, -botDivider, -0.5f,
 		0.5f, -0.5f, -0.5f,
-		0.5f, -divider, -0.5f,
+		0.5f, -botDivider, -0.5f,
 		-0.5f, -0.5f, 0.5f,
-		-0.5f, -divider, 0.5f,
+		-0.5f, -botDivider, 0.5f,
 		0.5f, -0.5f, 0.5f,
-		0.5f, -divider, 0.5f,
+		0.5f, -botDivider, 0.5f,
 
-		-0.5f, divider, -0.5f,
+		-0.5f, topDivider, -0.5f,
 		-0.5f, 0.5f, -0.5f,
-		0.5f, divider, -0.5f,
+		0.5f, topDivider, -0.5f,
 		0.5f, 0.5f, -0.5f,
-		-0.5f, divider, 0.5f,
+		-0.5f, topDivider, 0.5f,
 		-0.5f, 0.5f, 0.5f,
-		0.5f, divider, 0.5f,
+		0.5f, topDivider, 0.5f,
 		0.5f, 0.5f, 0.5f,
 	};
 	//std::vector<float> vertices = Cube::getVertices();

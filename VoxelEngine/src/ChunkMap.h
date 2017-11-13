@@ -186,7 +186,7 @@ namespace Voxel
 		bool update(const glm::ivec2& newChunkXZ, ChunkWorkManager* workManager, const double time);
 		
 		// find visible chunks. retrusn the number of chunks that is visible
-		int findVisibleChunk();
+		int findVisibleChunk(const int renderDistance);
 		int findVisibleChunk(std::vector<glm::ivec2>& visibleChunks);
 		int findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks);
 

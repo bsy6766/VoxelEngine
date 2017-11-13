@@ -96,16 +96,31 @@ namespace Voxel
 		*	
 		*	Flowers naturally grows through out the world. Different types of flower can be found on different biomes.
 		*	Once player founds flower field, they can collect all the flowers nearby by holding the key.
+		*	Flower doesn't regen.
+		*
+		*	Flowers give pigments. With pigments, player can unlock color blocks. Or, they can use in crafting to change color.
+		*	Different flowers spawn in different biome.
 		*	
-		*	Flowers are main source of pigment. Once they are looted, it autoamtically converts to pigment.
-		*	For example, rose become red pigment and sunflower becomes yellow pigment.
-		*	Pigments are main source to unlock different colors of block. 
+		*	Most of the flowers have common colors like red, orange, yellow, blue, pink, etc. 
+		*	It's hard to find and imagine dark colored flower like black, brown, etc.
 		*/
 		enum class Flower
 		{
 			NONE = 0,
-			ROSE,			// Red
-			DAISY,			// White
+			RED_ROSE,
+			WHITE_DAISY,
+			YELLOW_SUNFLOWER,
+			ORANGE_POPPY,
+			WATER_LILIY,
+			VIOLET_ORCHID,
+			BLUE_ORCHID,
+			PINK_TULIP,
+			RED_TULIP,
+			VIOLET_TULIP,
+			YELLOW_TULIP,
+			ORANGE_TULIP,
+			BLUE_IRIS,
+			LILAC,
 		};
 	}
 

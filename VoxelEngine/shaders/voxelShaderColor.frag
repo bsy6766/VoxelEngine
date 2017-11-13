@@ -45,11 +45,18 @@ float getDiffuseBrightness()
 	else
 	{
 		// Light fades out if goes further than intensity
-		float fadeDist = lightDistance - pointLights[0].lightIntensity;
-		fadeRatio = 1.0 - (fadeDist / (pointLights[0].lightIntensity * 0.5));
-		if(fadeRatio < 0) 
+		if(pointLights[0].lightIntensity == 0)
 		{
 			fadeRatio = 0;
+		}
+		else
+		{
+			float fadeDist = lightDistance - pointLights[0].lightIntensity;
+			fadeRatio = 1.0 - (fadeDist / (pointLights[0].lightIntensity * 0.5));
+			if(fadeRatio < 0) 
+			{
+				fadeRatio = 0;
+			}
 		}
 	}
 
@@ -70,34 +77,42 @@ float getDiffuseBrightness()
 
 void main()
 {
+	// Get light color
+	vec4 finalLight = vec4(1, 1, 1, 1);
+	float brightness = getDiffuseBrightness();
+
+	vec4 diffuseColor = pointLights[0].lightColor * vec4(brightness, brightness, brightness, 1.0);
+	finalLight = clamp(ambientColor + diffuseColor, 0, 1);
+
 	if(fogEnabled)
 	{
-		// Everything in side the fog gets affected by light, because it's in render distance. 
-		// at least for now.
-		vec4 finalLight = vec4(1, 1, 1, 1);
-		float brightness = getDiffuseBrightness();
-
-		vec4 diffuseColor = pointLights[0].lightColor * vec4(brightness, brightness, brightness, 1.0);
-		finalLight = clamp(ambientColor + diffuseColor, 0, 1);
-	
+		// fog is enabled. Getn distance from player's eye position and pixel in world position
 		float dist = abs(distance(playerPosition, worldCoord.xyz));
+
+		// Check distance
 		if(dist > fogDistance)
 		{
+			// Out of fog distance. Fade out color by distance
 			float fogRatio = (dist - fogDistance) / chunkBorderSize;
+
 			if(fogRatio > 1.0f)
 			{
+				// clamp
 				fogRatio = 1.0f;
 			}
 
+			// Mix color with fog color and multiply with light
 			fragColor = mix(vertColor, fogColor, fogRatio) * finalLight;
 		}
 		else
 		{
+			// It's in fog's range. player can see clearly.
 			fragColor = vertColor * finalLight;
 		}
 	}
 	else
 	{
-			fragColor = vertColor;
+			// Fog is diabled. just multiply color with light
+			fragColor = vertColor * finalLight;
 	}
 }

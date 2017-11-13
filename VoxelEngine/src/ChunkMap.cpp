@@ -1956,7 +1956,7 @@ bool Voxel::ChunkMap::isChunkOnEdge(const glm::ivec2 & chunkXZ)
 	return chunkXZ.x < (minXZ.x + 2) || chunkXZ.y < (minXZ.y + 2) || chunkXZ.x > (maxXZ.x - 2) || chunkXZ.y > (maxXZ.y - 2);
 }
 
-int Voxel::ChunkMap::findVisibleChunk()
+int Voxel::ChunkMap::findVisibleChunk(const int renderDistance)
 {
 	// Count number of visible chunk for debug
 	int count = 0;
@@ -1978,18 +1978,30 @@ int Voxel::ChunkMap::findVisibleChunk()
 				if (chunk->isGenerated())
 				{
 					bool visible = Camera::mainCamera->getFrustum()->isChunkBorderInFrustum(chunk.get());
-					chunk->setVisibility(visible);
 
 					if (visible)
 					{
-						auto mesh = chunk->getMesh();
-
-						if (mesh->isRenderable())
+						int distFromCenter = static_cast<int>(glm::abs(glm::distance(glm::vec2(currentChunkPos), glm::vec2(e.first))));
+						
+						if (distFromCenter < renderDistance)
 						{
-							count++;
+							chunk->setVisibility(true);
+
+							auto mesh = chunk->getMesh();
+
+							if (mesh->isRenderable())
+							{
+								count++;
+							}
+
+							continue;
 						}
+
 					}
 				}
+
+				// else, mark as invisible
+				chunk->setVisibility(false);
 			}
 		}
 	}

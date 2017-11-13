@@ -123,7 +123,7 @@ void Voxel::Game::init()
 
 	// Lights
 	program->setUniformVec4("ambientColor", glm::vec4(1.0f));
-	program->setUniformFloat("pointLights[0].lightIntensity", 20.0f);
+	program->setUniformFloat("pointLights[0].lightIntensity", 5.0f);
 	program->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
 	// Skybox
@@ -336,7 +336,7 @@ void Game::createPlayer()
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
-	Camera::mainCamera->getFrustum()->update(player->getPosition(), player->getOrientation());
+	Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
 	Camera::mainCamera->setSpeed(100.0f);
 
 	// for debug
@@ -517,7 +517,7 @@ void Game::update(const float delta)
 		//std::vector<glm::ivec2> visibleChunks;
 		//std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> visibleChunks;
 		//int totalVisible = chunkMap->findVisibleChunk(visibleChunks);
-		int totalVisible = chunkMap->findVisibleChunk();
+		int totalVisible = chunkMap->findVisibleChunk(settingPtr->getRenderDistance());
 
 		/*
 		auto sortStart = Utility::Time::now();
@@ -1465,17 +1465,6 @@ void Voxel::Game::renderGameWorld(const float delta)
 	{
 		worldMat = Camera::mainCamera->getView();
 
-		/*
-		glm::mat4 rayMat = mat4(1.0f);
-		rayMat = glm::translate(rayMat, player->getPosition());
-		auto playerRotation = player->getRotation();
-		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
-
-		defaultProgram->setUniformMat4("modelMat", rayMat);
-		Camera::mainCamera->getFrustum()->render(rayMat, defaultProgram);
-		*/
 	}
 	else
 	{
@@ -1485,10 +1474,11 @@ void Voxel::Game::renderGameWorld(const float delta)
 	program->setUniformMat4("worldMat", worldMat);
 
 	// Model mat is identity matrix
-	program->setUniformMat4("modelMat", glm::mat4(1.0f));
+	program->setUniformMat4("modelMat", glm::mat4(1.0f)); 
 
 	// Light
-	program->setUniformVec4("ambientColor", glm::vec4(skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds())));
+	float ambientValue = skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
+	program->setUniformVec4("ambientColor", glm::vec4(ambientValue, ambientValue, ambientValue,1.0f));
 	program->setUniformVec3("pointLights[0].lightPosition", player->getEyePosition());
 
 	// fog
@@ -1535,6 +1525,15 @@ void Voxel::Game::renderGameWorld(const float delta)
 
 	// Render voronoi diagram
 	world->renderVoronoi(lineProgram);
+
+	glm::mat4 rayMat = mat4(1.0f);
+	rayMat = glm::translate(rayMat, player->getPosition());
+	auto playerRotation = player->getRotation();
+	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.y), glm::vec3(0, 1, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(playerRotation.x), glm::vec3(1, 0, 0));
+	rayMat = glm::rotate(rayMat, glm::radians(-playerRotation.z), glm::vec3(0, 0, 1));
+
+	Camera::mainCamera->getFrustum()->render(rayMat, lineProgram);
 	// --------------------------------------------------------------------------------------
 
 	// --------------------------------- Render UI ------------------------------------------

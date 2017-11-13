@@ -56,7 +56,8 @@ Camera* Camera::create(const vec3& position, const float fovy, const float nears
 
 	// Refernce: http://wiki.panotools.org/Field_of_View
 	newCamera->fovx = glm::degrees(2.0f * atan(tan(glm::radians(fovy * 0.5f)) * newCamera->aspect));
-	
+
+	newCamera->frustum->initDebugLines(fovy, newCamera->fovx, nears, fars);
 
 	newCamera->screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 
