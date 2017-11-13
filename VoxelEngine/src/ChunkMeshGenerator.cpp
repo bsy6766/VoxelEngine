@@ -79,8 +79,8 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 						//auto bt1 = Utility::Time::now();
 						// Get adjacent block and check if it's transparent or not
 						// Up. Up face is different compared to sides. Add only if above block is transparent or chunk section doesn't exists
-						int blockUp = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y + 1, worldPos.z);
-						if (blockUp == 0 || blockUp == 2)
+						ChunkMap::BQR blockUp = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y + 1, worldPos.z);
+						if (blockUp == ChunkMap::BQR::EXIST_TRANSPARENT || blockUp == ChunkMap::BQR::NO_CHUNK_SECTION)
 						{
 							// Block exists and transparent. Add face
 							face |= Cube::Face::TOP;
@@ -89,8 +89,8 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 						// Down. If current block is the most bottom block, doesn't have to add face
 						if (worldPos.y > 0)
 						{
-							int blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
-							if (blockDown == 0)
+							ChunkMap::BQR blockDown = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y - 1, worldPos.z);
+							if (blockDown == ChunkMap::BQR::EXIST_TRANSPARENT)
 							{
 								// Block exists and transparent. Add face
 								face |= Cube::Face::BOTTOM;
@@ -102,29 +102,29 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 						// Only add faces if side block is transparent or chunk section is nullptr. 
 						// If chunk doesn't exist, don't add.
 						// Left
-						auto blockLeft = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, worldPos.y, worldPos.z);
-						if (blockLeft == 0 || blockLeft == 2)
+						ChunkMap::BQR blockLeft = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, worldPos.y, worldPos.z);
+						if (blockLeft == ChunkMap::BQR::EXIST_TRANSPARENT || blockLeft == ChunkMap::BQR::NO_CHUNK_SECTION)
 						{
 							face |= Cube::Face::LEFT;
 						}
 
 						// Right
-						auto blockRight = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, worldPos.y, worldPos.z);
-						if (blockRight == 0 || blockRight == 2)
+						ChunkMap::BQR blockRight = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, worldPos.y, worldPos.z);
+						if (blockRight == ChunkMap::BQR::EXIST_TRANSPARENT || blockRight == ChunkMap::BQR::NO_CHUNK_SECTION)
 						{
 							face |= Cube::Face::RIGHT;
 						}
 
 						// Front
-						auto blockFront = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z - 1);
-						if (blockFront == 0 || blockFront == 2)
+						ChunkMap::BQR blockFront = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z - 1);
+						if (blockFront == ChunkMap::BQR::EXIST_TRANSPARENT || blockFront == ChunkMap::BQR::NO_CHUNK_SECTION)
 						{
 							face |= Cube::Face::FRONT;
 						}
 
 						// Back
-						auto blockBack = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z + 1);
-						if (blockBack == 0 || blockBack == 2)
+						ChunkMap::BQR blockBack = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, worldPos.y, worldPos.z + 1);
+						if (blockBack == ChunkMap::BQR::EXIST_TRANSPARENT || blockBack == ChunkMap::BQR::NO_CHUNK_SECTION)
 						{
 							face |= Cube::Face::BACK;
 						}
@@ -152,14 +152,14 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 							shadeWeight.resize(20, 0);
 
 							/*
-											top view
-												+z
-											below	above		mid
-											0 7 6	8 15 14		16 _ 19
-									+x		1 - 5   9  + 13		 _	 _	-x
-											2 3 4  10 11 12		17 _ 18
+							top view
+							+z
+							below	above		mid
+							0 7 6	8 15 14		16 _ 19
+							+x		1 - 5   9  + 13		 _	 _	-x
+							2 3 4  10 11 12		17 _ 18
 
-												-z
+							-z
 							*/
 
 							// Below first
@@ -167,50 +167,50 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 								const int belowY = worldPos.y - 1;
 								if (belowY >= 0)
 								{
-									int block0 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z + 1);
-									if (block0 == 1)
+									ChunkMap::BQR block0 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z + 1);
+									if (block0 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(0) += 1;
 									}
 
-									int block1 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z);
-									if (block1 == 1)
+									ChunkMap::BQR block1 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z);
+									if (block1 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(1) += 1;
 									}
 
-									int block2 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z - 1);
-									if (block2 == 1)
+									ChunkMap::BQR block2 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, belowY, worldPos.z - 1);
+									if (block2 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(2) += 1;
 									}
 
-									int block3 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z - 1);
-									if (block3 == 1)
+									ChunkMap::BQR block3 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z - 1);
+									if (block3 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(3) += 1;
 									}
 
-									int block4 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z - 1);
-									if (block4 == 1)
+									ChunkMap::BQR block4 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z - 1);
+									if (block4 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(4) += 1;
 									}
 
-									int block5 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z);
-									if (block5 == 1)
+									ChunkMap::BQR block5 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z);
+									if (block5 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(5) += 1;
 									}
 
-									int block6 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z + 1);
-									if (block6 == 1)
+									ChunkMap::BQR block6 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, belowY, worldPos.z + 1);
+									if (block6 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(6) += 1;
 									}
 
-									int block7 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z + 1);
-									if (block7 == 1)
+									ChunkMap::BQR block7 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, belowY, worldPos.z + 1);
+									if (block7 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(7) += 1;
 									}
@@ -222,50 +222,50 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 								const int aboveY = worldPos.y + 1;
 								if (aboveY <= Constant::HEIGHEST_BLOCK_Y)
 								{
-									int block8 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z + 1);
-									if (block8 == 1)
+									ChunkMap::BQR block8 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z + 1);
+									if (block8 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(8) += 1;
 									}
 
-									int block9 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z);
-									if (block9 == 1)
+									ChunkMap::BQR block9 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z);
+									if (block9 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(9) += 1;
 									}
 
-									int block10 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z - 1);
-									if (block10 == 1)
+									ChunkMap::BQR block10 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, aboveY, worldPos.z - 1);
+									if (block10 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(10) += 1;
 									}
 
-									int block11 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, aboveY, worldPos.z - 1);
-									if (block11 == 1)
+									ChunkMap::BQR block11 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, aboveY, worldPos.z - 1);
+									if (block11 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(11) += 1;
 									}
 
-									int block12 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z - 1);
-									if (block12 == 1)
+									ChunkMap::BQR block12 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z - 1);
+									if (block12 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(12) += 1;
 									}
 
-									int block13 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z);
-									if (block13 == 1)
+									ChunkMap::BQR block13 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z);
+									if (block13 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(13) += 1;
 									}
 
-									int block14 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z + 1);
-									if (block14 == 1)
+									ChunkMap::BQR block14 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, aboveY, worldPos.z + 1);
+									if (block14 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(14) += 1;
 									}
 
-									int block15 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, aboveY, worldPos.z + 1);
-									if (block15 == 1)
+									ChunkMap::BQR block15 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x, aboveY, worldPos.z + 1);
+									if (block15 == ChunkMap::BQR::EXIST_OPAQUE)
 									{
 										shadeWeight.at(15) += 1;
 									}
@@ -276,26 +276,26 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 							{
 								const int midY = worldPos.y;
 
-								int block16 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, midY, worldPos.z + 1);
-								if (block16 == 1)
+								ChunkMap::BQR block16 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, midY, worldPos.z + 1);
+								if (block16 == ChunkMap::BQR::EXIST_OPAQUE)
 								{
 									shadeWeight.at(16) += 1;
 								}
 
-								int block17 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, midY, worldPos.z - 1);
-								if (block17 == 1)
+								ChunkMap::BQR block17 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x + 1, midY, worldPos.z - 1);
+								if (block17 == ChunkMap::BQR::EXIST_OPAQUE)
 								{
 									shadeWeight.at(17) += 1;
 								}
 
-								int block18 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, midY, worldPos.z - 1);
-								if (block18 == 1)
+								ChunkMap::BQR block18 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, midY, worldPos.z - 1);
+								if (block18 == ChunkMap::BQR::EXIST_OPAQUE)
 								{
 									shadeWeight.at(18) += 1;
 								}
 
-								int block19 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, midY, worldPos.z + 1);
-								if (block19 == 1)
+								ChunkMap::BQR block19 = chunkMap->isBlockAtWorldXYZOpaque(worldPos.x - 1, midY, worldPos.z + 1);
+								if (block19 == ChunkMap::BQR::EXIST_OPAQUE)
 								{
 									shadeWeight.at(19) += 1;
 								}

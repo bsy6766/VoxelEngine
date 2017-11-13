@@ -148,12 +148,19 @@ namespace Voxel
 		Block* getBlockAtWorldXYZ(const glm::vec3& worldPosition);
 		
 		// Check if block is opaque.
-		// Retruns 0 if block exists and transparent. 
-		// Returns 1 if block exists and opaque
-		// Retruns 2 if chunk section doesn't exists
-		// Retruns 3 if chunk doesn't exsits.
-		// Returns 4 if chunk is inactive
-		int isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
+		enum class BLOCK_QUERY_RESULT
+		{
+			NONE = -1,
+			EXIST_TRANSPARENT = 0,		// block exists and it's transparent
+			EXIST_OPAQUE,				// block exists and it's opaque
+			NO_CHUNK_SECTION,			// chunk section doesn't exists
+			NO_CHUNK,					// chunk doesn't exists
+			INACTIVE_CHUNK,				// chunk is inactive.
+		};
+
+		typedef BLOCK_QUERY_RESULT BQR;
+
+		BQR isBlockAtWorldXYZOpaque(const int x, const int y, const int z);
 
 		// Place block at block world coordinate.
 		void placeBlockAt(const glm::ivec3& blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager* wm, const bool overwrite = true, const bool byPlayer = false);

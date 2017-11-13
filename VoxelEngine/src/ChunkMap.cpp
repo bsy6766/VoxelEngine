@@ -701,7 +701,7 @@ Block * Voxel::ChunkMap::getBlockAtWorldXYZ(const glm::vec3 & worldPosition)
 	return getBlockAtWorldXYZ(static_cast<int>(worldPosition.x), static_cast<int>(worldPosition.y), static_cast<int>(worldPosition.z));
 }
 
-int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int z)
+ChunkMap::BQR Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int z)
 {
 	// Retruns 0 if block exists and transparent. 
 	// Returns 1 if block exists and opaque
@@ -716,7 +716,8 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 
 	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(x, y, z), blockLocalPos, chunkSectionPos);
 
-	int result = -1;
+	BQR result = BQR::NONE;
+
 	// target chunk
 	auto chunk = this->getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 	if (chunk)
@@ -734,34 +735,34 @@ int Voxel::ChunkMap::isBlockAtWorldXYZOpaque(const int x, const int y, const int
 				{
 					if (block->isTransparent())
 					{
-						result = 0;
+						result = BQR::EXIST_TRANSPARENT;
 					}
 					else
 					{
-						result = 1;
+						result = BQR::EXIST_OPAQUE;
 					}
 				}
 				else
 				{
 					// block is air == nullptr
-					result = 0;
+					result = BQR::EXIST_TRANSPARENT;
 				}
 			}
 			// There is no block in this chunk section = nullptr
 			else
 			{
-				result = 2;
+				result = BQR::NO_CHUNK_SECTION;
 			}
 		}
 		// Can't access block that is in inactive chunk
 		else
 		{
-			result = 4;
+			result = BQR::INACTIVE_CHUNK;
 		}
 	}
 	else
 	{
-		result = 3;
+		result = BQR::NO_CHUNK;
 	}
 
 	//auto end = Utility::Time::now();
