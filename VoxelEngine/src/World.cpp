@@ -736,10 +736,11 @@ void Voxel::World::printRegionBiomeAndTerrain()
 		auto region = r.second;
 
 		auto bt = region->getBiomeType();
+		auto tt = region->getTerrainType();
 
-		std::cout << "Region #" << region->getID() << std::endl;
+		std::cout << "Region #" << region->getID() << "----------" << std::endl;
 		bt.print();
-		std::cout << "Terrain: " << Terrain::terrainTypeToString(region->getTerrainType()) << std::endl;
+		tt.print();
 	}
 }
 

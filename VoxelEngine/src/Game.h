@@ -171,6 +171,9 @@ namespace Voxel
 		void updateChunks();
 		void updatePlayerRaycast();
 		void updatePlayerCameraCollision();
+
+		// Replace player to highest y 
+		void replacePlayerToTopY();
 		
 		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();

@@ -877,6 +877,26 @@ void Voxel::ChunkSection::setBlockAt(const int x, const int y, const int z, cons
 	}
 }
 
+int Voxel::ChunkSection::getLocalTopY(const int localX, const int localZ)
+{
+	int maxY = -1;
+
+	for (int i = 0; i < Constant::CHUNK_SECTION_HEIGHT; i++)
+	{
+		auto index = localBlockXYZToIndex(localX, i, localZ);
+		if (blocks.at(index))
+		{
+			maxY = std::max(maxY, i);
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return maxY;
+}
+
 glm::vec3 Voxel::ChunkSection::getWorldPosition()
 {
 	return worldPosition;

@@ -732,9 +732,29 @@ bool Voxel::Chunk::isSmoothed()
 	return smoothed.load();
 }
 
-int Voxel::Chunk::getTopY(const int x, const int z)
+int Voxel::Chunk::getTopY(const int localX, const int localZ)
 {
-	return heightMap.at(x).at(z);
+	for (unsigned int i = chunkSections.size() - 1; i >= 0; --i)
+	{
+		if (chunkSections.at(i))
+		{
+			auto topLocalY = chunkSections.at(i)->getLocalTopY(localX, localZ);
+			if (topLocalY == -1)
+			{
+				continue;
+			}
+			else
+			{
+				return topLocalY + (i * Constant::CHUNK_SECTION_HEIGHT);
+			}
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return -1;
 }
 
 void Voxel::Chunk::updateTimestamp(const double timestamp)

@@ -10,6 +10,7 @@
 #include <Player.h>
 #include <Game.h>
 #include <World.h>
+#include <Region.h>
 #include <algorithm>
 #include <Camera.h>
 #include <ChunkMap.h>
@@ -489,6 +490,37 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							catch (...)
 							{
 								// do nothing
+							}
+						}
+					}
+					else if (arg1 == "tp")
+					{
+						if (arg2 == "region" || arg2 == "rg")
+						{
+							int regionID = 0;
+							try
+							{
+								regionID = std::stoi(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							auto region = world->getRegion(regionID);
+							if (region)
+							{
+								auto regionSitePos = region->getSitePosition();
+
+								// y is -1 because we are traveling to place where chunk doesn exsits, so we don't know the top y value
+								game->teleportPlayer(glm::vec3(regionSitePos.x, -1, regionSitePos.y));
+
+								lastCommand = command;
+								return true;
+							}
+							else
+							{
+								return false;
 							}
 						}
 					}

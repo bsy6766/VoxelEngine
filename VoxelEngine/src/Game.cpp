@@ -386,11 +386,13 @@ void Voxel::Game::createWorld()
 	world->init(10, 10, 0, globalSeed);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
-	auto& rand = Random::getInstance();
-	auto randX = rand.getRandomFloat(startingRegionSitePos.x - 100.0f, startingRegionSitePos.x + 100.0f);
-	auto randZ = rand.getRandomFloat(startingRegionSitePos.y - 100.0f, startingRegionSitePos.y + 100.0f);
 
-	player->setPosition(glm::vec3(randX, 0, randZ), false);
+	startingRegionSitePos = glm::vec2(glm::ivec2(startingRegionSitePos)) + 0.5f;
+
+	player->setPosition(glm::vec3(startingRegionSitePos.x, -1.0f, startingRegionSitePos.y), false);
+
+	auto pp = player->getPosition();
+	std::cout << "Placing player to starting region #: " << world->getCurrentRegion()->getID() << ", at (" << pp.x << ", " << pp.z << ")\n";
 }
 
 void Voxel::Game::teleportPlayer(const glm::vec3 & position)
@@ -415,15 +417,14 @@ void Game::update(const float delta)
 {
 	if (loadingState == LoadingState::INITIALIZING)
 	{
+		// Game is initializing
 		if (chunkWorkManager->isFirstInitDone())
 		{
+			// First initialization is done.
 			loadingState = LoadingState::FINISHED;
 
 			// get top y at player position
-			auto playerPosition = player->getPosition();
-			float topY = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.5f;
-			playerPosition.y = topY;
-			player->setPosition(playerPosition, false);
+			replacePlayerToTopY();
 		}
 	}
 	else if (loadingState == LoadingState::RELOADING)
@@ -476,6 +477,10 @@ void Game::update(const float delta)
 			}
 			else
 			{
+				// Chunk generation is done. Replace player if player teleported
+				replacePlayerToTopY();
+
+				// Reset states
 				loadingState = LoadingState::FINISHED;
 				reloadState = ReloadState::NONE;
 			}
@@ -680,6 +685,15 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
 		}
 		*/
+
+		auto result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(-200.5f, 100.0f, 200.7f));
+		std::cout << Utility::Log::vec3ToStr(result) << "\n";
+		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, 200.7f));
+		std::cout << Utility::Log::vec3ToStr(result) << "\n";
+		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(-200.5f, 100.0f, -200.7f));
+		std::cout << Utility::Log::vec3ToStr(result) << "\n";
+		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, -200.7f));
+		std::cout << Utility::Log::vec3ToStr(result) << "\n";
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
@@ -1364,6 +1378,19 @@ void Voxel::Game::updatePlayerCameraCollision()
 
 	//auto end = Utility::Time::now();
 	//std::cout << "t: " << Utility::Time::toMicroSecondString(start, end) << "\n";
+}
+
+void Voxel::Game::replacePlayerToTopY()
+{
+	auto playerPosition = player->getPosition();
+	if (playerPosition.y == -1)
+	{
+		playerPosition.y = static_cast<float>(chunkMap->getTopYAt(glm::vec2(playerPosition.x, playerPosition.z))) + 1.1f;
+	}
+
+	std::cout << "Replacing player to top y. Pos: (" << playerPosition.x << ", " << playerPosition.y << ", " << playerPosition.z << ")\n";
+
+	player->setPosition(playerPosition, false);
 }
 
 void Voxel::Game::checkUnloadedChunks()

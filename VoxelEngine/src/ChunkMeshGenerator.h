@@ -44,7 +44,7 @@ namespace Voxel
 		*	@param [in] color Color of block
 		*	@param [in] 
 		*/
-		void generateSolidBlockMesh(const glm::vec3& worldPosition, const glm::vec4& color, const Cube::Face faces, int& indicesOffsetPerBlock);
+		//void generateSolidBlockMesh(const glm::vec3& worldPosition, const glm::vec4& color, const Cube::Face faces, int& indicesOffsetPerBlock);
 	public:
 		ChunkMeshGenerator() = default;
 		~ChunkMeshGenerator() = default;

@@ -299,24 +299,12 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				plantPair = (findPlant->second).at(rand);
 			}
 
-			plants.push_back(plantPair);
-
-			/*
 			switch (plantPair.plant)
 			{
-			case Voxel::Vegitation::Plant::SHORT_GRASS:
-				plants.push_back()
-				break;
-			case Voxel::Vegitation::Plant::TALL_GRASS:
-				break;
-			case Voxel::Vegitation::Plant::FERN:
-				break;
-			case Voxel::Vegitation::Plant::KORU:
-				break;
 			default:
+				plants.push_back(plantPair);
 				break;
 			}
-			*/
 		}
 	}
 
@@ -356,35 +344,26 @@ void Voxel::Biome::initVegitation(std::mt19937& engine)
 				treePair = (findTree->second).at(rand);
 			}
 
-			trees.push_back(treePair);
-
-			/*
 			switch (treePair.tree)
 			{
-			case Voxel::Vegitation::Tree::OAK:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::OAK, 1 });
-				break;
-			case Voxel::Vegitation::Tree::BIRCH:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::BIRCH, 1 });
-				break;
-			case Voxel::Vegitation::Tree::SPRUCE:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::SPRUCE, 1 });
-				break;
-			case Voxel::Vegitation::Tree::PINE:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::PINE, 1 });
-				break;
 			case Voxel::Vegitation::Tree::OAK_BIRCH:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::OAK, 1 });
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::BIRCH, 1 });
+			{
+				int mixRand = std::uniform_int_distribution<>(20, 80)(engine);
+				trees.push_back(TreePair(Voxel::Vegitation::Tree::OAK, mixRand));
+				trees.push_back(TreePair(Voxel::Vegitation::Tree::BIRCH, 100 - mixRand));
+			}
 				break;
 			case Voxel::Vegitation::Tree::SPRUCE_PINE:
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::SPRUCE, 1 });
-				trees.push_back(TreePair{ Voxel::Vegitation::Tree::PINE, 1 });
+			{
+				int mixRand = std::uniform_int_distribution<>(20, 80)(engine);
+				trees.push_back(TreePair(Voxel::Vegitation::Tree::SPRUCE, mixRand));
+				trees.push_back(TreePair(Voxel::Vegitation::Tree::PINE, 100 - mixRand));
+			}
 				break;
 			default:
+				trees.push_back(treePair);
 				break;
 			}
-			*/
 		}
 	}
 }

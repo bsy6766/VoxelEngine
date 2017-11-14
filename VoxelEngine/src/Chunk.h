@@ -164,8 +164,8 @@ namespace Voxel
 
 		bool isSmoothed();
 
-		// get top y of terrain. ignores structure. just trerrain
-		int getTopY(const int x, const int z);
+		// get top y 
+		int getTopY(const int localX, const int localZ);
 
 		// Update chunk's last activated timestamp
 		void updateTimestamp(const double timestamp);

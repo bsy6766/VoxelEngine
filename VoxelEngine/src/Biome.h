@@ -24,6 +24,9 @@ namespace Voxel
 		public:
 			Voxel::Vegitation::Tree tree;
 			int weight;
+
+			TreePair() : tree(Voxel::Vegitation::Tree::NONE), weight(0) {}
+			TreePair(const Voxel::Vegitation::Tree tree, const int weight) : tree(tree), weight(weight) {}
 		};
 
 		struct PlantPair
@@ -31,6 +34,9 @@ namespace Voxel
 		public:
 			Voxel::Vegitation::Plant plant;
 			int weight;
+
+			PlantPair() : plant(Voxel::Vegitation::Plant::NONE), weight(0) {}
+			PlantPair(const Voxel::Vegitation::Plant plant, const int weight) : plant(plant), weight(weight) {}
 		};
 
 	public:

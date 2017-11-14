@@ -49,6 +49,8 @@ namespace Voxel
 		// setter
 		//void setModifier(Modifier modifier);
 		//Modifier getModifier();
+
+		void print();
 	};
 }
 

@@ -138,6 +138,7 @@ namespace Voxel
 
 		// Convert block world Position to local position and chunk position
 		void blockWorldCoordinateToLocalAndChunkSectionCoordinate(const glm::ivec3& blockWorldCoordinate, glm::ivec3& blockLocalCoordinate, glm::ivec3& chunkSectionCoordinate);
+		glm::ivec3 playerPosToBlockWorldCoordinate(const glm::vec3& playerPosition);
 
 		// Get chunks that touches the block
 		std::vector<glm::ivec2> getChunksNearByBlock(const glm::ivec3& blockLocalPos, const glm::ivec3& blockChunkPos);

@@ -108,6 +108,12 @@ Voxel::TerrainType Voxel::Terrain::getType() const
 	return this->type;
 }
 
+void Voxel::Terrain::print()
+{
+	std::cout << "Terrain: " << Terrain::terrainTypeToString(type, modifier) << std::endl;
+	std::cout << "\n";
+}
+
 /*
 void Voxel::Terrain::setModifier(Modifier modifier)
 {

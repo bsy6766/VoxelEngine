@@ -602,6 +602,18 @@ void Voxel::ChunkMap::blockWorldCoordinateToLocalAndChunkSectionCoordinate(const
 	chunkSectionCoordinate.z = chunkZ;
 }
 
+glm::ivec3 Voxel::ChunkMap::playerPosToBlockWorldCoordinate(const glm::vec3 & playerPosition)
+{
+	glm::ivec3 blockWorldCoordinate = glm::ivec3(glm::floor(playerPosition));
+
+	if (playerPosition.y < 0.0f)
+	{
+		blockWorldCoordinate.y = 0;
+	}
+
+	return blockWorldCoordinate;
+}
+
 std::vector<glm::ivec2> Voxel::ChunkMap::getChunksNearByBlock(const glm::ivec3 & blockLocalPos, const glm::ivec3& blockChunkPos)
 {
 	std::vector<glm::ivec2> list;
@@ -2297,7 +2309,7 @@ int Voxel::ChunkMap::getTopYAt(const glm::vec2 & position)
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
 
-	blockWorldCoordinateToLocalAndChunkSectionCoordinate(glm::ivec3(position.x, 0, position.y), blockLocalPos, chunkSectionPos);
+	blockWorldCoordinateToLocalAndChunkSectionCoordinate(playerPosToBlockWorldCoordinate(glm::vec3(position.x, 0, position.y)), blockLocalPos, chunkSectionPos);
 
 	auto chunk = getChunkAtXZ(chunkSectionPos.x, chunkSectionPos.z);
 	if (chunk)
