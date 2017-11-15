@@ -68,6 +68,7 @@ Game::Game()
 	, gameState(GameState::IDLE)
 	, loadingState(LoadingState::INITIALIZING)
 	, reloadState(ReloadState::NONE)
+	, renderingState(RenderingState::WORLD)
 	, skipUpdate(false)
 {
 	// init instances
@@ -650,7 +651,6 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 
-
 	if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
 	{
 		gameState = GameState::CURSOR_MODE;
@@ -660,6 +660,15 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		gameState = GameState::IDLE;
 		cursor->setVisibility(false);
+	}
+
+	if (input->getKeyDown(GLFW_KEY_1, true))
+	{
+		cursor->setCursorType(UI::Cursor::CursorType::POINTER);
+	}
+	else if (input->getKeyDown(GLFW_KEY_2, true))
+	{
+		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
 	}
 
 	if(input->getKeyDown(GLFW_KEY_T, true))
@@ -700,36 +709,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
 		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
 	}
-
-	if (input->getKeyDown(GLFW_KEY_Y, true))
-	{
-		/*
-		std::mt19937 generator;
-		std::binomial_distribution<int> dist(9, 0.5);
-
-		std::cout << "max = " << dist.max() << std::endl;
-		std::cout << "min = " << dist.min() << std::endl;
-
-		std::vector<int> freq(10, 0);
-
-		for (int i = 0; i < 1000; i++)
-		{
-			freq.at(dist(generator))++;
-		}
-
-		for (int i = 0; i < 10; i++)
-		{
-			std::cout << i << ": ";
-			int len = freq.at(i) / 50;
-			for (int j = 0; j < len; j++)
-			{
-				std::cout << "*";
-			}
-			std::cout << "   (" << freq.at(i) << ")\n";
-		}
-		*/
-	}
-	
+		
 	if (input->getKeyDown(GLFW_KEY_P, true))
 	{
 		auto playerPos = player->getPosition();
@@ -773,7 +753,20 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		debugConsole->updateVsync(false);
 	}
 
-	// Keyboard
+	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::TOGGLE_WORLD_MAP, true))
+	{
+		if (renderingState == RenderingState::WORLD)
+		{
+			std::cout << "[Game] Opening world map\n";
+			renderingState = RenderingState::WORLD_MAP;
+		}
+		else if (renderingState == RenderingState::WORLD_MAP)
+		{
+			std::cout << "[Game] Closing world map\n";
+			renderingState = RenderingState::WORLD;
+		}
+	}
+	
 	if (cameraControlMode)
 	{
 		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
@@ -850,32 +843,19 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		}
 	}
 
-	// For debug
-	if (input->getKeyDown(GLFW_KEY_BACKSPACE))
-	{
-		Camera::mainCamera->print();
-	}
-
 	if (input->getKeyDown(GLFW_KEY_C, true))
 	{
 		cameraMode = !cameraMode;
 		std::cout << "[World] Camera mode " << std::string(cameraMode ? "enabled" : "disabled") << std::endl;
 	}
-
-	if (input->getKeyDown(GLFW_KEY_X, true))
+	else if (input->getKeyDown(GLFW_KEY_X, true))
 	{
 		cameraControlMode = !cameraControlMode;
 		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
 	}
-
-	if (input->getKeyDown(GLFW_KEY_1, true))
+	else if (input->getKeyDown(GLFW_KEY_Z, true))
 	{
-		cursor->setCursorType(UI::Cursor::CursorType::POINTER);
-	}
-
-	if (input->getKeyDown(GLFW_KEY_2, true))
-	{
-		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
+		Camera::mainCamera->setPosition(player->getPosition());
 	}
 
 	if (input->getKeyDown(GLFW_KEY_3, true))
@@ -885,17 +865,6 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	if (input->getKeyDown(GLFW_KEY_4, true))
 	{
 		player->setRotation(glm::vec3(0, 180, 0), false);
-	}
-
-	if (input->getKeyDown(GLFW_KEY_5, true))
-	{
-		player->setPosition(glm::vec3(365.244, 68, -117.754), false);
-		player->setRotation(glm::vec3(291.5, 302.25, 0), false);
-	}
-
-	if (input->getKeyDown(GLFW_KEY_6, true))
-	{
-		Camera::mainCamera->setPosition(player->getPosition());
 	}
 }
 
@@ -1471,18 +1440,32 @@ void Game::render(const float delta)
 	else if (loadingState == LoadingState::FADING)
 	{
 		renderLoadingScreen(delta);
-		renderGameWorld(delta);
+		renderGame(delta);
 	}
 	else
 	{
-		renderGameWorld(delta);
+		renderGame(delta);
 	}
 	
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
-void Voxel::Game::renderGameWorld(const float delta)
+void Voxel::Game::renderGame(const float delta)
+{
+	if (renderingState == RenderingState::WORLD)
+	{
+		renderWorld(delta);
+	}
+	else if (renderingState == RenderingState::WORLD_MAP)
+	{
+		renderWorldMap(delta);
+	}
+
+	renderDebugConsole();
+}
+
+void Voxel::Game::renderWorld(const float delta)
 {
 	auto& pm = ProgramManager::getInstance();
 
@@ -1506,11 +1489,11 @@ void Voxel::Game::renderGameWorld(const float delta)
 	program->setUniformMat4("worldMat", worldMat);
 
 	// Model mat is identity matrix
-	program->setUniformMat4("modelMat", glm::mat4(1.0f)); 
+	program->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	// Light
 	float ambientValue = skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
-	program->setUniformVec4("ambientColor", glm::vec4(ambientValue, ambientValue, ambientValue,1.0f));
+	program->setUniformVec4("ambientColor", glm::vec4(ambientValue, ambientValue, ambientValue, 1.0f));
 	program->setUniformVec3("pointLights[0].lightPosition", player->getEyePosition());
 
 	// fog
@@ -1557,7 +1540,7 @@ void Voxel::Game::renderGameWorld(const float delta)
 
 	// Render voronoi diagram
 	world->renderVoronoi(lineProgram);
-	
+
 	if (cameraMode)
 	{
 		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
@@ -1567,12 +1550,13 @@ void Voxel::Game::renderGameWorld(const float delta)
 	// --------------------------------- Render UI ------------------------------------------
 	// Render UIs
 	defaultCanvas->render();
-	debugConsole->render();
-
+	// Render cursor. Cursor has highest Z Order among other UIs. Must be always visible.
 	cursor->render();
-
-	debugConsole->updateDrawCallsAndVerticesSize();
 	// --------------------------------------------------------------------------------------
+}
+
+void Voxel::Game::renderWorldMap(const float delta)
+{
 }
 
 void Voxel::Game::renderLoadingScreen(const float delta)
@@ -1582,6 +1566,12 @@ void Voxel::Game::renderLoadingScreen(const float delta)
 
 	// Render UIs
 	loadingCanvas->render();
+}
+
+void Voxel::Game::renderDebugConsole()
+{
+	debugConsole->render();
+	debugConsole->updateDrawCallsAndVerticesSize();
 }
 
 void Voxel::Game::setFogEnabled(const bool enabled)

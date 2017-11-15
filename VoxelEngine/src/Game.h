@@ -86,6 +86,7 @@ namespace Voxel
 		GameState gameState;
 		LoadingState loadingState;
 		ReloadState reloadState;
+		RenderingState renderingState;
 		
 		// global seed
 		std::string globalSeed;
@@ -210,8 +211,11 @@ namespace Voxel
 		void rebuildWorld();
 
 		void render(const float delta);
-		void renderGameWorld(const float delta);
+		void renderGame(const float delta);
+		void renderWorld(const float delta);
+		void renderWorldMap(const float delta);
 		void renderLoadingScreen(const float delta);
+		void renderDebugConsole();
 
 		// debug console function
 		void setFogEnabled(const bool enabled);

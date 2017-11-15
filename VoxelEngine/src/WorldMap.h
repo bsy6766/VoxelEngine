@@ -29,7 +29,7 @@ namespace Voxel
 		RegionMesh() : vao(0), modelMat(glm::mat4(1.0f)), position(glm::vec3(0.0f)) {}
 		~RegionMesh()
 		{
-
+			glDeleteVertexArrays(1, &vao);
 		}
 	};
 

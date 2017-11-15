@@ -22,7 +22,7 @@ InputHandler::InputHandler()
 		{ KEY_INPUT::MOVE_RIGHT, GLFW_KEY_D },
 		{ KEY_INPUT::JUMP, GLFW_KEY_SPACE },
 		{ KEY_INPUT::SNEAK, GLFW_KEY_LEFT_SHIFT },
-		{ KEY_INPUT::TOGGLE_MAP, GLFW_KEY_M },
+		{ KEY_INPUT::TOGGLE_WORLD_MAP, GLFW_KEY_M },
 		// Debug.
 		{ KEY_INPUT::MOVE_UP, GLFW_KEY_SPACE },
 		{ KEY_INPUT::MOVE_DOWN, GLFW_KEY_LEFT_SHIFT },
@@ -271,13 +271,13 @@ bool Voxel::InputHandler::getKeyDown(const KEY_INPUT keyInput, const bool tick)
 		else
 		{
 			// Found default key
-			return getKeyDown(find->second);
+			return getKeyDown(find->second, tick);
 		}
 	}
 	else
 	{
 		// User bound the key for this KEY_INPUT
-		return getKeyDown(glfwKey);
+		return getKeyDown(glfwKey, tick);
 	}
 }
 

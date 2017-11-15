@@ -25,7 +25,7 @@ namespace Voxel
 			MOVE_RIGHT,
 			JUMP,
 			SNEAK,
-			TOGGLE_MAP,	
+			TOGGLE_WORLD_MAP,	
 
 			// Debug
 			MOVE_UP,
