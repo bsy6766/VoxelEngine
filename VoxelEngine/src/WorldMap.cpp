@@ -7,6 +7,8 @@
 #include <ProgramManager.h>
 #include <Program.h>
 #include <glm\gtx\transform.hpp>
+#include <Camera.h>
+#include <EarClip.h>
 
 using namespace Voxel;
 
@@ -73,22 +75,18 @@ void Voxel::RegionMesh::buildMesh(const std::vector<float>& fillVertices, const 
 	fillSize = fillIndices.size();
 }
 
-void Voxel::RegionMesh::render(const glm::mat4& worldMapMVPMat)
+void Voxel::RegionMesh::render(const glm::mat4& worldModelMat)
 {
 	if (fillVao)
 	{
 		RegionMesh::polygonProgram->use(true);
-		RegionMesh::polygonProgram->setUniformMat4("MVPMatrixMat", worldMapMVPMat);
+		RegionMesh::polygonProgram->setUniformMat4("modelMat", worldModelMat);
 		RegionMesh::polygonProgram->setUniformVec4("color", color);
 
 		glBindVertexArray(fillVao);
-		glDrawElements(GL_TRIANGLE_FAN, fillSize, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, fillSize, GL_UNSIGNED_INT, 0);
 	}
 }
-
-
-
-
 
 Voxel::WorldMap::WorldMap()
 	: vao(0)
@@ -96,7 +94,7 @@ Voxel::WorldMap::WorldMap()
 	, compass(nullptr)
 	, cameraIcon(nullptr)
 	, worldName(nullptr)
-	, MVPMatrix(1.0f)
+	, modelMat(1.0f)
 {}
 
 Voxel::WorldMap::~WorldMap()
@@ -110,6 +108,8 @@ void Voxel::WorldMap::init()
 	// Initailize world map
 	auto& pm = ProgramManager::getInstance();
 	RegionMesh::polygonProgram = pm.getDefaultProgram(Voxel::ProgramManager::PROGRAM_NAME::SINGLE_COLOR_SHADER);
+	RegionMesh::polygonProgram->use(true);
+	RegionMesh::polygonProgram->setUniformMat4("projMat", Camera::mainCamera->getProjection());
 }
 
 void Voxel::WorldMap::buildMesh(World * world)
@@ -142,19 +142,36 @@ void Voxel::WorldMap::buildMesh(World * world)
 				std::vector<glm::vec2> edgePoints;
 				region->getVoronoiEdgePoints(edgePoints);
 
+				// ear clip edge points
+				std::vector<glm::vec2> triangles = EarClip::earClipPolygon(edgePoints);
+
+				if (triangles.empty())
+				{
+					continue;
+				}
+
 				auto randColor = Color::getRandomColor();
 
 				// Top polygon
-				for (auto& edge : edgePoints)
+				for (unsigned int j = 0; j < triangles.size(); j += 3)
 				{
-					fillVertices.push_back(edge.x);
+					fillVertices.push_back(triangles.at(j).x);
 					fillVertices.push_back(yTop);
-					fillVertices.push_back(edge.y);
+					fillVertices.push_back(triangles.at(j).y);
+
+					fillVertices.push_back(triangles.at(j + 1).x);
+					fillVertices.push_back(yTop);
+					fillVertices.push_back(triangles.at(j + 1).y);
+
+					fillVertices.push_back(triangles.at(j + 2).x);
+					fillVertices.push_back(yTop);
+					fillVertices.push_back(triangles.at(j + 2).y);
 
 					fillIndices.push_back(index);
 					fillIndices.push_back(index + 1);
+					fillIndices.push_back(index + 2);
 
-					index += 2;
+					index += 3;
 				}
 
 				/*
@@ -205,20 +222,26 @@ void Voxel::WorldMap::buildMesh(World * world)
 
 				RegionMesh* newMesh = new RegionMesh();
 				newMesh->buildMesh(fillVertices, fillIndices);
+				newMesh->color = glm::vec4(randColor, 1.0f);
+
+				regionMeshes.at(i) = newMesh;
 			}
 		}
 		// Else, continue
 	}
 }
 
-void Voxel::WorldMap::updatePosition(const glm::vec2 & playerXZPos)
+void Voxel::WorldMap::updatePosition(const glm::vec3 & playerPos)
 {
-	position = glm::vec3(playerXZPos.x, 0, playerXZPos.y);
+	position = glm::vec3(playerPos.x, 0, playerPos.z);
+
+	modelMat = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f)) * glm::translate(glm::mat4(1.0f), position);
 }
 
-void Voxel::WorldMap::updateMatrix(const glm::mat4 & VPMatrix)
+void Voxel::WorldMap::updateViewMatrix(const glm::mat4 & viewMat)
 {
-	MVPMatrix = VPMatrix * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 1.0f, 0.1f)) * glm::translate(glm::mat4(1.0f), position);
+	RegionMesh::polygonProgram->use(true);
+	RegionMesh::polygonProgram->setUniformMat4("viewMat", viewMat);
 }
 
 void Voxel::WorldMap::clear()
@@ -235,7 +258,7 @@ void Voxel::WorldMap::render()
 	{
 		if (regionMesh)
 		{
-			regionMesh->render(MVPMatrix);
+			regionMesh->render(modelMat);
 		}
 	}
 }

@@ -248,7 +248,7 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, co
 	std::vector<boost::polygon::point_data<int>> points;
 
 	this->scale = 1.0f;
-	this->debugScale = 1.0f;
+	this->debugScale = 0.1f;
 
 	sitePositions.clear();
 	siteTypes.clear();
@@ -764,6 +764,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 					fillColor.push_back(difficultyColor.b);
 					fillColor.push_back(0.8f);
 
+					/*
 					fillBuffer.push_back(e1.x * debugScale);
 					fillBuffer.push_back(y);
 					fillBuffer.push_back(e1.y * debugScale);
@@ -772,12 +773,13 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 					fillColor.push_back(difficultyColor.g);
 					fillColor.push_back(difficultyColor.b);
 					fillColor.push_back(0.8f);
+					*/
 
 					addPolygon = true;
 
-					for (int i = 0; i < 2; i++)
+					for (int i = 0; i < 1; i++)
 					{
-						fillIndices.push_back((index * 2) + i);
+						fillIndices.push_back((index * 1) + i);
 					}
 					index++;
 				}

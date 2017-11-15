@@ -548,7 +548,7 @@ void Voxel::World::initVoronoiDebug()
 {
 	if (vd)
 	{
-		vd->initDebugDiagram(/*shared edges*/true, /*omitted cells*/true, /*pos pin*/true, /*graph*/true, /*fill*/false, /*infinite edges*/true, /*border*/true);
+		vd->initDebugDiagram(/*shared edges*/true, /*omitted cells*/true, /*pos pin*/true, /*graph*/true, /*fill*/true, /*infinite edges*/true, /*border*/true);
 	}
 }
 

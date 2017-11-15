@@ -41,7 +41,7 @@ namespace Voxel
 		~RegionMesh();
 
 		void buildMesh(const std::vector<float>& fillVertices, const std::vector<unsigned int>& fillIndices);
-		void render(const glm::mat4& worldMapMVPMat);
+		void render(const glm::mat4& worldModelMat);
 	};
 
 	/**
@@ -55,8 +55,8 @@ namespace Voxel
 		// OpenGL
 		GLuint vao;
 
-		// MVP matrix for world map
-		glm::mat4 MVPMatrix;
+		// model matrix for world map. scales down, follows palyer.
+		glm::mat4 modelMat;
 		
 		// UI canvas
 		UI::Canvas* uiCanvas;
@@ -87,8 +87,8 @@ namespace Voxel
 		*/
 		void buildMesh(World* world);
 		
-		void updatePosition(const glm::vec2& playerXZPos);
-		void updateMatrix(const glm::mat4& VPMatrix);
+		void updatePosition(const glm::vec3& playerPos);
+		void updateViewMatrix(const glm::mat4& viewMat);
 		
 		// Clear all the meshes and data.
 		void clear();

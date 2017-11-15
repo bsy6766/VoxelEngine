@@ -47,6 +47,8 @@
 #include <FileSystem.h>
 #include <algorithm>
 
+#include <EarClip.h>
+
 using namespace Voxel;
 
 Game::Game()
@@ -104,12 +106,7 @@ void Voxel::Game::init()
 
 	// init spritesheet
 	initSpriteSheets();
-
-	// program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
-	// use it
-	program->use(true);
-
+	
 	// Init world
 	world = new World();
 
@@ -128,6 +125,11 @@ void Voxel::Game::init()
 
 	// player
 	player = new Player();
+
+	// program
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	// use it
+	program->use(true);
 
 	// Lights
 	program->setUniformVec4("ambientColor", glm::vec4(1.0f));
@@ -322,6 +324,9 @@ void Voxel::Game::createNew(const std::string & worldName)
 
 	// Create world
 	createWorld();
+
+	// Init worldMap after creating the world
+	initWorldMap();
 
 	// Then based init chunks
 	createChunkMap();
@@ -534,17 +539,7 @@ void Game::update(const float delta)
 		Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
 
 		// After updating frustum, run frustum culling to find visible chunk
-		//std::vector<glm::ivec2> visibleChunks;
-		//std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs> visibleChunks;
-		//int totalVisible = chunkMap->findVisibleChunk(visibleChunks);
 		int totalVisible = chunkMap->findVisibleChunk(settingPtr->getRenderDistance());
-
-		/*
-		auto sortStart = Utility::Time::now();
-		chunkWorkManager->sortBuildMeshQueue(chunkMap->getCurrentChunkXZ(), visibleChunks);
-		auto sortEnd = Utility::Time::now();
-		std::cout << "sort: " << Utility::Time::toMicroSecondString(sortStart, sortEnd) << std::endl;
-		*/
 
 		if (playerMoved || playerRotated)
 		{
@@ -576,6 +571,8 @@ void Game::update(const float delta)
 			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
+
+			worldMap->updatePosition(playerPos);
 		}
 
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
@@ -720,8 +717,21 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << Utility::Log::vec3ToStr(result) << "\n";
 		*/
 
-		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
-		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
+		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
+		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
+
+		std::vector<glm::vec2> points;
+		points.push_back(glm::vec2(-100, -100));
+		points.push_back(glm::vec2(-100, 100));
+		points.push_back(glm::vec2(100, 100));
+		points.push_back(glm::vec2(100, -100));
+
+		auto triangles = EarClip::earClipPolygon(points);
+
+		for (auto& e : triangles)
+		{
+			std::cout << Utility::Log::vec2ToStr(e) << "\n";
+		}
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -1486,21 +1496,20 @@ void Voxel::Game::renderWorld(const float delta)
 	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	program->use(true);
 
-	glm::mat4 worldMat = glm::mat4(1.0f);
+	glm::mat4 viewMat = glm::mat4(1.0f);
 
 	// ------------------------------ Render world ------------------------------------------
 	// Get world view matrix based on mode
 	if (cameraMode)
 	{
-		worldMat = Camera::mainCamera->getView();
-
+		viewMat = Camera::mainCamera->getView();
 	}
 	else
 	{
-		worldMat = player->getViewMatrix();
+		viewMat = player->getViewMatrix();
 	}
 
-	program->setUniformMat4("worldMat", worldMat);
+	program->setUniformMat4("worldMat", viewMat);
 
 	// Model mat is identity matrix
 	program->setUniformMat4("modelMat", glm::mat4(1.0f));
@@ -1521,7 +1530,7 @@ void Voxel::Game::renderWorld(const float delta)
 	chunkMap->render();
 
 	// render skybox
-	skybox->updateMatrix(Camera::mainCamera->getProjection() * worldMat * player->getSkyboxMat());
+	skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * player->getSkyboxMat());
 	skybox->render();
 
 	// Render skybox
@@ -1535,7 +1544,7 @@ void Voxel::Game::renderWorld(const float delta)
 	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
-	lineProgram->setUniformMat4("worldMat", worldMat);
+	lineProgram->setUniformMat4("worldMat", viewMat);
 
 	// render chunk border. Need model matrix
 	chunkMap->renderChunkBorder(lineProgram);
@@ -1571,6 +1580,18 @@ void Voxel::Game::renderWorld(const float delta)
 
 void Voxel::Game::renderWorldMap(const float delta)
 {
+	glm::mat4 viewMat = glm::mat4(1.0f);
+
+	if (cameraMode)
+	{
+		viewMat = Camera::mainCamera->getView();
+	}
+	else
+	{
+		viewMat = player->getViewMatrix();
+	}
+
+	worldMap->updateViewMatrix(viewMat);
 	worldMap->render();
 }
 
