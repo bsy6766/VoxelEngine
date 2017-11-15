@@ -183,6 +183,8 @@ namespace Voxel
 		
 		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();
+
+		void toggleCursorMode(const bool mode);
 	public:
 		Game();
 		~Game();
@@ -220,6 +222,7 @@ namespace Voxel
 		void renderWorld(const float delta);
 		void renderWorldMap(const float delta);
 		void renderLoadingScreen(const float delta);
+		void renderUI();
 		void renderDebugConsole();
 
 		// debug console function

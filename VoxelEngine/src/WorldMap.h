@@ -28,9 +28,12 @@ namespace Voxel
 		GLuint fillVao;
 		unsigned int fillSize;
 		GLuint sideVao;
+		unsigned int sideSize;
 		glm::mat4 modelMat;
 		glm::vec3 position;
+		glm::vec2 rotation;
 		glm::vec4 color;
+		glm::vec4 sideColor;
 
 		// Pointer to programs
 		static Program* polygonProgram;
@@ -40,8 +43,9 @@ namespace Voxel
 		RegionMesh(const glm::mat4& modelMat, const glm::vec3& position);
 		~RegionMesh();
 
-		void buildMesh(const std::vector<float>& fillVertices, const std::vector<unsigned int>& fillIndices);
-		void render(const glm::mat4& worldModelMat);
+		void buildMesh(const std::vector<float>& fillVertices, const std::vector<unsigned int>& fillIndices, const std::vector<float>& sideVertices, const std::vector<unsigned int>& sideIndices);
+		void renderPolygon(const glm::mat4& worldModelMat);
+		void renderPolygonSide(const glm::mat4& worldModelMat);
 	};
 
 	/**

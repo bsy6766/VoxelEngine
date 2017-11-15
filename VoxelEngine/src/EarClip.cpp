@@ -52,13 +52,6 @@ std::vector<glm::vec2> Voxel::EarClip::earClipPolygon(std::vector<glm::vec2>& ve
 		reverseVertices(vertices);
 	}
 
-	const float shift = 0.0f;
-
-	for (auto& v : vertices)
-	{
-		v += shift;
-	}
-
 	std::vector<Vertex*> vertexList;
 
 	makeVertices(vertices, vertexList);
@@ -99,11 +92,6 @@ std::vector<glm::vec2> Voxel::EarClip::earClipPolygon(std::vector<glm::vec2>& ve
 	{
 		if (v)
 			delete v;
-	}
-
-	for (auto& v : triangles)
-	{
-		v -= shift;
 	}
 
 	return triangles;

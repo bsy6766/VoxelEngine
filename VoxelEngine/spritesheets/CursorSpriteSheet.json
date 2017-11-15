@@ -17,6 +17,15 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32},
 	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "pointer_large.png",
+	"frame": {"x":1,"y":69,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32},
+	"pivot": {"x":0.5,"y":0.5}
 }],
 "meta": {
 	"app": "http://www.codeandweb.com/texturepacker",
@@ -25,6 +34,6 @@
 	"format": "RGBA8888",
 	"size": {"w":128,"h":128},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:6ef60b2bd9bbd289f2cdfaef67570552:4c2f8d8b8ff04991ca8405b3ff1d6262:6eb4193a090dc0335c9cef8810c35d3f$"
+	"smartupdate": "$TexturePacker:SmartUpdate:439242a3204d501fa34d9d56ec09328b:a5409907404d77a1797b4307e00fb166:6eb4193a090dc0335c9cef8810c35d3f$"
 }
 }

@@ -61,10 +61,15 @@ void Voxel::ProgramManager::initDefaultPrograms()
 	auto voxelShaderSkyboxProgram = Program::create(voxelShaderSkyboxVert, voxelShaderSkyboxFrag);
 	defaultPrograms.emplace(PROGRAM_NAME::SKYBOX_SHADER, voxelShaderSkyboxProgram);
 
-	auto voxelShaderSingleColorVert = shaderManager.createShader("voxelShaderSingleColor", "shaders/voxelShaderSingleColor.vert", GL_VERTEX_SHADER);
-	auto voxelShaderSingleColorFrag = shaderManager.createShader("voxelShaderSingleColor", "shaders/voxelShaderSingleColor.frag", GL_FRAGMENT_SHADER);
-	auto voxelShaderSingleColorProgram = Program::create(voxelShaderSingleColorVert, voxelShaderSingleColorFrag);
-	defaultPrograms.emplace(PROGRAM_NAME::SINGLE_COLOR_SHADER, voxelShaderSingleColorProgram);
+	auto voxelShaderPolygonVert = shaderManager.createShader("voxelShaderPolygon", "shaders/voxelShaderPolygon.vert", GL_VERTEX_SHADER);
+	auto voxelShaderPolygonFrag = shaderManager.createShader("voxelShaderPolygon", "shaders/voxelShaderPolygon.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderPolygonProgram = Program::create(voxelShaderPolygonVert, voxelShaderPolygonFrag);
+	defaultPrograms.emplace(PROGRAM_NAME::POLYGON_SHADER, voxelShaderPolygonProgram);
+
+	auto voxelShaderPolygonSideVert = shaderManager.createShader("voxelShaderPolygonSide", "shaders/voxelShaderPolygonSide.vert", GL_VERTEX_SHADER);
+	auto voxelShaderPolygonSideFrag = shaderManager.createShader("voxelShaderPolygonSide", "shaders/voxelShaderPolygonSide.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderPolygonSideProgram = Program::create(voxelShaderPolygonSideVert, voxelShaderPolygonSideFrag);
+	defaultPrograms.emplace(PROGRAM_NAME::POLYGON_SIDE_SHADER, voxelShaderPolygonSideProgram);
 
 	shaderManager.releaseAll();
 }

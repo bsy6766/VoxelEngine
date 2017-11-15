@@ -664,13 +664,11 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 	if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
 	{
-		gameState = GameState::CURSOR_MODE;
-		cursor->setVisibility(true);
+		toggleCursorMode(true);
 	}
 	else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
 	{
-		gameState = GameState::IDLE;
-		cursor->setVisibility(false);
+		toggleCursorMode(false);
 	}
 
 	if (input->getKeyDown(GLFW_KEY_1, true))
@@ -782,12 +780,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		if (renderingState == RenderingState::WORLD)
 		{
 			std::cout << "[Game] Opening world map\n";
-			renderingState = RenderingState::WORLD_MAP;
+			renderingState = RenderingState::WORLD_MAP; 
+			toggleCursorMode(true);
 		}
 		else if (renderingState == RenderingState::WORLD_MAP)
 		{
 			std::cout << "[Game] Closing world map\n";
 			renderingState = RenderingState::WORLD;
+			toggleCursorMode(false);
 		}
 	}
 	
@@ -1412,6 +1412,20 @@ void Voxel::Game::checkUnloadedChunks()
 	}
 }
 
+void Voxel::Game::toggleCursorMode(const bool mode)
+{
+	if (mode)
+	{
+		gameState = GameState::CURSOR_MODE;
+		cursor->setVisibility(true);
+	}
+	else
+	{
+		gameState = GameState::IDLE;
+		cursor->setVisibility(false);
+	}
+}
+
 void Voxel::Game::refreshChunkMap()
 {
 	std::cout << "Refreshing all chunk meshes" << std::endl;
@@ -1480,13 +1494,21 @@ void Voxel::Game::renderGame(const float delta)
 	if (renderingState == RenderingState::WORLD)
 	{
 		renderWorld(delta);
+		renderUI();
 	}
 	else if (renderingState == RenderingState::WORLD_MAP)
 	{
 		renderWorldMap(delta);
 	}
 
+	// Clear depth buffer and render above current buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
+
 	renderDebugConsole();
+
+	// Render cursor. Cursor has highest Z Order among other UIs. Must be always visible.
+	cursor->render();
 }
 
 void Voxel::Game::renderWorld(const float delta)
@@ -1552,29 +1574,18 @@ void Voxel::Game::renderWorld(const float delta)
 	// render player. Need model matrix
 	player->renderDebugLines(lineProgram);
 
-	if (player->isLookingAtBlock())	// Error stack: 3
+	if (player->isLookingAtBlock())
 	{
 		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition());
 	}
 
-	// Clear depth buffer and render above current buffer
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glDepthFunc(GL_ALWAYS);
-
 	// Render voronoi diagram
-	world->renderVoronoi(lineProgram);
+	//world->renderVoronoi(lineProgram);
 
 	if (cameraMode)
 	{
 		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
 	}
-	// --------------------------------------------------------------------------------------
-
-	// --------------------------------- Render UI ------------------------------------------
-	// Render UIs
-	defaultCanvas->render();
-	// Render cursor. Cursor has highest Z Order among other UIs. Must be always visible.
-	cursor->render();
 	// --------------------------------------------------------------------------------------
 }
 
@@ -1602,6 +1613,18 @@ void Voxel::Game::renderLoadingScreen(const float delta)
 
 	// Render UIs
 	loadingCanvas->render();
+}
+
+void Voxel::Game::renderUI()
+{
+	// Clear depth buffer and render above current buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
+
+	// --------------------------------- Render UI ------------------------------------------
+	// Render UIs
+	defaultCanvas->render();
+	// --------------------------------------------------------------------------------------
 }
 
 void Voxel::Game::renderDebugConsole()
