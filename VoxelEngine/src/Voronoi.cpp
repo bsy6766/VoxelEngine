@@ -751,26 +751,6 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 							buffer.push_back(1.0f);
 						}
 					}
-					/*
-					else
-					{
-					buffer.push_back(e0.x * debugScale);
-					buffer.push_back(y);
-					buffer.push_back(e0.y * debugScale);
-					buffer.push_back(lineColor.r);
-					buffer.push_back(lineColor.g);
-					buffer.push_back(lineColor.b);
-					buffer.push_back(1.0f);
-
-					buffer.push_back(e1.x * debugScale);
-					buffer.push_back(y);
-					buffer.push_back(e1.y * debugScale);
-					buffer.push_back(lineColor.r);
-					buffer.push_back(lineColor.g);
-					buffer.push_back(lineColor.b);
-					buffer.push_back(1.0f);
-					}
-					*/
 				}
 
 				if (fill)
@@ -978,7 +958,7 @@ void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const boo
 	}
 
 	// Enable vertices attrib
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	GLint vertLoc = defaultProgram->getAttribLocation("vert");
 	GLint colorLoc = defaultProgram->getAttribLocation("color");
 

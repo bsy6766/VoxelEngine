@@ -21,6 +21,7 @@ namespace Voxel
 	class World;
 	class Physics;
 	class Setting;
+	class WorldMap;
 
 	namespace UI
 	{
@@ -114,6 +115,9 @@ namespace Voxel
 		// Setting instance ptr
 		Setting* settingPtr;
 
+		// World map
+		WorldMap* worldMap;
+
 		// UI canvases
 		UI::Canvas* defaultCanvas;
 		UI::Canvas* loadingCanvas;
@@ -157,6 +161,7 @@ namespace Voxel
 		void initDebugConsole();
 		void initCursor();
 		void initSkyBox();
+		void initWorldMap();
 
 		// Update inputs
 		void updateKeyboardInput(const float delta);

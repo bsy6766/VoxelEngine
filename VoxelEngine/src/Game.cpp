@@ -2,6 +2,7 @@
 
 #include <World.h>
 #include <Region.h>
+#include <WorldMap.h>
 #include <ChunkMap.h>
 #include <ChunkMeshGenerator.h>
 #include <ChunkSection.h>
@@ -65,6 +66,7 @@ Game::Game()
 	, skybox(nullptr)
 	, calendar(nullptr)
 	, settingPtr(nullptr)
+	, worldMap(nullptr)
 	, gameState(GameState::IDLE)
 	, loadingState(LoadingState::INITIALIZING)
 	, reloadState(ReloadState::NONE)
@@ -104,12 +106,17 @@ void Voxel::Game::init()
 	initSpriteSheets();
 
 	// program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	// use it
 	program->use(true);
 
 	// Init world
 	world = new World();
+
+	// Init world map
+	worldMap = new WorldMap();
+	// Call init just once.
+	worldMap->init();
 
 	// Init chunks
 	chunkMap = new ChunkMap();
@@ -177,6 +184,8 @@ void Voxel::Game::release()
 	if (defaultCanvas) delete defaultCanvas;
 
 	if (debugConsole) delete debugConsole;
+
+	if (worldMap) delete worldMap;
 
 	if (world) delete world;
 }
@@ -278,6 +287,11 @@ void Voxel::Game::initSkyBox()
 	skybox = new Skybox();
 	// Always set skybox with max render distance
 	skybox->init(settingPtr->getRenderDistance());
+}
+
+void Voxel::Game::initWorldMap()
+{
+	worldMap->buildMesh(world);
 }
 
 void Voxel::Game::initMeshBuilderThread()
@@ -559,7 +573,7 @@ void Game::update(const float delta)
 				debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 			}
 
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
 		}
@@ -1469,7 +1483,7 @@ void Voxel::Game::renderWorld(const float delta)
 {
 	auto& pm = ProgramManager::getInstance();
 
-	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	program->use(true);
 
 	glm::mat4 worldMat = glm::mat4(1.0f);
@@ -1557,6 +1571,7 @@ void Voxel::Game::renderWorld(const float delta)
 
 void Voxel::Game::renderWorldMap(const float delta)
 {
+	worldMap->render();
 }
 
 void Voxel::Game::renderLoadingScreen(const float delta)
@@ -1578,7 +1593,7 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	program->use(true);
 
 	// fog

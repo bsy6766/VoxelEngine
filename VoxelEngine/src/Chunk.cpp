@@ -568,7 +568,7 @@ int Voxel::Chunk::findMaxY()
 
 void Voxel::Chunk::render()
 {
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::COLOR_SHADER);
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 
 	if (chunkMesh)
 	{

@@ -16,7 +16,8 @@ namespace Voxel
 		enum PROGRAM_NAME : unsigned int
 		{
 			LINE_SHADER = 0,
-			COLOR_SHADER,
+			BLOCK_SHADER,
+			SINGLE_COLOR_SHADER,
 			TEXTURE_SHADER,
 			TEXT_SHADER,
 			SKYBOX_SHADER,

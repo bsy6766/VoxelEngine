@@ -79,7 +79,7 @@ namespace Voxel
 
 		std::vector<unsigned int> getNeighborRegionIDList();
 
-		void getVoronoiEdgePoints(std::vector<float>& edgePoints);
+		void getVoronoiEdgePoints(std::vector<glm::vec2>& edgePoints);
 
 		// Get cell id
 		unsigned int getID();
