@@ -640,6 +640,14 @@ glm::ivec2 Voxel::GLView::getScreenSize()
 	return glm::ivec2(screenWidth, screenHeight);
 }
 
+glm::ivec2 Voxel::GLView::getGLFWWindowSize()
+{
+	int w, h;
+	glfwGetWindowSize(window, &w, &h);
+
+	return glm::ivec2(w, h);
+}
+
 void Voxel::GLView::setWindowSize(const int width, const int height)
 {
 	if (isWindowed() || isWindowedFullScreen())
@@ -648,6 +656,8 @@ void Voxel::GLView::setWindowSize(const int width, const int height)
 	std::cout << "[GLView] Changing window size to (" << width << ", " << height << ") in windowed mode\n";
 	glfwSetWindowSize(window, width, height);
 	glViewport(0, 0, width, height);
+	screenWidth = width;
+	screenHeight = height;
 }
 
 bool Voxel::GLView::isVsyncEnabled()

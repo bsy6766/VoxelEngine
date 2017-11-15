@@ -170,6 +170,7 @@ namespace Voxel
 		void addVerticesSize(const int size);
 
 		glm::ivec2 getScreenSize();
+		glm::ivec2 getGLFWWindowSize();
 
 		void setWindowSize(const int width, const int height);
 

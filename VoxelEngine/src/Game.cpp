@@ -686,6 +686,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		}
 		*/
 
+		/*
 		auto result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(-200.5f, 100.0f, 200.7f));
 		std::cout << Utility::Log::vec3ToStr(result) << "\n";
 		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, 200.7f));
@@ -694,6 +695,10 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << Utility::Log::vec3ToStr(result) << "\n";
 		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, -200.7f));
 		std::cout << Utility::Log::vec3ToStr(result) << "\n";
+		*/
+
+		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
+		std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
 	}
 
 	if (input->getKeyDown(GLFW_KEY_Y, true))
