@@ -198,6 +198,11 @@ void Voxel::InputHandler::getMousePosition(double & x, double & y)
 	y = curY;
 }
 
+glm::vec2 Voxel::InputHandler::getMousePosition()
+{
+	return glm::vec2(curX, curY);
+}
+
 bool InputHandler::getKeyDown(int key, const bool tick)
 {
 	if (tick)

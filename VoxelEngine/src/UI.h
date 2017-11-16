@@ -159,9 +159,13 @@ namespace Voxel
 			void setPosition(const glm::vec2& position);
 			void addPosition(const glm::vec2& distance);
 
+			void updateBoundary();
+
 			void setCursorType(const CursorType cursorType);
 
 			void setVisibility(const bool visibility);
+
+			glm::vec2 getPosition();
 
 			void render();
 		};

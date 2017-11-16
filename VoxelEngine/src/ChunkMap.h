@@ -177,7 +177,6 @@ namespace Voxel
 
 		// Check which face of block(cube) did ray hit
 		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
-		int raycastTriangle(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::Triangle& tri, glm::vec3& intersectingPoint);
 		float raycastIntersectingDistance(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
 
 		// Release and delete chunk 

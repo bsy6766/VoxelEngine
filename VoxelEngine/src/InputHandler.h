@@ -103,6 +103,7 @@ namespace Voxel
 		// InputHandler functions. 
 		// Get mouse position. Pass x, y as reference
 		void getMousePosition(double& x, double& y);
+		glm::vec2 getMousePosition();
 
 		/**
 		*	Checks if key is down

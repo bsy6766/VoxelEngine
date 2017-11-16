@@ -1381,6 +1381,14 @@ void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
 	}
 }
 
+void Voxel::UI::Cursor::updateBoundary()
+{
+	auto size = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
+
+	minScreenBoundary = size * -0.5f;
+	maxScreenBoundary = size * 0.5f;
+}
+
 void Voxel::UI::Cursor::setCursorType(const CursorType cursorType)
 {
 	auto ss = SpriteSheetManager::getInstance().getSpriteSheet("CursorSpriteSheet");
@@ -1422,6 +1430,11 @@ void Voxel::UI::Cursor::setCursorType(const CursorType cursorType)
 void Voxel::UI::Cursor::setVisibility(const bool visibility)
 {
 	visible = visibility;
+}
+
+glm::vec2 Voxel::UI::Cursor::getPosition()
+{
+	return position;
 }
 
 void Voxel::UI::Cursor::render()

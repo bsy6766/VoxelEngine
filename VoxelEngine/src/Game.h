@@ -48,10 +48,10 @@ namespace Voxel
 			TIME,
 		};
 	public:
-		enum class GameState
+		enum class CursorState
 		{
-			IDLE = 0,
-			CURSOR_MODE,
+			HIDDEN = 0,
+			SHOWN,
 		};
 
 		enum class LoadingState
@@ -70,10 +70,10 @@ namespace Voxel
 			WORLD,			// Reload world
 		};
 
-		enum class RenderingState
+		enum class GameState
 		{
-			WORLD = 0,		// Renders world
-			WORLD_MAP,		// Renders world map
+			IDLE = 0,		// Renders world
+			VIEWING_WORLD_MAP,		// Renders world map
 		};
 	private:
 		// Camera modes
@@ -84,10 +84,10 @@ namespace Voxel
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
 		// States
-		GameState gameState;
+		CursorState cursorState;
 		LoadingState loadingState;
 		ReloadState reloadState;
-		RenderingState renderingState;
+		GameState gameState;
 		
 		// global seed
 		std::string globalSeed;
@@ -126,8 +126,7 @@ namespace Voxel
 		UI::Cursor* cursor;
 
 		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
-		double mouseX;
-		double mouseY;
+		glm::vec2 prevMouseCursorPos;
 
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
@@ -177,6 +176,9 @@ namespace Voxel
 		void updateChunks();
 		void updatePlayerRaycast();
 		void updatePlayerCameraCollision();
+
+		void openWorldMap();
+		void closeWorldMap();
 
 		// Replace player to highest y 
 		void replacePlayerToTopY();

@@ -4,6 +4,8 @@
 #include <GL\glew.h>
 #include <glm\glm.hpp>
 #include <vector>
+#include <Geometry.h>
+#include <Ray.h>
 
 namespace Voxel
 {
@@ -29,11 +31,13 @@ namespace Voxel
 		unsigned int fillSize;
 		GLuint sideVao;
 		unsigned int sideSize;
+
 		glm::mat4 modelMat;
-		glm::vec3 position;
-		glm::vec2 rotation;
+
 		glm::vec4 color;
 		glm::vec4 sideColor;
+
+		std::vector<Geometry::Triangle> triangles;
 
 		// Pointer to programs
 		static Program* polygonProgram;
@@ -55,7 +59,17 @@ namespace Voxel
 	*/
 	class WorldMap
 	{
+	public:
+		enum class State
+		{
+			IDLE = 0,
+			PAN,
+			ROTATE,
+		};
 	private:
+		// State
+		State state;
+
 		// OpenGL
 		GLuint vao;
 
@@ -70,14 +84,39 @@ namespace Voxel
 		// Texts
 		UI::Text* worldName;
 
-		// position of the map
-		glm::vec3 position;
-
 		// List of regionMeshes. index means region ID
 		std::vector<RegionMesh*> regionMeshes;
+
+		// For view matrix and smooth transition and rotation
+		glm::vec3 position;
+		glm::vec3 nextPosition;
+
+		glm::vec2 rotation;
+		glm::vec2 nextRotation;
+
+		float zoomZ;
+		float zoomZTarget;
+
+		// Boundary of map panning.
+		glm::vec3 posBoundary;
+
+		// Last point where cursor clicked on screen
+		glm::vec2 prevMouseClickedPos;
 		
+		// Boundary check
+		void checkPosBoundary();
+		void checkNextPosBoundary();
+
+		void raycastRegion();
+
+		glm::mat4 getViewMatrix();
+
 		// Release all the mesh. This is called on destructor.
 		void releaseMesh();
+
+
+		// debug
+		GLuint rayVao;
 	public:
 		WorldMap();
 		~WorldMap();
@@ -91,11 +130,25 @@ namespace Voxel
 		*/
 		void buildMesh(World* world);
 		
+		void update(const float delta);
+
 		void updatePosition(const glm::vec3& playerPos);
-		void updateViewMatrix(const glm::mat4& viewMat);
+		void updateViewMatrix();
+		void updateWithCamViewMatrix(const glm::mat4& viewMat);
+		void updateModelMatrix();
+
+		void updateMouseClick(const int button, const bool clicked, const glm::vec2& mousePos);
+		void updateMouseMove(const glm::vec2& delta);
+
+		void resetPosAndRot();
+
+		void zoomIn(const float delta);
+		void zoomOut(const float delta);
 		
 		// Clear all the meshes and data.
 		void clear();
+
+		void print();
 
 		// Render world map
 		void render();

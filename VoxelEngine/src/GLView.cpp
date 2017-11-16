@@ -670,6 +670,11 @@ void Voxel::GLView::setClearColor(const glm::vec3 & color)
 	clearColor = color;
 }
 
+void Voxel::GLView::setCursorMode(const int mode)
+{
+	glfwSetInputMode(window, GLFW_CURSOR, mode);
+}
+
 void Voxel::GLView::close()
 {
 	glfwSetWindowShouldClose(window, GL_TRUE);

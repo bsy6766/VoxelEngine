@@ -1024,6 +1024,23 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return true;
 						}
 					}
+					else if (arg1 == "mouse" || arg1 == "m")
+					{
+						auto arg2 = split.at(2);
+
+						if (arg2 == "show")
+						{
+							Application::getInstance().getGLView()->setCursorMode(GLFW_CURSOR_NORMAL);
+						}
+						else if (arg2 == "hide")
+						{
+							Application::getInstance().getGLView()->setCursorMode(GLFW_CURSOR_HIDDEN);
+						}
+						else if (arg2 == "disable")
+						{
+							Application::getInstance().getGLView()->setCursorMode(GLFW_CURSOR_DISABLED);
+						}
+					}
 				}
 				else if (size == 4)
 				{

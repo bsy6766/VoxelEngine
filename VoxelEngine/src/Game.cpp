@@ -57,8 +57,7 @@ Game::Game()
 	, chunkMeshGenerator(nullptr)
 	, input(&InputHandler::getInstance())
 	, player(nullptr)
-	, mouseX(0)
-	, mouseY(0)
+	, prevMouseCursorPos(0)
 	, cameraMode(false)
 	, cameraControlMode(false)
 	, chunkWorkManager(nullptr)
@@ -69,17 +68,17 @@ Game::Game()
 	, calendar(nullptr)
 	, settingPtr(nullptr)
 	, worldMap(nullptr)
-	, gameState(GameState::IDLE)
+	, cursorState(CursorState::HIDDEN)
 	, loadingState(LoadingState::INITIALIZING)
 	, reloadState(ReloadState::NONE)
-	, renderingState(RenderingState::WORLD)
+	, gameState(GameState::IDLE)
 	, skipUpdate(false)
 {
 	// init instances
 	init();
 	// After creation, set cursor to center
 	input->setCursorToCenter();
-
+	prevMouseCursorPos = input->getMousePosition();
 	//Camera::mainCamera->initDebugFrustumLines();
 }
 
@@ -521,6 +520,8 @@ void Game::update(const float delta)
 			return;
 		}
 
+		worldMap->update(delta);
+
 		checkUnloadedChunks();
 
 		// Update physics
@@ -571,8 +572,6 @@ void Game::update(const float delta)
 			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
-
-			worldMap->updatePosition(playerPos);
 		}
 
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
@@ -631,7 +630,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		}
 		else
 		{
-			Application::getInstance().getGLView()->close();
+			if (gameState == GameState::VIEWING_WORLD_MAP)
+			{
+				closeWorldMap();
+			}
+			else
+			{
+				Application::getInstance().getGLView()->close();
+			}
 		}
 		return;
 	}
@@ -662,13 +668,16 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 
-	if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
+	if (gameState == GameState::IDLE)
 	{
-		toggleCursorMode(true);
-	}
-	else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
-	{
-		toggleCursorMode(false);
+		if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
+		{
+			toggleCursorMode(true);
+		}
+		else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
+		{
+			toggleCursorMode(false);
+		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_1, true))
@@ -740,8 +749,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	}
 	else if (input->getKeyDown(GLFW_KEY_O, true))
 	{
-		Camera::mainCamera->print();
-
+		if (gameState == GameState::VIEWING_WORLD_MAP)
+		{
+			worldMap->print();
+		}
+		else
+		{
+			Camera::mainCamera->print();
+		}
 	}
 
 	if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == 0)
@@ -749,6 +764,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		Application::getInstance().getGLView()->setWindowedFullScreen(1);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
 		debugConsole->updateResolution(1920, 1080);
+		cursor->updateBoundary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == GLFW_MOD_CONTROL)
 	{
@@ -756,12 +772,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 		defaultCanvas->setSize(glm::vec2(1280, 720));
 		debugConsole->updateResolution(1280, 720);
+		cursor->updateBoundary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(0);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
 		debugConsole->updateResolution(1920, 1080);
+		cursor->updateBoundary();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_V, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
@@ -777,17 +795,13 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::TOGGLE_WORLD_MAP, true))
 	{
-		if (renderingState == RenderingState::WORLD)
+		if (gameState == GameState::IDLE)
 		{
-			std::cout << "[Game] Opening world map\n";
-			renderingState = RenderingState::WORLD_MAP; 
-			toggleCursorMode(true);
+			openWorldMap();
 		}
-		else if (renderingState == RenderingState::WORLD_MAP)
+		else if (gameState == GameState::VIEWING_WORLD_MAP)
 		{
-			std::cout << "[Game] Closing world map\n";
-			renderingState = RenderingState::WORLD;
-			toggleCursorMode(false);
+			closeWorldMap();
 		}
 	}
 	
@@ -822,7 +836,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	}
 	else
 	{
-		if (gameState == GameState::IDLE)
+		if (cursorState == CursorState::HIDDEN)
 		{
 			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
 			{
@@ -894,34 +908,32 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 void Voxel::Game::updateMouseMoveInput(const float delta)
 {
-	double x, y;
-	input->getMousePosition(x, y);
+	auto curMousePos = input->getMousePosition();
 
-	double dx = x - mouseX;
-	double dy = y - mouseY;
-	mouseX = x;
-	mouseY = y;
+	float dx = curMousePos.x - prevMouseCursorPos.x;
+	float dy = curMousePos.y - prevMouseCursorPos.y;
+	prevMouseCursorPos.x = curMousePos.x;
+	prevMouseCursorPos.y = curMousePos.y;
+
+	if (debugConsole->isConsoleOpened())
+	{
+		// Stop input while opening console
+		return;
+	}
+	
+	// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
+	// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
+	// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
+	// 60 fps. So if if delta is bigger than 1/60, force 1/60
+	float newDelta = delta;
+
+	if (delta < 0.0166666667f)
+	{
+		newDelta = 0.01666666666667f;
+	}
 
 	if (gameState == GameState::IDLE)
 	{
-		// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
-		// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
-		// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
-		// 60 fps. So if if delta is bigger than 1/60, force 1/60
-
-		float newDelta = delta;
-
-		if (delta < 0.0166666667f)
-		{
-			newDelta = 0.01666666666667f;
-		}
-
-		if (debugConsole->isConsoleOpened())
-		{
-			// Stop input while opening console
-			return;
-		}
-
 		if (cameraControlMode)
 		{
 			if (dx != 0)
@@ -938,16 +950,48 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 		{
 			if (dx != 0.0)
 			{
-				player->addRotationY(newDelta * static_cast<float>(dx));
+				player->addRotationY(newDelta * dx);
 			}
 
 			if (dy != 0.0)
 			{
-				player->addRotationX(newDelta * static_cast<float>(-dy));
+				player->addRotationX(newDelta * -dy);
 			}
 		}
 	}
-	else if (gameState == GameState::CURSOR_MODE)
+	else if (gameState == GameState::VIEWING_WORLD_MAP)
+	{
+		if (cameraControlMode)
+		{
+			if (dx != 0)
+			{
+				Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
+			}
+
+			if (dy != 0)
+			{
+				Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
+			}
+		}
+		else
+		{
+			glm::vec2 delta(0.0f);
+
+			if (dx != 0)
+			{
+				delta.x = newDelta * static_cast<float>(dx);
+			}
+
+			if (dy != 0)
+			{
+				delta.y = newDelta * static_cast<float>(dy);
+			}
+
+			worldMap->updateMouseMove(delta);
+		}
+	}
+
+	if (cursorState == CursorState::SHOWN)
 	{
 		cursor->addPosition(glm::vec2(dx, -dy));
 	}
@@ -961,7 +1005,15 @@ void Voxel::Game::updateMouseClickInput()
 		return;
 	}
 
-	if (gameState == GameState::IDLE)
+	/*
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+	{
+		auto mp = input->getMousePosition();
+		std::cout << "g mp = " << mp.x << ", " << mp.y << "\n";
+	}
+	*/
+
+	if (cursorState == CursorState::HIDDEN)
 	{
 		if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 		{
@@ -984,24 +1036,57 @@ void Voxel::Game::updateMouseClickInput()
 			}
 		}
 	}
-	else if (gameState == GameState::CURSOR_MODE)
+	else if (cursorState == CursorState::SHOWN)
 	{
+		if (gameState == GameState::VIEWING_WORLD_MAP)
+		{
+			if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+			{
+				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_1, true, cursor->getPosition());
+			}
+			else if(input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
+			{
+				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_1, false, cursor->getPosition());
+			}
 
+			if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+			{
+				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_2, true, cursor->getPosition());
+			}
+			else if (input->getMouseUp(GLFW_MOUSE_BUTTON_2, true))
+			{
+				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_2, false, cursor->getPosition());
+			}
+		}
 	}
 }
 
 void Voxel::Game::updateMouseScrollInput(const float delta)
 {
 	auto mouseScroll = input->getMouseScrollValue();
-	if (mouseScroll == 1)
+	if (gameState == GameState::IDLE)
 	{
-		player->zoomInCamera();
+		if (mouseScroll == 1)
+		{
+			player->zoomInCamera();
+		}
+		else if (mouseScroll == -1)
+		{
+			player->zoomOutCamera();
+		}
+		// Else, mouse scroll didn't move
 	}
-	else if(mouseScroll == -1)
+	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
-		player->zoomOutCamera();
+		if (mouseScroll == 1)
+		{
+			worldMap->zoomIn(delta);
+		}
+		else if (mouseScroll == -1)
+		{
+			worldMap->zoomOut(delta);
+		}
 	}
-	// Else, mouse scroll didn't move
 }
 
 void Voxel::Game::updateControllerInput(const float delta)
@@ -1378,6 +1463,23 @@ void Voxel::Game::updatePlayerCameraCollision()
 	//std::cout << "t: " << Utility::Time::toMicroSecondString(start, end) << "\n";
 }
 
+void Voxel::Game::openWorldMap()
+{
+	std::cout << "[Game] Opening world map\n";
+	gameState = GameState::VIEWING_WORLD_MAP;
+	toggleCursorMode(true);
+}
+
+void Voxel::Game::closeWorldMap()
+{
+	std::cout << "[Game] Closing world map\n";
+	gameState = GameState::IDLE;
+	toggleCursorMode(false);
+	worldMap->resetPosAndRot();
+	worldMap->updateViewMatrix();
+	worldMap->updateModelMatrix();
+}
+
 void Voxel::Game::replacePlayerToTopY()
 {
 	auto playerPosition = player->getPosition();
@@ -1416,12 +1518,12 @@ void Voxel::Game::toggleCursorMode(const bool mode)
 {
 	if (mode)
 	{
-		gameState = GameState::CURSOR_MODE;
+		cursorState = CursorState::SHOWN;
 		cursor->setVisibility(true);
 	}
 	else
 	{
-		gameState = GameState::IDLE;
+		cursorState = CursorState::HIDDEN;
 		cursor->setVisibility(false);
 	}
 }
@@ -1491,12 +1593,12 @@ void Game::render(const float delta)
 
 void Voxel::Game::renderGame(const float delta)
 {
-	if (renderingState == RenderingState::WORLD)
+	if (gameState == GameState::IDLE)
 	{
 		renderWorld(delta);
 		renderUI();
 	}
-	else if (renderingState == RenderingState::WORLD_MAP)
+	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
 		renderWorldMap(delta);
 	}
@@ -1591,18 +1693,12 @@ void Voxel::Game::renderWorld(const float delta)
 
 void Voxel::Game::renderWorldMap(const float delta)
 {
-	glm::mat4 viewMat = glm::mat4(1.0f);
-
 	if (cameraMode)
 	{
-		viewMat = Camera::mainCamera->getView();
-	}
-	else
-	{
-		viewMat = player->getViewMatrix();
+		glm::mat4 viewMat = Camera::mainCamera->getView();
+		worldMap->updateWithCamViewMatrix(viewMat);
 	}
 
-	worldMap->updateViewMatrix(viewMat);
 	worldMap->render();
 }
 

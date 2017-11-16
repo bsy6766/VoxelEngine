@@ -15,6 +15,7 @@
 #include <ChunkUtil.h>
 #include <ChunkMesh.h>
 #include <Application.h>
+#include <Ray.h>
 
 using namespace Voxel;
 
@@ -1165,10 +1166,12 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 	float minDist = std::numeric_limits<float>::max();
 	unsigned int closestTriangle = 0;
 
+	Ray ray(rayStart, rayEnd);
+
 	for (unsigned int i = 0; i < triangles.size(); i++)
 	{
 		glm::vec3 intersectingPoint;
-		int rayResult = raycastTriangle(rayStart, rayEnd, triangles.at(i), intersectingPoint);
+		int rayResult = ray.doesIntersectsTriangle(triangles.at(i), intersectingPoint);
 
 		if (rayResult == 1)
 		{
@@ -1221,73 +1224,18 @@ Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::v
 	return result;
 }
 
-//    Return: -1 = triangle is degenerate (a segment or point)
-//             0 =  disjoint (no intersect)
-//             1 =  intersect in unique point I1
-//             2 =  are in the same plane
-int Voxel::ChunkMap::raycastTriangle(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::Triangle & tri, glm::vec3 & intersectingPoint)
-{
-	glm::vec3    u, v, n;              // triangle vectors
-	glm::vec3    dir, w0, w;           // ray vectors
-	float     r, a, b;              // params to calc ray-plane intersect
-
-									// get triangle edge vectors and plane normal
-	u = tri.p2 - tri.p1;
-	v = tri.p3 - tri.p1;
-	n = glm::cross(u, v);              // cross product
-	if (n == glm::vec3(0))             // triangle is degenerate
-		return -1;                  // do not deal with this case
-
-	dir = rayEnd - rayStart;              // ray direction vector
-	w0 = rayStart - tri.p1;
-	a = -glm::dot(n, w0);
-	b = glm::dot(n, dir);
-	if (fabs(b) <  0.00000001f) {     // ray is  parallel to triangle plane
-		if (a == 0)                 // ray lies in triangle plane
-			return 2;
-		else return 0;              // ray disjoint from plane
-	}
-
-	// get intersect point of ray with triangle plane
-	r = a / b;
-	if (r < 0.0)                    // ray goes away from triangle
-		return 0;                   // => no intersect
-									// for a segment, also test if (r > 1.0) => no intersect
-
-	intersectingPoint = rayStart + (r * dir);  // intersect point of ray and plane
-
-											   // is I inside T?
-	float    uu, uv, vv, wu, wv, D;
-	uu = glm::dot(u, u);
-	uv = glm::dot(u, v);
-	vv = glm::dot(v, v);
-	w = intersectingPoint - tri.p1;
-	wu = glm::dot(w, u);
-	wv = glm::dot(w, v);
-	D = uv * uv - uu * vv;
-
-	// get and test parametric coords
-	float s, t;
-	s = (uv * wv - vv * wu) / D;
-	if (s < 0.0 || s > 1.0)         // I is outside T
-		return 0;
-	t = (uv * wu - uu * wv) / D;
-	if (t < 0.0 || (s + t) > 1.0)  // I is outside T
-		return 0;
-
-	return 1;                       // I is in T
-}
-
 float Voxel::ChunkMap::raycastIntersectingDistance(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
 {
 	auto triangles = blockAABB.toTriangles();
 
 	float minDist = std::numeric_limits<float>::max();
 
+	Ray ray(rayStart, rayEnd);
+
 	for (unsigned int i = 0; i < triangles.size(); i++)
 	{
 		glm::vec3 intersectingPoint;
-		int rayResult = raycastTriangle(rayStart, rayEnd, triangles.at(i), intersectingPoint);
+		int rayResult = ray.doesIntersectsTriangle(triangles.at(i), intersectingPoint);
 
 		if (rayResult == 1)
 		{

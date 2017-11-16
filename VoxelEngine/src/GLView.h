@@ -178,6 +178,8 @@ namespace Voxel
 
 		void setClearColor(const glm::vec3& color);
 
+		void setCursorMode(const int mode);
+
 		void close();
 
 		// FPS callback
