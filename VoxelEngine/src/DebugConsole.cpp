@@ -984,6 +984,166 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 					}
 				}
+				else if (size == 6)
+				{
+					//player position x y z
+					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
+					if (arg1 == "set")
+					{
+						if (arg2 == "position" || arg2 == "pos")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Camera::mainCamera->setPosition(glm::vec3(x, y, z));
+							executedCommandHistory.push_back("Set camera position to (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
+							return true;
+						}
+						else if (arg2 == "rotation" || arg2 == "rot")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Camera::mainCamera->setAngle(glm::vec3(x, y, z));
+							executedCommandHistory.push_back("Set player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
+							return true;
+						}
+					}
+					else if (arg1 == "add")
+					{
+						if (arg2 == "position" || arg2 == "pos")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Camera::mainCamera->setPosition(glm::vec3(x, y, z) + Camera::mainCamera->getPosition());
+							executedCommandHistory.push_back("Added camera position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
+							return true;
+						}
+						else if (arg2 == "rotation" || arg2 == "rot")
+						{
+							float x = 0;
+							try
+							{
+								x = std::stof(split.at(3));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float y = 0;
+							try
+							{
+								y = std::stof(split.at(4));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							float z = 0;
+							try
+							{
+								z = std::stof(split.at(5));
+							}
+							catch (...)
+							{
+								return false;
+							}
+
+							Camera::mainCamera->setAngle(glm::vec3(x, y, z) + Camera::mainCamera->getAngle());
+							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
+							lastCommand = command;
+							return true;
+						}
+					}
+				}
 			}
 			else if (commandStr == "random" || commandStr == "rand")
 			{

@@ -172,6 +172,11 @@ void Camera::addAngle(const vec3 & angle)
 	//std::cout << "[Camera] angle = (" << this->angle.x << ", " << this->angle.y << ", " << this->angle.z << ")\n";
 }
 
+glm::vec3 Voxel::Camera::getAngle()
+{
+	return angle;
+}
+
 float Voxel::Camera::getAngleY()
 {
 	return angle.y;

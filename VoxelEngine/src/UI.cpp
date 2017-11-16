@@ -1437,6 +1437,11 @@ glm::vec2 Voxel::UI::Cursor::getPosition()
 	return position;
 }
 
+glm::vec3 Voxel::UI::Cursor::getWorldPosition()
+{
+	return glm::vec3(Camera::mainCamera->getScreenSpaceMatrix() * glm::vec4(position.x, position.y, 0.0f, 1.0f));
+}
+
 void Voxel::UI::Cursor::render()
 {
 	if (visible)

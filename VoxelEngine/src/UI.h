@@ -166,6 +166,7 @@ namespace Voxel
 			void setVisibility(const bool visibility);
 
 			glm::vec2 getPosition();
+			glm::vec3 getWorldPosition();
 
 			void render();
 		};

@@ -8,12 +8,12 @@ Voxel::Ray::Ray(const glm::vec3 & start, const glm::vec3 & end)
 	, end(end)
 {}
 
-glm::vec3 Voxel::Ray::getStart()
+glm::vec3 Voxel::Ray::getStart() const
 {
 	return start;
 }
 
-glm::vec3 Voxel::Ray::getEnd()
+glm::vec3 Voxel::Ray::getEnd() const
 {
 	return end;
 }

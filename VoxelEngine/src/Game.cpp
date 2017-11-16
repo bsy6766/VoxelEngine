@@ -113,6 +113,8 @@ void Voxel::Game::init()
 	worldMap = new WorldMap();
 	// Call init just once.
 	worldMap->init();
+	//worldMap->initDebugCenterLine();
+	//worldMap->initDebugMousePickRayLine();
 
 	// Init chunks
 	chunkMap = new ChunkMap();
@@ -885,6 +887,11 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		cameraMode = !cameraMode;
 		std::cout << "[World] Camera mode " << std::string(cameraMode ? "enabled" : "disabled") << std::endl;
+
+		if (!cameraMode)
+		{
+			worldMap->updateViewMatrix();
+		}
 	}
 	else if (input->getKeyDown(GLFW_KEY_X, true))
 	{
@@ -1005,13 +1012,15 @@ void Voxel::Game::updateMouseClickInput()
 		return;
 	}
 
-	/*
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
-		auto mp = input->getMousePosition();
-		std::cout << "g mp = " << mp.x << ", " << mp.y << "\n";
+		//auto mp = input->getMousePosition();
+		//std::cout << "g mp = " << mp.x << ", " << mp.y << "\n";
+
+		auto cursorWorldPos = cursor->getWorldPosition();
+
+		std::cout << "cursor wp: " << Utility::Log::vec3ToStr(cursorWorldPos) << "\n";
 	}
-	*/
 
 	if (cursorState == CursorState::HIDDEN)
 	{
@@ -1080,11 +1089,11 @@ void Voxel::Game::updateMouseScrollInput(const float delta)
 	{
 		if (mouseScroll == 1)
 		{
-			worldMap->zoomIn(delta);
+			worldMap->zoomIn();
 		}
 		else if (mouseScroll == -1)
 		{
-			worldMap->zoomOut(delta);
+			worldMap->zoomOut();
 		}
 	}
 }
@@ -1693,13 +1702,32 @@ void Voxel::Game::renderWorld(const float delta)
 
 void Voxel::Game::renderWorldMap(const float delta)
 {
+	// ---------------------------- Render world Map ----------------------------------------
+	glm::mat4 viewMat = glm::mat4(1.0f);
+
 	if (cameraMode)
 	{
-		glm::mat4 viewMat = Camera::mainCamera->getView();
-		worldMap->updateWithCamViewMatrix(viewMat);
+		viewMat = Camera::mainCamera->getView();
 	}
+	else
+	{
+		viewMat = worldMap->getViewMatrix();
+	}
+	worldMap->updateWithCamViewMatrix(viewMat);
 
 	worldMap->render();
+	// --------------------------------------------------------------------------------------
+	
+	// ------------------------------ Render Lines ------------------------------------------
+	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	lineProgram->use(true);
+
+	lineProgram->setUniformMat4("worldMat", viewMat);
+	lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+
+	worldMap->renderCenterLine();
+	worldMap->renderRay();
+	// --------------------------------------------------------------------------------------
 }
 
 void Voxel::Game::renderLoadingScreen(const float delta)

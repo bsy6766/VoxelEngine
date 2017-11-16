@@ -25,17 +25,9 @@ Voxel::RegionMesh::RegionMesh()
 	, sideSize(0)
 	, color(0)
 	, sideColor(0)
+	, curSelectY(0)
+	, selectYTarget(0)
 	, modelMat(glm::mat4(1.0f))
-{}
-
-Voxel::RegionMesh::RegionMesh(const glm::mat4& modelMat, const glm::vec3& position)
-	: fillVao(0)
-	, sideVao(0)
-	, fillSize(0)
-	, sideSize(0)
-	, color(0)
-	, sideColor(0)
-	, modelMat(modelMat)
 {}
 
 Voxel::RegionMesh::~RegionMesh()
@@ -48,6 +40,21 @@ Voxel::RegionMesh::~RegionMesh()
 	if (sideVao)
 	{
 		glDeleteVertexArrays(1, &sideVao);
+	}
+}
+
+void Voxel::RegionMesh::update(const float delta)
+{
+	if (curSelectY != selectYTarget)
+	{
+		curSelectY = glm::lerp(curSelectY, selectYTarget, 10.0f * delta);
+
+		if (glm::abs(curSelectY - selectYTarget) < 0.01f)
+		{
+			curSelectY = selectYTarget;
+		}
+
+		modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, curSelectY, 0.0f));
 	}
 }
 
@@ -112,12 +119,22 @@ void Voxel::RegionMesh::buildMesh(const std::vector<float>& fillVertices, const 
 	sideSize = sideIndices.size();
 }
 
+void Voxel::RegionMesh::select()
+{
+	selectYTarget = 5.0f;
+}
+
+void Voxel::RegionMesh::unSelect()
+{
+	selectYTarget = 0.0f;
+}
+
 void Voxel::RegionMesh::renderPolygon(const glm::mat4& worldModelMat)
 {
 	if (fillVao)
 	{
 		RegionMesh::polygonProgram->use(true);
-		RegionMesh::polygonProgram->setUniformMat4("modelMat", worldModelMat);
+		RegionMesh::polygonProgram->setUniformMat4("modelMat", worldModelMat * modelMat);
 		RegionMesh::polygonProgram->setUniformVec4("color", color);
 
 		glBindVertexArray(fillVao);
@@ -130,7 +147,7 @@ void Voxel::RegionMesh::renderPolygonSide(const glm::mat4 & worldModelMat)
 	if (sideVao)
 	{
 		RegionMesh::sideProgram->use(true);
-		RegionMesh::sideProgram->setUniformMat4("modelMat", worldModelMat);
+		RegionMesh::sideProgram->setUniformMat4("modelMat", worldModelMat * modelMat);
 		RegionMesh::sideProgram->setUniformVec4("color", sideColor);
 
 		glBindVertexArray(sideVao);
@@ -159,6 +176,7 @@ Voxel::WorldMap::WorldMap()
 	, nextRotation(0)
 	, posBoundary(0)
 	, prevMouseClickedPos(0)
+	, curClickedRegionID(-1)
 {}
 
 Voxel::WorldMap::~WorldMap()
@@ -197,8 +215,8 @@ void Voxel::WorldMap::buildMesh(World * world)
 
 	regionMeshes.resize(gridSize, nullptr);
 
-	const float yBot = 0.0f;
-	const float yTop = 10.0f;
+	const float yBot = -10.0f;
+	const float yTop = 0.0f;
 	const float yTopSide = yTop - 0.1f;
 
 	for (unsigned int i = 0; i < gridSize; i++)
@@ -363,13 +381,10 @@ void Voxel::WorldMap::update(const float delta)
 		updateViewMatrix();
 	}
 
-}
-
-void Voxel::WorldMap::updatePosition(const glm::vec3 & playerPos)
-{
-	position = glm::vec3(playerPos.x, 0, playerPos.z);
-
-	modelMat = /*glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 1.0f, 0.05f)) * */glm::translate(glm::mat4(1.0f), position);
+	for (auto rm : regionMeshes)
+	{
+		rm->update(delta);
+	}
 }
 
 void Voxel::WorldMap::updateViewMatrix()
@@ -420,7 +435,7 @@ void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, con
 		}
 		else
 		{
-			if (prevMouseClickedPos == mousePos)
+			if (glm::abs(glm::distance(prevMouseClickedPos, mousePos) <= 3.0f))
 			{
 				// Raycast
 				raycastRegion();
@@ -455,9 +470,9 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta)
 	{
 		nextRotation.x += (delta.y * 10.0f);
 
-		if (nextRotation.x > 80.0f)
+		if (nextRotation.x > 60.0f)
 		{
-			nextRotation.x = 80.0f;
+			nextRotation.x = 60.0f;
 		}
 		else if (nextRotation.x < 20.0f)
 		{
@@ -482,7 +497,7 @@ void Voxel::WorldMap::resetPosAndRot()
 	posBoundary = glm::vec3(250.0f, 0.0f, 200.0f);
 }
 
-void Voxel::WorldMap::zoomIn(const float delta)
+void Voxel::WorldMap::zoomIn()
 {
 	if (zoomZTarget > 200.0f)
 	{
@@ -493,7 +508,7 @@ void Voxel::WorldMap::zoomIn(const float delta)
 	}
 }
 
-void Voxel::WorldMap::zoomOut(const float delta)
+void Voxel::WorldMap::zoomOut()
 {
 	if (zoomZTarget < 500.0f)
 	{
@@ -530,6 +545,26 @@ void Voxel::WorldMap::render()
 		{
 			regionMesh->renderPolygon(modelMat);
 		}
+	}
+}
+
+void Voxel::WorldMap::renderRay()
+{
+	if (rayVao)
+	{
+		glBindVertexArray(rayVao);
+
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+}
+
+void Voxel::WorldMap::renderCenterLine()
+{
+	if (centerVao)
+	{
+		glBindVertexArray(centerVao);
+
+		glDrawArrays(GL_LINES, 0, 2);
 	}
 }
 
@@ -584,7 +619,7 @@ void Voxel::WorldMap::raycastRegion()
 	auto screenSize = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 	
 	// In range of [-1, 1]
-	auto scaled = prevMouseClickedPos / screenSize;
+	glm::vec2 scaled = (prevMouseClickedPos / (screenSize * 0.5f));
 
 	std::cout << "scaled = " << scaled.x << ", " << scaled.y << "\n";
 
@@ -596,7 +631,22 @@ void Voxel::WorldMap::raycastRegion()
 
 	std::cout << "WorldPos = " << worldPos.x << ", " << worldPos.y << ", " << worldPos.z << ", " << worldPos.w << "\n";
 
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+
+	std::cout << "viewport = " << viewport[0] << ", " << viewport[1] << ", " << viewport[2] << ", " << viewport[3] << "\n";
+
 	glm::vec3 dir = glm::normalize(glm::vec3(worldPos));
+	
+	auto openglXY = prevMouseClickedPos + (screenSize * 0.5f);
+	std::cout << "openglXY = " << openglXY.x << ", " << openglXY.y << "\n";
+
+	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
+
+	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
+
+	std::cout << "near = " << Utility::Log::vec3ToStr(near) << "\n";
+	std::cout << "far = " << Utility::Log::vec3ToStr(far) << "\n";
 
 	std::cout << "dir = " << dir.x << ", " << dir.y << ", " << dir.z <<  "\n";
 	
@@ -604,20 +654,36 @@ void Voxel::WorldMap::raycastRegion()
 
 	std::cout << "camPos = " << camPos.x << ", " << camPos.y << ", " << camPos.z << "\n";
 
-	Ray ray(camPos, camPos + (dir * 20000.0f));
+	//Ray ray(camPos, camPos + (dir * 20000.0f));
+	Ray ray(near, far);
 	ray.print();
+
+	initDebugMousePickRayLine(ray);
 
 	auto start = Utility::Time::now();
 
 	int regionID = -1;
 
-	for (auto& tri : regionMeshes.at(54)->triangles)
+	bool found = false;
+	for (unsigned int i = 0; i < regionMeshes.size(); i++)
 	{
-		int result = ray.doesIntersectsTriangle(tri);
-
-		if (result == 1)
+		if (regionMeshes.at(i))
 		{
-			regionID = 54;
+			for (auto& tri : regionMeshes.at(i)->triangles)
+			{
+				int result = ray.doesIntersectsTriangle(tri);
+
+				if (result == 1)
+				{
+					regionID = i;
+					found = true;
+					break;
+				}
+			}
+		}
+
+		if (found)
+		{
 			break;
 		}
 	}
@@ -628,7 +694,15 @@ void Voxel::WorldMap::raycastRegion()
 
 	if (regionID != -1)
 	{
-		std::cout << "intersects with 54" << std::endl;
+		std::cout << "intersects with " << regionID << std::endl;
+
+		if (curClickedRegionID != -1)
+		{
+			regionMeshes.at(curClickedRegionID)->unSelect();
+		}
+
+		curClickedRegionID = regionID;
+		regionMeshes.at(curClickedRegionID)->select();
 	}
 }
 
@@ -637,6 +711,11 @@ void Voxel::WorldMap::releaseMesh()
 	if (vao)
 	{
 		glDeleteVertexArrays(1, &vao);
+	}
+
+	if (rayVao)
+	{
+		glDeleteVertexArrays(1, &rayVao);
 	}
 
 	for (auto regionMesh : regionMeshes)
@@ -648,6 +727,90 @@ void Voxel::WorldMap::releaseMesh()
 	}
 
 	regionMeshes.clear();
+}
+
+void Voxel::WorldMap::initDebugCenterLine()
+{
+	GLfloat verts[] = {
+		0, 1000, 0, 1, 0, 0, 1,
+		0, -1000, 0, 1, 0, 0, 1,
+	};
+
+	// Generate vertex array object
+	glGenVertexArrays(1, &centerVao);
+	// Bind it
+	glBindVertexArray(centerVao);
+
+	// Generate buffer object
+	GLuint rayVbo;
+	glGenBuffers(1, &rayVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &rayVbo);
+}
+
+void Voxel::WorldMap::initDebugMousePickRayLine(const Ray & ray)
+{
+	if (rayVao)
+	{
+		glDeleteVertexArrays(1, &rayVao);
+	}
+
+	auto start = ray.getStart();
+	auto end = ray.getEnd();
+
+	GLfloat verts[] = {
+		start.x, start.y, start.z, 1, 0, 0, 1,
+		end.x, end.y, end.z, 1, 0, 0, 1,
+	};	
+
+	// Generate vertex array object
+	glGenVertexArrays(1, &rayVao);
+	// Bind it
+	glBindVertexArray(rayVao);
+
+	// Generate buffer object
+	GLuint rayVbo;
+	glGenBuffers(1, &rayVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &rayVbo);
 }
 
 void Voxel::WorldMap::print()

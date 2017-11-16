@@ -18,8 +18,8 @@ namespace Voxel
 		Ray(const glm::vec3& start, const glm::vec3& end);
 		~Ray() = default;
 
-		glm::vec3 getStart();
-		glm::vec3 getEnd();
+		glm::vec3 getStart() const;
+		glm::vec3 getEnd() const;
 
 		//    Return: -1 = triangle is degenerate (a segment or point)
 		//             0 =  disjoint (no intersect)

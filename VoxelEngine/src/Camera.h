@@ -94,6 +94,8 @@ namespace Voxel
 		void setAngle(const vec3& angle);
 		// Add angle to current angle
 		void addAngle(const vec3& angle);
+		// Get angle
+		glm::vec3 getAngle();
 		// Get angle in y axis
 		float getAngleY();
 
