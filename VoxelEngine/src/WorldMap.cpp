@@ -217,7 +217,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 
 	const float yBot = -10.0f;
 	const float yTop = 0.0f;
-	const float yTopSide = yTop - 0.1f;
+	const float yTopSide = yTop;
 
 	for (unsigned int i = 0; i < gridSize; i++)
 	{
@@ -254,7 +254,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 				RegionMesh* newMesh = new RegionMesh();
 				auto randColor = Color::getRandomColor();
 				newMesh->color = glm::vec4(randColor, 1.0f);
-				newMesh->sideColor = glm::vec4(randColor * 0.75f, 1.0f);
+				newMesh->sideColor = glm::vec4(randColor * 0.8f, 1.0f);
 				
 				// Top polygon
 				auto size = triangles.size();
@@ -293,7 +293,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 					sideVertices.push_back(edgePoints.at(j).y);
 
 					sideVertices.push_back(edgePoints.at(j).x);
-					sideVertices.push_back(yTop);
+					sideVertices.push_back(yTopSide);
 					sideVertices.push_back(edgePoints.at(j).y);
 
 					sideVertices.push_back(edgePoints.at(j + 1).x);
@@ -301,7 +301,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 					sideVertices.push_back(edgePoints.at(j + 1).y);
 
 					sideVertices.push_back(edgePoints.at(j + 1).x);
-					sideVertices.push_back(yTop);
+					sideVertices.push_back(yTopSide);
 					sideVertices.push_back(edgePoints.at(j + 1).y);
 
 					sideIndices.push_back(index);
@@ -320,7 +320,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 				sideVertices.push_back(edgePoints.back().y);
 
 				sideVertices.push_back(edgePoints.back().x);
-				sideVertices.push_back(yTop);
+				sideVertices.push_back(yTopSide);
 				sideVertices.push_back(edgePoints.back().y);
 
 				sideIndices.push_back(index);
@@ -364,7 +364,8 @@ void Voxel::WorldMap::update(const float delta)
 			rotation = nextRotation;
 		}
 
-		updateViewMatrix();
+		//updateViewMatrix();
+		updateModelMatrix();
 	}
 
 	if (zoomZ != zoomZTarget)
@@ -383,7 +384,10 @@ void Voxel::WorldMap::update(const float delta)
 
 	for (auto rm : regionMeshes)
 	{
-		rm->update(delta);
+		if (rm)
+		{
+			rm->update(delta);
+		}
 	}
 }
 
@@ -411,17 +415,17 @@ glm::mat4 Voxel::WorldMap::getViewMatrix()
 {
 	glm::mat4 viewMatrix = mat4(1.0f);
 	viewMatrix = glm::translate(viewMatrix, -(glm::vec3(0.0f, 0.0f, zoomZ)));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.x), vec3(1, 0, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.y), vec3(0, 1, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(35.0f), vec3(1, 0, 0));
+	//viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.y), vec3(0, 1, 0));
 
-	return  viewMatrix;
+	return  viewMatrix;// *glm::translate(glm::mat4(1.0f), -position);
 }
 
 void Voxel::WorldMap::updateModelMatrix() 
 {
 	modelMat = glm::translate(glm::mat4(1.0f), -position);
-	//modelMat = glm::rotate(modelMat, glm::radians(rotation.x), vec3(1, 0, 0));
-	//modelMat = glm::rotate(modelMat, glm::radians(rotation.y), vec3(0, 1, 0));
+	modelMat = glm::rotate(modelMat, glm::radians(rotation.x), vec3(1, 0, 0));
+	modelMat = glm::rotate(modelMat, glm::radians(rotation.y), vec3(0, 1, 0));
 }
 
 void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, const glm::vec2& mousePos)
@@ -470,13 +474,13 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta)
 	{
 		nextRotation.x += (delta.y * 10.0f);
 
-		if (nextRotation.x > 60.0f)
+		if (nextRotation.x > 30.0f)
 		{
-			nextRotation.x = 60.0f;
+			nextRotation.x = 30.0f;
 		}
-		else if (nextRotation.x < 20.0f)
+		else if (nextRotation.x < -20.0f)
 		{
-			nextRotation.x = 20.0f;
+			nextRotation.x = -20.0f;
 		}
 
 		nextRotation.y += (delta.x * 10.0f);
@@ -491,8 +495,8 @@ void Voxel::WorldMap::resetPosAndRot()
 	zoomZ = 500.0f;
 	zoomZTarget = 500.0f;
 
-	rotation = glm::vec2(35.0f, 0.0f);
-	nextRotation = glm::vec2(35.0f, 0.0f);
+	rotation = glm::vec2(0.0f);
+	nextRotation = glm::vec2(0.0f);
 
 	posBoundary = glm::vec3(250.0f, 0.0f, 200.0f);
 }
@@ -537,7 +541,7 @@ void Voxel::WorldMap::render()
 		}
 	}
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 
 	for (auto regionMesh : regionMeshes)
 	{
@@ -612,55 +616,36 @@ void Voxel::WorldMap::checkNextPosBoundary()
 
 void Voxel::WorldMap::raycastRegion()
 {
-	std::cout << "raycast" << std::endl;
+	//std::cout << "raycast" << std::endl;
 
-	std::cout << "mp = " << prevMouseClickedPos.x << ", " << prevMouseClickedPos.y << "\n";
+	//std::cout << "mp = " << prevMouseClickedPos.x << ", " << prevMouseClickedPos.y << "\n";
 
 	auto screenSize = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
-	
-	// In range of [-1, 1]
-	glm::vec2 scaled = (prevMouseClickedPos / (screenSize * 0.5f));
-
-	std::cout << "scaled = " << scaled.x << ", " << scaled.y << "\n";
 
 	glm::mat4 proj = Camera::mainCamera->getProjection();
 	glm::mat4 view = getViewMatrix();
-	glm::mat4 inv = glm::inverse(proj * view * modelMat);
-	glm::vec4 screenPos = glm::vec4(scaled.x, scaled.y, 1.0f, 1.0f);
-	glm::vec4 worldPos = inv * screenPos;
-
-	std::cout << "WorldPos = " << worldPos.x << ", " << worldPos.y << ", " << worldPos.z << ", " << worldPos.w << "\n";
-
+	
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	std::cout << "viewport = " << viewport[0] << ", " << viewport[1] << ", " << viewport[2] << ", " << viewport[3] << "\n";
-
-	glm::vec3 dir = glm::normalize(glm::vec3(worldPos));
+	//std::cout << "viewport = " << viewport[0] << ", " << viewport[1] << ", " << viewport[2] << ", " << viewport[3] << "\n";
 	
 	auto openglXY = prevMouseClickedPos + (screenSize * 0.5f);
-	std::cout << "openglXY = " << openglXY.x << ", " << openglXY.y << "\n";
+	//std::cout << "openglXY = " << openglXY.x << ", " << openglXY.y << "\n";
 
 	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
 
 	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	std::cout << "near = " << Utility::Log::vec3ToStr(near) << "\n";
-	std::cout << "far = " << Utility::Log::vec3ToStr(far) << "\n";
-
-	std::cout << "dir = " << dir.x << ", " << dir.y << ", " << dir.z <<  "\n";
+	//std::cout << "near = " << Utility::Log::vec3ToStr(near) << "\n";
+	//std::cout << "far = " << Utility::Log::vec3ToStr(far) << "\n";
 	
-	glm::vec3 camPos = glm::vec3(glm::translate(mat4(1.0f), position) * (glm::rotate(glm::mat4(1.0f), glm::radians(-rotation.x), glm::vec3(1, 0, 0)) * (glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zoomZ)) * glm::vec4(0, 0, 0, 1))));
-
-	std::cout << "camPos = " << camPos.x << ", " << camPos.y << ", " << camPos.z << "\n";
-
-	//Ray ray(camPos, camPos + (dir * 20000.0f));
 	Ray ray(near, far);
-	ray.print();
+	//ray.print();
 
-	initDebugMousePickRayLine(ray);
+	//initDebugMousePickRayLine(ray);
 
-	auto start = Utility::Time::now();
+	//auto start = Utility::Time::now();
 
 	int regionID = -1;
 
@@ -688,18 +673,22 @@ void Voxel::WorldMap::raycastRegion()
 		}
 	}
 
-	auto end = Utility::Time::now();
+	//auto end = Utility::Time::now();
 
-	std::cout << "t = " << Utility::Time::toMicroSecondString(start, end) << "\n";
+	//std::cout << "t = " << Utility::Time::toMicroSecondString(start, end) << "\n";
 
+	if (curClickedRegionID != -1)
+	{
+		regionMeshes.at(curClickedRegionID)->unSelect();
+	}
+
+	if (regionID == -1)
+	{
+		curClickedRegionID = -1;
+	}
 	if (regionID != -1)
 	{
-		std::cout << "intersects with " << regionID << std::endl;
-
-		if (curClickedRegionID != -1)
-		{
-			regionMeshes.at(curClickedRegionID)->unSelect();
-		}
+		//std::cout << "intersects with " << regionID << std::endl;
 
 		curClickedRegionID = regionID;
 		regionMeshes.at(curClickedRegionID)->select();

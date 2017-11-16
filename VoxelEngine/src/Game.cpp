@@ -1017,9 +1017,9 @@ void Voxel::Game::updateMouseClickInput()
 		//auto mp = input->getMousePosition();
 		//std::cout << "g mp = " << mp.x << ", " << mp.y << "\n";
 
-		auto cursorWorldPos = cursor->getWorldPosition();
+		//auto cursorWorldPos = cursor->getWorldPosition();
 
-		std::cout << "cursor wp: " << Utility::Log::vec3ToStr(cursorWorldPos) << "\n";
+		//std::cout << "cursor wp: " << Utility::Log::vec3ToStr(cursorWorldPos) << "\n";
 	}
 
 	if (cursorState == CursorState::HIDDEN)
