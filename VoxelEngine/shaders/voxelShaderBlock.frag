@@ -65,6 +65,8 @@ float getDiffuseBrightness()
 		brightness = dot(lightVector, normalVector);
 		brightness = mix(0, brightness, fadeRatio);
 	}
+	
+	clamp(brightness, 0, 1);
 
 	return brightness;
 }
@@ -74,7 +76,7 @@ void main()
 	// Get light color
 	vec4 finalLight = vec4(1, 1, 1, 1);
 
-	if(pointLights[0].lightColor == 0.0)
+	if(pointLights[0].lightIntensity == 0.0)
 	{
 		finalLight = ambientColor;
 	}
@@ -83,6 +85,9 @@ void main()
 		float brightness = getDiffuseBrightness();
 
 		vec4 diffuseColor = pointLights[0].lightColor * vec4(brightness, brightness, brightness, 1.0);
+		//diffuseColor.r *= 0.000001;
+		//diffuseColor.g *= 0.000001;
+		//diffuseColor.b *= 0.000001;
 		finalLight = clamp(ambientColor + diffuseColor, 0, 1);
 	}
 
@@ -109,12 +114,16 @@ void main()
 		else
 		{
 			// It's in fog's range. player can see clearly.
-			fragColor = vertColor * finalLight;
+			vec4 result = vertColor * finalLight;
+			result = clamp(result, vertColor * ambientColor, vec4(1, 1, 1, 1));
+			fragColor = result;
 		}
 	}
 	else
 	{
 			// Fog is diabled. just multiply color with light
-			fragColor = vertColor * finalLight;
+			vec4 result = vertColor * finalLight;
+			result = clamp(result, vertColor * ambientColor, vec4(1, 1, 1, 1));
+			fragColor = result;
 	}
 }

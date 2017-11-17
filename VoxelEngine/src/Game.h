@@ -30,11 +30,6 @@ namespace Voxel
 		class Cursor;
 	}
 
-	namespace NewUI
-	{
-		class Canvas;
-	}
-
 	/**
 	*	@class Game
 	*	@brief A game. Manages everything that is in the game (World, player, input, etc)

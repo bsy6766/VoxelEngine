@@ -24,7 +24,6 @@
 #include <SpriteSheet.h>
 
 #include <UI.h>
-#include <NewUI.h>
 #include <FontManager.h>
 
 #include <ProgramManager.h>
@@ -135,7 +134,7 @@ void Voxel::Game::init()
 	// Lights
 	program->setUniformVec4("ambientColor", glm::vec4(1.0f));
 	program->setUniformFloat("pointLights[0].lightIntensity", 5.0f);
-	program->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+	program->setUniformVec4("pointLights[0].lightColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	// Skybox
 	initSkyBox();
@@ -407,6 +406,7 @@ void Voxel::Game::createWorld()
 	world->init(10, 10, 0, globalSeed);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
+	//startingRegionSitePos = world->getRegion(8)->getSitePosition();
 
 	startingRegionSitePos = glm::vec2(glm::ivec2(startingRegionSitePos)) + 0.5f;
 
