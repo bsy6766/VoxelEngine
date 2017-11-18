@@ -153,13 +153,15 @@ namespace Voxel
 		float zoomZTarget;
 
 		// Current region ID that is clicked. -1 if nothing is clicked
-		int curClickedRegionID;
+		int selectedRegionID;
+		int hoveringRegionID;
 
 		// Boundary of map panning.
 		glm::vec3 posBoundary;
 
 		// Last point where cursor clicked on screen
 		glm::vec2 prevMouseClickedPos;
+		glm::vec2 prevMouseMoved;
 		
 		// Boundary check
 		void checkPosBoundary();
@@ -167,8 +169,11 @@ namespace Voxel
 		// Boundary check on next position
 		void checkNextPosBoundary();
 
+		// for debug
+		RegionMesh* getRegionMesh(const unsigned int regionMeshIndex);
+
 		// Ray cast region based on clicked cursor position
-		void raycastRegion();
+		void raycastRegion(const glm::vec2& cursorPos, const bool select);
 
 		// Release all the mesh. This is called on destructor.
 		void releaseMesh();
@@ -224,7 +229,7 @@ namespace Voxel
 		/**
 		*	Updates mouse move. Updates pan and rotation.
 		*/
-		void updateMouseMove(const glm::vec2& delta);
+		void updateMouseMove(const glm::vec2& delta, const glm::vec2& mousePos);
 
 		/**
 		*	Resests position and rotation of world map. Call this when world map gets closed.

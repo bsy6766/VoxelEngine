@@ -121,7 +121,7 @@ void Voxel::RegionMesh::buildMesh(const std::vector<float>& fillVertices, const 
 
 void Voxel::RegionMesh::select()
 {
-	selectYTarget = 5.0f;
+	selectYTarget = 2.5f;
 }
 
 void Voxel::RegionMesh::unSelect()
@@ -176,7 +176,9 @@ Voxel::WorldMap::WorldMap()
 	, nextRotation(0)
 	, posBoundary(0)
 	, prevMouseClickedPos(0)
-	, curClickedRegionID(-1)
+	, prevMouseMoved(0)
+	, hoveringRegionID(-1)
+	, selectedRegionID(-1)
 {}
 
 Voxel::WorldMap::~WorldMap()
@@ -426,6 +428,11 @@ void Voxel::WorldMap::updateModelMatrix()
 	modelMat = glm::translate(glm::mat4(1.0f), -position);
 	modelMat = glm::rotate(modelMat, glm::radians(rotation.x), vec3(1, 0, 0));
 	modelMat = glm::rotate(modelMat, glm::radians(rotation.y), vec3(0, 1, 0));
+
+	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), -position);
+	glm::mat4 rotMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0)), glm::radians(rotation.y), vec3(0, 1, 0));
+
+	modelMat = transMat * rotMat;
 }
 
 void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, const glm::vec2& mousePos)
@@ -442,7 +449,7 @@ void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, con
 			if (glm::abs(glm::distance(prevMouseClickedPos, mousePos) <= 3.0f))
 			{
 				// Raycast
-				raycastRegion();
+				raycastRegion(prevMouseClickedPos, true);
 			}
 
 			state = State::IDLE;
@@ -461,7 +468,7 @@ void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, con
 	}
 }
 
-void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta)
+void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta, const glm::vec2& mousePos)
 {
 	if (state == State::PAN)
 	{
@@ -485,6 +492,15 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta)
 
 		nextRotation.y += (delta.x * 10.0f);
 	}
+
+	if (prevMouseMoved != mousePos)
+	{
+		if (state == State::IDLE)
+		{
+			raycastRegion(mousePos, false);
+		}
+		prevMouseMoved = mousePos;
+	}
 }
 
 void Voxel::WorldMap::resetPosAndRot()
@@ -498,7 +514,7 @@ void Voxel::WorldMap::resetPosAndRot()
 	rotation = glm::vec2(0.0f);
 	nextRotation = glm::vec2(0.0f);
 
-	posBoundary = glm::vec3(250.0f, 0.0f, 200.0f);
+	posBoundary = glm::vec3(300.0f, 0.0f, 250.0f);
 }
 
 void Voxel::WorldMap::zoomIn()
@@ -614,7 +630,24 @@ void Voxel::WorldMap::checkNextPosBoundary()
 	}
 }
 
-void Voxel::WorldMap::raycastRegion()
+RegionMesh * Voxel::WorldMap::getRegionMesh(const unsigned int regionMeshIndex)
+{
+	try
+	{
+		RegionMesh* rm = regionMeshes.at(regionMeshIndex);
+		return rm;
+	}
+	catch (...)
+	{
+		std::cout << "Error! Failed to get region mesh at " << regionMeshIndex << std::endl;
+		std::cout << "selected region mesh: " << selectedRegionID << std::endl;
+		std::cout << "hovered region mesh: " << hoveringRegionID << std::endl;
+
+		return nullptr;
+	}
+}
+
+void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool select)
 {
 	//std::cout << "raycast" << std::endl;
 
@@ -630,7 +663,7 @@ void Voxel::WorldMap::raycastRegion()
 
 	//std::cout << "viewport = " << viewport[0] << ", " << viewport[1] << ", " << viewport[2] << ", " << viewport[3] << "\n";
 	
-	auto openglXY = prevMouseClickedPos + (screenSize * 0.5f);
+	auto openglXY = cursorPos + (screenSize * 0.5f);
 	//std::cout << "openglXY = " << openglXY.x << ", " << openglXY.y << "\n";
 
 	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
@@ -648,7 +681,7 @@ void Voxel::WorldMap::raycastRegion()
 	//auto start = Utility::Time::now();
 
 	int regionID = -1;
-
+	 
 	bool found = false;
 	for (unsigned int i = 0; i < regionMeshes.size(); i++)
 	{
@@ -656,7 +689,8 @@ void Voxel::WorldMap::raycastRegion()
 		{
 			for (auto& tri : regionMeshes.at(i)->triangles)
 			{
-				int result = ray.doesIntersectsTriangle(tri);
+				float t = 0;
+				int result = ray.doesIntersectsTriangle3(tri);
 
 				if (result == 1)
 				{
@@ -677,21 +711,153 @@ void Voxel::WorldMap::raycastRegion()
 
 	//std::cout << "t = " << Utility::Time::toMicroSecondString(start, end) << "\n";
 
-	if (curClickedRegionID != -1)
+	if (select)
 	{
-		regionMeshes.at(curClickedRegionID)->unSelect();
+		// Need to select
+		if (regionID == -1)
+		{
+			// Clicked out side of the map. Unselect
+			if (selectedRegionID == -1)
+			{
+				// Nothing was selected. do nothing
+				//std::cout << "do nothing" << std::endl;
+				return;
+			}
+			else
+			{
+				//std::cout << "unselect " << selectedRegionID << std::endl;
+				// Unselect region
+				getRegionMesh(selectedRegionID)->unSelect();
+				// reset 
+				selectedRegionID = -1;
+			}
+		}
+		else
+		{
+			// New region selected
+			if (selectedRegionID == -1)
+			{
+				// There wasn't any region selected before.
+				selectedRegionID = regionID;
+				//std::cout << "select " << selectedRegionID << std::endl;
+				// select
+				getRegionMesh(selectedRegionID)->select();
+			}
+			else
+			{
+				// There was region already selected
+				if (selectedRegionID == regionID)
+				{
+					//std::cout << "unselect " << selectedRegionID << std::endl;
+					// same, unselect
+					getRegionMesh(selectedRegionID)->unSelect();
+					// reset 
+					selectedRegionID = -1;
+				}
+				else
+				{
+					//std::cout << "unselect " << selectedRegionID << std::endl;
+					// Not same, unselect
+					getRegionMesh(selectedRegionID)->unSelect();
+					// assign new
+					selectedRegionID = regionID;
+					//std::cout << "select " << selectedRegionID << std::endl;
+					// select
+					getRegionMesh(selectedRegionID)->select();
+				}
+			}
+		}
 	}
-
-	if (regionID == -1)
+	else
 	{
-		curClickedRegionID = -1;
-	}
-	if (regionID != -1)
-	{
-		//std::cout << "intersects with " << regionID << std::endl;
+		// hovering
+		if (regionID == -1)
+		{
+			// Hovered outside of the map
+			//std::cout << "no intersection" << std::endl;
+			if (hoveringRegionID == -1)
+			{
+				// was hovering nothing. return.
+				return;
+			}
+			else
+			{
+				// Was hovering region.
+				if (hoveringRegionID == selectedRegionID)
+				{
+					// Was hovering selected region. do nothing
+					return;
+				}
+				else
+				{
+					// Was hovering region but wasn't selected. unselect
+					//std::cout << "unselect " << curHoveringRegionID << std::endl;
+					getRegionMesh(hoveringRegionID)->unSelect();
+					// reset
+					hoveringRegionID = -1;
+				}
+			}
+		}
+		else
+		{
+			// New region hovered.
+			// regionID != -1
 
-		curClickedRegionID = regionID;
-		regionMeshes.at(curClickedRegionID)->select();
+			//std::cout << "intersects with " << regionID << std::endl;
+			if (hoveringRegionID == -1)
+			{
+				// wasn't hovering region. assign
+				hoveringRegionID = regionID;
+				if (hoveringRegionID == selectedRegionID)
+				{
+					// trying to hover selected regionID. do nothing
+					return;
+				}
+				else
+				{
+					// Not hovering over selected region. select
+					getRegionMesh(hoveringRegionID)->select();
+				}
+			}
+			else
+			{
+				// Was hovering other region
+				// hoveringRegionId != -1
+
+				if (regionID == hoveringRegionID)
+				{
+					// Hovering same region. Do nothing
+					return;
+				}
+				else
+				{
+					// Hovering different region
+					if (regionID == selectedRegionID)
+					{
+						// hovering selected region. unselect currently hovering region
+						getRegionMesh(hoveringRegionID)->unSelect();
+						// assign
+						hoveringRegionID = regionID;
+					}
+					else
+					{
+						if (hoveringRegionID == selectedRegionID)
+						{
+							// Hovering can't unselect selected region
+						}
+						else
+						{
+							// Not hovering selected region. unselect
+							getRegionMesh(hoveringRegionID)->unSelect();
+						}
+						// assign
+						hoveringRegionID = regionID;
+						// select
+						getRegionMesh(hoveringRegionID)->select();
+					}
+				}
+			}
+		}
 	}
 }
 

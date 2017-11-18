@@ -51,6 +51,10 @@ namespace Voxel
 		*	@return 2 if line and triangle are in the same plane.
 		*/
 		int doesIntersectsTriangle(const Geometry::Triangle& triangle, glm::vec3& intersectingPoint = glm::vec3(0));
+		bool doesIntersectsTriangle(const Geometry::Triangle& triangle, float& t);
+		bool doesIntersectsTriangle2(const Geometry::Triangle& triangle);
+		bool doesIntersectsTriangle3(const Geometry::Triangle& triangle);
+		float scalarTriple(const glm::vec3& u, const glm::vec3& v, const glm::vec3& w);
 
 		/**
 		*	Prints ray info.

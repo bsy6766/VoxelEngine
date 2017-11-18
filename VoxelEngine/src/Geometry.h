@@ -10,6 +10,8 @@ namespace Voxel
 	{
 		class Triangle
 		{
+		private:
+			void checkOrientation();
 		public:
 			Triangle(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3);
 			~Triangle() = default;

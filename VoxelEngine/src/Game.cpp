@@ -113,7 +113,6 @@ void Voxel::Game::init()
 	// Call init just once.
 	worldMap->init();
 	//worldMap->initDebugCenterLine();
-	//worldMap->initDebugMousePickRayLine();
 
 	// Init chunks
 	chunkMap = new ChunkMap();
@@ -994,7 +993,7 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 				delta.y = newDelta * static_cast<float>(dy);
 			}
 
-			worldMap->updateMouseMove(delta);
+			worldMap->updateMouseMove(delta, cursor->getPosition());
 		}
 	}
 
