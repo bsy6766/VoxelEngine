@@ -34,7 +34,6 @@ namespace Voxel
 
 		UI::Canvas* debugCanvas;
 
-		//UI::Text* staticLabels;
 		UI::Text* fpsNumber;
 		UI::Text* resolutionNumber;
 		UI::Text* vsyncMode;
@@ -54,9 +53,12 @@ namespace Voxel
 
 		UI::Text* drawCallAndVertCount;
 
-		UI::Text* biome;
-		UI::Text* region;
+		UI::Text* biomeAndTerrainInfo;
+		UI::Text* regionID;
 
+		UI::Text* worldMapRegionID;
+		UI::Text* worldMapRegionSitePos;
+		
 		UI::Image* commandInputField;
 		UI::Image* commandHistoryBg;
 		UI::Text* command;

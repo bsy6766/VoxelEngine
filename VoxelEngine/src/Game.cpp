@@ -1711,6 +1711,8 @@ void Voxel::Game::renderWorld(const float delta)
 		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition());
 	}
 
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	//glDepthFunc(GL_ALWAYS);
 	// Render voronoi diagram
 	//world->renderVoronoi(lineProgram);
 

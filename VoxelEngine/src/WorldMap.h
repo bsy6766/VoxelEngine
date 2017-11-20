@@ -43,6 +43,9 @@ namespace Voxel
 		GLuint sideVao;
 		unsigned int sideSize;
 
+		// Site position of region
+		glm::vec3 sitePosition;
+
 		// Model matrix for region mesh
 		glm::mat4 modelMat;
 
@@ -69,6 +72,8 @@ namespace Voxel
 		*	@param [in] delta Elapsed time for current frame.
 		*/
 		void update(const float delta);
+
+		void setSitePosition(const glm::vec2& sitePosition);
 
 		/**
 		*	Build mesh for region. One polygon and side of polygon each.
@@ -123,13 +128,15 @@ namespace Voxel
 		// OpenGL
 		GLuint vao;
 
+		// Player indicator
+		GLuint playerIndicatorVAO;
+
 		// Model matrix of world map. Only uses position.
 		glm::mat4 modelMat;
 		
 		// UI canvas
 		UI::Canvas* uiCanvas;
 		// Images
-		UI::Image* compass;
 		UI::Image* cameraIcon;
 		// Texts
 		UI::Text* worldName;
@@ -162,6 +169,9 @@ namespace Voxel
 		// Last point where cursor clicked on screen
 		glm::vec2 prevMouseClickedPos;
 		glm::vec2 prevMouseMoved;
+
+		// Initialize ui
+		void initUI();
 		
 		// Boundary check
 		void checkPosBoundary();

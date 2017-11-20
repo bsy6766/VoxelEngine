@@ -170,17 +170,17 @@ void Voxel::DebugConsole::init()
 	chunkNumbers->setVisibility(false);
 	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
 
-	biome = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -215.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
-	biome->setPivot(glm::vec2(-0.5f, 0.5f));
-	biome->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
-	biome->setVisibility(false);
-	debugCanvas->addText("biome", biome, 0);
+	biomeAndTerrainInfo = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -215.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	biomeAndTerrainInfo->setPivot(glm::vec2(-0.5f, 0.5f));
+	biomeAndTerrainInfo->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	biomeAndTerrainInfo->setVisibility(false);
+	debugCanvas->addText("biome", biomeAndTerrainInfo, 0);
 
-	region = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -229.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
-	region->setPivot(glm::vec2(-0.5f, 0.5f));
-	region->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
-	region->setVisibility(false);
-	debugCanvas->addText("region", region, 0);
+	regionID = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -229.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	regionID->setPivot(glm::vec2(-0.5f, 0.5f));
+	regionID->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	regionID->setVisibility(false);
+	debugCanvas->addText("region", regionID, 0);
 
 	drawCallAndVertCount = UI::Text::createWithOutline("Draw calls: ----, vertices: -------", glm::vec2(5.0f, -257.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
 	drawCallAndVertCount->setPivot(glm::vec2(-0.5f, 0.5f));
@@ -1557,8 +1557,8 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 	}
 
 	chunkNumbers->setVisibility(debugOutputVisibility);
-	biome->setVisibility(debugOutputVisibility);
-	region->setVisibility(debugOutputVisibility);
+	biomeAndTerrainInfo->setVisibility(debugOutputVisibility);
+	regionID->setVisibility(debugOutputVisibility);
 	drawCallAndVertCount->setVisibility(debugOutputVisibility);
 }
 
@@ -1667,12 +1667,12 @@ void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::
 	temp << std::fixed << std::showpoint << std::setprecision(2) << t;
 	moist << std::fixed << std::showpoint << std::setprecision(2) << m;
 
-	biome->setText("biome: " + biomeType + " / " + terrainType + " / " + temp.str() + " / " + moist.str());
+	biomeAndTerrainInfo->setText("biome: " + biomeType + " / " + terrainType + " / " + temp.str() + " / " + moist.str());
 }
 
 void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 {
-	region->setText("region: " + std::to_string(regionID));
+	this->regionID->setText("region: " + std::to_string(regionID));
 }
 
 void Voxel::DebugConsole::updateDrawCallsAndVerticesSize()

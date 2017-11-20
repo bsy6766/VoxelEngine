@@ -10,6 +10,7 @@
 #include <Program.h>
 #include <glm\gtx\transform.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <Utility.h>
 #include <EarClip.h>
 
@@ -28,6 +29,7 @@ Voxel::RegionMesh::RegionMesh()
 	, curSelectY(0)
 	, selectYTarget(0)
 	, modelMat(glm::mat4(1.0f))
+	, sitePosition(0)
 {}
 
 Voxel::RegionMesh::~RegionMesh()
@@ -56,6 +58,13 @@ void Voxel::RegionMesh::update(const float delta)
 
 		modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, curSelectY, 0.0f));
 	}
+}
+
+void Voxel::RegionMesh::setSitePosition(const glm::vec2 & sitePosition)
+{
+	this->sitePosition.x = sitePosition.x;
+	this->sitePosition.y = 0.0f;
+	this->sitePosition.z = sitePosition.y;
 }
 
 void Voxel::RegionMesh::buildMesh(const std::vector<float>& fillVertices, const std::vector<unsigned int>& fillIndices, const std::vector<float>& sideVertices, const std::vector<unsigned int>& sideIndices)
@@ -163,7 +172,6 @@ void Voxel::RegionMesh::renderPolygonSide(const glm::mat4 & worldModelMat)
 Voxel::WorldMap::WorldMap()
 	: vao(0)
 	, uiCanvas(nullptr)
-	, compass(nullptr)
 	, cameraIcon(nullptr)
 	, worldName(nullptr)
 	, modelMat(1.0f)
@@ -205,6 +213,11 @@ void Voxel::WorldMap::init()
 	updateModelMatrix();
 }
 
+void Voxel::WorldMap::initUI()
+{
+}
+
+
 void Voxel::WorldMap::buildMesh(World * world)
 {
 	// If there is a world map already, clear it.
@@ -220,6 +233,8 @@ void Voxel::WorldMap::buildMesh(World * world)
 	const float yBot = -10.0f;
 	const float yTop = 0.0f;
 	const float yTopSide = yTop;
+
+	const float scale = 0.05f;
 
 	for (unsigned int i = 0; i < gridSize; i++)
 	{
@@ -242,7 +257,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 
 				for (auto& edge : edgePoints)
 				{
-					edge *= 0.05f;
+					edge *= scale;
 				}
 
 				// ear clip edge points
@@ -257,6 +272,7 @@ void Voxel::WorldMap::buildMesh(World * world)
 				auto randColor = Color::getRandomColor();
 				newMesh->color = glm::vec4(randColor, 1.0f);
 				newMesh->sideColor = glm::vec4(randColor * 0.8f, 1.0f);
+				newMesh->setSitePosition(region->getSitePosition() * scale);
 				
 				// Top polygon
 				auto size = triangles.size();
@@ -419,6 +435,7 @@ glm::mat4 Voxel::WorldMap::getViewMatrix()
 	glm::mat4 viewMatrix = mat4(1.0f);
 	viewMatrix = glm::translate(viewMatrix, -(glm::vec3(0.0f, 0.0f, zoomZ)));
 	viewMatrix = glm::rotate(viewMatrix, glm::radians(35.0f), vec3(1, 0, 0));
+	//viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.x), vec3(1, 0, 0));
 	//viewMatrix = glm::rotate(viewMatrix, glm::radians(rotation.y), vec3(0, 1, 0));
 
 	return  viewMatrix;// *glm::translate(glm::mat4(1.0f), -position);
@@ -426,14 +443,35 @@ glm::mat4 Voxel::WorldMap::getViewMatrix()
 
 void Voxel::WorldMap::updateModelMatrix() 
 {
-	modelMat = glm::translate(glm::mat4(1.0f), -position);
-	modelMat = glm::rotate(modelMat, glm::radians(rotation.x), vec3(1, 0, 0));
-	modelMat = glm::rotate(modelMat, glm::radians(rotation.y), vec3(0, 1, 0));
+	//glm::mat4 transX = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, 0, 0));
+	//auto rotPos = glm::rotate(-position, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	
+	//modelMat = glm::translate(glm::mat4(1.0f), -position);
+	//modelMat = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0));
+	//modelMat = glm::rotate(modelMat, glm::radians(rotation.x), vec3(1, 0, 0));
+	//modelMat = glm::translate(modelMat, -position);
+	//modelMat = glm::translate(glm::mat4(1.0f), rotPos);
+	//modelMat = glm::rotate(modelMat, glm::radians(rotation.y), vec3(0, 1, 0));
+	//modelMat = glm::translate(modelMat, -position);
 
-	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), -position);
-	glm::mat4 rotMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0)), glm::radians(rotation.y), vec3(0, 1, 0));
+	//glm::mat4 transMat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0)), -position);
+	//glm::mat4 rotMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0)), glm::radians(rotation.y), vec3(0, 1, 0));
 
-	modelMat = transMat * rotMat;
+	//modelMat = modelMat * rotMat;
+	
+	//glm::mat4 transMat = glm::translate(glm::mat4(1.0f), -position);
+	//glm::mat4 rotMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0)), glm::radians(rotation.y), vec3(0, 1, 0));
+	glm::mat4 rotMatX = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), vec3(1, 0, 0));
+	glm::mat4 rotMatY = glm::rotate(rotMatX, glm::radians(rotation.y), vec3(0, 1, 0));
+	glm::mat4 transMat = glm::translate(rotMatY, -position);
+	//glm::mat4 transMat = glm::translate(glm::mat4(1.0f), rotPos);
+	//glm::mat4 transMat = glm::translate(transX, glm::vec3(0, rotPos.y, rotPos.z));
+	//glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), vec3(0, 1, 0));
+
+	//modelMat = transMat * rotMat;
+	//modelMat = transMat * rotMatY;
+	//modelMat = rotMatY * transMat;
+	modelMat = transMat;
 }
 
 void Voxel::WorldMap::updateMouseClick(const int button, const bool clicked, const glm::vec2& mousePos)
@@ -482,6 +520,7 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta, const glm::vec2& 
 	{
 		nextRotation.x += (delta.y * 10.0f);
 
+		/*
 		if (nextRotation.x > 30.0f)
 		{
 			nextRotation.x = 30.0f;
@@ -490,6 +529,7 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta, const glm::vec2& 
 		{
 			nextRotation.x = -20.0f;
 		}
+		*/
 
 		nextRotation.y += (delta.x * 10.0f);
 	}
@@ -750,10 +790,17 @@ void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool selec
 				if (selectedRegionID == regionID)
 				{
 					//std::cout << "unselect " << selectedRegionID << std::endl;
-					// same, unselect
-					getRegionMesh(selectedRegionID)->unSelect();
-					// reset 
-					selectedRegionID = -1;
+					/*
+					{
+						// same, unselect
+						getRegionMesh(selectedRegionID)->unSelect();
+						// reset 
+						selectedRegionID = -1;
+					}
+					*/
+					// Instead of unselecting, move this region to center on screen
+					nextPosition = getRegionMesh(selectedRegionID)->sitePosition;
+					state = State::PAN;
 				}
 				else
 				{

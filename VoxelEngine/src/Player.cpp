@@ -5,7 +5,6 @@
 #include <Application.h>
 #include <Program.h>
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/compatibility.hpp>
 
 using namespace Voxel;
