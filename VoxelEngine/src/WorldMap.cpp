@@ -779,6 +779,7 @@ void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool selec
 				// There wasn't any region selected before.
 				selectedRegionID = regionID;
 				std::cout << "select " << selectedRegionID << std::endl;
+				std::cout << "site pos = " << Utility::Log::vec3ToStr(getRegionMesh(selectedRegionID)->sitePosition * 20.0f) << "\n";
 				// select
 				getRegionMesh(selectedRegionID)->select();
 			}
@@ -808,6 +809,7 @@ void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool selec
 					// assign new
 					selectedRegionID = regionID;
 					std::cout << "select " << selectedRegionID << std::endl;
+					std::cout << "site pos = " << Utility::Log::vec3ToStr(getRegionMesh(selectedRegionID)->sitePosition * 20.0f) << "\n";
 					// select
 					getRegionMesh(selectedRegionID)->select();
 				}

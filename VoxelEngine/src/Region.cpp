@@ -265,3 +265,8 @@ std::string Voxel::Region::getSeed()
 {
 	return seed;
 }
+
+void Voxel::Region::print()
+{
+	std::cout << "SitePos: " << Utility::Log::vec2ToStr(getSitePosition()) << "\n";
+}

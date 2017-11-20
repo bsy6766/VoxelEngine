@@ -87,6 +87,8 @@ namespace Voxel
 		// set seed
 		void setSeed(const std::string& seed);
 		std::string getSeed();
+
+		void print();
 	};
 }
 

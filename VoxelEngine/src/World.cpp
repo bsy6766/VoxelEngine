@@ -62,6 +62,8 @@ void Voxel::World::init(const int gridWidth, const int gridLength, const unsigne
 	//initRegionTerrain();
 	printRegionBiomeAndTerrain();
 	initVoronoiDebug();
+
+	print();
 }
 
 void Voxel::World::rebuildWorldMap()
@@ -467,6 +469,8 @@ void Voxel::World::initVoronoi(std::mt19937& engine)
 	// dist
 	std::uniform_int_distribution<> dist(randMin, randMax);
 
+	unsigned int index = 0;
+
 	for (auto x : grid)
 	{
 		for (auto z : x)
@@ -486,6 +490,7 @@ void Voxel::World::initVoronoi(std::mt19937& engine)
 				//std::cout << "Marked\n";
 			}
 			break;
+			/*
 			case OMITTED:
 			{
 				int randX = dist(engine);
@@ -497,6 +502,7 @@ void Voxel::World::initVoronoi(std::mt19937& engine)
 				//std::cout << "Omitted\n";
 			}
 			break;
+			*/
 			case BORDER:
 			{
 				randPos = glm::vec2(0);
@@ -515,6 +521,9 @@ void Voxel::World::initVoronoi(std::mt19937& engine)
 			//std::cout << "RandPoint = " << Utility::Log::vec2ToStr(randPos) << std::endl;
 
 			points.push_back(Voronoi::Site(randPos, type));
+
+			std::cout << "Creating random site pos (" << randPos.x << ", " << randPos.y << "), on id(index) = " << index << "\n";
+			index++;
 
 			pos.y/*z*/ -= interval;
 		}
@@ -785,4 +794,18 @@ void Voxel::World::renderVoronoi(Program* program)
 		program->setUniformMat4("modelMat", glm::mat4(1.0f));
 		vd->render();
 	}
+}
+
+void Voxel::World::print()
+{
+	std::cout << "[World] info\n";
+	std::cout << "Regions\n";
+
+	for (auto& region : regions)
+	{
+		std::cout << "ID: " << region.first << "\n";
+		(region.second)->print();
+	}
+
+	std::cout << "\n";
 }

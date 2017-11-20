@@ -119,6 +119,9 @@ namespace Voxel
 		// Renders visible chunk
 		void render();
 		void renderVoronoi(Program* program);
+
+		// for debug
+		void print();
 	};
 }
 
