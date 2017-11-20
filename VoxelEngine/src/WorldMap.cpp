@@ -520,16 +520,14 @@ void Voxel::WorldMap::updateMouseMove(const glm::vec2 & delta, const glm::vec2& 
 	{
 		nextRotation.x += (delta.y * 10.0f);
 
-		/*
-		if (nextRotation.x > 30.0f)
+		if (nextRotation.x > 15.0f)
 		{
-			nextRotation.x = 30.0f;
+			nextRotation.x = 15.0f;
 		}
 		else if (nextRotation.x < -20.0f)
 		{
 			nextRotation.x = -20.0f;
 		}
-		*/
 
 		nextRotation.y += (delta.x * 10.0f);
 	}
