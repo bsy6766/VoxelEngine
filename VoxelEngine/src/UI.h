@@ -250,6 +250,16 @@ namespace Voxel
 			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
 		};
 
+		/**
+		*	@class Mesh
+		*	@brief 3D object ui
+		*/
+		class Mesh : public UINode
+		{
+		private:
+			glm::mat4 modelMat;
+		};
+
 		class Slider
 		{
 
