@@ -4,7 +4,7 @@
 #include <GL\glew.h>
 #include <glm\glm.hpp>
 #include <vector>
-#include <Geometry.h>
+#include <Shape.h>
 #include <Ray.h>
 
 namespace Voxel
@@ -57,7 +57,7 @@ namespace Voxel
 		glm::vec4 sideColor;
 
 		// Triangles in polygon. For raycasting.
-		std::vector<Geometry::Triangle> triangles;
+		std::vector<Shape::Triangle> triangles;
 
 		// Pointer to programs
 		static Program* polygonProgram;

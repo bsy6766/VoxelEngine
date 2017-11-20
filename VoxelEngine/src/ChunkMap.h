@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <ChunkUtil.h>
 #include <Block.h>
-#include <Geometry.h>
+#include <Shape.h>
 #include <mutex>
 #include <Cube.h>
 #include <Terrain.h>
@@ -176,8 +176,8 @@ namespace Voxel
 		float raycastCamera(const glm::vec3& rayStart, const glm::vec3& rayEnd, const float cameraRange);
 
 		// Check which face of block(cube) did ray hit
-		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
-		float raycastIntersectingDistance(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Geometry::AABB& blockAABB);
+		Cube::Face raycastFace(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Shape::AABB& blockAABB);
+		float raycastIntersectingDistance(const glm::vec3& rayStart, const glm::vec3& rayEnd, const Shape::AABB& blockAABB);
 
 		// Release and delete chunk 
 		void releaseChunk(const glm::ivec2& coordinate);

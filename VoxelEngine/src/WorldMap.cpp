@@ -274,7 +274,8 @@ void Voxel::WorldMap::buildMesh(World * world)
 					fillVertices.push_back(yTop);
 					fillVertices.push_back(triangles.at(j + 2).y);
 
-					newMesh->triangles.push_back(std::move(Geometry::Triangle(glm::vec3(triangles.at(j).x, yTop, triangles.at(j).y), glm::vec3(triangles.at(j + 1).x, yTop, triangles.at(j + 1).y), glm::vec3(triangles.at(j + 2).x, yTop, triangles.at(j + 2).y))));
+					newMesh->triangles.push_back(std::move(Shape::Triangle(glm::vec3(triangles.at(j).x, yTop, triangles.at(j).y), glm::vec3(triangles.at(j + 1).x, yTop, triangles.at(j + 1).y), glm::vec3(triangles.at(j + 2).x, yTop, triangles.at(j + 2).y), glm::vec3(0.0f, 1.0f, 0.0f))));
+					newMesh->triangles.back().checkOrientation();
 
 					fillIndices.push_back(index);
 					fillIndices.push_back(index + 1);
@@ -690,7 +691,7 @@ void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool selec
 			for (auto& tri : regionMeshes.at(i)->triangles)
 			{
 				float t = 0;
-				int result = ray.doesIntersectsTriangle3(tri);
+				int result = ray.doesIntersectsTriangle(tri, glm::vec3(0, 1, 0));
 
 				if (result == 1)
 				{

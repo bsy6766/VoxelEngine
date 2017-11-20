@@ -51,7 +51,7 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 	player->setFallDistance(fallDistance + player->getFallDistance());
 }
 
-Geometry::AABB Voxel::Physics::getIntersectingBoundingBox(const Geometry::AABB & A, const Geometry::AABB & B)
+Shape::AABB Voxel::Physics::getIntersectingBoundingBox(const Shape::AABB & A, const Shape::AABB & B)
 {
 	// Get min and max
 	auto aMin = A.getMin();
@@ -96,7 +96,7 @@ Geometry::AABB Voxel::Physics::getIntersectingBoundingBox(const Geometry::AABB &
 		iSize.z = bMax.z - iMin.z;
 	}
 
-	return Geometry::AABB(iMin + (iSize * 0.5f), iSize);
+	return Shape::AABB(iMin + (iSize * 0.5f), iSize);
 }
 
 bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>& collidableBlocks)
@@ -719,7 +719,7 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 	//std::cout << "Player is falling" << std::endl;
 }
 
-bool Voxel::Physics::checkCollisionWithBlocks(const Geometry::AABB & boundingBox, const std::vector<Block*>& nearByBlocks)
+bool Voxel::Physics::checkCollisionWithBlocks(const Shape::AABB & boundingBox, const std::vector<Block*>& nearByBlocks)
 {
 	for (auto block : nearByBlocks)
 	{
@@ -735,7 +735,7 @@ bool Voxel::Physics::checkCollisionWithBlocks(const Geometry::AABB & boundingBox
 	return false;
 }
 
-bool Voxel::Physics::checkSphereCollisionWithBlocks(const Geometry::Sphere& sphere, const std::vector<Block*>& nearByBlocks)
+bool Voxel::Physics::checkSphereCollisionWithBlocks(const Shape::Sphere& sphere, const std::vector<Block*>& nearByBlocks)
 {
 	for (auto block : nearByBlocks)
 	{

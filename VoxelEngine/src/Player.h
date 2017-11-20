@@ -4,7 +4,7 @@
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <Cube.h>
-#include <Geometry.h>
+#include <Shape.h>
 
 namespace Voxel
 {
@@ -207,8 +207,8 @@ namespace Voxel
 		Block* getLookingBlock();
 		Cube::Face getLookingFace();
 
-		Geometry::AABB getBoundingBox();
-		Geometry::AABB getBoundingBox(const glm::vec3& position);
+		Shape::AABB getBoundingBox();
+		Shape::AABB getBoundingBox(const glm::vec3& position);
 
 		void autoJump(const float y);
 				

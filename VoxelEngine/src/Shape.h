@@ -6,28 +6,51 @@
 
 namespace Voxel
 {
-	namespace Geometry
+	namespace Shape
 	{
+		/**
+		*	@class Triangle
+		*	@brief Contains three points of 3D triangle
+		*/
 		class Triangle
 		{
-		private:
-			void checkOrientation();
 		public:
-			Triangle(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3);
+			/**
+			*	Constructor	
+			*	@param [in] p1 First point of triangle
+			*	@param [in] p2 Second point of triangle
+			*	@param [in] p3 Third point of triangle
+			*	@param [in] n Normal of triangle surface. Used for raycasting.
+			*/
+			Triangle(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& n);
+
+			// Default destructor.
 			~Triangle() = default;
 
+			// First point of triangle
 			glm::vec3 p1;
+			// Second point of triangle
 			glm::vec3 p2;
+			// Third point of triangle
 			glm::vec3 p3;
+			// Normal of triangle surface
+			glm::vec3 n;
+
+			// Checks orientation of triangle. If triangle is clockwise, reverse to counter clockwise
+			void checkOrientation();
 		};
 
 		/**
 		*	@class Plane
-		*	@brief Simple plane contains normal and distance from origin
+		*	@brief An infinitely extending plane in 3D.
 		*/
 		class Plane
 		{
 		public:
+			/**
+			*	Constructor
+			*	@param normal 
+			*/
 			Plane(const glm::vec3& normal, const float distance);
 			Plane(const Triangle& triangle);
 			~Plane() = default;
@@ -36,31 +59,59 @@ namespace Voxel
 			float distance;
 		};
 
+		/**
+		*	@class Rect
+		*	@brief 2D rectangle with center point and the size of the rectangle from center
+		*/
 		class Rect
 		{
 		public:
+			// Constructor
 			Rect();
+			/**
+			*	Constructor
+			*	@param [in] center Center position of rectangle
+			*	@param [in] size Size of rectangle from center point
+			*/
 			Rect(const glm::vec2& center, const glm::vec2& size);
+
+			// Destructor
 			~Rect() = default;
 
+			// Center of rectangle
 			glm::vec2 center;
+			// Size of rectangle
 			glm::vec2 size;
 		};
 
+		/**
+		*	@class Sphere
+		*	@brief 3D Sphere with position and radius
+		*/
 		class Sphere
 		{
 		public:
+			// Constructor
 			Sphere();
+			/**
+			*	Constructor
+			*	@param [in] radius Radius of sphere
+			*	@param [in] position Position of sphere
+			*/
 			Sphere(const float radius, const glm::vec3& position);
+
+			// Destructor
 			~Sphere() = default;
 
+			// Radius of sphere. Must be positive number.
 			float radius;
+			// Position of sphere.
 			glm::vec3 position;
 		};
 
 		/**
 		*	@class AABB
-		*	@brief Simple Axis Aligned Bounding box
+		*	@brief Simple 3D Axis Aligned Bounding box
 		*/
 		class AABB
 		{
@@ -81,7 +132,7 @@ namespace Voxel
 
 			// Order: Front > Left > Back > Right > Top > Bottom
 			// 2 Triangles per side. Return vector must be size of 12.
-			std::vector<Plane> toPlanes() const;
+			//std::vector<Plane> toPlanes() const;
 			std::vector<Triangle> toTriangles() const;
 
 			/**

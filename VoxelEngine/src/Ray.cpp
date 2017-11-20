@@ -18,6 +18,7 @@ glm::vec3 Voxel::Ray::getEnd() const
 	return end;
 }
 
+/*
 int Voxel::Ray::doesIntersectsTriangle(const Geometry::Triangle & triangle, glm::vec3& intersectingPoint)
 {
 	glm::vec3 u, v, n;				// triangle vectors
@@ -98,127 +99,159 @@ int Voxel::Ray::doesIntersectsTriangle(const Geometry::Triangle & triangle, glm:
 	// I is in T
 	return 1;                       
 }
+*/
 
-bool Voxel::Ray::doesIntersectsTriangle(const Geometry::Triangle & triangle, float & t)
-{
-	// compute plane's normal
-	glm::vec3 v0v1 = triangle.p2 - triangle.p1;
-	glm::vec3 v0v2 = triangle.p3 - triangle.p1;
-	// no need to normalize
-	//glm::vec3 N = glm::cross(v0v1, v0v2); // N 
-	//float area2 = N.length();
-	glm::vec3 N = glm::vec3(0, 1, 0);
-
-	glm::vec3 dir = end - start;
-
-	// Step 1: finding P
-
-	// check if ray and plane are parallel ?
-	float NdotRayDirection = glm::dot(N, dir);
-	if (fabs(NdotRayDirection) < 0.00000001f) // almost 0 
-		return false; // they are parallel so they don't intersect ! 
-
-	// compute d parameter using equation 2
-	float d = glm::dot(N, triangle.p1);
-
-	// compute t (equation 3)
-	//t = (glm::dot(N, start) + d) / NdotRayDirection;
-	// check if the triangle is in behind the ray
-//	if (t < 0) return false; // the triangle is behind 
-
-							 // compute the intersection point using equation 1
-	//glm::vec3 P = start + t * dir;
-	glm::vec3 P = end;
-
-	// Step 2: inside-outside test
-	glm::vec3 C; // vector perpendicular to triangle's plane 
-
-			 // edge 0
-	glm::vec3 edge0 = triangle.p2 - triangle.p1;
-	glm::vec3 vp0 = P - triangle.p1;
-	C = glm::cross(edge0, vp0);
-	if (glm::dot(N, C) < 0) return false; // P is on the right side 
-
-										   // edge 1
-	glm::vec3 edge1 = triangle.p3 - triangle.p2;
-	glm::vec3 vp1 = P - triangle.p2;
-	C = glm::cross(edge0, vp1);
-	if (glm::dot(N, C) < 0)  return false; // P is on the right side 
-
-											// edge 2
-	glm::vec3 edge2 = triangle.p1 - triangle.p3;
-	glm::vec3 vp2 = P - triangle.p3;
-	C = glm::cross(edge0, vp2);
-	if (glm::dot(N, C) < 0) return false; // P is on the right side; 
-
-	return true; // this ray hits the triangle 
-}
-
-bool Voxel::Ray::doesIntersectsTriangle2(const Geometry::Triangle & triangle)
-{
-	const glm::vec3 e_1 = triangle.p2 - triangle.p1;
-	const glm::vec3 e_2 = triangle.p3 - triangle.p1;
-
-	//const glm::vec3 n = glm::normalize(glm::cross(e_1, e_2)); // N 
-	const glm::vec3 n = glm::vec3(0, 1, 0);
-
-	const glm::vec3 dir = end - start;
-	const glm::vec3 q = glm::cross(dir, e_2);
-	const float a = glm::dot(e_1, q);
-
-	if ((glm::dot(n, dir) >= 0) || (glm::abs(a) < 0.00000001f))
-	{
-		return false;
-	}
-
-	const glm::vec3 s = (start - triangle.p1) / a;
-	const glm::vec3 r = glm::cross(r, e_1);
-
-	float b[3];
-
-	b[0] = glm::dot(s, q);
-	b[1] = glm::dot(r, dir);
-	b[2] = 1.0f - b[0] - b[1];
-
-	if ((b[0] < 0.0f) || (b[1] < 0.0f) || (b[2] < 0.0f)) 
-		return false;
-
-	float t = glm::dot(e_2, r);
-	return t >= 0.0f;
-}
-
-bool Voxel::Ray::doesIntersectsTriangle3(const Geometry::Triangle & triangle)
+bool Voxel::Ray::doesIntersectsTriangle(const Shape::Triangle & triangle, glm::vec3& intersectingPoint)
 {
 	glm::vec3 pq = end - start;
 	glm::vec3 pa = triangle.p1 - start;
 	glm::vec3 pb = triangle.p2 - start;
 	glm::vec3 pc = triangle.p3 - start;
+	
+	// normal
+	glm::vec3 p21 = triangle.p2 - triangle.p1;
+	glm::vec3 p31 = triangle.p3 - triangle.p1;
+	//glm::vec3 n = glm::normalize(glm::cross(p21, p31));
+
+	float d = glm::dot(triangle.n, glm::normalize(start - end));
+
+	if (d <= 0)
+	{
+		return false;
+	}
 
 	// Test if pq is inside the edges bc, ca and ab. Done by testing
 	// that the signed tetrahedral volumes, computed using scalar triple
 	// products, are all positive
 	float u = scalarTriple(pq, pc, pb);
 
-	if (u < 0.0f) 
-		return 0;
+	if (u < 0.0f)
+	{
+		return false;
+	}
 
 	float v = scalarTriple(pq, pa, pc);
 
-	if (v < 0.0f) 
-		return 0;
+	if (v < 0.0f)
+	{
+		return false;
+	}
 
 	float w = scalarTriple(pq, pb, pa);
 
-	if (w < 0.0f) 
-		return 0;
+	if (w < 0.0f)
+	{
+		return false;
+	}
 
 	// Compute the barycentric coordinates (u, v, w) determining the
 	// intersection point r, r = u*a + v*b + w*c
-	float denom = 1.0f / (u + v + w);
+	float sum = u + v + w;
+	if (sum == 0)
+	{
+		return false;
+	}
+
+	float denom = 1.0f / sum;
 	u *= denom;
 	v *= denom;
 	w *= denom; // w = 1.0f - u - v;
-	return 1;
+
+	intersectingPoint = (triangle.p1 * u) + (triangle.p2 * v) + (triangle.p3 * w);
+
+	return true;
+}
+
+Cube::Face Voxel::Ray::getIntersectingAABBFace(const Shape::AABB & aabb)
+{
+	Cube::Face result = Cube::Face::NONE;
+	auto triangles = aabb.toTriangles();
+
+	float minDist = std::numeric_limits<float>::max();
+	unsigned int closestTriangle = 1000;
+
+	for (unsigned int i = 0; i < triangles.size(); i++)
+	{
+		glm::vec3 intersectingPoint = glm::vec3(0);
+
+		bool rayResult = doesIntersectsTriangle(triangles.at(i), intersectingPoint);
+
+		if (rayResult)
+		{
+			float dist = glm::abs(glm::distance(intersectingPoint, start));
+			if (dist < minDist)
+			{
+				//std::cout << "hit: " << i << std::endl;
+				//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint) << std::endl;
+				minDist = dist;
+				closestTriangle = i;
+			}
+		}
+	}
+
+	switch (closestTriangle)
+	{
+	case 0:
+	case 1:
+		result = Cube::Face::FRONT;
+		//std::cout << "FRONT\n";
+		break;
+	case 2:
+	case 3:
+		result = Cube::Face::LEFT;
+		//std::cout << "LEFT\n";
+		break;
+	case 4:
+	case 5:
+		result = Cube::Face::BACK;
+		//std::cout << "BACK\n";
+		break;
+	case 6:
+	case 7:
+		result = Cube::Face::RIGHT;
+		//std::cout << "RIGHT\n";
+		break;
+	case 8:
+	case 9:
+		result = Cube::Face::TOP;
+		//std::cout << "TOP\n";
+		break;
+	case 10:
+	case 11:
+		result = Cube::Face::BOTTOM;
+		//std::cout << "BOTTOM\n";
+		break;
+	default:
+		break;
+	}
+
+	return result;
+}
+
+float Voxel::Ray::getMinimumIntersectingDistance(const Shape::AABB & aabb)
+{
+	auto triangles = aabb.toTriangles();
+
+	float minDist = std::numeric_limits<float>::max();
+	
+	for (unsigned int i = 0; i < triangles.size(); i++)
+	{
+		glm::vec3 intersectingPoint;
+		bool rayResult = doesIntersectsTriangle(triangles.at(i), intersectingPoint);
+
+		if (rayResult)
+		{
+			//std::cout << "hit: " << i << std::endl;
+			//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint)<< std::endl;
+			float dist = glm::abs(glm::distance(intersectingPoint, start));
+			if (dist < minDist)
+			{
+				minDist = dist;
+			}
+		}
+	}
+	
+	return minDist;
 }
 
 float Voxel::Ray::scalarTriple(const glm::vec3 & u, const glm::vec3 & v, const glm::vec3 & w)

@@ -648,7 +648,7 @@ ChunkMesh * Voxel::Chunk::getMesh()
 	return chunkMesh;
 }
 
-Geometry::AABB Voxel::Chunk::getBoundingBox()
+Shape::AABB Voxel::Chunk::getBoundingBox()
 {
 	return boundingBox;
 }

@@ -161,9 +161,9 @@ void Voxel::Block::setBlockID(const BLOCK_ID blockID)
 	//setColorU3(Color::getColorU3FromBlockID(blockID));
 }
 
-Geometry::AABB Voxel::Block::getBoundingBox()
+Shape::AABB Voxel::Block::getBoundingBox()
 {
-	return Geometry::AABB(this->getWorldPosition(), glm::vec3(1.0f));
+	return Shape::AABB(this->getWorldPosition(), glm::vec3(1.0f));
 }
 
 

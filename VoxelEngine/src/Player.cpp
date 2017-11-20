@@ -515,14 +515,14 @@ Cube::Face Voxel::Player::getLookingFace()
 	return lookingFace;
 }
 
-Geometry::AABB Voxel::Player::getBoundingBox()
+Shape::AABB Voxel::Player::getBoundingBox()
 {
-	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
+	return Shape::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
 }
 
-Geometry::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
+Shape::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
 {
-	return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
+	return Shape::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
 	//return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), 0.8f, 1.5f, 0.8f);
 }
 
@@ -558,7 +558,7 @@ void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
 {
 	if (dist < cameraDistanceTargetZ)
 	{
-		auto adjust = dist - 0.75f;
+		auto adjust = dist;// -0.75f;
 		if (adjust < 0.0f)
 		{
 			adjust = 0.0f;

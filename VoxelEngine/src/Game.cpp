@@ -1421,6 +1421,28 @@ void Voxel::Game::updatePlayerCameraCollision()
 	// using max dist, get closest position where ray hits
 	float minCamDist = chunkMap->raycastCamera(rayStart, rayEnd, maxDist);
 
+	glm::vec3 camPos = rayStart + (-playerDir * minCamDist);
+
+	while (minCamDist >= 0)
+	{
+		std::vector<Block*> nearByBlock;
+		chunkMap->queryNearByBlocks(camPos, nearByBlock);
+		bool result = physics->checkSphereCollisionWithBlocks(Shape::Sphere(0.5f, camPos), nearByBlock);
+
+		if (result == false)
+		{
+			break;
+		}
+
+		minCamDist -= 0.01f;
+		camPos = rayStart + (-playerDir * minCamDist);
+	}
+
+	if (minCamDist < 0)
+	{
+		minCamDist = 0;
+	}
+
 	/*
 	if (minCamDist != maxDist)
 	{

@@ -2,7 +2,8 @@
 #define RAY_H
 
 #include <vector>
-#include <Geometry.h>
+#include <Shape.h>
+#include <Cube.h>
 #include <glm\glm.hpp>
 
 namespace Voxel
@@ -42,7 +43,7 @@ namespace Voxel
 		glm::vec3 getEnd() const;
 
 		/**
-		*	Check if line intersects triangle.
+		*	Check if ray intersects triangle.
 		*	@param [in] triangle Const ref of Geometry::Triangle to check.
 		*	@param [in] intersectingPoint A glm::vec3 ref to get intersecting point. 0 by default.
 		*	@return -1 if triangle is degenerate (a segment or point)
@@ -50,10 +51,34 @@ namespace Voxel
 		*	@return 1 if line intersects triangle. Check @param intersectingPoint for position of intersection.
 		*	@return 2 if line and triangle are in the same plane.
 		*/
-		int doesIntersectsTriangle(const Geometry::Triangle& triangle, glm::vec3& intersectingPoint = glm::vec3(0));
-		bool doesIntersectsTriangle(const Geometry::Triangle& triangle, float& t);
-		bool doesIntersectsTriangle2(const Geometry::Triangle& triangle);
-		bool doesIntersectsTriangle3(const Geometry::Triangle& triangle);
+		//int doesIntersectsTriangle(const Geometry::Triangle& triangle, glm::vec3& intersectingPoint = glm::vec3(0));
+
+		/**
+		*	Check if ray intersects triangle
+		*	@param [in] triangle Const ref of Geometry::Triangle to check. Triangle must be oriented in counter clock wise
+		*	@param [in] intersectingPoint A glm::vec3 ref to get intersecting point. 0 by default.
+		*	@return true if ray intersects triangle. Else, false.
+		*/
+		bool doesIntersectsTriangle(const Shape::Triangle& triangle, glm::vec3& intersectingPoint = glm::vec3(0));
+
+		/**
+		*	Check if ray intersects AABB and get the face it intersects
+		*	@param aabb AABB to check
+		*	@return Face of AABB
+		*/
+		Cube::Face getIntersectingAABBFace(const Shape::AABB& aabb);
+
+		/**
+		*	Get minimum distance from ray's starting point and intersecting point with AABB
+		*	@param aabb AABB to check
+		*	@return Minimum distance between ray's starting point and intersecting point with AABB. Retruns max float if there wasn't any intersection.
+		*/
+		float getMinimumIntersectingDistance(const Shape::AABB& aabb);
+
+		/**
+		*	Calculate scalar triple.
+		*	u * (v X w)
+		*/
 		float scalarTriple(const glm::vec3& u, const glm::vec3& v, const glm::vec3& w);
 
 		/**

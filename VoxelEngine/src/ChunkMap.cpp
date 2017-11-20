@@ -4,7 +4,7 @@
 #include <ChunkSection.h>
 #include <iostream>
 #include <Utility.h>
-#include <Geometry.h>
+#include <Shape.h>
 #include <ChunkWorkManager.h>
 #include <Voronoi.h>
 #include <Camera.h>
@@ -1156,100 +1156,19 @@ float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3&
 	return cameraRange;
 }
 
-Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
+Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Shape::AABB & blockAABB)
 {
 	// Check if ray hits each triangle of cube. 
-
-	Cube::Face result = Cube::Face::NONE;
-	auto triangles = blockAABB.toTriangles();
-
-	float minDist = std::numeric_limits<float>::max();
-	unsigned int closestTriangle = 0;
-
 	Ray ray(rayStart, rayEnd);
 
-	for (unsigned int i = 0; i < triangles.size(); i++)
-	{
-		glm::vec3 intersectingPoint;
-		int rayResult = ray.doesIntersectsTriangle(triangles.at(i), intersectingPoint);
-
-		if (rayResult == 1)
-		{
-			//std::cout << "hit: " << i << std::endl;
-			//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint)<< std::endl;
-			float dist = glm::abs(glm::distance(intersectingPoint, rayStart));
-			if (dist < minDist)
-			{
-				minDist = dist;
-				closestTriangle = i;
-			}
-		}
-	}
-
-	switch (closestTriangle)
-	{
-	case 0:
-	case 1:
-		result = Cube::Face::FRONT;
-		//std::cout << "FRONT\n";
-		break;
-	case 2:
-	case 3:
-		result = Cube::Face::LEFT;
-		//std::cout << "LEFT\n";
-		break;
-	case 4:
-	case 5:
-		result = Cube::Face::BACK;
-		//std::cout << "BACK\n";
-		break;
-	case 6:
-	case 7:
-		result = Cube::Face::RIGHT;
-		//std::cout << "RIGHT\n";
-		break;
-	case 8:
-	case 9:
-		result = Cube::Face::TOP;
-		//std::cout << "TOP\n";
-		break;
-	case 10:
-	case 11:
-		result = Cube::Face::BOTTOM;
-		//std::cout << "BOTTOM\n";
-		break;
-	default:
-		break;
-	}
-	return result;
+	return ray.getIntersectingAABBFace(blockAABB);
 }
 
-float Voxel::ChunkMap::raycastIntersectingDistance(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Geometry::AABB & blockAABB)
+float Voxel::ChunkMap::raycastIntersectingDistance(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Shape::AABB & blockAABB)
 {
-	auto triangles = blockAABB.toTriangles();
-
-	float minDist = std::numeric_limits<float>::max();
-
 	Ray ray(rayStart, rayEnd);
 
-	for (unsigned int i = 0; i < triangles.size(); i++)
-	{
-		glm::vec3 intersectingPoint;
-		int rayResult = ray.doesIntersectsTriangle(triangles.at(i), intersectingPoint);
-
-		if (rayResult == 1)
-		{
-			//std::cout << "hit: " << i << std::endl;
-			//std::cout << "point: " << Utility::Log::vec3ToStr(intersectingPoint)<< std::endl;
-			float dist = glm::abs(glm::distance(intersectingPoint, rayStart));
-			if (dist < minDist)
-			{
-				minDist = dist;
-			}
-		}
-	}
-
-	return minDist;
+	return ray.getMinimumIntersectingDistance(blockAABB);
 }
 
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)

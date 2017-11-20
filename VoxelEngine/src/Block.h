@@ -2,7 +2,7 @@
 #define BLOCK_H
 
 #include <glm\glm.hpp>
-#include <Geometry.h>
+#include <Shape.h>
 
 namespace Voxel
 {
@@ -104,7 +104,7 @@ namespace Voxel
 		void setBlockID(const BLOCK_ID blockID);
 
 		// Get AABB
-		Geometry::AABB getBoundingBox();
+		Shape::AABB getBoundingBox();
 	};
 
 	class PlantBlock : public Block

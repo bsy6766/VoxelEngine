@@ -3,7 +3,7 @@
 
 #include <glm\glm.hpp>
 #include <vector>
-#include <Geometry.h>
+#include <Shape.h>
 
 namespace Voxel
 {
@@ -58,7 +58,7 @@ namespace Voxel
 		*	@param [in] B Second bounding box.
 		*	@return A Geometry::AABB of intersection between bounding box A and B.
 		*/
-		Geometry::AABB getIntersectingBoundingBox(const Geometry::AABB& A, const Geometry::AABB& B);
+		Shape::AABB getIntersectingBoundingBox(const Shape::AABB& A, const Shape::AABB& B);
 
 		/**
 		*	Resolves auto jump feature
@@ -87,8 +87,8 @@ namespace Voxel
 
 		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
 
-		bool checkCollisionWithBlocks(const Geometry::AABB& boundingBox, const std::vector<Block*>& nearByBlocks);
-		bool checkSphereCollisionWithBlocks(const Geometry::Sphere& sphere, const std::vector<Block*>& nearByBlocks);
+		bool checkCollisionWithBlocks(const Shape::AABB& boundingBox, const std::vector<Block*>& nearByBlocks);
+		bool checkSphereCollisionWithBlocks(const Shape::Sphere& sphere, const std::vector<Block*>& nearByBlocks);
 
 		bool updatePlayerJumpForce(Player* player, const float delta);
 	};
