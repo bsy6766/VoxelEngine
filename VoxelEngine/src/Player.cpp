@@ -677,10 +677,12 @@ void Voxel::Player::update(const float delta)
 	if (cameraY != Player::EyeHeight)
 	{
 		cameraY = glm::lerp(cameraY, Player::EyeHeight, 6.0f * delta);
-		if (glm::abs(cameraY - Player::EyeHeight) < 0.01f)
+		if (glm::abs(cameraY - Player::EyeHeight) < 0.001f)
 		{
 			cameraY = Player::EyeHeight;
 		}
+
+		//std::cout << "cy = " << cameraY << "\n";
 	}
 }
 

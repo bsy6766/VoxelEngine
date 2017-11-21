@@ -597,15 +597,9 @@ void Voxel::Physics::resolvePlayerTopCollision(Player * player, const std::vecto
 			//if (!intersectingAABB.isZero(false))
 			if (sizeY > 0)
 			{
-				if (glm::abs(playerNextPos.y - playerPos.y) < 0.01f)
-				{
-					if (playerJumpForce.y > 0.0f)
-					{
-						// Player bumped on block. Cancel jump.
-						playerJumpForce.y = 0.0f;
-						player->setJumpState(Player::JumpState::FALLING);
-					}
-				}
+				// Player bumped on block. Cancel jump.
+				playerJumpForce.y = 0.0f;
+				player->setJumpState(Player::JumpState::FALLING);
 				// player and block is intersecting
 				//std::cout << "position y = " << playerPos.y << std::endl;
 				//std::cout << "r position y = " << resolvingPos.y << std::endl;
