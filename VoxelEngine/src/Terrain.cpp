@@ -42,9 +42,6 @@ std::string Voxel::Terrain::terrainTypeToString(Voxel::TerrainType terrain, Voxe
 	case Voxel::TerrainType::MOUNTAINS:
 		terrainStr = "MOUNTAINS";
 		break;
-	case Voxel::TerrainType::BORDER:
-		terrainStr = "BORDER";
-		break;
 	default:
 		return "ERROR";
 		break;

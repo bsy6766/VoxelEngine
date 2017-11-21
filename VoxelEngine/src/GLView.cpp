@@ -297,7 +297,7 @@ void Voxel::GLView::clearBufferBit()
 {
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL);
 }
 
 void Voxel::GLView::render()

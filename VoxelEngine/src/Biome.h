@@ -71,7 +71,7 @@ namespace Voxel
 		float getMoisture();
 
 		void initVegitation(std::mt19937& engine);
-		
+				
 		// Check if this biome has flower
 		bool hasFlower();
 		// Check if this biome has tree

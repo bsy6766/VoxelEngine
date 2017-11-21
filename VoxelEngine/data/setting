@@ -5,9 +5,9 @@ videoSetting
 			width 1920
 			height 1080
 	vsync false
-	renderDistance 8
+	renderDistance 16
 	fieldOfView 70
-	blockShade 2
+	blockShade 1
 	plantWave false
 control
 	autoJump true

@@ -405,7 +405,7 @@ void Voxel::Game::createWorld()
 	world->init(10, 10, 0, globalSeed);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
-	//startingRegionSitePos = world->getRegion(8)->getSitePosition();
+	startingRegionSitePos = world->getRegion(31)->getSitePosition();
 
 	startingRegionSitePos = glm::vec2(glm::ivec2(startingRegionSitePos)) + 0.5f;
 
@@ -418,6 +418,12 @@ void Voxel::Game::createWorld()
 void Voxel::Game::teleportPlayer(const glm::vec3 & position)
 {
 	std::cout << "Teleporint to " << Utility::Log::vec3ToStr(position) << "\n";
+
+	if (gameState == GameState::VIEWING_WORLD_MAP)
+	{
+		closeWorldMap();
+	}
+
 	// move player
 	player->setPosition(position, false);
 	player->setLookingBlock(nullptr, Cube::Face::NONE);

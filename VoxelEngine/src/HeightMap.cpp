@@ -64,8 +64,6 @@ const NoisePreset HeightMap::HillsPreset =			NoisePreset(0.08f * HeightMap::freq
 //const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.1f, 1.0f, 0.6f, 0.5f, 0.2f, 0.0f, 0.0f, 0.2f, 0.5f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 30.0f, 1.5f, 31.0f, true, false);	// small many mountains next to each other
 const NoisePreset HeightMap::MountainsPreset =		NoisePreset(0.15f * HeightMap::freqScale, 1.0f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 50.0f, 30.0f, 0.9f, 31.0f, true, true);		// some small mountains
 
-const NoisePreset HeightMap::BorderPreset =			NoisePreset(0.07f * HeightMap::freqScale, 1.0f, 0.6f, 0.5f, 0.7f, 0.0f, 0.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 33.0f, 60.0f, 2.0f, 31.0f, true, false);
-
 const NoisePreset HeightMap::TreePositionPreset =	NoisePreset(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 0.0f, 200.0f, 1.0f, 4.0f, false, false);
 
 // for biome
@@ -147,9 +145,6 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const PRESET pr
 	case PRESET::MOUNTAINS:
 		np = &HeightMap::MountainsPreset;
 		break;
-	case PRESET::BORDER:
-		np = &HeightMap::BorderPreset;
-		break;
 	case PRESET::TREE:
 		np = &HeightMap::TreePositionPreset;
 		break;
@@ -180,9 +175,6 @@ float Voxel::HeightMap::getNoise2D(const float x, const float z, const Terrain &
 		break;
 	case Voxel::TerrainType::MOUNTAINS:
 		np = &HeightMap::MountainsPreset;
-		break;
-	case Voxel::TerrainType::BORDER:
-		np = &HeightMap::BorderPreset;
 		break;
 	case Voxel::TerrainType::NONE:
 	default:
@@ -242,9 +234,6 @@ int Voxel::HeightMap::getYFromHeightValue(const float value, const Voxel::Terrai
 		break;
 	case Voxel::TerrainType::MOUNTAINS:
 		y = static_cast<int>(value * 35.0f) + 33;
-		break;
-	case Voxel::TerrainType::BORDER:
-		y = static_cast<int>(value * 50.0f) + 80;
 		break;
 	default:
 		break;

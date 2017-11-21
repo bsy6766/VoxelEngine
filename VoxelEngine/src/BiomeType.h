@@ -158,7 +158,7 @@ namespace Voxel
 				return "KORU";
 			case Voxel::Vegitation::Plant::NONE:
 			default:
-				break;
+				return "NONE";
 			}
 		}
 	}

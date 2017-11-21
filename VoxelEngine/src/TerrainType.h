@@ -11,7 +11,6 @@ namespace Voxel
 		HILLS,			// Few hills in flat terrain
 		MOUNTAINS,		// Few mountinas
 		PLATEAU,
-		BORDER,
 	};
 
 

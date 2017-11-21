@@ -84,6 +84,8 @@ namespace Voxel
 		// Get cell id
 		unsigned int getID();
 
+		bool isBorder();
+
 		// set seed
 		void setSeed(const std::string& seed);
 		std::string getSeed();

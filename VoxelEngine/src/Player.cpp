@@ -721,7 +721,7 @@ void Voxel::Player::update(const float delta)
 		// Angle x range: 0~90, 360 ~ 270
 		wrapAngleX();
 
-		if (glm::abs(glm::distance(rotation.x, rotationTarget.x)) <= 0.001f)
+		if (glm::abs(glm::distance(rotation.x, rotationTarget.x)) <= 0.01f)
 		{
 			rotation.x = rotationTarget.x;
 		}
@@ -739,7 +739,7 @@ void Voxel::Player::update(const float delta)
 			wrapAngle(rotationTarget.y);
 		}
 
-		if (glm::abs(glm::distance(rotation.y, rotationTarget.y)) <= 0.001f)
+		if (glm::abs(glm::distance(rotation.y, rotationTarget.y)) <= 0.01f)
 		{
 			rotation.y = rotationTarget.y;
 		}

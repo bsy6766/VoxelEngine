@@ -256,6 +256,11 @@ unsigned int Voxel::Region::getID()
 	return cell->getID();
 }
 
+bool Voxel::Region::isBorder()
+{
+	return cell->isSiteBorder();
+}
+
 void Voxel::Region::setSeed(const std::string & seed)
 {
 	this->seed = seed + std::to_string(getID());

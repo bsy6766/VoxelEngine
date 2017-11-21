@@ -702,11 +702,13 @@ void Voxel::World::initRegionBiomeAndTerrain()
 
 		if (region->isCellValid())
 		{
+			// Valid cell. Not border
 			region->initTerrainType(engine);
 		}
 		else
 		{
-			region->initTerrainType(Voxel::TerrainType::BORDER);
+			// Border. Terrain is plain
+			region->initTerrainType(Voxel::TerrainType::PLAIN);
 		}
 	}
 }
@@ -729,11 +731,13 @@ void Voxel::World::initRegionTerrain(std::mt19937& engine)
 
 		if (region->isCellValid())
 		{
+			// Valid cell. Not border
 			region->initTerrainType(engine);
 		}
 		else
 		{
-			region->initTerrainType(Voxel::TerrainType::BORDER);
+			// Border. Terrain is plain
+			region->initTerrainType(Voxel::TerrainType::PLAIN);
 		}
 	}
 }

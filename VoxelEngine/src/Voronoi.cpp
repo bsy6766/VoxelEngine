@@ -180,6 +180,11 @@ Region * Voxel::Voronoi::Cell::getRegion()
 	return region;
 }
 
+bool Voxel::Voronoi::Cell::isSiteBorder()
+{
+	return site->isBorder();
+}
+
 
 
 
@@ -1854,4 +1859,9 @@ Site::Type Voxel::Voronoi::Site::getType()
 void Voxel::Voronoi::Site::updateType(const Type type)
 {
 	this->type = type;
+}
+
+bool Voxel::Voronoi::Site::isBorder()
+{
+	return type == Voxel::Voronoi::Site::Type::BORDER;
 }

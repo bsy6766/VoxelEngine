@@ -79,6 +79,7 @@ namespace Voxel
 			glm::vec2 getPosition();
 			Type getType();
 			void updateType(const Type type);
+			bool isBorder();
 		};
 
 		/**
@@ -125,6 +126,7 @@ namespace Voxel
 			void updateSiteType(Site::Type type);
 			void setRegion(Region* region);
 			Region* getRegion();
+			bool isSiteBorder();
 		};
 
 		class Program;

@@ -66,7 +66,6 @@ namespace Voxel
 		static const NoisePreset PlainPreset;
 		static const NoisePreset HillsPreset;
 		static const NoisePreset MountainsPreset;
-		static const NoisePreset BorderPreset;
 
 		// Tree preset. We use high frequency with high amplitude. 
 		static const NoisePreset TreePositionPreset;

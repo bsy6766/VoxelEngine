@@ -591,23 +591,31 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										// get the region
 										auto region = world->getRegion(closestRegionID);
 
-										// Check if closest region has block 
-										if (region->isPointIsInRegion(blockXZPos))
+										if (region->isBorder())
 										{
-											// found
+											// Region is border. Just use closest
 											regionID = closestRegionID;
 										}
 										else
 										{
-											// Nope, check if neighbor regions has block
-											if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
+											// Check if closest region has block 
+											if (region->isPointIsInRegion(blockXZPos))
 											{
-												// found it.
+												// found
+												regionID = closestRegionID;
 											}
 											else
 											{
-												// Even neighbor regions doesn't have this block. Can't figure out why, assert false it.
-												assert(false);
+												// Nope, check if neighbor regions has block
+												if (region->isPointIsInRegionNeighbor(blockXZPos, regionID))
+												{
+													// found it.
+												}
+												else
+												{
+													// Even neighbor regions doesn't have this block. Can't figure out why, assert false it.
+													assert(false);
+												}
 											}
 										}
 									}
@@ -963,6 +971,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								}
 
 								// Check if biome can spawn tree
+								/*
 								if (biomeType.hasTree())
 								{
 									// biome can spawn tree. 
@@ -990,6 +999,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;
 									}
 								}
+								*/
 							}
 						}
 						
