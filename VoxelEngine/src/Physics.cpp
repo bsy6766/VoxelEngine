@@ -42,10 +42,12 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 
 	pos.y -= fallDistance;
 
+	//std::cout << "Applying gravity: " << fallDistance << "\n";
+
 	//std::cout << "pos.y = " << pos.y << std::endl;
 
-	player->setPosition(pos, true);
-	//player->setNextPosition(pos);
+	//player->setPosition(pos, true);
+	player->setNextPosition(pos);
 
 	player->setFallDuration(fallDuration + delta);
 	player->setFallDistance(fallDistance + player->getFallDistance());
@@ -103,8 +105,6 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 {
 	if (collidableBlocks.empty()) return false;
 
-	// current position
-	auto playerPos = player->getPosition();
 	// position that player tried to move
 	auto playerNextPos = player->getNextPosition();
 	
@@ -117,11 +117,15 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 	// First, check if player was on ground and collided with block on the side. And if that block doesn't have any other block above, move player up (auto jump)
 	for (auto block : collidableBlocks)
 	{
+		// Get block Bounding box
 		auto blockBB = block->getBoundingBox();
 
+		// Check intersection
 		if (blockBB.doesIntersectsWith(pBB))
 		{
+			// Get intersecting Bounding box
 			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			// Get size
 			auto iSize = intersectingAABB.getSize();
 
 			if (iSize.y == blockBB.getSize().y)
@@ -129,21 +133,27 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 				// block's bounding box y axis is in player's bounding box y axis
 				if (pBB.getMin().y == blockBB.getMin().y)
 				{
+					// player is at same level with colliding block
 					auto upResolvingPos = resolvingPos;
 					upResolvingPos.y += 1.0f;
 
+					// get bounding box with 1 block higher
 					auto upPBB = player->getBoundingBox(upResolvingPos);
 
 					bool canAutoJump = true;
 
+					// Iterate blocks again and check again if it collides anything
 					for (auto upBlock : collidableBlocks)
 					{
+						// Get bounding box
 						auto upBlockBB = upBlock->getBoundingBox();
 						if (upBlockBB.doesIntersectsWith(upPBB))
 						{
+							// Intersects
 							auto iBB = getIntersectingBoundingBox(upPBB, upBlockBB);
 							if (iBB.getSize().y > 0)
 							{
+								// Can't intersect
 								canAutoJump = false;
 								break;
 							}
@@ -152,9 +162,12 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 
 					if (canAutoJump)
 					{
-						std::cout << "auto jump. p.y = " << playerPos.y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
+						std::cout << "auto jump. p.y = " << player->getPosition().y << ", np.y = " << playerNextPos.y << ", sizeY = " << iSize.y << std::endl;
 						player->autoJump(iSize.y);
-						//player->runJumpCooldown();
+
+						//resolvingPos.y += 1.0f;
+
+						//player->autoJump(resolvingPos);
 						player->setOnGround(true);
 						player->setJumpState(Player::JumpState::IDLE);
 						//autoJumped = true;
@@ -181,7 +194,7 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 
 	bool resolved = false;
 
-	float pad = 0.01f;
+	float pad = 0.0f;
 
 	// iterate blocks and resolve
 	for (auto block : collidableBlocks)
@@ -193,7 +206,7 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
 
 			// intersecting AABB muse not be zero in all axis
-			if (!intersectingAABB.isZero(false))
+			if (!intersectingAABB.isAnyZero())
 			{
 				//auto bPos = block->getWorldCoordinate();
 				//std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
@@ -234,7 +247,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 
 	bool resolved = false;
 
-	float pad = 0.01f;
+	float pad = 0.0f;
 
 	// iterate blocks and resolve
 	for (auto block : collidableBlocks)
@@ -246,7 +259,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
 
 			// intersecting AABB muse not be zero in all axis
-			if (!intersectingAABB.isZero(false))
+			if (!intersectingAABB.isAnyZero())
 			{
 				//auto bPos = block->getWorldCoordinate();
 				//std::cout << "bPos = (" << bPos.x << ", " << bPos.y << ", " << bPos.z << ")\n";
@@ -488,6 +501,7 @@ void Voxel::Physics::resolvePlayerAndBlockCollisionInXZAxis(Player * player, con
 
 	if (resolved)
 	{
+		//std::cout << "XZ resolved from (" << playerNextPos.x << ", " << playerNextPos.y << ", " << playerNextPos.z << ") to (" << resolvingPos.x << ", " << playerNextPos.y << ", " << resolvingPos.z << ")\n";
 		player->setResolvedNextPosition(glm::vec3(resolvingPos.x, playerNextPos.y, resolvingPos.z));
 	}
 }
@@ -534,14 +548,15 @@ void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::ve
 			if(sizeY > 0)
 			{
 				// player and block is intersecting
-				//std::cout << "position y = " << playerPos.y << std::endl;
+				//std::cout << "playerPos y = " << playerPos.y << std::endl;
+				//std::cout << "playerNextPos y = " << playerNextPos.y << std::endl;
 				//std::cout << "r position y = " << resolvingPos.y << std::endl;
 				resolvingPos.y += (intersectingAABB.getSize().y);
 				//std::cout << "resolving y = " << resolvingPos.y << std::endl;
 
 				//pBB = player->getBoundingBox(resolvingPos);
- 				player->setOnGround(true);
-				player->setJumpState(Player::JumpState::IDLE);
+ 				//player->setOnGround(true);
+				//player->setJumpState(Player::JumpState::IDLE);
 
 				player->setResolvedNextPosition(resolvingPos);
 
@@ -616,88 +631,33 @@ void Voxel::Physics::resolvePlayerTopCollision(Player * player, const std::vecto
 	}
 }
 
-void Voxel::Physics::checkIfPlayerCollidedTop(Player * player, const std::vector<Block*>& collidableBlocks)
-{
-	if (collidableBlocks.empty()) return;
-
-	// current position
-	auto playerPos = player->getPosition();
-	// position that player tried to move
-	auto playerNextPos = player->getNextPosition();
-
-	// Resolving position
-	auto resolvingPos = playerNextPos;
-	//resolvingPos.y = playerNextPos.y;
-
-	// init player bounding box
-	auto pBB = player->getBoundingBox(resolvingPos);
-
-	for (auto block : collidableBlocks)
-	{
-		auto blockBB = block->getBoundingBox();
-
-		// Check intersection
-		if (blockBB.doesIntersectsWith(pBB))
-		{
-			// intersects with block
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
-
-			// get y size
-			float sizeY = intersectingAABB.getSize().y;// block i
-
-			if (sizeY > 0 || (blockBB.getMin().y <= pBB.getMax().y))
-			{
-				// player and block is intersecting
-				//std::cout << "Player is on ground" << std::endl;
-				// check jump force
-				if (playerJumpForce.y > 0.0f)
-				{
-					// Player bumped on block. Cancel jump.
-					playerJumpForce.y = 0.0f;
-					player->setJumpState(Player::JumpState::FALLING);
-				}
-
-				//player->setPosition(playerPos, false);
-				//player->setNextPosition(resolvingPos);
-				
-				return;
-			}
-		}
-	}
-}
-
 void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<Block*>& collidableBlocks)
 {
 	if (collidableBlocks.empty()) return;
 
-	// current position
+	// Get next player pos because it's all resolved at this point
 	auto playerPos = player->getPosition();
-	// position that player tried to move
-	auto playerNextPos = player->getNextPosition();
+	//std::cout << "-- playerPos: (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << ")\n";
+	//playerPos.y = player->getNextPosition().y;
+	//std::cout << "-- pos: (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << ")\n";
 
-	// Resolving position
-	auto resolvingPos = playerPos;
-	resolvingPos.y = playerNextPos.y;
-	//resolvingPos.y -= 0.01f;
 
 	// init player bounding box
-	auto pBB = player->getBoundingBox(resolvingPos);
+	auto pBB = player->getBoundingBox(playerPos);
 
 	for (auto block : collidableBlocks)
 	{
 		auto blockBB = block->getBoundingBox();
 
-		// Check intersection
-		if (blockBB.doesIntersectsWith(pBB))
+		if (blockBB.getMax().y >= pBB.getMin().y)
 		{
-			// intersects with block
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			//std::cout << "block max y: " << blockBB.getMax().y << ", player min y " << pBB.getMin().y << std::endl;
+			auto resolvingPos = playerPos;
+			resolvingPos.y -= 0.1f;
 
-			// get y size
-			float sizeY = intersectingAABB.getSize().y;// block i
+			auto resolvedPlayerBB = player->getBoundingBox(resolvingPos);
 
-			 //if (!intersectingAABB.isZero(false))
-			if (sizeY > 0 || (blockBB.getMax().y >= pBB.getMin().y))
+			if (resolvedPlayerBB.doesIntersectsWith(blockBB))
 			{
 				// player and block is intersecting
 				//std::cout << "Player is on ground" << std::endl;
@@ -709,8 +669,23 @@ void Voxel::Physics::checkIfPlayerIsFalling(Player * player, const std::vector<B
 	}
 
 	player->setOnGround(false);
-	player->setJumpState(Player::JumpState::FALLING);
-	//std::cout << "Player is falling" << std::endl;
+	/*
+	if (playerJumpForce.y > 0.0f)
+	{
+		player->setJumpState(Player::JumpState::JUMPING);
+	}
+	else
+	{
+		player->setJumpState(Player::JumpState::FALLING);
+	}
+	*/
+
+	if (player->isJumpStateIdle())
+	{
+		player->setJumpState(Voxel::Player::JumpState::FALLING);
+	}
+
+	//std::cout << "Player is NOT on ground" << std::endl;
 }
 
 bool Voxel::Physics::checkCollisionWithBlocks(const Shape::AABB & boundingBox, const std::vector<Block*>& nearByBlocks)
@@ -791,10 +766,11 @@ bool Voxel::Physics::updatePlayerJumpForce(Player * player, const float delta)
 
 			auto pNextPos = player->getNextPosition();
 			pNextPos += forceDelta;
-			player->addCameraY(-forceDelta.y * 0.5f);
+			//player->addCameraY(-forceDelta.y * 0.5f);
 
 			if (playerJumpForce.y <= 0.0f)
 			{
+				std::cout << "Jump finished\n";
 				player->setJumpState(Player::JumpState::FALLING);
 			}
 

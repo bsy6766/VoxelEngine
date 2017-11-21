@@ -50,6 +50,12 @@ namespace Voxel
 		// direction vector of player
 		glm::vec3 direction;
 
+		// Physics
+		glm::vec2 xzVelocity;
+		glm::vec2 xzAcceleration;
+		glm::vec2 xzElapsedTime;
+
+
 		// Range in blocks that player can reach from position
 		float rayRange;
 
@@ -91,7 +97,7 @@ namespace Voxel
 		Block* lookingBlock;
 		Cube::Face lookingFace;
 
-		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
+		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3& axis, float distance);
 
 		void wrapAngle(float& axis);
 		void wrapAngle();
@@ -134,7 +140,9 @@ namespace Voxel
 
 		// Movement by inputs
 		void moveFoward(const float delta);
+		void stopFoward(const float delta);
 		void moveBackward(const float delta);
+		void stopBackward(const float delta);
 		void moveLeft(const float delta);
 		void moveRight(const float delta);
 		void moveUp(const float delta);
@@ -211,15 +219,17 @@ namespace Voxel
 		Shape::AABB getBoundingBox(const glm::vec3& position);
 
 		void autoJump(const float y);
+		void autoJump(const glm::vec3& resolvedPosition);
 				
 		/**
 		*	Checks if player is jumping
 		*/
 		bool isJumping();
-
 		bool isFalling();
+		bool isJumpStateIdle();
 
 		void setJumpState(const JumpState jumpState);
+		JumpState getJumpState() const;
 
 		void setResolvedCameraDistanceZ(const float dist);
 		void setCameraColliding(const bool value);

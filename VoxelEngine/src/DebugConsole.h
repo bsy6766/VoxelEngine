@@ -30,6 +30,8 @@ namespace Voxel
 		bool openingConsole;
 		bool debugOutputVisibility;
 
+		unsigned int lastCommandIndex;
+
 		const std::string DefaultCommandInputText = "ENTER COMMAND";
 
 		UI::Canvas* debugCanvas;
@@ -65,9 +67,10 @@ namespace Voxel
 		UI::Text* commandHistorys;
 
 		std::list<std::string> executedCommandHistory;
-		std::string lastCommand;
+		std::list<std::string> lastCommands;
 
 		bool executeCommand(const std::string& command);
+		void addCommandHistory(const std::string& command);
 		void updateCommandHistory();
 	public:
 		DebugConsole();

@@ -229,9 +229,12 @@ bool Shape::AABB::doesIntersectsWith(const AABB & other)
 	auto oMin = other.getMin();
 	auto oMax = other.getMax();
 
-	return (min.x <= oMax.x && max.x >= oMin.x) &&
-		(min.y <= oMax.y && max.y >= oMin.y) &&
-		(min.z <= oMax.z && max.z >= oMin.z);
+	//return (min.x <= oMax.x && max.x >= oMin.x) &&
+	//	(min.y <= oMax.y && max.y >= oMin.y) &&
+	//	(min.z <= oMax.z && max.z >= oMin.z);
+	return (min.x < oMax.x && max.x > oMin.x) &&
+		(min.y < oMax.y && max.y > oMin.y) &&
+		(min.z < oMax.z && max.z > oMin.z);
 }
 
 bool Voxel::Shape::AABB::doesIntersectsWith(const Sphere & other)
@@ -259,16 +262,14 @@ bool Voxel::Shape::AABB::doesIntersectsWith(const Sphere & other)
 	return distSquared > 0;
 }
 
-bool Voxel::Shape::AABB::isZero(const bool all) const
+bool Voxel::Shape::AABB::isAnyZero() const
 {
-	if (all)
-	{
-		return (size.x == 0) && (size.y == 0) && (size.z == 0);
-	}
-	else
-	{
-		return (size.x == 0) || (size.y == 0) || (size.z == 0);
-	}
+	return (size.x == 0) || (size.y == 0) || (size.z == 0);
+}
+
+bool Voxel::Shape::AABB::isAllZero() const
+{
+	return (size.x == 0) && (size.y == 0) && (size.z == 0);
 }
 
 void Shape::AABB::print()

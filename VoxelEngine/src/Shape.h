@@ -166,12 +166,16 @@ namespace Voxel
 			bool doesIntersectsWith(const Sphere& other);
 
 			/**
-			*	Checks if this AABB has any or all axis equal to zero
-			*
-			*	@param [in] all Set true to check all 3 axis. Else, false. If false, AABB will be zero if there is one or more axis sized 0.
-			*	@return true If AABB is zero;
+			*	Checks if this AABB's size has zero value.
+			*	@return true if one or more than one size in x, y and z is zero. If x, y and z is all zero, returns false.
 			*/
-			bool isZero(const bool all) const;
+			bool isAnyZero() const;
+
+			/**
+			*	Checks if size is all zero for all axis.
+			*	@return true if size x, y and z are all 0
+			*/
+			bool isAllZero() const;
 
 			/**
 			*	Print AABB info.

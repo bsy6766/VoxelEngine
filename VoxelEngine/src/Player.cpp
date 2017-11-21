@@ -38,6 +38,9 @@ Player::Player()
 	, viewMode(ViewMode::FIRST_PERSON_VIEW)
 	, jumpState(JumpState::FALLING)
 	, cameraColliding(false)
+	, xzVelocity(0)
+	, xzAcceleration(glm::vec2(0.05f, 0.05f))
+	, xzElapsedTime(0)
 	// Debug
 	, yLineVao(0)
 	, rayVao(0)
@@ -215,13 +218,60 @@ void Voxel::Player::initBoundingBoxLine()
 void Player::moveFoward(const float delta)
 {
 	nextPosition += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), movementSpeed * delta);
-	//moved = true;
+	moved = true;
+	/*
+	xzElapsedTime.x += delta;
+	xzVelocity.x += (xzAcceleration.x * xzElapsedTime.x);
+
+	if (xzVelocity.x > 1.0f)
+	{
+		xzVelocity.x = 1.0f;
+	}
+
+	nextPosition += getMovedDistByKeyInput(-180.0f, glm::vec3(0, 1, 0), xzVelocity.x);
+
+	std::cout << "v = " << Utility::Log::vec2ToStr(xzVelocity) << std::endl;
+	*/
+}
+
+void Voxel::Player::stopFoward(const float delta)
+{
+	/*
+	if (xzElapsedTime.x != 0.0f)
+	{
+		xzElapsedTime.x = glm::lerp(xzElapsedTime.x, 0.0f, 10.0f * delta);
+
+		if (glm::abs(xzElapsedTime.x) < 0.001f)
+		{
+			xzElapsedTime.x = 0.0f;
+		}
+	}
+
+	if(xzVelocity.x )
+	*/
 }
 
 void Player::moveBackward(const float delta)
 {
 	nextPosition += getMovedDistByKeyInput(0, glm::vec3(0, 1, 0), movementSpeed * delta);
-	//moved = true;
+	moved = true;
+	/*
+	xzElapsedTime.x -= delta;
+	xzVelocity.x -= (xzAcceleration.x * xzElapsedTime.x);
+
+	if (xzVelocity.x < -1.0f)
+	{
+		xzVelocity.x = -1.0f;
+	}
+
+	nextPosition += getMovedDistByKeyInput(0.0f, glm::vec3(0, 1, 0), xzVelocity.x);
+
+	std::cout << "v = " << Utility::Log::vec2ToStr(xzVelocity) << std::endl;
+	*/
+}
+
+void Voxel::Player::stopBackward(const float delta)
+{
 }
 
 void Player::moveLeft(const float delta)
@@ -265,6 +315,16 @@ void Player::sneak()
 void Voxel::Player::setFly(const bool mode)
 {
 	fly = mode;
+
+	if (fly)
+	{
+		setOnGround(true);
+		setJumpState(Voxel::Player::JumpState::IDLE);
+	}
+	else
+	{
+		setOnGround(false);
+	}
 }
 
 glm::mat4 Voxel::Player::getViewMatrix()
@@ -522,7 +582,7 @@ Shape::AABB Voxel::Player::getBoundingBox()
 Shape::AABB Voxel::Player::getBoundingBox(const glm::vec3 & position)
 {
 	return Shape::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(0.8f, 1.5f, 0.8f));
-	//return Geometry::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), 0.8f, 1.5f, 0.8f);
+	//return Shape::AABB(glm::vec3(position.x, position.y + 0.75f, position.z), glm::vec3(1.0f, 1.5f, 1.0f));
 }
 
 void Voxel::Player::autoJump(const float y)
@@ -538,6 +598,15 @@ void Voxel::Player::autoJump(const float y)
 	moved = true;
 }
 
+void Voxel::Player::autoJump(const glm::vec3 & resolvedPosition)
+{
+	position = resolvedPosition;
+	nextPosition = resolvedPosition;
+	cameraY -= resolvedPosition.y;
+
+	moved = true;
+}
+
 bool Voxel::Player::isJumping()
 {
 	return jumpState == JumpState::JUMPING;
@@ -548,9 +617,19 @@ bool Voxel::Player::isFalling()
 	return jumpState == JumpState::FALLING;
 }
 
-void Voxel::Player::setJumpState(const JumpState jumpState)
+bool Voxel::Player::isJumpStateIdle()
+{
+	return jumpState == JumpState::IDLE;
+}
+
+void Voxel::Player::setJumpState(const Voxel::Player::JumpState jumpState)
 {
 	this->jumpState = jumpState;
+}
+
+Voxel::Player::JumpState Voxel::Player::getJumpState() const
+{
+	return this->jumpState;
 }
 
 void Voxel::Player::setResolvedCameraDistanceZ(const float dist)
@@ -581,7 +660,7 @@ bool Voxel::Player::isOnTPViewMode()
 	return this->viewMode == ViewMode::THIRD_PERSON_VIEW;
 }
 
-glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
+glm::vec3 Voxel::Player::getMovedDistByKeyInput(const float angleMod, const glm::vec3& axis, float distance)
 {
 	float angle = 0;
 	if (axis.y == 1.0f)
@@ -642,7 +721,7 @@ void Voxel::Player::update(const float delta)
 		// Angle x range: 0~90, 360 ~ 270
 		wrapAngleX();
 
-		if (glm::abs(glm::distance(rotation.x, rotationTarget.x)) <= 0.01f)
+		if (glm::abs(glm::distance(rotation.x, rotationTarget.x)) <= 0.001f)
 		{
 			rotation.x = rotationTarget.x;
 		}
@@ -660,7 +739,7 @@ void Voxel::Player::update(const float delta)
 			wrapAngle(rotationTarget.y);
 		}
 
-		if (glm::abs(glm::distance(rotation.y, rotationTarget.y)) <= 0.01f)
+		if (glm::abs(glm::distance(rotation.y, rotationTarget.y)) <= 0.001f)
 		{
 			rotation.y = rotationTarget.y;
 		}
@@ -677,7 +756,7 @@ void Voxel::Player::update(const float delta)
 	if (cameraY != Player::EyeHeight)
 	{
 		cameraY = glm::lerp(cameraY, Player::EyeHeight, 6.0f * delta);
-		if (glm::abs(cameraY - Player::EyeHeight) < 0.001f)
+		if (glm::abs(cameraY - Player::EyeHeight) < 0.0001f)
 		{
 			cameraY = Player::EyeHeight;
 		}
@@ -688,28 +767,46 @@ void Voxel::Player::update(const float delta)
 
 void Voxel::Player::updateMovement(const float delta)
 {
-	if (position != nextPosition)
+	// Updates player movement. Call this after resolving collision.
+	
+	if (position.x != nextPosition.x)
 	{
-		//auto prevPositionY = position.y;
-		position = glm::lerp(position, nextPosition, 20.0f * delta);
-		
-		//auto movedDistY = position.y - prevPositionY;
+		position.x = glm::lerp(position.x, nextPosition.x, 20.0f * delta);
 
-		//std::cout << "p: " << Utility::Log::vec3ToStr(position) << "lerp np:" << Utility::Log::vec3ToStr(nextPosition) <<  std::endl;
-		if (glm::abs(glm::distance(position, nextPosition)) <= 0.01f)
+		if (glm::abs(position.x - nextPosition.x) <= 0.01f)
 		{
-			position = nextPosition;
+			position.x = nextPosition.x;
 		}
-
-		//position = nextPosition;
-
-		//cameraY += movedDistY;
-
-		moved = true;
 	}
-	else
+
+	if (position.z != nextPosition.z)
 	{
-		moved = false;
+		position.z = glm::lerp(position.z, nextPosition.z, 20.0f * delta);
+
+		if (glm::abs(position.z - nextPosition.z) <= 0.01f)
+		{
+			position.z = nextPosition.z;
+		}
+	}
+
+	if (position.y != nextPosition.y)
+	{
+		// Current position and next position is different. lerp to next position.
+
+		// First save current Y for cameraY.
+		const float curY = position.y;
+
+		// Lerp it
+		position.y = glm::lerp(position.y, nextPosition.y, 20.0f * delta);
+		
+		if (glm::abs(position.y - nextPosition.y) <= 0.05f)
+		{
+			// Check distance between. If it's less than 0.001f, just use next position.
+			position.y = nextPosition.y;
+		}
+		
+		// Add y offset to cameraY to give smooth camera following effect.
+		addCameraY((curY - position.y) * 0.5f);
 	}
 }
 
@@ -721,7 +818,7 @@ void Voxel::Player::updateCameraDistanceZ(const float delta)
 	{
 		cameraDistanceZ = glm::lerp(cameraDistanceZ, cameraDistanceTargetZ, 2.0f * delta);
 
-		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.01f)
+		if (glm::abs(cameraDistanceTargetZ - cameraDistanceZ) < 0.001f)
 		{
 			cameraDistanceZ = cameraDistanceTargetZ;
 		}
@@ -804,9 +901,6 @@ void Voxel::Player::setPosition(const glm::vec3 & newPosition, const bool smooth
 {
 	if (smoothMovement)
 	{
-		float y = glm::abs(newPosition.y - nextPosition.y);
-		cameraY += y;
-
 		nextPosition = newPosition;
 	}
 	else
@@ -837,6 +931,7 @@ void Voxel::Player::setResolvedNextPosition(const glm::vec3 & resolvedNextPositi
 
 void Voxel::Player::addCameraY(const float y)
 {
+	//std::cout << "adding cy  = " << y << "\n";
 	cameraY += y;
 }
 

@@ -164,7 +164,6 @@ namespace Voxel
 		void updateMouseScrollInput(const float delta);
 		void updateControllerInput(const float delta);
 
-		void updateCollisionResolution();
 		void updatePhysics(const float delta);
 
 		// Check if chunk loader needs to be updated
@@ -204,7 +203,6 @@ namespace Voxel
 
 		// Updates (tick) the world.
 		void update(const float delta);
-		void updateInput(const float delta);
 
 		// refresh chunk map. Release all meshes and rebuild mesh only.
 		void refreshChunkMap();

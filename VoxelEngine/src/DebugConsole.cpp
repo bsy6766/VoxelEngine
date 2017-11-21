@@ -36,6 +36,7 @@ DebugConsole::DebugConsole()
 	, playerRotation(nullptr)
 	, playerLookingAt(nullptr)
 	, chunkNumbers(nullptr)
+	, lastCommandIndex(0)
 	// debug
 	, player(nullptr)
 	, game(nullptr)
@@ -208,6 +209,7 @@ void Voxel::DebugConsole::closeConsole()
 	command->setText(DefaultCommandInputText);
 	commandHistorys->setVisibility(false);
 	openingConsole = false;
+	lastCommandIndex = 0;
 
 	InputHandler::getInstance().setBufferMode(false);
 }
@@ -243,7 +245,16 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 					if (token == "VOXEL_GLFW_KEY_UP")
 					{
 						// repeat last command
-						curText = lastCommand;
+						if (lastCommandIndex >= lastCommands.size())
+						{
+							lastCommandIndex = 0;
+						}
+
+						auto it = std::begin(lastCommands);
+						std::advance(it, lastCommandIndex);
+						curText = *it;
+
+						lastCommandIndex++;
 
 						if (size == 17)
 						{
@@ -403,7 +414,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							player->setViewMode(mode);
 							executedCommandHistory.push_back("Set player view mode to " + std::string((mode == 0) ? "First person view" : "Third person view"));
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else
@@ -425,7 +436,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled player fly");
 						}
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 					else if (arg1 == "autojump" || arg1 == "aj")
@@ -442,7 +453,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled auto jump");
 						}
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -459,7 +470,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								float speed = std::stof(split.at(3));
 								player->setMovementSpeed(speed);
 								executedCommandHistory.push_back("Set player speed to " + split.at(3));
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 							catch (...)
@@ -468,7 +479,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								{
 									player->setMovementSpeed(15.0f);
 									executedCommandHistory.push_back("Set player speed to default (15)");
-									lastCommand = command;
+									addCommandHistory(command);
 									return true;
 								}
 							}
@@ -484,7 +495,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								float curSpeed = player->getMovementSpeed();
 								player->setMovementSpeed(speed + curSpeed);
 								executedCommandHistory.push_back("Added player speed by " + split.at(3));
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 							catch (...)
@@ -515,7 +526,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 								// y is -1 because we are traveling to place where chunk doesn exsits, so we don't know the top y value
 								game->teleportPlayer(glm::vec3(regionSitePos.x, -1, regionSitePos.y));
 
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 							else
@@ -563,7 +574,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 						game->teleportPlayer(glm::vec3(x, y, z));
 						executedCommandHistory.push_back("Teleported player to (" + split.at(2) + ", " + split.at(3) + ", " + split.at(4) + ")");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -608,7 +619,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setPosition(glm::vec3(x, y, z), false);
 							executedCommandHistory.push_back("Set player position to (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -645,7 +656,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setRotation(glm::vec3(x, y, z), false);
 							executedCommandHistory.push_back("Set player rotation to (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -685,7 +696,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setPosition(glm::vec3(x, y, z) + player->getPosition(), false);
 							executedCommandHistory.push_back("Added player position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -722,7 +733,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							player->setRotation(glm::vec3(x, y, z) + player->getRotation(), false);
 							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -749,7 +760,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled fog");
 						}
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -763,7 +774,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					{
 						game->rebuildWorld();
 						executedCommandHistory.push_back("Refreshing chunk map");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -802,7 +813,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								executedCommandHistory.push_back("Disabled voronoi render mode");
 							}
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -822,14 +833,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					{
 						game->rebuildChunkMap();
 						executedCommandHistory.push_back("Refreshing chunk map");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 					else if (arg1 == "refresh" || arg1 == "rf")
 					{
 						game->refreshChunkMap();
 						executedCommandHistory.push_back("Refreshing chunk map");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -851,7 +862,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							executedCommandHistory.push_back("Disabled chunk update");
 						}
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 					else if (arg1 == "print" || arg1 == "p")
@@ -859,13 +870,13 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						if (arg2 == "all" || arg2 == "a")
 						{
 							chunkMap->printChunkMap();
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "active" || arg2 == "ac")
 						{
 							chunkMap->printActiveChunks();
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -890,7 +901,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								executedCommandHistory.push_back("Disabled chunk rendering");
 							}
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "chunkborder" || arg2 == "cb")
@@ -904,7 +915,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								executedCommandHistory.push_back("Disabled chunk border rendering");
 							}
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -948,7 +959,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							float speed = std::stof(split.at(2));
 							Camera::mainCamera->setSpeed(speed);
 							executedCommandHistory.push_back("Set camera speed to " + split.at(2));
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						catch (...)
@@ -957,7 +968,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								Camera::mainCamera->setSpeed(15.0f);
 								executedCommandHistory.push_back("Set camera speed to default (15)");
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 						}
@@ -969,7 +980,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							float fovy = std::stof(split.at(2));
 							Camera::mainCamera->setFovy(fovy);
 							executedCommandHistory.push_back("Set camera fovy to " + split.at(2));
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						catch (...)
@@ -978,7 +989,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							{
 								Camera::mainCamera->setFovy(70.0f);
 								executedCommandHistory.push_back("Set camera fovy to default (70)");
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 						}
@@ -1025,7 +1036,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Camera::mainCamera->setPosition(glm::vec3(x, y, z));
 							executedCommandHistory.push_back("Set camera position to (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -1062,7 +1073,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Camera::mainCamera->setAngle(glm::vec3(x, y, z));
 							executedCommandHistory.push_back("Set player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -1102,7 +1113,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Camera::mainCamera->setPosition(glm::vec3(x, y, z) + Camera::mainCamera->getPosition());
 							executedCommandHistory.push_back("Added camera position by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "rotation" || arg2 == "rot")
@@ -1139,7 +1150,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Camera::mainCamera->setAngle(glm::vec3(x, y, z) + Camera::mainCamera->getAngle());
 							executedCommandHistory.push_back("Added player rotation by (" + split.at(3) + ", " + split.at(4) + ", " + split.at(5) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -1155,7 +1166,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						Voxel::Utility::Random::resetGenerator();
 						Random::getInstance().resetAll();
 						executedCommandHistory.push_back("Reseting random generator");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -1173,14 +1184,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							Application::getInstance().getGLView()->setFullScreen();
 							executedCommandHistory.push_back("Setting window to fullscreen on primary monitor");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "borderless" || arg2 == "b")
 						{
 							Application::getInstance().getGLView()->setWindowedFullScreen();
 							executedCommandHistory.push_back("Setting window to windowed fullscreen on primary monitor");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -1223,14 +1234,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						{
 							Application::getInstance().getGLView()->setFullScreen(monitorNum);
 							executedCommandHistory.push_back("Setting window to fullscreen on monitor #" + std::to_string(monitorNum));
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "borderless" || arg2 == "b")
 						{
 							Application::getInstance().getGLView()->setWindowedFullScreen(monitorNum);
 							executedCommandHistory.push_back("Setting window to windowed fullscreen on monitor #" + std::to_string(monitorNum));
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -1285,7 +1296,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Application::getInstance().getGLView()->setWindowed(width, height);
 							executedCommandHistory.push_back("Setting window to windowed (" + std::to_string(width) + ", " + std::to_string(height) + ") on primary monitor");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 					}
@@ -1317,7 +1328,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 							Application::getInstance().getGLView()->setWindowPosition(x, y);
 							executedCommandHistory.push_back("Setting window position to (" + std::to_string(x) + ", " + std::to_string(y) + ")");
-							lastCommand = command;
+							addCommandHistory(command);
 							return true;
 						}
 						else if (arg2 == "size")
@@ -1344,7 +1355,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 
 								Application::getInstance().getGLView()->setWindowSize(w, h);
 								executedCommandHistory.push_back("Setting window size to (" + std::to_string(w) + ", " + std::to_string(h) + ")");
-								lastCommand = command;
+								addCommandHistory(command);
 								return true;
 							}
 					}
@@ -1391,14 +1402,14 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					{
 						calendar->setTime(h, m);
 						executedCommandHistory.push_back("Time set to (" + std::to_string(h) + ", " + std::to_string(m) + ")");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 					else if (arg1 == "add")
 					{
 						calendar->addTime(h, m);
 						executedCommandHistory.push_back("Time added by (" + std::to_string(h) + ", " + std::to_string(m) + ")");
-						lastCommand = command;
+						addCommandHistory(command);
 						return true;
 					}
 				}
@@ -1491,6 +1502,16 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 	}
 
 	return false;
+}
+
+void Voxel::DebugConsole::addCommandHistory(const std::string & command)
+{
+	lastCommands.push_front(command);
+
+	if (lastCommands.size() > 10)
+	{
+		lastCommands.pop_back();
+	}
 }
 
 void Voxel::DebugConsole::updateCommandHistory()

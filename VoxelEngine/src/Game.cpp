@@ -529,7 +529,7 @@ void Game::update(const float delta)
 		updatePhysics(delta);
 
 		// Resolve collision in game
-		updateCollisionResolution();
+		//updateCollisionResolution();
 
 		bool playerMoved = player->didMoveThisFrame();
 		bool playerRotated = player->didRotateThisFrame();
@@ -592,13 +592,6 @@ void Game::update(const float delta)
 		skybox->updateColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 
 		defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
-	}
-}
-
-void Voxel::Game::updateInput(const float delta)
-{
-	if (loadingState == LoadingState::FINISHED)
-	{
 	}
 }
 
@@ -1145,6 +1138,7 @@ void Voxel::Game::updateControllerInput(const float delta)
 			{
 				if (input->isControllerButtonDown(Voxel::IO::XBOX_360::BUTTON::B))
 				{
+					// Todo: Controller manager doesn't have feature to check if button was pressed only current frame.
 					player->jump();
 					physics->applyJumpForceToPlayer(glm::vec3(0, 2.2f, 0));
 				}
@@ -1167,63 +1161,85 @@ void Voxel::Game::updateControllerInput(const float delta)
 	}
 }
 
-void Voxel::Game::updateCollisionResolution()
+void Voxel::Game::updatePhysics(const float delta)
 {
+	// Don't update if player is flying
 	if (player->isFlying()) return;
+
+	// Update player's jump force
+	bool jumping = physics->updatePlayerJumpForce(player, delta);
+
+	/*
+	// debug
+	auto state = player->getJumpState();
+
+	switch (state)
+	{
+	case Voxel::Player::JumpState::IDLE:
+		std::cout << "JS: IDLE\n";
+		break;
+	case Voxel::Player::JumpState::JUMPING:
+		std::cout << "JS: JUMPING\n";
+		break;
+	case Voxel::Player::JumpState::FALLING:
+		std::cout << "JS: FALLING\n";
+		break;
+	default:
+		break;
+	}
+	*/
+
+	if (!jumping)
+	{
+		// Only apply when player is not jumping
+		physics->applyGravity(player, delta);
+	}
 
 	auto start = Utility::Time::now();
 
+	std::vector<Block*> collidableBlocks;
+
+	bool autoJumped = false;
+
+	// Check if player can auto jump
 	if (player->isOnGround())
 	{
-		// Player is on ground. First check if player auto jumped. Then, resolve XZ.
-		std::vector<Block*> collidableBlocks;
+		// Can auto jump only if player is on ground
+
 		// Query near by block in XZ axis
 		chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
 
-		bool autoJumped = physics->resolveAutoJump(player, collidableBlocks);
+		// resolve auto jump
+		autoJumped = physics->resolveAutoJump(player, collidableBlocks);
 
-		if (!autoJumped)
+		if (autoJumped)
 		{
-			// clear list
-			//collidableBlocks.clear();
-
-			// Query near by block in XZ axis
-			//chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
-
-			// Reoslve XZ
-			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
-
-			// clear list
-			collidableBlocks.clear();
-
-			// query again in negative Y 
-			chunkMap->queryBottomCollidableBlocksInY(player->getPosition(), collidableBlocks);
-
-			// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
-			physics->checkIfPlayerIsFalling(player, collidableBlocks);
+			// If auto jump, it means there isn't anything that collides player. 
+			return;
 		}
 		else
 		{
-			return;
+			// Didn't auto jumped. Don't need to query blocks again
+			
+			// Reoslve XZ
+			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
 		}
 	}
 	else
 	{
-		// Either jumping or falling
+		// Either jumping or falling. Both need to resolve collision between in axis XZ first
+
+		// Query near by block in XZ axis
+		chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
+
+		// Reoslve XZ
+		physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
+
+		// clear list
+		collidableBlocks.clear();
+
 		if (player->isJumping())
 		{
-			// player is jumping. Check if player collided on top. Then, resolve XZ.
-			std::vector<Block*> collidableBlocks;
-
-			// Query near by block in XZ axis
-			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
-
-			// Reoslve XZ
-			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
-
-			// clear list
-			collidableBlocks.clear();
-
 			// query again in negative Y 
 			chunkMap->queryTopCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
 
@@ -1232,18 +1248,6 @@ void Voxel::Game::updateCollisionResolution()
 		}
 		else if (player->isFalling())
 		{
-			// Player is falling. Check if player collided on bottom. Then, resolve XZ.
-			std::vector<Block*> collidableBlocks;
-
-			// Query near by block in XZ axis
-			chunkMap->queryNearByCollidableBlocksInXZ(player->getNextPosition(), collidableBlocks);
-
-			// Reoslve XZ
-   			physics->resolvePlayerAndBlockCollisionInXZAxis(player, collidableBlocks);
-
-			// clear list
-			collidableBlocks.clear();
-
 			// query again in negative Y 
 			chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
 
@@ -1252,18 +1256,24 @@ void Voxel::Game::updateCollisionResolution()
 		}
 	}
 
+	// Keep track if player is on ground or not. If player is jumping, skip
+
+	if (!jumping)
+	{
+		// clear list
+		collidableBlocks.clear();
+
+		// query again in negative Y 
+		auto pos = player->getPosition();
+		//pos.y = player->getNextPosition().y;
+		chunkMap->queryBottomCollidableBlocksInY(pos, collidableBlocks);
+
+		// At this moment, player won't have any blocks that are colliding in XZ direction. Check bottom y. If so, player hit the ground.
+		physics->checkIfPlayerIsFalling(player, collidableBlocks);
+	}
+
 	auto end = Utility::Time::now();
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
-}
-
-void Voxel::Game::updatePhysics(const float delta)
-{
-	bool jumpForceApplied = physics->updatePlayerJumpForce(player, delta);
-
-	if (!jumpForceApplied)
-	{
-		physics->applyGravity(player, delta);
-	}
 }
 
 void Voxel::Game::updateChunks()

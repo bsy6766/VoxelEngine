@@ -83,7 +83,6 @@ namespace Voxel
 
 		// Resolves collision between blocks above player. Only resolves in Y axis. Only called while jupming.
 		void resolvePlayerTopCollision(Player* player, const std::vector<Block*>& collidableBlocks);
-		void checkIfPlayerCollidedTop(Player* player, const std::vector<Block*>& collidableBlocks);
 
 		void checkIfPlayerIsFalling(Player* player, const std::vector<Block*>& collidableBlocks);
 
