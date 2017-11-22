@@ -305,8 +305,8 @@ void Voxel::ChunkMeshGenerator::generateChunkMesh(Chunk * chunk, ChunkMap * chun
 							//std::cout << "shadow mode t: " << Utility::Time::toMicroSecondString(st1, st2) << std::endl;
 
 							//auto t1 = Utility::Time::now();
-							auto worldPosition = block->getWorldPosition();
-
+							auto worldPosition = block->getMeshPosition();
+							
 							auto blockVerticiesSize = Cube::getVertices(static_cast<Cube::Face>(face), worldPosition, vertices);
 
 							Cube::getNormals(static_cast<Cube::Face>(face), worldPosition, normals);

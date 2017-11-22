@@ -94,7 +94,7 @@ void main()
 	if(fogEnabled)
 	{
 		// fog is enabled. Getn distance from player's eye position and pixel in world position
-		float dist = abs(distance(playerPosition, worldCoord.xyz));
+		float dist = abs(distance(vec3(0, 0, 0), worldCoord.xyz));
 
 		// Check distance
 		if(dist > fogDistance)

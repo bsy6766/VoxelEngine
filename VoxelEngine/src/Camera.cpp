@@ -125,11 +125,16 @@ mat4 Voxel::Camera::getProjection(const float fovy)
 	return perspective(glm::radians(fovy), aspect, nears, fars);
 }
 
-mat4 Camera::getView()
+mat4 Camera::getViewMat()
 {
 	// View matrix defined the position (location and orientation) of the camera
 	//return lookAt(position, vec3(0), vec3(0, 1, 0));
-	return glm::translate(getOrientation(), -position);
+	return getOrientation();
+}
+
+glm::mat4 Voxel::Camera::getWorldMat()
+{
+	return glm::translate(glm::mat4(1.0f), -position);
 }
 
 mat4 Camera::getOrientation()

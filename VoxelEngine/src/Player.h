@@ -162,7 +162,10 @@ namespace Voxel
 		void renderDebugLines(Program* lineProgram);
 
 		//glm::mat4 getVP(const glm::mat4& projection);
+		// Get view matrix. View matrix transfroms world and model to player's view
 		glm::mat4 getViewMatrix();
+		// Get world matrix. Uses player's position to get world's matrix. World moves, not player's view.
+		glm::mat4 getWorldMatrix();
 		glm::mat4 getFrustumViewMatrix();
 		//glm::mat4 getDirVP(const glm::mat4& projection);
 		//glm::mat4 getOrientation();

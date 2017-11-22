@@ -7,13 +7,16 @@
 #include <HeightMap.h>
 #include <ProgramManager.h>
 #include <Program.h>
+#include <glm/gtx/transform.hpp>
 
 using namespace Voxel;
 
 Chunk::Chunk()
 	: position(0)
 	, worldPosition(0.0f)
+	, modelMat(1.0f)
 	, chunkMesh(nullptr)
+	, boundingBox(glm::vec3(0.0f), glm::vec3(0.0f))
 	, active(false)
 	, visible(false)
 	, timestamp(0)
@@ -121,6 +124,8 @@ bool Chunk::init(const int x, const int z)
 	worldPosition.x = Constant::CHUNK_BORDER_SIZE * (static_cast<float>(x) + 0.5f);
 	worldPosition.y = 0;
 	worldPosition.z = Constant::CHUNK_BORDER_SIZE * (static_cast<float>(z) + 0.5f);
+
+	modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, 0.0f, worldPosition.z));
 
 	//std::cout << "[Chunk] position: (" << x << ", 0, " << z << "), world position: (" << worldPosition.x << ", " << worldPosition.y << ", " << worldPosition.z << ")\n";
 
@@ -566,7 +571,7 @@ int Voxel::Chunk::findMaxY()
 	return max;
 }
 
-void Voxel::Chunk::render()
+void Voxel::Chunk::render(const glm::vec3& playerPosition)
 {
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 
@@ -578,6 +583,11 @@ void Voxel::Chunk::render()
 			bool result = chunkMesh->bind();
 			if (result)
 			{
+				auto chunkWP = glm::vec3(worldPosition.x, 0.0f, worldPosition.z);
+				auto playerWP = glm::vec3(playerPosition.x, 0.0f, playerPosition.z);
+
+				modelMat = glm::translate(glm::mat4(1.0f), chunkWP - playerPosition);
+				program->setUniformMat4("modelMat", modelMat);
 				chunkMesh->render();
 			}
 			else
@@ -596,13 +606,17 @@ void Voxel::Chunk::render()
 				bool result = chunkMesh->bind();
 				if (result)
 				{
+					auto chunkWP = glm::vec3(worldPosition.x, 0.0f, worldPosition.z);
+					auto playerWP = glm::vec3(playerPosition.x, 0.0f, playerPosition.z);
+
+					modelMat = glm::translate(glm::mat4(1.0f), chunkWP - playerPosition);
+					program->setUniformMat4("modelMat", modelMat);
 					chunkMesh->render();
 				}
 				else
 				{
 					assert(false);
 				}
-				chunkMesh->render();
 			}
 			else
 			{

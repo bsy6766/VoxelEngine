@@ -86,7 +86,7 @@ void Voxel::Application::initMainCamera()
 	float near = internalSetting->getFloat("Camera.near");
 	float far = internalSetting->getFloat("Camera.far");
 
-	Camera::mainCamera = Camera::create(vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
+	Camera::mainCamera = Camera::create(glm::vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
 }
 
 void Voxel::Application::initGame()

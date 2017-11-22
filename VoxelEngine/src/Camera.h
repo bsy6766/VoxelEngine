@@ -4,8 +4,6 @@
 #include <glm\glm.hpp>
 #include <iostream>
 
-using namespace glm;
-
 namespace Voxel
 {
 	class Frustum;
@@ -28,10 +26,10 @@ namespace Voxel
 		Camera();
 
 		// Data
-		vec3 position;
+		glm::vec3 position;
 
 		// Rotation angle
-		vec3 angle;
+		glm::vec3 angle;
 
 		// fov
 		float fovy;
@@ -54,7 +52,7 @@ namespace Voxel
 
 		// This is screen space position in camera's point of view. 
 		// All the UI objects will follow this position
-		vec3 screenSpacePos;
+		glm::vec3 screenSpacePos;
 		
 		// Frustum
 		Frustum* frustum;
@@ -65,7 +63,7 @@ namespace Voxel
 	public:
 		~Camera();
 
-		static Camera* create(const vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
+		static Camera* create(const glm::vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
 		
 		static Camera* mainCamera;
 
@@ -75,25 +73,26 @@ namespace Voxel
 		void initDebugFrustumLines();
 
 		// Get projection matrix. This is based on camera setting (fovy, near, far, aspect)
-		mat4 getProjection();
+		glm::mat4 getProjection();
 		// Get projection matrix with specific fovy value.
-		mat4 getProjection(const float fovy);
+		glm::mat4 getProjection(const float fovy);
 		// Get view matrix. This is 'world to view' matrix. 
 		// Camera doesn't move but world is. This moves world to view.
-		mat4 getView();
+		glm::mat4 getViewMat();
+		glm::mat4 getWorldMat();
 		// Get orientation. Basically rotation. 
 		// This doesn't mean that camera is rotated. It's where camera want to look. 
-		mat4 getOrientation();
+		glm::mat4 getOrientation();
 		// Get position of camera
-		vec3 getPosition();
+		glm::vec3 getPosition();
 		// Set position of camera
-		void setPosition(const vec3& position);
+		void setPosition(const glm::vec3& position);
 		// add distance to current camera position
-		void addPosition(const vec3& distance);
+		void addPosition(const glm::vec3& distance);
 		// Set rotation angle
-		void setAngle(const vec3& angle);
+		void setAngle(const glm::vec3& angle);
 		// Add angle to current angle
-		void addAngle(const vec3& angle);
+		void addAngle(const glm::vec3& angle);
 		// Get angle
 		glm::vec3 getAngle();
 		// Get angle in y axis

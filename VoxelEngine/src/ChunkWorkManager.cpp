@@ -971,7 +971,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 								}
 
 								// Check if biome can spawn tree
-								/*
 								if (biomeType.hasTree())
 								{
 									// biome can spawn tree. 
@@ -999,7 +998,6 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 										//std::cout << "tree t: " << Utility::Time::toMicroSecondString(treeStart, treeEnd) << std::endl;
 									}
 								}
-								*/
 							}
 						}
 						

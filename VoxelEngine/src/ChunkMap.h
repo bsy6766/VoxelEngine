@@ -220,7 +220,7 @@ namespace Voxel
 		int getTopYAt(const glm::vec2& position);
 
 		// render chunks
-		void render();
+		void render(const glm::vec3& playerPosition);
 
 		// render chunk border debug
 		void renderChunkBorder(Program* program);

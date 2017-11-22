@@ -31,6 +31,9 @@ namespace Voxel
 		// World position of chunk. Ignore y. Y is handled in ChunkSection
 		glm::vec3 worldPosition;
 
+		// Model mat of chunk
+		glm::mat4 modelMat;
+
 		// ChunkSections
 		std::vector<ChunkSection*> chunkSections;
 
@@ -117,7 +120,7 @@ namespace Voxel
 		int findMaxY();
 
 		// Render chunk
-		void render();
+		void render(const glm::vec3& playerPosition);
 
 		// Set active state
 		void setActive(const bool state);

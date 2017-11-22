@@ -150,6 +150,84 @@ glm::vec3 Voxel::Block::getWorldPosition()
 	return glm::vec3(worldCoordinate) + 0.5f;
 }
 
+glm::ivec3 Voxel::Block::getLocalCoordinate()
+{
+	int x = worldCoordinate.x;
+	int y = worldCoordinate.y;
+	int z = worldCoordinate.z;
+
+	int localX = x % Constant::CHUNK_SECTION_WIDTH;
+
+	if (localX < 0)
+	{
+		localX += Constant::CHUNK_SECTION_WIDTH;
+	}
+	else if (localX >= Constant::CHUNK_SECTION_WIDTH)
+	{
+		localX -= Constant::CHUNK_SECTION_WIDTH;
+	}
+
+	int localY = y % Constant::CHUNK_SECTION_HEIGHT;
+
+	if (localY < 0)
+	{
+		localY += Constant::CHUNK_SECTION_HEIGHT;
+	}
+	else if (localY >= Constant::CHUNK_SECTION_HEIGHT)
+	{
+		localY -= Constant::CHUNK_SECTION_HEIGHT;
+	}
+
+	int localZ = z % Constant::CHUNK_SECTION_LENGTH;
+
+	if (localZ < 0)
+	{
+		localZ += Constant::CHUNK_SECTION_LENGTH;
+	}
+	else if (localZ >= Constant::CHUNK_SECTION_LENGTH)
+	{
+		localZ -= Constant::CHUNK_SECTION_LENGTH;
+	}
+
+	return glm::ivec3(localX, localY, localZ);
+}
+
+glm::vec3 Voxel::Block::getLocalPosition()
+{
+	return glm::vec3(getLocalCoordinate()) + 0.5f;
+}
+
+glm::vec3 Voxel::Block::getMeshPosition()
+{
+	int x = worldCoordinate.x;
+	int y = worldCoordinate.y;
+	int z = worldCoordinate.z;
+
+	int localX = x % Constant::CHUNK_SECTION_WIDTH;
+
+	if (localX < 0)
+	{
+		localX += Constant::CHUNK_SECTION_WIDTH;
+	}
+	else if (localX >= Constant::CHUNK_SECTION_WIDTH)
+	{
+		localX -= Constant::CHUNK_SECTION_WIDTH;
+	}
+	
+	int localZ = z % Constant::CHUNK_SECTION_LENGTH;
+
+	if (localZ < 0)
+	{
+		localZ += Constant::CHUNK_SECTION_LENGTH;
+	}
+	else if (localZ >= Constant::CHUNK_SECTION_LENGTH)
+	{
+		localZ -= Constant::CHUNK_SECTION_LENGTH;
+	}
+
+	return glm::vec3(glm::ivec3(localX, worldCoordinate.y, localZ)) + 0.5f;
+}
+
 Block::BLOCK_ID Voxel::Block::getBlockID()
 {
 	return this->id;

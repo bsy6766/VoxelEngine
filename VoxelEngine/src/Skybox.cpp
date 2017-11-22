@@ -39,7 +39,7 @@ Skybox::~Skybox()
 void Voxel::Skybox::init(const int renderDistance)
 {
 	// 3 times than render distance. making sure it renders everthing.
-	size = static_cast<float>(renderDistance * 8) * Constant::CHUNK_BORDER_SIZE;
+	size = static_cast<float>(renderDistance * 4) * Constant::CHUNK_BORDER_SIZE;
 
 	setFogLength(2);
 	setFogDistanceByRenderDistance(renderDistance, false);

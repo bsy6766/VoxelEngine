@@ -91,6 +91,12 @@ namespace Voxel
 		glm::ivec3 getWorldCoordinate();
 		// Get world position
 		glm::vec3 getWorldPosition();
+		// Get local coordinate
+		glm::ivec3 getLocalCoordinate();
+		// Get local position
+		glm::vec3 getLocalPosition();
+		// Get mesh position (For mesh generating)
+		glm::vec3 getMeshPosition();
 
 		// Get block ID
 		BLOCK_ID getBlockID();

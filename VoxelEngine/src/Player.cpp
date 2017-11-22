@@ -331,7 +331,9 @@ glm::mat4 Voxel::Player::getViewMatrix()
 {
 	if (viewMode == ViewMode::FIRST_PERSON_VIEW)
 	{
-		return glm::translate(viewMatrix, -position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
+		// Player's view point is First persone view where it starts from the eye position
+		//return glm::translate(viewMatrix, -position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
+		return viewMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
 	}
 	else
 	{
@@ -340,8 +342,14 @@ glm::mat4 Voxel::Player::getViewMatrix()
 		// 2) Translate new matrix to player's position.
 		// 3) mutliple (1) and (2). 
 		// note: Move world in front of camera. From there, rotate the world. projection * View&Model(rot * trans) -> Trans goes first and rotates, then projected to screen.
-		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));// *glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0));
+		//return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));
+		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0));
 	}
+}
+
+glm::mat4 Voxel::Player::getWorldMatrix()
+{
+	return glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));
 }
 
 glm::mat4 Voxel::Player::getFrustumViewMatrix()

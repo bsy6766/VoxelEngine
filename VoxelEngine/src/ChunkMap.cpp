@@ -2189,7 +2189,7 @@ int Voxel::ChunkMap::getTopYAt(const glm::vec2 & position)
 	}
 }
 
-void Voxel::ChunkMap::render()
+void Voxel::ChunkMap::render(const glm::vec3& playerPosition)
 {
 	if (renderChunksMode)
 	{
@@ -2205,7 +2205,7 @@ void Voxel::ChunkMap::render()
 					{
 						if (chunk->isVisible())
 						{
-							chunk->render();
+							chunk->render(playerPosition);
 						}
 					}
 				}

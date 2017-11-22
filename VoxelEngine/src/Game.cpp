@@ -544,7 +544,7 @@ void Game::update(const float delta)
 		player->updateMovement(delta);
 
 		// First check visible chunk
-		Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+		Camera::mainCamera->getFrustum()->update(player->getViewMatrix() * player->getWorldMatrix());
 
 		// After updating frustum, run frustum culling to find visible chunk
 		int totalVisible = chunkMap->findVisibleChunk(settingPtr->getRenderDistance());
@@ -1667,22 +1667,26 @@ void Voxel::Game::renderWorld(const float delta)
 	program->use(true);
 
 	glm::mat4 viewMat = glm::mat4(1.0f);
+	glm::mat4 worldMat = glm::mat4(1.0f);
 
 	// ------------------------------ Render world ------------------------------------------
 	// Get world view matrix based on mode
 	if (cameraMode)
 	{
-		viewMat = Camera::mainCamera->getView();
+		viewMat = Camera::mainCamera->getViewMat();
+		worldMat = Camera::mainCamera->getWorldMat();
 	}
 	else
 	{
 		viewMat = player->getViewMatrix();
+		worldMat = player->getWorldMatrix();
 	}
 
-	program->setUniformMat4("worldMat", viewMat);
+	program->setUniformMat4("viewMat", viewMat);
+	program->setUniformMat4("worldMat", glm::mat4(1.0f));
 
 	// Model mat is identity matrix
-	program->setUniformMat4("modelMat", glm::mat4(1.0f));
+	//program->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	// Light
 	float ambientValue = skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
@@ -1697,10 +1701,17 @@ void Voxel::Game::renderWorld(const float delta)
 	}
 
 	// Render chunk. Doesn't need molde matrix for each chunk. All vertices are translated.
-	chunkMap->render();
+	chunkMap->render(player->getPosition());
 
 	// render skybox
-	skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * player->getSkyboxMat());
+	if (cameraMode)
+	{
+		skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * worldMat * player->getSkyboxMat());
+	}
+	else
+	{
+		skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * worldMat * player->getSkyboxMat());
+	}
 	skybox->render();
 
 	// Render skybox
@@ -1714,7 +1725,7 @@ void Voxel::Game::renderWorld(const float delta)
 	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
-	lineProgram->setUniformMat4("worldMat", viewMat);
+	lineProgram->setUniformMat4("viewMat", viewMat);
 
 	// render chunk border. Need model matrix
 	chunkMap->renderChunkBorder(lineProgram);
@@ -1746,7 +1757,7 @@ void Voxel::Game::renderWorldMap(const float delta)
 
 	if (cameraMode)
 	{
-		viewMat = Camera::mainCamera->getView();
+		viewMat = Camera::mainCamera->getViewMat();
 	}
 	else
 	{
@@ -1761,7 +1772,7 @@ void Voxel::Game::renderWorldMap(const float delta)
 	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
-	lineProgram->setUniformMat4("worldMat", viewMat);
+	lineProgram->setUniformMat4("viewMat", viewMat);
 	lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 
 	worldMap->renderCenterLine();
