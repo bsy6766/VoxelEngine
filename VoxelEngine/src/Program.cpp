@@ -456,12 +456,6 @@ void Program::setUniformMat4(const GLint location, const mat4 & mat)
 				glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(mat));
 
 				memcpy(uniformValue.value.mat4Value, glm::value_ptr(mat), sizeof(float) * 16);
-				/*
-				uniformValue.value.v4Value[0] = val.x;
-				uniformValue.value.v4Value[1] = val.y;
-				uniformValue.value.v4Value[2] = val.z;
-				uniformValue.value.v4Value[3] = val.w;
-				*/
 			}
 			else
 			{

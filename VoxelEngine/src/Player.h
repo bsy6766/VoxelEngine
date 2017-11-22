@@ -165,13 +165,16 @@ namespace Voxel
 		// Get view matrix. View matrix transfroms world and model to player's view
 		glm::mat4 getViewMatrix();
 		// Get world matrix. Uses player's position to get world's matrix. World moves, not player's view.
-		glm::mat4 getWorldMatrix();
+		glm::mat4 getWorldMatrix() const;
+		// Get camera y matrix
+		glm::mat4 getCameraYMatrix() const;
+		glm::mat4 getPosMatrix() const;
 		glm::mat4 getFrustumViewMatrix();
 		//glm::mat4 getDirVP(const glm::mat4& projection);
 		//glm::mat4 getOrientation();
 		glm::mat4 getTranslationMat();
 		glm::mat4 getTranslationXZMat();
-		glm::mat4 getSkyboxMat();
+		glm::mat4 getSkyboxMat(const bool addPosition) const;
 		glm::mat4 getDirMatrix();
 		glm::mat4 getBillboardMatrix();
 

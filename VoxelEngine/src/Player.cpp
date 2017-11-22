@@ -343,19 +343,30 @@ glm::mat4 Voxel::Player::getViewMatrix()
 		// 3) mutliple (1) and (2). 
 		// note: Move world in front of camera. From there, rotate the world. projection * View&Model(rot * trans) -> Trans goes first and rotates, then projected to screen.
 		//return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));
-		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0));
+		return glm::rotate(glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, 0, -cameraDistanceZ)), glm::radians(-rotation.x), glm::vec3(1, 0, 0)), glm::radians(rotation.y), glm::vec3(0, 1, 0)) * getCameraYMatrix();
 	}
 }
 
-glm::mat4 Voxel::Player::getWorldMatrix()
+glm::mat4 Voxel::Player::getWorldMatrix() const
 {
-	return glm::translate(glm::mat4(1), -(glm::vec3(position.x, position.y + cameraY, position.z)));
+	return glm::translate(glm::mat4(1.0f), -(glm::vec3(position.x, position.y, position.z)));
+}
+
+glm::mat4 Voxel::Player::getCameraYMatrix() const
+{
+	return glm::translate(glm::mat4(1.0f), -(glm::vec3(0.0f, cameraY, 0.0f)));
+}
+
+glm::mat4 Voxel::Player::getPosMatrix() const
+{
+	return glm::mat4();
 }
 
 glm::mat4 Voxel::Player::getFrustumViewMatrix()
 {
 	// In this case, inverse rotation
-	return glm::translate(glm::mat4(1.0f), position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0)) * glm::inverse(viewMatrix);
+	//return glm::translate(glm::mat4(1.0f), position) * glm::translate(glm::mat4(1.0f), glm::vec3(0, -Player::EyeHeight, 0)) * glm::inverse(viewMatrix);
+	return glm::translate(glm::mat4(1.0f), glm::vec3(0, Player::EyeHeight, 0)) * glm::inverse(viewMatrix);
 }
 
 /*
@@ -385,9 +396,16 @@ glm::mat4 Voxel::Player::getTranslationXZMat()
 	return glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 0, position.z));
 }
 
-glm::mat4 Voxel::Player::getSkyboxMat()
+glm::mat4 Voxel::Player::getSkyboxMat(const bool addPosition) const
 {
-	return glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 70.0f, position.z)), glm::radians(-rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	if (addPosition)
+	{
+		return glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 70.0f, position.z)), glm::radians(-rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+	else
+	{
+		return glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 70.0f, 0.0f)), glm::radians(-rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	}
 }
 
 glm::mat4 Voxel::Player::getDirMatrix()
@@ -844,7 +862,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 	{
 		glBindVertexArray(yLineVao);
 
-		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
+		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 		glDrawArrays(GL_LINES, 0, 2);
 
 		if (glView->doesCountDrawCalls())
@@ -863,7 +881,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 		glBindVertexArray(rayVao);
 
 		glm::mat4 rayMat = mat4(1.0f);
-		rayMat = glm::translate(rayMat, getEyePosition());
+		rayMat = glm::translate(rayMat, glm::vec3(0.0f, Player::EyeHeight, 0.0f));
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
 		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
@@ -885,7 +903,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 	if (boundingBoxVao)
 	{
 		glBindVertexArray(boundingBoxVao);
-		lineProgram->setUniformMat4("modelMat", glm::translate(mat4(1.0f), position));
+		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
 		glDrawArrays(GL_LINES, 0, 24);
 
 		if (glView->doesCountDrawCalls())

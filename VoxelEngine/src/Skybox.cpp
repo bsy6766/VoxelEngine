@@ -361,7 +361,7 @@ void Voxel::Skybox::updateColor(const int hour, const int minute, const float se
 
 void Voxel::Skybox::updateMatrix(const glm::mat4 & mat)
 {
-	MVP_Matrix = mat * glm::scale(glm::mat4(1.0f), glm::vec3(size, size * 0.25f, size * 0.5f));
+	MVP_Matrix = mat * glm::scale(glm::mat4(1.0f), glm::vec3(size, size * 0.5f, size * 0.75f));
 }
 
 void Voxel::Skybox::render()

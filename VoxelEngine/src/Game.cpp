@@ -355,7 +355,7 @@ void Game::createPlayer()
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
-	Camera::mainCamera->getFrustum()->update(player->getViewMatrix());
+	Camera::mainCamera->getFrustum()->update(player->getViewMatrix() * player->getWorldMatrix());
 	Camera::mainCamera->setSpeed(100.0f);
 
 	// for debug
@@ -1661,71 +1661,88 @@ void Voxel::Game::renderGame(const float delta)
 
 void Voxel::Game::renderWorld(const float delta)
 {
+	// Render world.
+
+	// Get program manager
 	auto& pm = ProgramManager::getInstance();
 
+	// Get block shader porgram
 	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	// use it
 	program->use(true);
 
+	// Projection matrix is already set.
+
+	// Get view and world matrix
 	glm::mat4 viewMat = glm::mat4(1.0f);
 	glm::mat4 worldMat = glm::mat4(1.0f);
+
+	// Center position for chunk map
+	glm::vec3 centerPos = glm::vec3(0.0f);
 
 	// ------------------------------ Render world ------------------------------------------
 	// Get world view matrix based on mode
 	if (cameraMode)
 	{
+		// Camera's view matrix based on rotation
 		viewMat = Camera::mainCamera->getViewMat();
+		// Camera's world matrix based on camera's position
 		worldMat = Camera::mainCamera->getWorldMat();
+		// Camera's position
+		centerPos = Camera::mainCamera->getPosition();
+		// While camera mode, apply world amtrix
 	}
 	else
 	{
+		// Player's view matrix based on rotation
 		viewMat = player->getViewMatrix();
+		// Player's world matrix is idendity matrix
 		worldMat = player->getWorldMatrix();
+		// Player's position
+		centerPos = player->getPosition();
 	}
 
-	program->setUniformMat4("viewMat", viewMat);
+	// We don't use world matarix
 	program->setUniformMat4("worldMat", glm::mat4(1.0f));
 
-	// Model mat is identity matrix
-	//program->setUniformMat4("modelMat", glm::mat4(1.0f));
-
-	// Light
+	// set view matrix.
+	program->setUniformMat4("viewMat", viewMat);
+	
+	// Update light
 	float ambientValue = skybox->getAmbientColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 	program->setUniformVec4("ambientColor", glm::vec4(ambientValue, ambientValue, ambientValue, 1.0f));
 	program->setUniformVec3("pointLights[0].lightPosition", player->getEyePosition());
 
-	// fog
+	// Check if fog is enabled. Todo: Make fog always on.
 	if (skybox->isFogEnabled())
 	{
+		// Enable fog
 		program->setUniformBool("fogEnabled", true);
+		// Set current fog color
 		program->setUniformVec4("fogColor", glm::vec4(skybox->getMidBlendColor(), 1.0f));
 	}
 
-	// Render chunk. Doesn't need molde matrix for each chunk. All vertices are translated.
-	chunkMap->render(player->getPosition());
+	// Render chunk map. Uses block shader. Updates each chunk's model matrix based on distance between player and chunk's world position.
+	chunkMap->render(centerPos);
 
-	// render skybox
-	if (cameraMode)
-	{
-		skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * worldMat * player->getSkyboxMat());
-	}
-	else
-	{
-		skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * worldMat * player->getSkyboxMat());
-	}
+	// Update skybox's matrix. 
+	skybox->updateMatrix(Camera::mainCamera->getProjection() * viewMat * worldMat * player->getSkyboxMat(true));
+	// Render skybox. 
 	skybox->render();
-
-	// Render skybox
-	//program->setUniformMat4("modelMat", player->getTranslationMat());
-
-	// turn off the fog with sky box
-	//program->setUniformBool("fogEnabled", false);
 	// --------------------------------------------------------------------------------------
 
 	// ------------------------------ Render Lines ------------------------------------------
 	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
-	lineProgram->setUniformMat4("viewMat", viewMat);
+	if (cameraMode)
+	{
+		lineProgram->setUniformMat4("viewMat", viewMat * worldMat * glm::inverse(player->getWorldMatrix()));
+	}
+	else
+	{
+		lineProgram->setUniformMat4("viewMat", viewMat);
+	}
 
 	// render chunk border. Need model matrix
 	chunkMap->renderChunkBorder(lineProgram);
@@ -1735,7 +1752,7 @@ void Voxel::Game::renderWorld(const float delta)
 
 	if (player->isLookingAtBlock())
 	{
-		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition());
+		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition() - player->getPosition());
 	}
 
 	//glClear(GL_DEPTH_BUFFER_BIT);

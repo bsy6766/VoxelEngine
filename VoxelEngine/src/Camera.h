@@ -60,6 +60,9 @@ namespace Voxel
 		// Wrap angle if it goes below 0 or over 360
 		void wrapAngle();
 		void wrapAngle(float& axis);
+
+		// Updates projection. Call this when camera attribute (near, far, fovy, aspect) is chanced
+		void updateProjection();
 	public:
 		~Camera();
 
@@ -97,6 +100,14 @@ namespace Voxel
 		glm::vec3 getAngle();
 		// Get angle in y axis
 		float getAngleY();
+		// Get near
+		float getNear() const;
+		// Set near
+		void setNear(const float near);
+		// get far
+		float getFar() const;
+		// Set far
+		void setFar(const float far);
 
 		// set camera speed
 		void setSpeed(const float speed);

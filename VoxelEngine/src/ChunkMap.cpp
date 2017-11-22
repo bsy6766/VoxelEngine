@@ -1212,7 +1212,7 @@ glm::ivec2 Voxel::ChunkMap::checkPlayerChunkPos(const glm::vec3 & playerPosition
 	{
 		glm::vec3 translate = glm::vec3(newChunkXZ.x, 0, newChunkXZ.y);
 		translate *= Constant::CHUNK_BORDER_SIZE;
-		chunkBorderModelMat = glm::translate(glm::mat4(1.0f), translate);
+		chunkBorderModelMat = getChunkAtXZ(newChunkXZ.x, newChunkXZ.y)->getModelMat(playerPosition);
 	}
 
 	if (newChunkXZ != currentChunkPos)

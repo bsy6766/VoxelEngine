@@ -947,53 +947,79 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 			}
 			else if (commandStr == "camera")
 			{
-				if (size == 3)
+				if (size == 4)
 				{
 					// camera arg1 arg2
 					auto arg1 = split.at(1);
+					auto arg2 = split.at(2);
 
-					if (arg1 == "speed")
+					if (arg1 == "set")
 					{
+						float value = 0.0f;
+
 						try
 						{
-							float speed = std::stof(split.at(2));
-							Camera::mainCamera->setSpeed(speed);
-							executedCommandHistory.push_back("Set camera speed to " + split.at(2));
-							addCommandHistory(command);
-							return true;
+							value = std::stof(split.at(3));
 						}
 						catch (...)
 						{
-							if (split.at(2) == "default")
-							{
-								Camera::mainCamera->setSpeed(15.0f);
-								executedCommandHistory.push_back("Set camera speed to default (15)");
-								addCommandHistory(command);
-								return true;
-							}
+							return false;
 						}
-					}
-					else if (arg1 == "fovy")
-					{
-						try
+
+						if (arg2 == "speed")
 						{
-							float fovy = std::stof(split.at(2));
-							Camera::mainCamera->setFovy(fovy);
-							executedCommandHistory.push_back("Set camera fovy to " + split.at(2));
+							Camera::mainCamera->setSpeed(value);
+							executedCommandHistory.push_back("Set camera speed to " + split.at(3));
 							addCommandHistory(command);
 							return true;
 						}
-						catch (...)
+						else if (arg2 == "fovy")
 						{
-							if (split.at(2) == "default")
+							Camera::mainCamera->setFovy(value);
+							executedCommandHistory.push_back("Set camera fovy to " + split.at(3));
+							addCommandHistory(command);
+							return true;
+						}
+						else if (arg2 == "near")
+						{
+							const float far = Camera::mainCamera->getFar();
+
+							if (value < far)
 							{
-								Camera::mainCamera->setFovy(70.0f);
-								executedCommandHistory.push_back("Set camera fovy to default (70)");
+								Camera::mainCamera->setNear(value);
+								executedCommandHistory.push_back("Set camera near clipping plane to " + split.at(3));
 								addCommandHistory(command);
 								return true;
 							}
+							else
+							{
+								std::cout << "Near: " << value << " can't be large than far: " << far << "\n";
+								return false;
+							}
+						}
+						else if (arg2 == "far")
+						{
+							const float near = Camera::mainCamera->getNear();
+
+							if (value > near)
+							{
+								Camera::mainCamera->setNear(value);
+								executedCommandHistory.push_back("Set camera far clipping plane to " + split.at(3));
+								addCommandHistory(command);
+								return true;
+							}
+							else
+							{
+								std::cout << "Far: " << value << " can't be small than near: " << near << "\n";
+								return false;
+							}
 						}
 					}
+					else if (arg1 == "add")
+					{
+
+					}
+
 				}
 				else if (size == 6)
 				{

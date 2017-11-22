@@ -83,10 +83,8 @@ void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const flo
 	screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 }
 
-void Voxel::Camera::setFovy(const float fovy)
+void Voxel::Camera::updateProjection()
 {
-	this->fovy = fovy;
-
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	program->use(true);
 	program->setUniformMat4("projMat", getProjection());
@@ -98,6 +96,13 @@ void Voxel::Camera::setFovy(const float fovy)
 	//lineProgram->use(false);
 
 	frustum->updateProjection(fovy, aspect, nears, fars);
+}
+
+void Voxel::Camera::setFovy(const float fovy)
+{
+	this->fovy = fovy;
+
+	updateProjection();
 }
 
 float Voxel::Camera::getFovy()
@@ -185,6 +190,30 @@ glm::vec3 Voxel::Camera::getAngle()
 float Voxel::Camera::getAngleY()
 {
 	return angle.y;
+}
+
+float Voxel::Camera::getNear() const
+{
+	return nears;
+}
+
+void Voxel::Camera::setNear(const float near)
+{
+	nears = near;
+
+	updateProjection();
+}
+
+float Voxel::Camera::getFar() const
+{
+	return fars;
+}
+
+void Voxel::Camera::setFar(const float far)
+{
+	fars = far;
+
+	updateProjection();
 }
 
 void Voxel::Camera::setSpeed(const float speed)

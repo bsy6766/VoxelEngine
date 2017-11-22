@@ -87,6 +87,8 @@ namespace Voxel
 
 		void initRandomEngine(const std::string& worldSeed);
 
+		glm::mat4 getModelMat(const glm::vec3& playerPosition);
+
 		// Generates chunk.
 		bool generate();
 		// Generates chunk. Default generation. Fills single chunk section with grass block
