@@ -6,7 +6,6 @@ layout(location = 2) in vec3 normal;
 
 uniform mat4 projMat;
 uniform mat4 viewMat;
-uniform mat4 worldMat;
 uniform mat4 modelMat;
 
 out vec4 vertColor;
@@ -15,7 +14,7 @@ out vec4 fragNormal;
 
 void main()
 {
-	vec4 finalPos = projMat * viewMat * worldMat * modelMat * vec4(vert, 1);
+	vec4 finalPos = projMat * viewMat * modelMat * vec4(vert, 1);
 	gl_Position = finalPos;
 	worldCoord = modelMat * vec4(vert, 1);
 	vertColor = color;

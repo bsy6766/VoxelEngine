@@ -354,35 +354,34 @@ void Voxel::ChunkWorkManager::addFinishedQueue(const glm::ivec2 & coordinate)
 	unloadFinishedQueue.push_back(coordinate);
 }
 
-bool Voxel::ChunkWorkManager::getUnloadFinishedQueueFront(glm::ivec2& coordinate)
+bool Voxel::ChunkWorkManager::getAndPopFirstUnloadFinishedQueue(glm::ivec2& coordinate)
 {
 	// Scope lock
 	std::unique_lock<std::mutex> lock(finishedQueueMutex);
 
+	// Check if queue is empty
 	if (!unloadFinishedQueue.empty())
 	{
+		// Queue is NOT empty. Pop first element from queue
 		coordinate = unloadFinishedQueue.front();
+		// Pop it
+		unloadFinishedQueue.pop_front();
 		//std::cout << "Main thread has (" << coordinate.x << ", " << coordinate.y << ") to unload\n";
+
+		// Success
 		return true;
 	}
 
+	// Failed to pop because queue is empty
 	return false;
 }
 
-void Voxel::ChunkWorkManager::popFinishedAndNotify()
+bool Voxel::ChunkWorkManager::isUnloadFinishedQueueEmpty()
 {
 	// Scope lock
 	std::unique_lock<std::mutex> lock(finishedQueueMutex);
 
-	if (!unloadFinishedQueue.empty())
-	{
-		unloadFinishedQueue.pop_front();
-	}
-
-	if (unloadFinishedQueue.empty())
-	{
-		cv.notify_one();
-	}
+	return unloadFinishedQueue.empty();
 }
 
 std::string Voxel::ChunkWorkManager::getDebugOutput()
@@ -668,6 +667,7 @@ void Voxel::ChunkWorkManager::work(ChunkMap* map, ChunkMeshGenerator* meshGenera
 							}
 
 							// Generate height map.
+							// Todo: Not sure if we need to store map for region ID and terrain type. Remove it and store locally here.
 							HeightMap::generateHeightMapForChunk(chunk->getPosition(), chunk->heightMap, regionMap, map->getRegionTerrainsMap());
 
 							// Generate plain height map

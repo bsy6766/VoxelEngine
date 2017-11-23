@@ -87,7 +87,7 @@ namespace Voxel
 
 		void initRandomEngine(const std::string& worldSeed);
 
-		glm::mat4 getModelMat(const glm::vec3& playerPosition);
+		void updateModelMat(const glm::vec3& playerPosition);
 
 		// Generates chunk.
 		bool generate();

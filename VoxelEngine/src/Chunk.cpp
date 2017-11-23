@@ -106,12 +106,11 @@ void Voxel::Chunk::initRandomEngine(const std::string & worldSeed)
 	randomEngine.seed(std::hash<std::string>{}(worldSeed + std::to_string(position.x) + std::to_string(position.z)));
 }
 
-glm::mat4 Voxel::Chunk::getModelMat(const glm::vec3 & playerPosition)
+void Voxel::Chunk::updateModelMat(const glm::vec3 & playerPosition)
 {
 	auto chunkWP = glm::vec3(worldPosition.x - Constant::CHUNK_BORDER_SIZE_HALF, 0.0f, worldPosition.z - Constant::CHUNK_BORDER_SIZE_HALF);
-	auto playerWP = glm::vec3(playerPosition.x, 0.0f, playerPosition.z);
 
-	return glm::translate(glm::mat4(1.0f), chunkWP - playerPosition);
+	modelMat = glm::translate(glm::mat4(1.0f), chunkWP - playerPosition);
 }
 
 void Voxel::Chunk::unload()
@@ -589,7 +588,8 @@ void Voxel::Chunk::render(const glm::vec3& playerPosition)
 			bool result = chunkMesh->bind();
 			if (result)
 			{
-				program->setUniformMat4("modelMat", getModelMat(playerPosition));
+				updateModelMat(playerPosition);
+				program->setUniformMat4("modelMat", modelMat);
 				chunkMesh->render();
 			}
 			else
@@ -608,7 +608,8 @@ void Voxel::Chunk::render(const glm::vec3& playerPosition)
 				bool result = chunkMesh->bind();
 				if (result)
 				{
-					program->setUniformMat4("modelMat", getModelMat(playerPosition));
+					updateModelMat(playerPosition);
+					program->setUniformMat4("modelMat", modelMat);
 					chunkMesh->render();
 				}
 				else

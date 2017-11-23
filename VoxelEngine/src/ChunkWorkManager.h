@@ -130,11 +130,19 @@ namespace Voxel
 
 		// Add unload work to finished queue to let main thread know. Locked by finishedQueueMutex
 		void addFinishedQueue(const glm::ivec2& coordinate);
-		// Get first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
-		bool getUnloadFinishedQueueFront(glm::ivec2& coordinate);
-		// Pop the first in finished queue. Only used by mainthread. Locked by finishedQueueMutex
-		void popFinishedAndNotify();
-
+		/**
+		*	Get first chunk coordinate from unloadFinishedQueue and pops from queue.
+		*	Locked by finishedQueueMutex
+		*	@param coordinate An ref to get chunk coordinate
+		*	@return true if successfully got chunk coordinate. False if queue is empty.
+		*/
+		bool getAndPopFirstUnloadFinishedQueue(glm::ivec2& coordinate);
+		/**
+		*	Checks if unloadFinishedQueue is empty.
+		*	Locked by finishedQueueMutex
+		*/
+		bool isUnloadFinishedQueueEmpty();
+		
 		// Creates the thread. Make sure you call once after run.
 		void createThreads(ChunkMap* map, ChunkMeshGenerator* meshGenerator, World* world, const int coreCount);
 

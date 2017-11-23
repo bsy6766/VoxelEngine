@@ -435,6 +435,11 @@ std::shared_ptr<Chunk> Voxel::ChunkMap::getChunkAtXZ(int x, int z)
 	}
 }
 
+std::shared_ptr<Chunk> Voxel::ChunkMap::getChunkAtXZ(const glm::ivec2 & chunkXZ)
+{
+	return getChunkAtXZ(chunkXZ.x, chunkXZ.y);
+}
+
 std::vector<std::vector<std::shared_ptr<Chunk>>> Voxel::ChunkMap::getNearByChunks(const glm::ivec2 & chunkXZ)
 {
 	std::vector<std::vector<std::shared_ptr<Chunk>>> nearBy;
@@ -822,7 +827,7 @@ void Voxel::ChunkMap::placeBlockFromFace(const glm::ivec3 & blockWorldCoordinate
 	placeBlockAt(targetPos, blockID, workManager);
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, ChunkWorkManager * wm, const bool overwrite)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -871,7 +876,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	}
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::uvec3 & color, ChunkWorkManager * wm, const bool overwrite)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -919,7 +924,7 @@ void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, cons
 	}
 }
 
-void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, ChunkWorkManager * wm, const bool overwrite, const bool byPlayer)
+void Voxel::ChunkMap::placeBlockAt(const glm::ivec3 & blockWorldCoordinate, const Block::BLOCK_ID blockID, const glm::vec3 & color, ChunkWorkManager * wm, const bool overwrite)
 {
 	glm::ivec3 blockLocalPos;
 	glm::ivec3 chunkSectionPos;
@@ -1081,7 +1086,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 						result.block = curBlock;
 
 						// Check which face did ray hit on cube.
-						result.face = raycastFace(rayStart, curRayPoint, curBlock->getBoundingBox());
+						result.face = Ray(rayStart, curRayPoint).getIntersectingAABBFace(curBlock->getBoundingBox());
 
 						return result;
 					}
@@ -1096,7 +1101,7 @@ RayResult Voxel::ChunkMap::raycastBlock(const glm::vec3& playerEyePosition, cons
 	return result;
 }
 
-float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3& rayEnd, const float cameraRange)
+float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3& rayEnd, const float maxCameraRange)
 {
 	glm::vec3 dirVec = rayEnd - rayStart;
 
@@ -1118,9 +1123,9 @@ float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3&
 	{
 		curRayPoint += step;
 
-		if (glm::distance(curRayPoint, rayStart) > cameraRange)
+		if (glm::distance(curRayPoint, rayStart) > maxCameraRange)
 		{
-			return cameraRange;
+			return maxCameraRange;
 		}
 		//std::cout << "visiting (" << curRayPoint.x << ", " << curRayPoint.y << ", " << curRayPoint.z << ")\n";
 
@@ -1143,32 +1148,16 @@ float Voxel::ChunkMap::raycastCamera(const glm::vec3& rayStart, const glm::vec3&
 						//std::cout << "Block hit (" << curBlockPos.x << ", " << curBlockPos.y << ", " << curBlockPos.z << ")\n";
 
 						// Check which face did ray hit on cube.
-						return raycastIntersectingDistance(rayStart, curRayPoint, curBlock->getBoundingBox());
+						return Ray(rayStart, curRayPoint).getMinimumIntersectingDistance(curBlock->getBoundingBox());
 					}
 				}
 			}
 		}
 
-
 		threshold--;
 	}
 
-	return cameraRange;
-}
-
-Cube::Face Voxel::ChunkMap::raycastFace(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Shape::AABB & blockAABB)
-{
-	// Check if ray hits each triangle of cube. 
-	Ray ray(rayStart, rayEnd);
-
-	return ray.getIntersectingAABBFace(blockAABB);
-}
-
-float Voxel::ChunkMap::raycastIntersectingDistance(const glm::vec3 & rayStart, const glm::vec3 & rayEnd, const Shape::AABB & blockAABB)
-{
-	Ray ray(rayStart, rayEnd);
-
-	return ray.getMinimumIntersectingDistance(blockAABB);
+	return maxCameraRange;
 }
 
 void Voxel::ChunkMap::releaseChunk(const glm::ivec2 & coordinate)
@@ -1195,10 +1184,8 @@ int Voxel::ChunkMap::getActiveChunksCount()
 	return static_cast<int>(activeChunks.size() * activeChunks.front().size());
 }
 
-glm::ivec2 Voxel::ChunkMap::checkPlayerChunkPos(const glm::vec3 & playerPosition)
+glm::ivec2 Voxel::ChunkMap::getPlayerChunkPos(const glm::vec3 & playerPosition)
 {
-	if (!updateChunksMode) return currentChunkPos;
-
 	int chunkX = static_cast<int>(playerPosition.x) / Constant::CHUNK_SECTION_WIDTH;
 	int chunkZ = static_cast<int>(playerPosition.z) / Constant::CHUNK_SECTION_LENGTH;
 
@@ -1206,53 +1193,49 @@ glm::ivec2 Voxel::ChunkMap::checkPlayerChunkPos(const glm::vec3 & playerPosition
 	if (playerPosition.x < 0) chunkX -= 1;
 	if (playerPosition.z < 0) chunkZ -= 1;
 
-	auto newChunkXZ = glm::ivec2(chunkX, chunkZ);
+	return glm::ivec2(chunkX, chunkZ);
+}
 
-	if (renderChunkBorderMode)
-	{
-		glm::vec3 translate = glm::vec3(newChunkXZ.x, 0, newChunkXZ.y);
-		translate *= Constant::CHUNK_BORDER_SIZE;
-		chunkBorderModelMat = getChunkAtXZ(newChunkXZ.x, newChunkXZ.y)->getModelMat(playerPosition);
-	}
+bool Voxel::ChunkMap::isPlayerNearByChunk(const glm::vec3& playerPosition, const glm::ivec2 & chunkXZ)
+{
+	//std::cout << "Player pos (" << playerPosition.x << ", " << playerPosition.z << ")\n";
+	// Player moved to new chunk.
+	// normally, player should move more than 1 chunk at a time. Moving more than 1 chunk (16 blocks = 16 meter in scale)
+	// means player is cheating or in god mode or whatever. 
+
+	// Check if it's in boundary
+	//auto newChunk = map->getChunkAtXZ(chunkX, chunkZ);
+	//assert(newChunk != nullptr);
+	auto curChunkWorldPos = Voxel::Math::chunkXZToWorldPosition(currentChunkPos);
+
+	// check if player is out of range. If so, proceed.
+	float dist = glm::distance(curChunkWorldPos, glm::vec3(playerPosition.x, 0, playerPosition.z));
+	//std::cout << "d = " << dist << std::endl;
+	return glm::abs(dist) <= Constant::CHUNK_RANGE;
+}
+
+bool Voxel::ChunkMap::updateCurrentChunkPos(const glm::vec3 & playerPosition)
+{
+	if (!updateChunksMode) return false;
+
+	auto newChunkXZ = getPlayerChunkPos(playerPosition);
 
 	if (newChunkXZ != currentChunkPos)
 	{
-		//std::cout << "Player pos (" << playerPosition.x << ", " << playerPosition.z << ")\n";
-		// Player moved to new chunk.
-		// normally, player should move more than 1 chunk at a time. Moving more than 1 chunk (16 blocks = 16 meter in scale)
-		// means player is cheating or in god mode or whatever. 
+		bool nearBy = isPlayerNearByChunk(playerPosition, newChunkXZ);
 
-		// Check if it's in boundary
-		//auto newChunk = map->getChunkAtXZ(chunkX, chunkZ);
-		//assert(newChunk != nullptr);
-		auto curChunkWorldPos = Voxel::Math::chunkXZToWorldPosition(currentChunkPos);
-
-		// check if player is out of range. If so, proceed.
-		float dist = glm::distance(curChunkWorldPos, glm::vec3(playerPosition.x, 0, playerPosition.z));
-		//std::cout << "d = " << dist << std::endl;
-		bool isNearby = glm::abs(dist) <= Constant::CHUNK_RANGE;
-
-		//bool inBorder = newChunk->isPointInBorder(playerPosition);
-		if (!isNearby)
+		if (nearBy)
 		{
-			return newChunkXZ;
+			currentChunkPos = newChunkXZ;
+			return true;
 		}
 	}
 
-	return currentChunkPos;
+	return false;
 }
 
-bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * workManager, const double time)
+void Voxel::ChunkMap::update(const glm::ivec2& chunkDist, ChunkWorkManager * workManager)
 {
-	// Anyway, first we get how far player moved. In chunk distance.
-	// Then find which row and col need to be added based on direction player moved.
-	// also find which row and col to pop aswell.
-	glm::ivec2 d = newChunkXZ - currentChunkPos;
-	//std::cout << "Player moved to new chunk (" << chunkX << ", " << chunkZ << ") from chunk (" << currentChunkPos.x << ", " << currentChunkPos.y << ")\n";
-	currentChunkPos = newChunkXZ;
-
-	// Always modify x first. I think...that.. is.. better....right?
-
 	/*
 	2D std::list
 
@@ -1273,48 +1256,48 @@ bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * wo
 
 	//auto start = Utility::Time::now();
 
-	if (d.x != 0)
+	if (chunkDist.x != 0)
 	{
 		// Run move function as much as chunk distance
-		int dist = glm::abs(d.x);
+		int dist = glm::abs(chunkDist.x);
 
 		// Moved in x axis
 		for (int i = 0; i < dist; i++)
 		{
-			if (d.x < 0)
+			if (chunkDist.x < 0)
 			{
 				// Moved to west
-				std::cout << "Player moved to west. d.x = " << d.x << std::endl;
+				std::cout << "Player moved to west. chunkDist.x = " << chunkDist.x << std::endl;
 				moveWest(workManager);
 			}
 			else
 			{
 				// moved to east
-				std::cout << "Player moved to east. d.x = " << d.x << std::endl;
+				std::cout << "Player moved to east. chunkDist.x = " << chunkDist.x << std::endl;
 				moveEast(workManager);
 			}
 		}
 	}
 	// Else, didn't move in X axis
 
-	if (d.y/*z*/ != 0)
+	if (chunkDist.y/*z*/ != 0)
 	{
 		// Run move function as much as chunk distance
-		int dist = glm::abs(d.y);
+		int dist = glm::abs(chunkDist.y);
 
 		// Moved in z axis
 		for (int i = 0; i < dist; i++)
 		{
-			if (d.y < 0)
+			if (chunkDist.y < 0)
 			{
 				// Move to north
-				std::cout << "Player moved to north. d.y = " << d.y << std::endl;
+				std::cout << "Player moved to north. chunkDist.y = " << chunkDist.y << std::endl;
 				moveNorth(workManager);
 			}
 			else
 			{
 				// Moved to sourth
-				std::cout << "Player moved to south. d.y = " << d.y << std::endl;
+				std::cout << "Player moved to south. chunkDist.y = " << chunkDist.y << std::endl;
 				moveSouth(workManager);
 			}
 		}
@@ -1325,8 +1308,15 @@ bool Voxel::ChunkMap::update(const glm::ivec2& newChunkXZ, ChunkWorkManager * wo
 
 	//auto end = Utility::Time::now();
 	//std::cout << "Chunk loader update took: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
+}
 
-	return true;
+void Voxel::ChunkMap::updateChunkBorderDebugLineModelMat()
+{
+	auto chunk = getChunkAtXZ(currentChunkPos);
+	if (chunk)
+	{
+		chunkBorderModelMat = chunk->modelMat;
+	}
 }
 
 void Voxel::ChunkMap::moveWest(ChunkWorkManager* wm)
@@ -1832,7 +1822,6 @@ void Voxel::ChunkMap::removeColNorth(ChunkWorkManager * wm)
 
 bool Voxel::ChunkMap::isChunkOnEdge(const glm::ivec2 & chunkXZ)
 {
-	// Check if chunk is on edge. Edge means end of render distance. Doesn't incldues extra rows and cols in active chunk.
 	return chunkXZ.x < (minXZ.x + 2) || chunkXZ.y < (minXZ.y + 2) || chunkXZ.x > (maxXZ.x - 2) || chunkXZ.y > (maxXZ.y - 2);
 }
 
@@ -1892,6 +1881,8 @@ int Voxel::ChunkMap::findVisibleChunk(std::vector<glm::ivec2>& visibleChunks)
 {
 	int count = 0;
 
+	visibleChunks.clear();
+
 	for (auto& e : map)
 	{
 		auto chunk = e.second;
@@ -1927,6 +1918,8 @@ int Voxel::ChunkMap::findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, K
 {
 	int count = 0;
 
+	visibleChunks.clear();
+
 	for (auto& e : map)
 	{
 		auto chunk = e.second;
@@ -1958,10 +1951,12 @@ int Voxel::ChunkMap::findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, K
 	return count;
 }
 
+#if V_DEBUG && V_DEBUG_INIT_CHUNK_BORDER_LINE
 void Voxel::ChunkMap::setRenderChunkBorderMode(const bool mode)
 {
 	renderChunkBorderMode = mode;
 }
+#endif
 
 void Voxel::ChunkMap::setRenderChunksMode(const bool mode)
 {
@@ -1994,41 +1989,6 @@ std::unordered_map<unsigned int, Terrain>& Voxel::ChunkMap::getRegionTerrainsMap
 glm::ivec2 Voxel::ChunkMap::getCurrentChunkXZ()
 {
 	return currentChunkPos;
-}
-
-void Voxel::ChunkMap::getCollidableBlockNearPlayer(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
-{
-	auto standingBlockWorldPos = glm::ivec3(0);
-	standingBlockWorldPos.x = static_cast<int>((playerPosition.x >= 0) ? playerPosition.x : glm::floor(playerPosition.x));
-	standingBlockWorldPos.y = static_cast<int>((playerPosition.y >= 0) ? playerPosition.y : 0);
-	standingBlockWorldPos.z = static_cast<int>((playerPosition.z >= 0) ? playerPosition.z : glm::floor(playerPosition.z));
-
-	int startX = standingBlockWorldPos.x - 1;
-	int startY = standingBlockWorldPos.y - 1;
-	int startZ = standingBlockWorldPos.z - 1;
-	int endX = standingBlockWorldPos.x + 1;
-	int endY = standingBlockWorldPos.y + 3;
-	int endZ = standingBlockWorldPos.z + 1;
-
-	// max 54 blocks
-
-	for (int x = startX; x <= endX; x++)
-	{
-		for (int z = startZ; z <= endZ; z++)
-		{
-			for (int y = startY; y <= endY; y++)
-			{
-				Block* block = getBlockAtWorldXYZ(x, y, z);
-				if (block)
-				{
-					if (block->isCollidable())
-					{
-						collidableBlocks.push_back(block);
-					}
-				}
-			}
-		}
-	}
 }
 
 void Voxel::ChunkMap::queryNearByCollidableBlocksInXZ(const glm::vec3 & playerPosition, std::vector<Block*>& collidableBlocks)
@@ -2235,6 +2195,40 @@ void Voxel::ChunkMap::renderChunkBorder(Program * program)
 		if (glView->doesCountVerticesSize())
 		{
 			glView->addVerticesSize(chunkBorderLineSize / 2);
+		}
+	}
+}
+
+void Voxel::ChunkMap::renderCameraChunkBorder(Program * program, const glm::vec3 & cameraPosition)
+{
+	if (renderChunkBorderMode)
+	{
+		glBindVertexArray(chunkBorderVao);
+
+		auto chunk = getChunkAtXZ(getPlayerChunkPos(cameraPosition));
+		if (chunk)
+		{
+			auto worldPosition = chunk->getWorldPosition();
+			auto chunkWP = glm::vec3(worldPosition.x - Constant::CHUNK_BORDER_SIZE_HALF, 0.0f, worldPosition.z - Constant::CHUNK_BORDER_SIZE_HALF);
+
+			glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), chunkWP - cameraPosition);
+
+			program->setUniformMat4("modelMat", modelMat);
+
+			glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
+
+			// For debug
+			auto glView = Application::getInstance().getGLView();
+
+			if (glView->doesCountDrawCalls())
+			{
+				glView->incrementDrawCall();
+			}
+
+			if (glView->doesCountVerticesSize())
+			{
+				glView->addVerticesSize(chunkBorderLineSize / 2);
+			}
 		}
 	}
 }

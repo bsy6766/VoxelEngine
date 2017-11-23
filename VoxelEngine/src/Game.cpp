@@ -514,21 +514,30 @@ void Game::update(const float delta)
 	}
 	else
 	{
-		// update input
+		// update key board input
 		updateKeyboardInput(delta);
+		// Update mouse move input
 		updateMouseMoveInput(delta);
+		// Update mouse click input
 		updateMouseClickInput();
+		// Update mouse scroll input
 		updateMouseScrollInput(delta);
+		// Update controller input
 		updateControllerInput(delta);
 
+		// Check if we need to skip update. Inputs might trigger this.
 		if (skipUpdate)
 		{
+			// Reset flag and return.
 			skipUpdate = false;
 			return;
 		}
+		// Else, not skipping update. 
 
+		// Update world map
 		worldMap->update(delta);
 
+		// Check if there is a chunk to unload on main thread
 		checkUnloadedChunks();
 
 		// Update physics
@@ -559,10 +568,10 @@ void Game::update(const float delta)
 			debugConsole->updatePlayerRotation(player->getRotation());
 		}
 
+		updateChunks();
+
 		if (playerMoved)
 		{
-			// if player moved, update chunk only if chunk work manager is not aborting
-			updateChunks();
 
 			auto playerPos = player->getPosition();
 
@@ -1288,18 +1297,16 @@ void Voxel::Game::updateChunks()
 	// Based on player position, check if player moved to new chunk
 	// If so, we need to load new chunks. 
 	// Else, player reamains on same chunk as now.
-	glm::ivec2 newChunkXZ = chunkMap->checkPlayerChunkPos(player->getPosition());
-	glm::ivec2 curChunkXZ = chunkMap->getCurrentChunkXZ();
 
-	if (newChunkXZ == curChunkXZ)
-	{
-		// still on same chunk. do nothing
-		return;
-	}
-	else
+	auto playerPos = player->getPosition();
+	auto prevChunkXZ = chunkMap->getCurrentChunkXZ();
+	bool updated = chunkMap->updateCurrentChunkPos(playerPos);
+
+	if (updated)
 	{
 		// moved to new chunk
-		glm::ivec2 absDist = glm::abs(newChunkXZ - curChunkXZ);
+		auto curChunkXz = chunkMap->getCurrentChunkXZ();
+		glm::ivec2 absDist = glm::abs(curChunkXz - prevChunkXZ);
 
 		auto rd = settingPtr->getRenderDistance();
 
@@ -1311,17 +1318,12 @@ void Voxel::Game::updateChunks()
 		else
 		{
 			// player moved less than render distance. Normally load chunk map
-			bool updated = chunkMap->update(newChunkXZ, chunkWorkManager, glfwGetTime());
-
-			/*
-			//Whenever player moved, sort the load queue again
-			if (updated)
-			{
-			chunkWorkManager->sortBuildMeshQueue(player->getPosition());
-			}
-			*/
+			chunkMap->update(curChunkXz - prevChunkXZ, chunkWorkManager);
 		}
 	}
+
+	// Debug
+	chunkMap->updateChunkBorderDebugLineModelMat();
 }
 
 void Voxel::Game::updatePlayerRaycast()
@@ -1541,17 +1543,24 @@ void Voxel::Game::replacePlayerToTopY()
 
 void Voxel::Game::checkUnloadedChunks()
 {
-	bool result = true;
-	while (result)
+	// Iterate until queue is empty
+	while (true)
 	{
-		// Check if there is any chunk to unload
-		glm::ivec2 chunkXZ;
-		result = chunkWorkManager->getUnloadFinishedQueueFront(chunkXZ);
-		if (result)
+		glm::ivec2 chunkXZ(0);
+
+		bool hasChunk = chunkWorkManager->getAndPopFirstUnloadFinishedQueue(chunkXZ);
+		if (hasChunk)
 		{
+			// Succesfully got the chunk coordinate. Release chunk.
 			chunkMap->releaseChunk(chunkXZ);
 
-			chunkWorkManager->popFinishedAndNotify();
+			// Check if releasing is finished. If so, notify
+			bool empty = chunkWorkManager->isUnloadFinishedQueueEmpty();
+
+			if (empty)
+			{
+				chunkWorkManager->notify();
+			}
 		}
 		else
 		{
@@ -1701,10 +1710,7 @@ void Voxel::Game::renderWorld(const float delta)
 		// Player's position
 		centerPos = player->getPosition();
 	}
-
-	// We don't use world matarix
-	program->setUniformMat4("worldMat", glm::mat4(1.0f));
-
+	
 	// set view matrix.
 	program->setUniformMat4("viewMat", viewMat);
 	
@@ -1733,19 +1739,25 @@ void Voxel::Game::renderWorld(const float delta)
 
 	// ------------------------------ Render Lines ------------------------------------------
 	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	lineProgram->use(true);
+	lineProgram->use(true);	
+
+	// Use viewmat first
+	lineProgram->setUniformMat4("viewMat", viewMat);
+
+	// render chunk border.
+	chunkMap->renderChunkBorder(lineProgram);
 
 	if (cameraMode)
 	{
-		lineProgram->setUniformMat4("viewMat", viewMat * worldMat * glm::inverse(player->getWorldMatrix()));
-	}
-	else
-	{
-		lineProgram->setUniformMat4("viewMat", viewMat);
+		// If camera mode, render chunk border for camea again.
+		chunkMap->renderCameraChunkBorder(lineProgram, centerPos);
 	}
 
-	// render chunk border. Need model matrix
-	chunkMap->renderChunkBorder(lineProgram);
+	if (cameraMode)
+	{
+		// Change view mat for other lines
+		lineProgram->setUniformMat4("viewMat", viewMat * worldMat * glm::inverse(player->getWorldMatrix()));
+	}
 
 	// render player. Need model matrix
 	player->renderDebugLines(lineProgram);
