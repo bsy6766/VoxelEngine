@@ -1,6 +1,7 @@
 #ifndef DEBUG_CONSOLE_H
 #define DEBUG_CONSOLE_H
 
+#include <Config.h>
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <string>

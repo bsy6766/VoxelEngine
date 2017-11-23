@@ -23,7 +23,6 @@ using namespace Voxel;
 DebugConsole::DebugConsole()
 	: openingConsole(false)
 	, debugCanvas(nullptr)
-	//, staticLabels(nullptr)
 	, debugOutputVisibility(false)
 	, fpsNumber(nullptr)
 	, resolutionNumber(nullptr)
@@ -37,9 +36,12 @@ DebugConsole::DebugConsole()
 	, playerLookingAt(nullptr)
 	, chunkNumbers(nullptr)
 	, lastCommandIndex(0)
-	// debug
 	, player(nullptr)
 	, game(nullptr)
+	, world(nullptr)
+	, chunkMap(nullptr)
+	, settingPtr(nullptr)
+	, calendar(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
@@ -904,6 +906,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							addCommandHistory(command);
 							return true;
 						}
+#if V_DEBUG_CHUNK_BORDER_LINE
 						else if (arg2 == "chunkborder" || arg2 == "cb")
 						{
 							chunkMap->setRenderChunkBorderMode(arg3Bool);
@@ -918,6 +921,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							addCommandHistory(command);
 							return true;
 						}
+#endif
 					}
 					else if (arg1 == "print" || arg1 == "p")
 					{

@@ -1,14 +1,24 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <glm\glm.hpp>
-#include <GL\glew.h>
-#include <GLFW\glfw3.h>
+// cpp
 #include <string>
+
+// glm
+#include <glm\glm.hpp>
+
+// gl
+#include <GL\glew.h>
+
+// glfw
+#include <GLFW\glfw3.h>
+
+// Voxel
+#include <Config.h>
 
 namespace Voxel
 {
-	// Foward
+	// Foward declaration
 	class Program;
 	class ChunkMap;
 	class ChunkMeshGenerator;
@@ -37,7 +47,7 @@ namespace Voxel
 	class Game
 	{
 	private:
-		enum class UI_Z_ORDER
+		enum class UI_Z_ORDER : int
 		{
 			CROSS_HAIR = 0,
 			TIME,
@@ -70,11 +80,7 @@ namespace Voxel
 			IDLE = 0,		// Renders world
 			VIEWING_WORLD_MAP,		// Renders world map
 		};
-	private:
-		// Camera modes
-		bool cameraMode;
-		bool cameraControlMode;
-		
+	private:		
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
@@ -126,7 +132,7 @@ namespace Voxel
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
 
-		// Initialize/release instances
+		// Initialize all sub system and instances
 		void init();
 		void release();
 
@@ -152,7 +158,6 @@ namespace Voxel
 		void initUI(); 
 		void initLoadingScreen();
 		void initDefaultCanvas();
-		void initDebugConsole();
 		void initCursor();
 		void initSkyBox();
 		void initWorldMap();
@@ -195,9 +200,6 @@ namespace Voxel
 		// input handler instance
 		InputHandler* input;
 
-		// debug
-		DebugConsole* debugConsole;
-
 		// teleport player
 		void teleportPlayer(const glm::vec3& position);
 
@@ -212,16 +214,34 @@ namespace Voxel
 		// Rebuilds world. It also rebuilds chunk map
 		void rebuildWorld();
 
+		/**
+		*	Set fog mode.
+		*	@param enabled true to enable fog. false to disable fog.
+		*/
+		void setFogEnabled(const bool enabled);
+
 		void render(const float delta);
 		void renderGame(const float delta);
 		void renderWorld(const float delta);
 		void renderWorldMap(const float delta);
 		void renderLoadingScreen(const float delta);
 		void renderUI();
-		void renderDebugConsole();
 
-		// debug console function
-		void setFogEnabled(const bool enabled);
+
+#if V_DEBUG
+#if V_DEBUG_CONSOLE
+		// Debug console
+		DebugConsole* debugConsole;
+		void initDebugConsole();
+		void releaseDebugConsole();
+		void renderDebugConsole();
+#endif
+#if V_DEBUG_CAMERA_MODE
+		// Camera modes
+		bool cameraMode;
+		bool cameraControlMode;
+#endif
+#endif
 	};
 }
 

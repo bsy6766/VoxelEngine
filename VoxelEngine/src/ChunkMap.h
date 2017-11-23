@@ -75,15 +75,7 @@ namespace Voxel
 		// Chunk map's min and max XZ coordinate
 		glm::ivec2 minXZ;
 		glm::ivec2 maxXZ;
-
-#if V_DEBUG && V_DEBUG_INIT_CHUNK_BORDER_LINE
-		// Chunk debug border draw
-		GLuint chunkBorderVao;
-		int chunkBorderLineSize;
-		glm::mat4 chunkBorderModelMat;
-		bool renderChunkBorderMode;
-#endif
-
+		
 		// render mode
 		bool renderChunksMode;
 
@@ -176,9 +168,6 @@ namespace Voxel
 
 		// Initialize active chunks 
 		void initActiveChunks();
-
-		// Initialzie chunk border lines
-		void initChunkBorderDebug(Program* program);
 
 		// Initialize block outline
 		void initBlockOutline(Program* program);
@@ -400,12 +389,7 @@ namespace Voxel
 		*	@param workManager ChunkWorkManager pointer to request work.
 		*/
 		void update(const glm::ivec2& chunkDist, ChunkWorkManager* workManager);
-		
-		/**
-		*	Updates chunk border debug line model matrix. Uses chunk's model matrix
-		*/
-		void updateChunkBorderDebugLineModelMat();
-		
+				
 		/**
 		*	Find visible chunks based on render distance
 		*	@param renderDistance Number of chunks that are rendered from player's position.
@@ -426,15 +410,7 @@ namespace Voxel
 		*	@return Number of visible chunks.
 		*/
 		int findVisibleChunk(std::unordered_set<glm::ivec2, KeyFuncs, KeyFuncs>& visibleChunks);
-
-#if V_DEBUG && V_DEBUG_INIT_CHUNK_BORDER_LINE
-		/**
-		*	Set mode for chunk border debug line.
-		*	@param mode A bool mode to set.
-		*/
-		void setRenderChunkBorderMode(const bool mode);
-#endif
-
+		
 		/**
 		*	Set mode for chunk rendering. Renders chunk if mode is true. Else, doesn't renders.
 		*	@param mode A bool mode to set.
@@ -495,11 +471,6 @@ namespace Voxel
 		// render chunks
 		void render(const glm::vec3& playerPosition);
 
-		// render chunk border debug
-		void renderChunkBorder(Program* program);
-		// Debug
-		void renderCameraChunkBorder(Program* program, const glm::vec3& cameraPosition);
-
 		// render block outline
 		void renderBlockOutline(Program* lineProgram, const glm::vec3& blockPosition);
 
@@ -510,6 +481,34 @@ namespace Voxel
 		// debug print
 		void printChunkMap();
 		void printActiveChunks();
+
+#if V_DEBUG && V_DEBUG_CHUNK_BORDER_LINE
+		// Chunk debug border draw
+		GLuint chunkBorderVao;
+		int chunkBorderLineSize;
+		glm::mat4 chunkBorderModelMat;
+		bool renderChunkBorderMode;
+
+		// Initialzie chunk border lines
+		void initChunkBorderDebug(Program* program);
+
+		/**
+		*	Updates chunk border debug line model matrix. Uses chunk's model matrix
+		*/
+		void updateChunkBorderDebugLineModelMat();
+
+		/**
+		*	Set mode for chunk border debug line.
+		*	@param mode A bool mode to set.
+		*/
+		void setRenderChunkBorderMode(const bool mode);
+
+		// render chunk border debug
+		void renderChunkBorder(Program* program);
+
+		// Debug
+		void renderCameraChunkBorder(Program* program, const glm::vec3& cameraPosition);
+#endif
 	};
 }
 

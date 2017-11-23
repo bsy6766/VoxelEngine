@@ -57,12 +57,9 @@ Game::Game()
 	, input(&InputHandler::getInstance())
 	, player(nullptr)
 	, prevMouseCursorPos(0)
-	, cameraMode(false)
-	, cameraControlMode(false)
 	, chunkWorkManager(nullptr)
 	, defaultCanvas(nullptr)
 	, loadingCanvas(nullptr)
-	, debugConsole(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
 	, settingPtr(nullptr)
@@ -72,6 +69,15 @@ Game::Game()
 	, reloadState(ReloadState::NONE)
 	, gameState(GameState::IDLE)
 	, skipUpdate(false)
+#if V_DEBUG
+#if V_DEBUG_CONSOLE
+	, debugConsole(nullptr)
+#endif
+#if V_DEBUG_CAMERA_MODE
+	, cameraMode(false)
+	, cameraControlMode(false)
+#endif
+#endif
 {
 	// init instances
 	init();
@@ -90,6 +96,10 @@ Game::~Game()
 
 	// Release all instances
 	release();
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+	releaseDebugConsole();
+#endif
 
 	// Release fonts
 	FontManager::getInstance().clear();
@@ -154,41 +164,15 @@ void Voxel::Game::init()
 	// UI & font
 	initUI();
 
+#if V_DEBUG && V_DEBUG_CONSOLE
+	initDebugConsole();
+#endif
+
 	TextureManager::getInstance().print();
 
 	//Application::getInstance().getGLView()->setWindowedFullScreen(1);
 	//defaultCanvas->setSize(glm::vec2(1920, 1080));
 	//debugConsole->updateResolution(1920, 1080);
-}
-
-void Voxel::Game::release()
-{
-	std::cout << "[World] Releasing all instances\n";
-
-	SpriteSheetManager::getInstance().releaseAll();
-	TextureManager::getInstance().releaseAll();
-
-	// delete everything
-	if (chunkMap) delete chunkMap;
-	if (chunkMeshGenerator) delete chunkMeshGenerator;
-	if (chunkWorkManager) delete chunkWorkManager;
-
-	if (physics) delete physics;
-
-	if (player)	delete player;
-
-	if (skybox) delete skybox;
-	if (calendar) delete calendar;
-
-	if (cursor) delete cursor;
-
-	if (defaultCanvas) delete defaultCanvas;
-
-	if (debugConsole) delete debugConsole;
-
-	if (worldMap) delete worldMap;
-
-	if (world) delete world;
 }
 
 void Voxel::Game::initSpriteSheets()
@@ -220,8 +204,6 @@ void Voxel::Game::initUI()
 	initDefaultCanvas();
 
 	initLoadingScreen();
-
-	initDebugConsole();
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -261,22 +243,6 @@ void Voxel::Game::initDefaultCanvas()
 
 }
 
-void Voxel::Game::initDebugConsole()
-{
-	auto resolution = Application::getInstance().getGLView()->getScreenSize();
-
-	// Debug. This creates all the debug UI components
-	debugConsole = new DebugConsole();
-	debugConsole->toggleDubugOutputs();
-
-	// for debugging
-	debugConsole->player = player;
-	debugConsole->game = this;
-	debugConsole->chunkMap = chunkMap;
-	debugConsole->world = world;
-	debugConsole->calendar = calendar;
-}
-
 void Voxel::Game::initCursor()
 {
 	// cursor
@@ -305,6 +271,34 @@ void Voxel::Game::initMeshBuilderThread()
 	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, world, concurentThreadsSupported);
 }
 
+void Voxel::Game::release()
+{
+	std::cout << "[World] Releasing all instances\n";
+
+	SpriteSheetManager::getInstance().releaseAll();
+	TextureManager::getInstance().releaseAll();
+
+	// delete everything
+	if (chunkMap) delete chunkMap;
+	if (chunkMeshGenerator) delete chunkMeshGenerator;
+	if (chunkWorkManager) delete chunkWorkManager;
+
+	if (physics) delete physics;
+
+	if (player)	delete player;
+
+	if (skybox) delete skybox;
+	if (calendar) delete calendar;
+
+	if (cursor) delete cursor;
+
+	if (defaultCanvas) delete defaultCanvas;
+
+	if (worldMap) delete worldMap;
+
+	if (world) delete world;
+}
+
 void Voxel::Game::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
@@ -330,10 +324,12 @@ void Voxel::Game::createNew(const std::string & worldName)
 	// Then based init chunks
 	createChunkMap();
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 	Region* curRegion = world->getCurrentRegion();
-	debugConsole->updateRegion(curRegion->getID());
 	Biome biomeType = curRegion->getBiomeType();
+	debugConsole->updateRegion(curRegion->getID());
 	debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
+#endif
 	
 	auto end = Utility::Time::now();
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
@@ -387,11 +383,12 @@ void Game::createChunkMap()
 	// Get line program for debug
 	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 
-	// for debug
-	chunkMap->initChunkBorderDebug(program);
-
 	// block outline. this is not debug. Required for building.
 	chunkMap->initBlockOutline(program);
+
+#if V_DEBUG && V_DEBUG_CHUNK_BORDER_LINE
+	chunkMap->initChunkBorderDebug(program);
+#endif
 
 	// End measure
 	auto end = Utility::Time::now();
@@ -564,33 +561,39 @@ void Game::update(const float delta)
 			// Also update raycast
 			updatePlayerRaycast();
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 			debugConsole->updatePlayerPosition(playerPos);
 			debugConsole->updatePlayerRotation(player->getRotation());
+#endif
 		}
 
 		updateChunks();
 
 		if (playerMoved)
 		{
-
 			auto playerPos = player->getPosition();
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 			bool regionChanged = world->updatePlayerPos(playerPos);
-
 			if (regionChanged)
 			{
 				Region* curRegion = world->getCurrentRegion();
-				debugConsole->updateRegion(curRegion->getID());
 				Biome biomeType = curRegion->getBiomeType();
+				debugConsole->updateRegion(curRegion->getID());
 				debugConsole->updateBiome(Biome::biomeTypeToString(biomeType), Terrain::terrainTypeToString(curRegion->getTerrainType()), biomeType.getTemperature(), biomeType.getMoisture());
 			}
+#else
+			world->updatePlayerPos(playerPos);
+#endif
 
 			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
 		}
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
+#endif
 
 		player->update(delta);
 
@@ -633,11 +636,13 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 {
 	if (input->getKeyDown(GLFW_KEY_ESCAPE, true))
 	{
+#if V_DEBUG && V_DEBUG_CONSOLE
 		if (debugConsole->isConsoleOpened())
 		{
 			debugConsole->closeConsole();
 		}
 		else
+#endif
 		{
 			if (gameState == GameState::VIEWING_WORLD_MAP)
 			{
@@ -651,6 +656,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 	if (input->getKeyDown(GLFW_KEY_F3, true))
 	{
 		debugConsole->toggleDubugOutputs();
@@ -676,6 +682,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		debugConsole->updateConsoleInputText(input->getBuffer());
 		return;
 	}
+#endif
 
 	if (gameState == GameState::IDLE)
 	{
@@ -772,7 +779,9 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(1);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1920, 1080);
+#endif
 		cursor->updateBoundary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == GLFW_MOD_CONTROL)
@@ -780,26 +789,34 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		Application::getInstance().getGLView()->setWindowed(1280, 720);
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
 		defaultCanvas->setSize(glm::vec2(1280, 720));
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1280, 720);
+#endif
 		cursor->updateBoundary();
 	}
 	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(0);
 		defaultCanvas->setSize(glm::vec2(1920, 1080));
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1920, 1080);
+#endif
 		cursor->updateBoundary();
 	}
 
 	if (input->getKeyDown(GLFW_KEY_V, true) && !input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
 	{
 		Application::getInstance().getGLView()->setVsync(true);
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateVsync(true);
+#endif
 	}
 	else if (input->getKeyDown(GLFW_KEY_V, true) && input->getKeyDown(GLFW_KEY_LEFT_CONTROL))
 	{
 		Application::getInstance().getGLView()->setVsync(false);
+#if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateVsync(false);
+#endif
 	}
 
 	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::TOGGLE_WORLD_MAP, true))
@@ -813,7 +830,36 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 			closeWorldMap();
 		}
 	}
+
+#if V_DEBUG && V_DEBUG_CAMERA_MODE
+	if (input->getKeyDown(GLFW_KEY_C, true))
+	{
+		cameraMode = !cameraMode;
+		std::cout << "[World] Camera mode " << std::string(cameraMode ? "enabled" : "disabled") << std::endl;
+
+		if (!cameraMode)
+		{
+			worldMap->updateViewMatrix();
+		}
+
+		return;
+	}
 	
+	if (input->getKeyDown(GLFW_KEY_X, true))
+	{
+		cameraControlMode = !cameraControlMode;
+		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
+
+		return;
+	}
+	
+	if (input->getKeyDown(GLFW_KEY_Z, true))
+	{
+		Camera::mainCamera->setPosition(player->getPosition());
+
+		return;
+	}
+
 	if (cameraControlMode)
 	{
 		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
@@ -842,72 +888,52 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		{
 			Camera::mainCamera->addPosition(glm::vec3(0, -delta, 0));
 		}
+
+		return;
 	}
-	else
+#endif
+	if (cursorState == CursorState::HIDDEN)
 	{
-		if (cursorState == CursorState::HIDDEN)
+		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
 		{
-			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
-			{
-				player->moveFoward(delta);
-			}
-			else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_BACKWARD))
-			{
-				player->moveBackward(delta);
-			}
+			player->moveFoward(delta);
+		}
+		else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_BACKWARD))
+		{
+			player->moveBackward(delta);
+		}
 
-			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_LEFT))
-			{
-				player->moveLeft(delta);
-			}
-			else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_RIGHT))
-			{
-				player->moveRight(delta);
-			}
+		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_LEFT))
+		{
+			player->moveLeft(delta);
+		}
+		else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_RIGHT))
+		{
+			player->moveRight(delta);
+		}
 
-			if (player->isFlying())
+		if (player->isFlying())
+		{
+			if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_UP))
 			{
-				if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_UP))
-				{
-					player->moveUp(delta);
-				}
-				else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_DOWN))
-				{
-					player->moveDown(delta);
-				}
+				player->moveUp(delta);
 			}
-			else
+			else if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_DOWN))
 			{
-				if (player->isOnGround())
+				player->moveDown(delta);
+			}
+		}
+		else
+		{
+			if (player->isOnGround())
+			{
+				if (input->getKeyDown(InputHandler::KEY_INPUT::JUMP, true))
 				{
-					if (input->getKeyDown(InputHandler::KEY_INPUT::JUMP, true))
-					{
-						player->jump();
-						physics->applyJumpForceToPlayer(glm::vec3(0, 2.2f, 0));
-					}
+					player->jump();
+					physics->applyJumpForceToPlayer(glm::vec3(0, 2.2f, 0));
 				}
 			}
 		}
-	}
-
-	if (input->getKeyDown(GLFW_KEY_C, true))
-	{
-		cameraMode = !cameraMode;
-		std::cout << "[World] Camera mode " << std::string(cameraMode ? "enabled" : "disabled") << std::endl;
-
-		if (!cameraMode)
-		{
-			worldMap->updateViewMatrix();
-		}
-	}
-	else if (input->getKeyDown(GLFW_KEY_X, true))
-	{
-		cameraControlMode = !cameraControlMode;
-		std::cout << "[World] Camera control mode " << std::string(cameraControlMode ? "enabled" : "disabled") << std::endl;
-	}
-	else if (input->getKeyDown(GLFW_KEY_Z, true))
-	{
-		Camera::mainCamera->setPosition(player->getPosition());
 	}
 
 	if (input->getKeyDown(GLFW_KEY_3, true))
@@ -922,19 +948,31 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 
 void Voxel::Game::updateMouseMoveInput(const float delta)
 {
+	// Get current mouse pos
 	auto curMousePos = input->getMousePosition();
 
+	// Calculate how far did cursor moved
 	float dx = curMousePos.x - prevMouseCursorPos.x;
 	float dy = curMousePos.y - prevMouseCursorPos.y;
+	// Store cursor position
 	prevMouseCursorPos.x = curMousePos.x;
 	prevMouseCursorPos.y = curMousePos.y;
 
+	// Check if cursor is visible
+	if (cursorState == CursorState::SHOWN)
+	{
+		// Update cursor position only if it's visible
+		cursor->addPosition(glm::vec2(dx, -dy));
+	}
+
+#if V_DEBUG && V_DEBUG_CONSOLE
 	if (debugConsole->isConsoleOpened())
 	{
 		// Stop input while opening console
 		return;
 	}
-	
+#endif
+
 	// Todo: Find better way? focing elapsed time in mouse pos update to 1/60 if exceeds 1/60
 	// This is because, mouse position updates more quicker in higher frame, which means smaller changes from
 	// previous position. However because of frequent change, cumulitive change of angle seemed to be same with 
@@ -946,78 +984,62 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 		newDelta = 0.01666666666667f;
 	}
 
+#if V_DEBUG && V_DEBUG_CAMERA_MODE
+	if (cameraControlMode)
+	{
+		if (dx != 0)
+		{
+			Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
+		}
+
+		if (dy != 0)
+		{
+			Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
+		}
+
+		return;
+	}
+#endif
+
 	if (gameState == GameState::IDLE)
 	{
-		if (cameraControlMode)
+		if (dx != 0.0)
 		{
-			if (dx != 0)
-			{
-				Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
-			}
-
-			if (dy != 0)
-			{
-				Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
-			}
+			player->addRotationY(newDelta * dx);
 		}
-		else
-		{
-			if (dx != 0.0)
-			{
-				player->addRotationY(newDelta * dx);
-			}
 
-			if (dy != 0.0)
-			{
-				player->addRotationX(newDelta * -dy);
-			}
+		if (dy != 0.0)
+		{
+			player->addRotationX(newDelta * -dy);
 		}
 	}
 	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
-		if (cameraControlMode)
+		glm::vec2 delta(0.0f);
+
+		if (dx != 0)
 		{
-			if (dx != 0)
-			{
-				Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
-			}
-
-			if (dy != 0)
-			{
-				Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
-			}
+			delta.x = newDelta * static_cast<float>(dx);
 		}
-		else
+
+		if (dy != 0)
 		{
-			glm::vec2 delta(0.0f);
-
-			if (dx != 0)
-			{
-				delta.x = newDelta * static_cast<float>(dx);
-			}
-
-			if (dy != 0)
-			{
-				delta.y = newDelta * static_cast<float>(dy);
-			}
-
-			worldMap->updateMouseMove(delta, cursor->getPosition());
+			delta.y = newDelta * static_cast<float>(dy);
 		}
-	}
 
-	if (cursorState == CursorState::SHOWN)
-	{
-		cursor->addPosition(glm::vec2(dx, -dy));
+		worldMap->updateMouseMove(delta, cursor->getPosition());
 	}
 }
 
 void Voxel::Game::updateMouseClickInput()
 {
+#if V_DEBUG && V_DEBUG_CONSOLE
 	if (debugConsole->isConsoleOpened())
 	{
 		// Stop input while opening console
 		return;
 	}
+#endif
 
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
@@ -1323,15 +1345,19 @@ void Voxel::Game::updateChunks()
 	}
 
 	// Debug
+#if V_DEBUG && V_DEBUG_CHUNK_BORDER_LINE
 	chunkMap->updateChunkBorderDebugLineModelMat();
+#endif
 }
 
 void Voxel::Game::updatePlayerRaycast()
 {
 	auto result = chunkMap->raycastBlock(player->getEyePosition(), player->getDirection(), player->getRange());
+	player->setLookingBlock(result.block, result.face);
+
+#if V_DEBUG && V_DEBUG_CONSOLE
 	if (result.block != nullptr)
 	{
-		player->setLookingBlock(result.block, result.face);
 		debugConsole->setPlayerLookingAtVisibility(true);
 		debugConsole->updatePlayerLookingAt(result.block->getWorldCoordinate(), result.face);
 	}
@@ -1340,6 +1366,7 @@ void Voxel::Game::updatePlayerRaycast()
 		debugConsole->setPlayerLookingAtVisibility(false);
 		player->setLookingBlock(nullptr, Cube::Face::NONE);
 	}
+#endif
 }
 
 void Voxel::Game::updatePlayerCameraCollision()
@@ -1662,7 +1689,9 @@ void Voxel::Game::renderGame(const float delta)
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 	renderDebugConsole();
+#endif
 
 	// Render cursor. Cursor has highest Z Order among other UIs. Must be always visible.
 	cursor->render();
@@ -1690,7 +1719,9 @@ void Voxel::Game::renderWorld(const float delta)
 	glm::vec3 centerPos = glm::vec3(0.0f);
 
 	// ------------------------------ Render world ------------------------------------------
+
 	// Get world view matrix based on mode
+#if V_DEBUG && V_DEBUG_CAMERA_MODE
 	if (cameraMode)
 	{
 		// Camera's view matrix based on rotation
@@ -1710,7 +1741,15 @@ void Voxel::Game::renderWorld(const float delta)
 		// Player's position
 		centerPos = player->getPosition();
 	}
-	
+#else
+	// Player's view matrix based on rotation
+	viewMat = player->getViewMatrix();
+	// Player's world matrix is idendity matrix
+	worldMat = player->getWorldMatrix();
+	// Player's position
+	centerPos = player->getPosition();
+#endif
+
 	// set view matrix.
 	program->setUniformMat4("viewMat", viewMat);
 	
@@ -1743,21 +1782,33 @@ void Voxel::Game::renderWorld(const float delta)
 
 	// Use viewmat first
 	lineProgram->setUniformMat4("viewMat", viewMat);
-
+	
+#if V_DEBUG
+	// Debug mode
+#if V_DEBUG_CHUNK_BORDER_LINE
 	// render chunk border.
 	chunkMap->renderChunkBorder(lineProgram);
 
+#if V_DEBUG_CAMERA_MODE
+	// Camera mode enabled
 	if (cameraMode)
 	{
 		// If camera mode, render chunk border for camea again.
 		chunkMap->renderCameraChunkBorder(lineProgram, centerPos);
 	}
+#endif
 
+#endif
+#if V_DEBUG_CAMERA_MODE
 	if (cameraMode)
 	{
 		// Change view mat for other lines
 		lineProgram->setUniformMat4("viewMat", viewMat * worldMat * glm::inverse(player->getWorldMatrix()));
+
+		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
 	}
+#endif
+#endif
 
 	// render player. Need model matrix
 	player->renderDebugLines(lineProgram);
@@ -1772,10 +1823,6 @@ void Voxel::Game::renderWorld(const float delta)
 	// Render voronoi diagram
 	//world->renderVoronoi(lineProgram);
 
-	if (cameraMode)
-	{
-		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
-	}
 	// --------------------------------------------------------------------------------------
 }
 
@@ -1784,14 +1831,15 @@ void Voxel::Game::renderWorldMap(const float delta)
 	// ---------------------------- Render world Map ----------------------------------------
 	glm::mat4 viewMat = glm::mat4(1.0f);
 
+#if V_DEBUG && V_DEBUG_CAMERA_MODE
 	if (cameraMode)
 	{
 		viewMat = Camera::mainCamera->getViewMat();
 	}
-	else
-	{
-		viewMat = worldMap->getViewMatrix();
-	}
+#else
+	viewMat = worldMap->getViewMatrix();
+#endif
+
 	worldMap->updateWithCamViewMatrix(viewMat);
 
 	worldMap->render();
@@ -1830,12 +1878,6 @@ void Voxel::Game::renderUI()
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::renderDebugConsole()
-{
-	debugConsole->render();
-	debugConsole->updateDrawCallsAndVerticesSize();
-}
-
 void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
@@ -1855,3 +1897,32 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 	}
 	program->use(false);
 }
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+void Voxel::Game::initDebugConsole()
+{
+	auto resolution = Application::getInstance().getGLView()->getScreenSize();
+
+	// Debug. This creates all the debug UI components
+	debugConsole = new DebugConsole();
+	debugConsole->toggleDubugOutputs();
+
+	// for debugging
+	debugConsole->player = player;
+	debugConsole->game = this;
+	debugConsole->chunkMap = chunkMap;
+	debugConsole->world = world;
+	debugConsole->calendar = calendar;
+}
+
+void Voxel::Game::releaseDebugConsole()
+{
+	if (debugConsole) delete debugConsole;
+}
+
+void Voxel::Game::renderDebugConsole()
+{
+	debugConsole->render();
+	debugConsole->updateDrawCallsAndVerticesSize();
+}
+#endif
