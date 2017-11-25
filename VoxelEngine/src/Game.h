@@ -119,6 +119,9 @@ namespace Voxel
 		// World map
 		WorldMap* worldMap;
 
+		// input handler instance
+		InputHandler* input;
+
 		// UI canvases
 		UI::Canvas* defaultCanvas;
 		UI::Canvas* loadingCanvas;
@@ -134,6 +137,8 @@ namespace Voxel
 
 		// Initialize all sub system and instances
 		void init();
+
+		// Releasea ll sub system and instances.
 		void release();
 
 		// Initialize sprite sheets
@@ -156,27 +161,69 @@ namespace Voxel
 
 		// Init UI 
 		void initUI(); 
+
+		// Intialize loading screen
 		void initLoadingScreen();
+
+		// Initialize default UI canvas
 		void initDefaultCanvas();
+
+		// Initialize cursor
 		void initCursor();
+
+		// Initailize sky box and fog
 		void initSkyBox();
+
+		// Initialize world map
 		void initWorldMap();
 
-		// Update inputs
+		/**
+		*	Updates keyboard input. May interupt and skip update during debug mode.
+		*	@param delta Elapsed time on current frame.
+		*/
 		void updateKeyboardInput(const float delta);
+
+		/**
+		*	Updates mouse movement input. Forces delta time to 60 fps
+		*	@param delta Elapsed time on current frame.
+		*/
 		void updateMouseMoveInput(const float delta);
+
+		// Updates mouse click input
 		void updateMouseClickInput();
+
+		/**
+		*	Updates mouse scroll input.
+		*	@param delta Elapsed time on current frame.
+		*/
 		void updateMouseScrollInput(const float delta);
+
+		/**
+		*	Updates controller input
+		*	@param delta Elapsed time on current frame.
+		*/
 		void updateControllerInput(const float delta);
 
+		/**
+		*	Updates physics.
+		*	Applies gravity and resolve collisions
+		*	@param delta Elapsed time on current frame.
+		*/
 		void updatePhysics(const float delta);
 
-		// Check if chunk loader needs to be updated
+		// Updates chunk map
 		void updateChunks();
+
+		// Updates player's raycast to world
 		void updatePlayerRaycast();
+
+		// Updates player's third person view camera collision
 		void updatePlayerCameraCollision();
 
+		// Opens world map
 		void openWorldMap();
+
+		// Closes world map
 		void closeWorldMap();
 
 		// Replace player to highest y 
@@ -185,21 +232,22 @@ namespace Voxel
 		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();
 
+		/**
+		*	Toggles cursor mode. 
+		*	If cursor is enabled, some other inputs won't work, such as player movement or rotation.
+		*	@param mode Cursor mode to set. true to enable, false to disable.
+		*/
 		void toggleCursorMode(const bool mode);
 	public:
+		// Constructor
 		Game();
+
+		// Destructor
 		~Game();
 
 		// create new. 
 		void createNew(const std::string& worldName);
-		// load from existing save
-		void load(const std::string& worldPath);
-
-		World* getWorld();
-
-		// input handler instance
-		InputHandler* input;
-
+		
 		// teleport player
 		void teleportPlayer(const glm::vec3& position);
 
@@ -208,6 +256,7 @@ namespace Voxel
 
 		// refresh chunk map. Release all meshes and rebuild mesh only.
 		void refreshChunkMap();
+
 		// wipe out entire chunk map and re construct the chunk map
 		void rebuildChunkMap();
 
@@ -220,13 +269,41 @@ namespace Voxel
 		*/
 		void setFogEnabled(const bool enabled);
 
+		/**
+		*	Root function for all rendering
+		*	@param delta Elapsed time on current frame.
+		*/
 		void render(const float delta);
-		void renderGame(const float delta);
-		void renderWorld(const float delta);
-		void renderWorldMap(const float delta);
-		void renderLoadingScreen(const float delta);
-		void renderUI();
 
+		/**
+		*	Renders game based on game state
+		*	@param delta Elapsed time on current frame.
+		*/
+		void renderGame(const float delta);
+
+		/**
+		*	Renders the world. Chunk map, player, etc.
+		*	@param delta Elapsed time on current frame.
+		*/
+		void renderWorld(const float delta);
+
+		/**
+		*	Renders world map
+		*	@param delta Elapsed time on current frame.
+		*/
+		void renderWorldMap(const float delta);
+
+		/**
+		*	Renders loading screen
+		*	@param delta Elapsed time on current frame.
+		*/
+		void renderLoadingScreen(const float delta);
+
+		/**
+		*	Renders UI
+		*	@param delta Elapsed time on current frame.
+		*/
+		void renderUI();
 
 #if V_DEBUG
 #if V_DEBUG_CONSOLE

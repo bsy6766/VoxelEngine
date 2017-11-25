@@ -335,11 +335,6 @@ void Voxel::Game::createNew(const std::string & worldName)
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-World * Voxel::Game::getWorld()
-{
-	return world;
-}
-
 void Game::createPlayer()
 {
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
@@ -351,13 +346,8 @@ void Game::createPlayer()
 	// Update matrix
 	player->updateViewMatrix();
 	// Based on player's matrix, update frustum
-	Camera::mainCamera->getFrustum()->update(player->getViewMatrix() * player->getWorldMatrix());
+	Camera::mainCamera->getFrustum()->updateFrustumPlanes(player->getViewMatrix() * player->getWorldMatrix());
 	Camera::mainCamera->setSpeed(100.0f);
-
-	// for debug
-	//player->initYLine();
-	player->initRayLine(); 
-	player->initBoundingBoxLine();
 }
 
 void Game::createChunkMap()
@@ -550,7 +540,7 @@ void Game::update(const float delta)
 		player->updateMovement(delta);
 
 		// First check visible chunk
-		Camera::mainCamera->getFrustum()->update(player->getViewMatrix() * player->getWorldMatrix());
+		Camera::mainCamera->getFrustum()->updateFrustumPlanes(player->getViewMatrix() * player->getWorldMatrix());
 
 		// After updating frustum, run frustum culling to find visible chunk
 		int totalVisible = chunkMap->findVisibleChunk(settingPtr->getRenderDistance());
@@ -1818,10 +1808,12 @@ void Voxel::Game::renderWorld(const float delta)
 		chunkMap->renderBlockOutline(lineProgram, player->getLookingBlock()->getWorldPosition() - player->getPosition());
 	}
 
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//glDepthFunc(GL_ALWAYS);
 	// Render voronoi diagram
 	//world->renderVoronoi(lineProgram);
+#endif
 
 	// --------------------------------------------------------------------------------------
 }
@@ -1829,15 +1821,13 @@ void Voxel::Game::renderWorld(const float delta)
 void Voxel::Game::renderWorldMap(const float delta)
 {
 	// ---------------------------- Render world Map ----------------------------------------
-	glm::mat4 viewMat = glm::mat4(1.0f);
+	glm::mat4 viewMat = worldMap->getViewMatrix();
 
 #if V_DEBUG && V_DEBUG_CAMERA_MODE
 	if (cameraMode)
 	{
 		viewMat = Camera::mainCamera->getViewMat();
 	}
-#else
-	viewMat = worldMap->getViewMatrix();
 #endif
 
 	worldMap->updateWithCamViewMatrix(viewMat);
@@ -1923,6 +1913,6 @@ void Voxel::Game::releaseDebugConsole()
 void Voxel::Game::renderDebugConsole()
 {
 	debugConsole->render();
-	debugConsole->updateDrawCallsAndVerticesSize();
+	//debugConsole->updateDrawCallsAndVerticesSize();
 }
 #endif

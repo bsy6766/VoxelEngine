@@ -37,12 +37,8 @@ namespace Voxel
 
 		void init(const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		bool init(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap);
+
 		bool initEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		bool initWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		bool initWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
-		bool initWithValues(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap);
-		bool initWithColor(const int x, const int y, const int z, const glm::vec3& chunkPosition, const glm::uvec3& color);
-		bool initWithRegionColor(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& blockRegion);
 	public:
 		~ChunkSection();
 
@@ -50,14 +46,6 @@ namespace Voxel
 		static ChunkSection* create(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& regionMap, const std::vector<std::vector<int>>& heightMap, const std::vector<std::vector<float>>& colorMap);
 		// Creates chunk section. Blocks are empty.
 		static ChunkSection* createEmpty(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		static ChunkSection* createWithFill(const int x, const int y, const int z, const glm::vec3& chunkPosition);
-		// Creates chunk section. Uses height map to fill blocks.
-		static ChunkSection* createWithHeightMap(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& heightMap);
-		// Creates chunk section. Uses height map for terrain. Uses temperature and moisture map for biome.
-		static ChunkSection* createWithValues(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<std::vector<float>>& eMap, const std::vector<std::vector<float>>& tMap, const std::vector<std::vector<float>>& mMap);
-		// Creates chunk section. Fill entire section with block as default creation, but with color
-		static ChunkSection* createWithColor(const int x, const int y, const int z, const glm::vec3& chunkPosition, const glm::uvec3& color);
-		static ChunkSection* createWithRegionColor(const int x, const int y, const int z, const glm::vec3& chunkPosition, const std::vector<unsigned int>& blockRegion);
 
 		// x,y,z must be local
 		Block* getBlockAt(const int x, const int y, const int z);

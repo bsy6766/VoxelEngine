@@ -968,19 +968,6 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvas
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-
-	// For debug
-	auto glView = Application::getInstance().getGLView();
-
-	if (glView->doesCountDrawCalls())
-	{
-		glView->incrementDrawCall();
-	}
-
-	if (glView->doesCountVerticesSize())
-	{
-		glView->addVerticesSize(indicesSize);
-	}
 }
 
 
@@ -1054,19 +1041,6 @@ void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canva
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	//glBindVertexArray(0);
-
-	// For debug
-	auto glView = Application::getInstance().getGLView();
-
-	if (glView->doesCountDrawCalls())
-	{
-		glView->incrementDrawCall();
-	}
-
-	if (glView->doesCountVerticesSize())
-	{
-		glView->addVerticesSize(6);
-	}
 }
 
 bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
@@ -1461,19 +1435,6 @@ void Voxel::UI::Cursor::render()
 
 			glBindVertexArray(vao);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-			// For debug
-			auto glView = Application::getInstance().getGLView();
-
-			if (glView->doesCountDrawCalls())
-			{
-				glView->incrementDrawCall();
-			}
-
-			if (glView->doesCountVerticesSize())
-			{
-				glView->addVerticesSize(6);
-			}
 		}
 	}
 }

@@ -775,7 +775,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "rebuild" || arg1 == "rb")
 					{
 						game->rebuildWorld();
-						executedCommandHistory.push_back("Refreshing chunk map");
+						executedCommandHistory.push_back("Rebuilding world");
 						addCommandHistory(command);
 						return true;
 					}
@@ -799,6 +799,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 				}
 				else if (size == 4)
 				{
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
 					auto arg1 = split.at(1);
 					auto arg2 = split.at(2);
 					bool mode = split.at(3) == "true" ? true : false;
@@ -819,6 +820,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							return true;
 						}
 					}
+#endif
 				}
 			}
 			else if (commandStr == "chunkmap" || commandStr == "cm")
@@ -1726,6 +1728,7 @@ void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 	this->regionID->setText("region: " + std::to_string(regionID));
 }
 
+/*
 void Voxel::DebugConsole::updateDrawCallsAndVerticesSize()
 {
 	auto glView = Application::getInstance().getGLView();
@@ -1735,3 +1738,4 @@ void Voxel::DebugConsole::updateDrawCallsAndVerticesSize()
 		drawCallAndVertCount->setText("Draw calls: " + std::to_string(glView->getTotalDrawCalls()) + ", Vertices: " + std::to_string(glView->getTotalVerticesSize()));
 	}
 }
+*/

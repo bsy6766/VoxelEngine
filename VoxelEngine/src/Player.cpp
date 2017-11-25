@@ -41,16 +41,23 @@ Player::Player()
 	, xzVelocity(0)
 	, xzAcceleration(glm::vec2(0.05f, 0.05f))
 	, xzElapsedTime(0)
-	// Debug
+#if V_DEBUG
+#if V_DEBUG_PLAYER_DIR_LINE
 	, yLineVao(0)
 	, rayVao(0)
+#endif
+#if V_DEBUG_PLAYER_BOUNDING_BOX
 	, boundingBoxVao(0)
+#endif
+#endif
 {
 
 }
 
 Player::~Player()
 {
+#if V_DEBUG
+#if V_DEBUG_PLAYER_DIR_LINE
 	if (yLineVao)
 	{
 		glDeleteVertexArrays(1, &yLineVao);
@@ -60,6 +67,14 @@ Player::~Player()
 	{
 		glDeleteVertexArrays(1, &rayVao);
 	}
+#endif
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+	if (boundingBoxVao)
+	{
+		glDeleteVertexArrays(1, &boundingBoxVao);
+	}
+#endif
+#endif
 }
 
 void Voxel::Player::init()
@@ -68,151 +83,16 @@ void Voxel::Player::init()
 	this->direction = glm::vec3(0, 0, -1);
 	// can reach up to 5 blocks from position
 	this->rayRange = 5.0f;
-}
 
-void Voxel::Player::initYLine()
-{
-	// Generate vertex array object
-	glGenVertexArrays(1, &yLineVao);
-	// Bind it
-	glBindVertexArray(yLineVao);
-
-	// Generate buffer object
-	GLuint yLineVbo;
-	glGenBuffers(1, &yLineVbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
-
-	GLfloat lines[] = {
-		0, -100.0f, 0, 1, 0, 0, 1,
-		0, 300.0f, 0, 1, 0, 0, 1,
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
-	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
-
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &yLineVbo);
-}
-
-void Voxel::Player::initRayLine()
-{
-	auto playerRayEnd = getRayEnd();
-	// Generate vertex array object
-	glGenVertexArrays(1, &rayVao);
-	// Bind it
-	glBindVertexArray(rayVao);
-
-	// Generate buffer object
-	GLuint rayVbo;
-	glGenBuffers(1, &rayVbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
-
-	GLfloat ray[] = {
-		0, 0, 0, 1, 0, 0, 1,
-		0, 0, -1 * rayRange, 1, 0, 0, 1,
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
-	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &rayVbo);
-}
-
-void Voxel::Player::initBoundingBoxLine()
-{	
-	// Generate vertex array object
-	glGenVertexArrays(1, &boundingBoxVao);
-	// Bind it
-	glBindVertexArray(boundingBoxVao);
-
-	// Generate buffer object
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	// Bind it
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	auto min = glm::vec3(-0.4f, 0, -0.4f);
-	auto max = glm::vec3(0.4f, 1.5f, 0.4f);
-
-	// color = yellow
-	GLfloat box[] = 
-	{
-		// bottom square
-		min.x, min.y, min.z, 0, 1, 1, 1,
-		max.x, min.y, min.z, 0, 1, 1, 1,
-		max.x, min.y, min.z, 0, 1, 1, 1,
-		max.x, min.y, max.z, 0, 1, 1, 1,
-		max.x, min.y, max.z, 0, 1, 1, 1,
-		min.x, min.y, max.z, 0, 1, 1, 1,
-		min.x, min.y, max.z, 0, 1, 1, 1,
-		min.x, min.y, min.z, 0, 1, 1, 1,
-		
-		// top square
-		min.x, max.y, min.z, 0, 1, 1, 1,
-		max.x, max.y, min.z, 0, 1, 1, 1,
-		max.x, max.y, min.z, 0, 1, 1, 1,
-		max.x, max.y, max.z, 0, 1, 1, 1,
-		max.x, max.y, max.z, 0, 1, 1, 1,
-		min.x, max.y, max.z, 0, 1, 1, 1,
-		min.x, max.y, max.z, 0, 1, 1, 1,
-		min.x, max.y, min.z, 0, 1, 1, 1,
-
-		// 4 vertical lines
-		min.x, min.y, min.z, 0, 1, 1, 1,
-		min.x, max.y, min.z, 0, 1, 1, 1,
-		max.x, min.y, min.z, 0, 1, 1, 1,
-		max.x, max.y, min.z, 0, 1, 1, 1,
-		min.x, min.y, max.z, 0, 1, 1, 1,
-		min.x, max.y, max.z, 0, 1, 1, 1,
-		max.x, min.y, max.z, 0, 1, 1, 1,
-		max.x, max.y, max.z, 0, 1, 1, 1,
-	};
-
-	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-
-	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-	GLint colorLoc = program->getAttribLocation("color");
-
-	// vert
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-	// color
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7* sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &vbo);
+#if V_DEBUG
+#if V_DEBUG_PLAYER_DIR_LINE
+	initYLine();
+	initRayLine();
+#endif
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+	initBoundingBoxLine();
+#endif
+#endif
 }
 
 void Player::moveFoward(const float delta)
@@ -853,71 +733,6 @@ void Voxel::Player::updateCameraDistanceZ(const float delta)
 	//std::cout << "cameraDistanceTargetZ = " << cameraDistanceTargetZ << "\n";
 }
 
-void Voxel::Player::renderDebugLines(Program* lineProgram)
-{
-	// For debug
-	auto glView = Application::getInstance().getGLView();
-
-	if (yLineVao)
-	{
-		glBindVertexArray(yLineVao);
-
-		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
-		glDrawArrays(GL_LINES, 0, 2);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(1);
-		}
-	}
-
-	if (rayVao)
-	{
-		glBindVertexArray(rayVao);
-
-		glm::mat4 rayMat = mat4(1.0f);
-		rayMat = glm::translate(rayMat, glm::vec3(0.0f, Player::EyeHeight, 0.0f));
-		rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
-
-		lineProgram->setUniformMat4("modelMat", rayMat);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(1);
-		}
-	}
-
-	if (boundingBoxVao)
-	{
-		glBindVertexArray(boundingBoxVao);
-		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
-		glDrawArrays(GL_LINES, 0, 24);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(12);
-		}
-	}
-}
-
 glm::vec3 Player::getPosition()
 {
 	return position;
@@ -948,8 +763,8 @@ void Voxel::Player::setResolvedNextPosition(const glm::vec3 & resolvedNextPositi
 	/*
 	if (moved)
 	{
-		float y = glm::abs(resolvedNextPosition.y - position.y);
-		cameraY += y;
+	float y = glm::abs(resolvedNextPosition.y - position.y);
+	cameraY += y;
 	}
 	*/
 	this->nextPosition = resolvedNextPosition;
@@ -986,7 +801,7 @@ void Voxel::Player::addRotationX(const float x)
 	rotationTarget.x += x * rotationSpeed;
 	wrapNextAngleX();
 }
-	
+
 void Voxel::Player::addRotationY(const float y)
 {
 	rotationTarget.y += y * rotationSpeed;
@@ -1071,5 +886,219 @@ void Voxel::Player::setRotation(const glm::vec3 & newRotation, const bool smooth
 
 glm::vec3 Voxel::Player::getRotation()
 {
-	return rotation; 
+	return rotation;
 }
+
+#if V_DEBUG
+void Voxel::Player::renderDebugLines(Program* lineProgram)
+{
+	int vertSize = 0;
+	int drawCall = 0;
+
+#if V_DEBUG_PLAYER_DIR_LINE
+	if (yLineVao)
+	{
+		glBindVertexArray(yLineVao);
+
+		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		glDrawArrays(GL_LINES, 0, 2);
+
+		drawCall++;
+		vertSize++;
+	}
+
+	if (rayVao)
+	{
+		glBindVertexArray(rayVao);
+
+		glm::mat4 rayMat = mat4(1.0f);
+		rayMat = glm::translate(rayMat, glm::vec3(0.0f, Player::EyeHeight, 0.0f));
+		rayMat = glm::rotate(rayMat, glm::radians(-rotation.y), glm::vec3(0, 1, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
+
+		lineProgram->setUniformMat4("modelMat", rayMat);
+		glDrawArrays(GL_LINES, 0, 2);
+
+		drawCall++;
+		vertSize++;
+	}
+#endif
+
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+	if (boundingBoxVao)
+	{
+		glBindVertexArray(boundingBoxVao);
+		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		glDrawArrays(GL_LINES, 0, 24);
+
+		drawCall++;
+		vertSize += 12;
+	}
+#endif
+
+	auto glView = Application::getInstance().getGLView();
+#if V_DEBUG_COUNT_DRAW_CALLS
+	if (glView->doesCountDrawCalls())
+	{
+		for(int i = 0; i < drawCall; i++)
+			glView->incrementDrawCall();
+	}
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
+	if (glView->doesCountVerticesSize())
+	{
+		glView->addVerticesSize(vertSize);
+	}
+#endif
+}
+
+#if V_DEBUG_PLAYER_DIR_LINE
+void Voxel::Player::initYLine()
+{
+	// Generate vertex array object
+	glGenVertexArrays(1, &yLineVao);
+	// Bind it
+	glBindVertexArray(yLineVao);
+
+	// Generate buffer object
+	GLuint yLineVbo;
+	glGenBuffers(1, &yLineVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, yLineVbo);
+
+	GLfloat lines[] = {
+		0, -100.0f, 0, 1, 0, 0, 1,
+		0, 300.0f, 0, 1, 0, 0, 1,
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &yLineVbo);
+}
+
+void Voxel::Player::initRayLine()
+{
+	auto playerRayEnd = getRayEnd();
+	// Generate vertex array object
+	glGenVertexArrays(1, &rayVao);
+	// Bind it
+	glBindVertexArray(rayVao);
+
+	// Generate buffer object
+	GLuint rayVbo;
+	glGenBuffers(1, &rayVbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, rayVbo);
+
+	GLfloat ray[] = {
+		0, 0, 0, 1, 0, 0, 1,
+		0, 0, -1 * rayRange, 1, 0, 0, 1,
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ray), ray, GL_STATIC_DRAW);
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &rayVbo);
+}
+#endif
+
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+void Voxel::Player::initBoundingBoxLine()
+{
+	// Generate vertex array object
+	glGenVertexArrays(1, &boundingBoxVao);
+	// Bind it
+	glBindVertexArray(boundingBoxVao);
+
+	// Generate buffer object
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	// Bind it
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	auto min = glm::vec3(-0.4f, 0, -0.4f);
+	auto max = glm::vec3(0.4f, 1.5f, 0.4f);
+
+	// color = yellow
+	GLfloat box[] =
+	{
+		// bottom square
+		min.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, min.y, min.z, 0, 1, 1, 1,
+
+		// top square
+		min.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, min.z, 0, 1, 1, 1,
+
+		// 4 vertical lines
+		min.x, min.y, min.z, 0, 1, 1, 1,
+		min.x, max.y, min.z, 0, 1, 1, 1,
+		max.x, min.y, min.z, 0, 1, 1, 1,
+		max.x, max.y, min.z, 0, 1, 1, 1,
+		min.x, min.y, max.z, 0, 1, 1, 1,
+		min.x, max.y, max.z, 0, 1, 1, 1,
+		max.x, min.y, max.z, 0, 1, 1, 1,
+		max.x, max.y, max.z, 0, 1, 1, 1,
+	};
+
+	// Load cube vertices
+	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
+
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+	GLint colorLoc = program->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+}
+#endif
+#endif

@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <Config.h>
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <Cube.h>
@@ -103,11 +104,6 @@ namespace Voxel
 		void wrapAngle();
 		void wrapAngleX();
 		void wrapNextAngleX();
-
-		// For debug
-		GLuint yLineVao;
-		GLuint rayVao;
-		GLuint boundingBoxVao;
 	public:
 		Player();
 		~Player();
@@ -242,6 +238,17 @@ namespace Voxel
 
 		bool isOnFPViewMode();
 		bool isOnTPViewMode();
+
+		// For debug
+#if V_DEBUG
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+		GLuint boundingBoxVao;
+#endif
+#if V_DEBUG_PLAYER_BOUNDING_BOX
+		GLuint yLineVao;
+		GLuint rayVao;
+#endif
+#endif
 	};
 }
 

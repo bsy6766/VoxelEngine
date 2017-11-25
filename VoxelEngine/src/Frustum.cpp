@@ -7,7 +7,6 @@
 #include <ProgramManager.h>
 #include <Program.h>
 #include <glm/gtx/transform.hpp>
-#include <Application.h>
 
 using namespace Voxel;
 
@@ -150,49 +149,45 @@ void Voxel::Frustum::updateProjection(const float fovy, const float aspect, cons
 	this->projection = glm::perspective(glm::radians(fovy), aspect, near, far);
 }
 
-void Frustum::update(const glm::mat4& playerVP)
-{    
-	auto MVP = projection * playerVP;
-	updateFrustumPlanes(MVP);
-}
-
-void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & MVP)
+void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & playerVP)
 {
+	glm::mat4 matrix = projection * playerVP;
+
 	// left
-	planes.at(FrustumPlane::Face::LEFT).normal.x = MVP[0][3] + MVP[0][0];
-	planes.at(FrustumPlane::Face::LEFT).normal.y = MVP[1][3] + MVP[1][0];
-	planes.at(FrustumPlane::Face::LEFT).normal.z = MVP[2][3] + MVP[2][0];
-	planes.at(FrustumPlane::Face::LEFT).distanceToOrigin = MVP[3][3] + MVP[3][0];
+	planes.at(FrustumPlane::Face::LEFT).normal.x = matrix[0][3] + matrix[0][0];
+	planes.at(FrustumPlane::Face::LEFT).normal.y = matrix[1][3] + matrix[1][0];
+	planes.at(FrustumPlane::Face::LEFT).normal.z = matrix[2][3] + matrix[2][0];
+	planes.at(FrustumPlane::Face::LEFT).distanceToOrigin = matrix[3][3] + matrix[3][0];
 
 	// right
-	planes.at(FrustumPlane::Face::RIGHT).normal.x = MVP[0][3] - MVP[0][0];
-	planes.at(FrustumPlane::Face::RIGHT).normal.y = MVP[1][3] - MVP[1][0];
-	planes.at(FrustumPlane::Face::RIGHT).normal.z = MVP[2][3] - MVP[2][0];
-	planes.at(FrustumPlane::Face::RIGHT).distanceToOrigin = MVP[3][3] - MVP[3][0];
+	planes.at(FrustumPlane::Face::RIGHT).normal.x = matrix[0][3] - matrix[0][0];
+	planes.at(FrustumPlane::Face::RIGHT).normal.y = matrix[1][3] - matrix[1][0];
+	planes.at(FrustumPlane::Face::RIGHT).normal.z = matrix[2][3] - matrix[2][0];
+	planes.at(FrustumPlane::Face::RIGHT).distanceToOrigin = matrix[3][3] - matrix[3][0];
 
 	// bottom
-	planes.at(FrustumPlane::Face::BOTTOM).normal.x = MVP[0][3] + MVP[0][1];
-	planes.at(FrustumPlane::Face::BOTTOM).normal.y = MVP[1][3] + MVP[1][1];
-	planes.at(FrustumPlane::Face::BOTTOM).normal.z = MVP[2][3] + MVP[2][1];
-	planes.at(FrustumPlane::Face::BOTTOM).distanceToOrigin = MVP[3][3] + MVP[3][1];
+	planes.at(FrustumPlane::Face::BOTTOM).normal.x = matrix[0][3] + matrix[0][1];
+	planes.at(FrustumPlane::Face::BOTTOM).normal.y = matrix[1][3] + matrix[1][1];
+	planes.at(FrustumPlane::Face::BOTTOM).normal.z = matrix[2][3] + matrix[2][1];
+	planes.at(FrustumPlane::Face::BOTTOM).distanceToOrigin = matrix[3][3] + matrix[3][1];
 
 	// top
-	planes.at(FrustumPlane::Face::TOP).normal.x = MVP[0][3] - MVP[0][1];
-	planes.at(FrustumPlane::Face::TOP).normal.y = MVP[1][3] - MVP[1][1];
-	planes.at(FrustumPlane::Face::TOP).normal.z = MVP[2][3] - MVP[2][1];
-	planes.at(FrustumPlane::Face::TOP).distanceToOrigin = MVP[3][3] - MVP[3][1];
+	planes.at(FrustumPlane::Face::TOP).normal.x = matrix[0][3] - matrix[0][1];
+	planes.at(FrustumPlane::Face::TOP).normal.y = matrix[1][3] - matrix[1][1];
+	planes.at(FrustumPlane::Face::TOP).normal.z = matrix[2][3] - matrix[2][1];
+	planes.at(FrustumPlane::Face::TOP).distanceToOrigin = matrix[3][3] - matrix[3][1];
 
 	// near
-	planes.at(FrustumPlane::Face::NEAR).normal.x = MVP[0][3] + MVP[0][2];
-	planes.at(FrustumPlane::Face::NEAR).normal.y = MVP[1][3] + MVP[1][2];
-	planes.at(FrustumPlane::Face::NEAR).normal.z = MVP[2][3] + MVP[2][2];
-	planes.at(FrustumPlane::Face::NEAR).distanceToOrigin = MVP[3][3] + MVP[3][2];
+	planes.at(FrustumPlane::Face::NEAR).normal.x = matrix[0][3] + matrix[0][2];
+	planes.at(FrustumPlane::Face::NEAR).normal.y = matrix[1][3] + matrix[1][2];
+	planes.at(FrustumPlane::Face::NEAR).normal.z = matrix[2][3] + matrix[2][2];
+	planes.at(FrustumPlane::Face::NEAR).distanceToOrigin = matrix[3][3] + matrix[3][2];
 
 	// far
-	planes.at(FrustumPlane::Face::FAR).normal.x = MVP[0][3] - MVP[0][2];
-	planes.at(FrustumPlane::Face::FAR).normal.y = MVP[1][3] - MVP[1][2];
-	planes.at(FrustumPlane::Face::FAR).normal.z = MVP[2][3] - MVP[2][2];
-	planes.at(FrustumPlane::Face::FAR).distanceToOrigin = MVP[3][3] - MVP[3][2];
+	planes.at(FrustumPlane::Face::FAR).normal.x = matrix[0][3] - matrix[0][2];
+	planes.at(FrustumPlane::Face::FAR).normal.y = matrix[1][3] - matrix[1][2];
+	planes.at(FrustumPlane::Face::FAR).normal.z = matrix[2][3] - matrix[2][2];
+	planes.at(FrustumPlane::Face::FAR).distanceToOrigin = matrix[3][3] - matrix[3][2];
 
 	for (auto& plane : planes)
 	{
@@ -356,18 +351,5 @@ void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
 
 		glBindVertexArray(vao);
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-
-		// For debug
-		auto glView = Application::getInstance().getGLView();
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(12);
-		}
 	}
 }

@@ -67,6 +67,39 @@ Cell * Voxel::Voronoi::Edge::getCoOwner()
 	return coOwner;
 }
 
+
+
+
+
+Voxel::Voronoi::Site::Site(const glm::vec2 & position, const Type type)
+	: position(position)
+	, type(type)
+{}
+
+glm::vec2 Voxel::Voronoi::Site::getPosition()
+{
+	return position;
+}
+
+Site::Type Voxel::Voronoi::Site::getType()
+{
+	return type;
+}
+
+void Voxel::Voronoi::Site::updateType(const Type type)
+{
+	this->type = type;
+}
+
+bool Voxel::Voronoi::Site::isBorder()
+{
+	return type == Voxel::Voronoi::Site::Type::BORDER;
+}
+
+
+
+
+
 Voxel::Voronoi::Cell::Cell(const unsigned int ID)
 	: ID(ID)
 	, site(nullptr)
@@ -189,7 +222,10 @@ bool Voxel::Voronoi::Cell::isSiteBorder()
 
 
 Voxel::Voronoi::Diagram::Diagram()
-	: vao(0)
+	: minBound(0)
+	, maxBound(0)
+	, totalValidCells(0)
+#if V_DEBUG && V_DEBUG_VORONOI_LINE vao(0)
 	, size(0)
 	, fillVao(0)
 	, fillSize(0)
@@ -199,11 +235,9 @@ Voxel::Voronoi::Diagram::Diagram()
 	, posPinSize(0)
 	, graphLineVao(0)
 	, graphLineSize(0)
-	, minBound(0)
-	, maxBound(0)
-	, totalValidCells(0)
-	, scale(1.0f)
-	, debugScale(1.0f)
+	, debugSizeScale(1.0f)
+	, debugLineScale(1.0f)
+#endif
 {}
 
 Voxel::Voronoi::Diagram::~Diagram()
@@ -218,6 +252,7 @@ Voxel::Voronoi::Diagram::~Diagram()
 
 	cells.clear();
 
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
 	if (vao)
 	{
 		glDeleteVertexArrays(1, &vao);
@@ -242,6 +277,7 @@ Voxel::Voronoi::Diagram::~Diagram()
 	{
 		glDeleteVertexArrays(1, &graphLineVao);
 	}
+#endif
 }
 
 void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, const float minBound, const float maxBound)
@@ -252,19 +288,28 @@ void Voxel::Voronoi::Diagram::construct(const std::vector<Site>& randomSites, co
 	// Convert glm::vec2 to boost polygon points
 	std::vector<boost::polygon::point_data<int>> points;
 
-	this->scale = 1.0f;
-	this->debugScale = 0.05f;
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+	this->debugSizeScale = 1.0f;
+	this->debugLineScale = 0.05f;
+
+	// save bound
+	this->minBound = minBound * this->debugSizeScale;
+	this->maxBound = maxBound * this->debugSizeScale;
+#else
+	// save bound
+	this->minBound = minBound;
+	this->maxBound = maxBound;
+#endif
 
 	sitePositions.clear();
 	siteTypes.clear();
 
-	// save bound
-	this->minBound = minBound * this->scale;
-	this->maxBound = maxBound * this->scale;
-
 	for (auto site : randomSites)
 	{
-		auto pos = site.getPosition() * scale;
+		glm::vec2 pos = site.getPosition();
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+		pos *= debugSizeScale;
+#endif
 
 		sitePositions.push_back(pos);
 		siteTypes.push_back(site.getType());
@@ -674,520 +719,6 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l, std::mt19
 	std::cout << "Total valid cell count: " << totalValidCells << std::endl;
 }
 
-void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border)
-{
-	std::vector<float> buffer;
-	std::vector<float> posBuffer;
-	std::vector<float> graphBuffer;
-	std::vector<float> fillBuffer;
-	std::vector<float> fillColor;
-	std::vector<unsigned int> fillIndices;
-
-	auto lineColor = glm::vec3(0);
-	auto sharedLineColor = glm::vec3(1, 1, 0);
-	auto graphColor = glm::vec3(0.5f, 0.6f, 0.7f);
-
-	const float y = 32.0f;
-
-	unsigned int index = 0;
-	GLuint PRIMITIVE_RESTART = 99999;
-	glEnable(GL_PRIMITIVE_RESTART);
-	glPrimitiveRestartIndex(PRIMITIVE_RESTART);
-
-	// Build edges and graph (delaunay triangulation)
-	for (auto&c : cells)
-	{
-		bool addPolygon = false;
-
-		auto region = (c.second)->getRegion();
-		auto difficulty = region->getDifficulty();
-
-		auto difficultyColor = Color::colorU3TocolorV3(Color::getDifficultyColor(difficulty));
-
-		auto& edges = (c.second)->getEdges();
-		for (auto e : edges)
-		{
-			glm::vec2 e0 = e->getStart();
-			glm::vec2 e1 = e->getEnd();
-
-			auto type = (c.second)->getSiteType();
-
-			if (type == Site::Type::MARKED)
-			{
-				if (sharedEdges)
-				{
-					auto coOwner = e->getCoOwner();
-					if (coOwner)
-					{
-						if (coOwner->getSiteType() == Site::Type::MARKED)
-						{
-							buffer.push_back(e0.x * debugScale);
-							buffer.push_back(y);
-							buffer.push_back(e0.y * debugScale);
-							buffer.push_back(sharedLineColor.r);
-							buffer.push_back(sharedLineColor.g);
-							buffer.push_back(sharedLineColor.b);
-							buffer.push_back(1.0f);
-
-							buffer.push_back(e1.x * debugScale);
-							buffer.push_back(y);
-							buffer.push_back(e1.y * debugScale);
-							buffer.push_back(sharedLineColor.r);
-							buffer.push_back(sharedLineColor.g);
-							buffer.push_back(sharedLineColor.b);
-							buffer.push_back(1.0f);
-						}
-						else
-						{
-							buffer.push_back(e0.x * debugScale);
-							buffer.push_back(y);
-							buffer.push_back(e0.y * debugScale);
-							buffer.push_back(lineColor.r);
-							buffer.push_back(lineColor.g);
-							buffer.push_back(lineColor.b);
-							buffer.push_back(1.0f);
-
-							buffer.push_back(e1.x * debugScale);
-							buffer.push_back(y);
-							buffer.push_back(e1.y * debugScale);
-							buffer.push_back(lineColor.r);
-							buffer.push_back(lineColor.g);
-							buffer.push_back(lineColor.b);
-							buffer.push_back(1.0f);
-						}
-					}
-				}
-
-				if (fill)
-				{
-					fillBuffer.push_back(e0.x * debugScale);
-					fillBuffer.push_back(y);
-					fillBuffer.push_back(e0.y * debugScale);
-
-					fillColor.push_back(difficultyColor.r);
-					fillColor.push_back(difficultyColor.g);
-					fillColor.push_back(difficultyColor.b);
-					fillColor.push_back(0.8f);
-
-					/*
-					fillBuffer.push_back(e1.x * debugScale);
-					fillBuffer.push_back(y);
-					fillBuffer.push_back(e1.y * debugScale);
-
-					fillColor.push_back(difficultyColor.r);
-					fillColor.push_back(difficultyColor.g);
-					fillColor.push_back(difficultyColor.b);
-					fillColor.push_back(0.8f);
-					*/
-
-					addPolygon = true;
-
-					for (int i = 0; i < 1; i++)
-					{
-						fillIndices.push_back((index * 1) + i);
-					}
-					index++;
-				}
-			}
-			else
-			{
-				if (omittedCells)
-				{
-					if (type == Site::Type::OMITTED)
-					{
-						auto coOwner = e->getCoOwner();
-						if (coOwner)
-						{
-							if (coOwner->getSiteType() == Site::Type::BORDER)
-							{
-								buffer.push_back(e0.x * debugScale);
-								buffer.push_back(y);
-								buffer.push_back(e0.y * debugScale);
-								buffer.push_back(0.5f);
-								buffer.push_back(0.5f);
-								buffer.push_back(0.5f);
-								buffer.push_back(1.0f);
-
-								buffer.push_back(e1.x * debugScale);
-								buffer.push_back(y);
-								buffer.push_back(e1.y * debugScale);
-								buffer.push_back(0.5f);
-								buffer.push_back(0.5f);
-								buffer.push_back(0.5f);
-								buffer.push_back(1.0f);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if(addPolygon)
-		{
-			fillIndices.push_back(PRIMITIVE_RESTART);
-		}
-
-		if (graph)
-		{
-			auto& neighbors = (c.second)->getNeighbors();
-			auto pos = (c.second)->getSitePosition();
-
-			for (auto nc : neighbors)
-			{
-				auto nPos = nc->getSitePosition();
-				graphBuffer.push_back(pos.x * debugScale);
-				graphBuffer.push_back(y + 0.5f);
-				graphBuffer.push_back(pos.y * debugScale);
-				graphBuffer.push_back(graphColor.r);
-				graphBuffer.push_back(graphColor.g);
-				graphBuffer.push_back(graphColor.b);
-				graphBuffer.push_back(1.0f);
-
-				graphBuffer.push_back(nPos.x * debugScale);
-				graphBuffer.push_back(y + 0.5f);
-				graphBuffer.push_back(nPos.y * debugScale);
-				graphBuffer.push_back(graphColor.r);
-				graphBuffer.push_back(graphColor.g);
-				graphBuffer.push_back(graphColor.b);
-				graphBuffer.push_back(1.0f);
-			}
-		}
-	}
-
-	if (fill)
-	{
-		fillIndices.pop_back();
-	}
-
-	if (infiniteEdges)
-	{
-		// Draw infinite edges for debug .
-		auto vdEdges = vd.edges();
-		for (auto& e : vdEdges)
-		{
-			if (e.is_secondary()) continue;
-
-			if (e.is_linear())
-			{
-				if (e.is_infinite())
-				{
-					glm::vec2 e0, e1;
-					clipInfiniteEdge(e, e0, e1, maxBound);
-
-					buffer.push_back(e0.x * debugScale);
-					buffer.push_back(y + 0.5f);
-					buffer.push_back(e0.y * debugScale);
-					buffer.push_back(0.0f);
-					buffer.push_back(0.0f);
-					buffer.push_back(1.0f);
-					buffer.push_back(1.0f);
-
-					buffer.push_back(e1.x * debugScale);
-					buffer.push_back(y + 0.5f);
-					buffer.push_back(e1.y * debugScale);
-					buffer.push_back(0.0f);
-					buffer.push_back(0.0f);
-					buffer.push_back(1.0f);
-					buffer.push_back(1.0f);
-				}
-			}
-		}
-	}
-
-	if (posPin)
-	{
-		for (auto& c : cells)
-		{
-			auto pos = (c.second)->getSitePosition();
-			if ((c.second)->isValid())
-			{
-				auto type = (c.second)->getSiteType();
-
-				glm::vec3 color;
-				if (type == Site::Type::MARKED)
-				{
-					color = glm::vec3(0.0f, 1.0f, 0.0f);
-				}
-				else if (type == Site::Type::OMITTED)
-				{
-					color = glm::vec3(1.0f, 0.5f, 0.0f);
-				}
-				else
-				{
-					color = glm::vec3(1.0f);
-				}
-
-				auto difficulty = (c.second)->getRegion()->getDifficulty();
-
-				float yPad = 1.0f;
-				if (difficulty == 0)
-				{
-					yPad = 3.0f;
-					color = glm::vec3(0.5f, 1.0f, 0.0f);
-				}
-
-				posBuffer.push_back(pos.x * debugScale);
-				posBuffer.push_back(y + yPad);
-				posBuffer.push_back(pos.y * debugScale);
-				posBuffer.push_back(color.r);
-				posBuffer.push_back(color.g);
-				posBuffer.push_back(color.b);
-				posBuffer.push_back(1.0f);
-
-				posBuffer.push_back(pos.x * debugScale);
-				posBuffer.push_back(y - yPad);
-				posBuffer.push_back(pos.y * debugScale);
-				posBuffer.push_back(color.r);
-				posBuffer.push_back(color.g);
-				posBuffer.push_back(color.b);
-				posBuffer.push_back(1.0f);
-			}
-			else
-			{
-				posBuffer.push_back(pos.x * debugScale);
-				posBuffer.push_back(y + 1.0f);
-				posBuffer.push_back(pos.y * debugScale);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(1.0f);
-
-				posBuffer.push_back(pos.x * debugScale);
-				posBuffer.push_back(y - 1.0f);
-				posBuffer.push_back(pos.y * debugScale);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(0.3f);
-				posBuffer.push_back(1.0f);
-
-			}
-		}
-	}
-
-	// Enable vertices attrib
-	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
-	GLint vertLoc = defaultProgram->getAttribLocation("vert");
-	GLint colorLoc = defaultProgram->getAttribLocation("color");
-
-	if (sharedEdges)
-	{
-		// draw 
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		GLuint vbo;
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buffer.size(), &buffer.front(), GL_STATIC_DRAW);
-
-		// vert
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-		// color
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &vbo);
-
-		size = buffer.size() / 7;
-	}
-
-	if (fill)
-	{
-		glGenVertexArrays(1, &fillVao);
-		glBindVertexArray(fillVao);
-
-		GLuint fillVbo;
-		glGenBuffers(1, &fillVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, fillVbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillBuffer.size(), &fillBuffer.front(), GL_STATIC_DRAW);
-
-		// vert
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		GLuint fillColorVbo;
-		glGenBuffers(1, &fillColorVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, fillColorVbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillColor.size(), &fillColor.front(), GL_STATIC_DRAW);
-
-		// color
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		GLuint fillIbo;
-		glGenBuffers(1, &fillIbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fillIbo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * fillIndices.size(), &fillIndices.front(), GL_STATIC_DRAW);
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &fillVbo);
-		glDeleteBuffers(1, &fillColorVbo);
-		glDeleteBuffers(1, &fillIbo);
-
-		fillSize = fillIndices.size();
-	}
-
-	if (border)
-	{
-		std::vector<float> borderBuffer;
-
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(minBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(y);
-		borderBuffer.push_back(maxBound * debugScale);
-		borderBuffer.push_back(1.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(0.0f);
-		borderBuffer.push_back(1.0f);
-
-		glGenVertexArrays(1, &borderVao);
-		glBindVertexArray(borderVao);
-
-		GLuint borderVbo;
-		glGenBuffers(1, &borderVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, borderVbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * borderBuffer.size(), &borderBuffer.front(), GL_STATIC_DRAW);
-
-		// vert
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-		// color
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &borderVbo);
-
-		borderSize = (borderBuffer.size() / 7);
-
-	}
-
-	if (posPin)
-	{
-		glGenVertexArrays(1, &posPinVao);
-		glBindVertexArray(posPinVao);
-
-		GLuint lineVbo;
-		glGenBuffers(1, &lineVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * posBuffer.size(), &posBuffer.front(), GL_STATIC_DRAW);
-
-		// vert
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-		// color
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &lineVbo);
-
-		posPinSize = (posBuffer.size() / 7);
-	}
-
-	if (graph)
-	{
-		// graph
-		glGenVertexArrays(1, &graphLineVao);
-		glBindVertexArray(graphLineVao);
-
-		GLuint graphVbo;
-		glGenBuffers(1, &graphVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, graphVbo);
-
-		// Load cube vertices
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * graphBuffer.size(), &graphBuffer.front(), GL_STATIC_DRAW);
-
-		// vert
-		glEnableVertexAttribArray(vertLoc);
-		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-		// color
-		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &graphVbo);
-
-		graphLineSize = graphBuffer.size() / 7;
-	}
-}
-
 std::map<unsigned int, Cell*>& Voxel::Voronoi::Diagram::getCells()
 {
 	return cells;
@@ -1496,14 +1027,25 @@ void Voxel::Voronoi::Diagram::makeSharedEdgesNoisy(std::mt19937& engine)
 						auto e0 = edge->getStart();
 						auto e1 = edge->getEnd();
 
-						if (glm::abs(glm::distance(e0, e1)) < (200.0f * this->scale))
+						float distanceThreshold = 200.0f;
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+						distanceThreshold *= this->debugSizeScale;
+#endif
+						if (glm::abs(glm::distance(e0, e1)) < distanceThreshold)
 						{
 							continue;
 						}
 
 						auto d = glm::abs(glm::distance(e0, e1));
 
-						int level = static_cast<int>(d / 150.0f * this->scale);
+						float levelThreadhold = 150.0f;
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+						levelThreadhold *= this->debugSizeScale;
+#endif
+
+						int level = static_cast<int>(d / levelThreadhold);
 
 						// mark as visited
 						visited.push_back(edgeData());
@@ -1749,42 +1291,534 @@ glm::vec2 Voxel::Voronoi::Diagram::retrivePoint(const CellType & cell)
 	return sitePositions[index];
 }
 
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+void Voxel::Voronoi::Diagram::initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border)
+{
+	std::vector<float> buffer;
+	std::vector<float> posBuffer;
+	std::vector<float> graphBuffer;
+	std::vector<float> fillBuffer;
+	std::vector<float> fillColor;
+	std::vector<unsigned int> fillIndices;
+
+	auto lineColor = glm::vec3(0);
+	auto sharedLineColor = glm::vec3(1, 1, 0);
+	auto graphColor = glm::vec3(0.5f, 0.6f, 0.7f);
+
+	const float y = 32.0f;
+
+	unsigned int index = 0;
+	GLuint PRIMITIVE_RESTART = 99999;
+	glEnable(GL_PRIMITIVE_RESTART);
+	glPrimitiveRestartIndex(PRIMITIVE_RESTART);
+
+	// Build edges and graph (delaunay triangulation)
+	for (auto&c : cells)
+	{
+		bool addPolygon = false;
+
+		auto region = (c.second)->getRegion();
+		auto difficulty = region->getDifficulty();
+
+		auto difficultyColor = Color::colorU3TocolorV3(Color::getDifficultyColor(difficulty));
+
+		auto& edges = (c.second)->getEdges();
+		for (auto e : edges)
+		{
+			glm::vec2 e0 = e->getStart();
+			glm::vec2 e1 = e->getEnd();
+
+			auto type = (c.second)->getSiteType();
+
+			if (type == Site::Type::MARKED)
+			{
+				if (sharedEdges)
+				{
+					auto coOwner = e->getCoOwner();
+					if (coOwner)
+					{
+						if (coOwner->getSiteType() == Site::Type::MARKED)
+						{
+							buffer.push_back(e0.x * debugLineScale);
+							buffer.push_back(y);
+							buffer.push_back(e0.y * debugLineScale);
+							buffer.push_back(sharedLineColor.r);
+							buffer.push_back(sharedLineColor.g);
+							buffer.push_back(sharedLineColor.b);
+							buffer.push_back(1.0f);
+
+							buffer.push_back(e1.x * debugLineScale);
+							buffer.push_back(y);
+							buffer.push_back(e1.y * debugLineScale);
+							buffer.push_back(sharedLineColor.r);
+							buffer.push_back(sharedLineColor.g);
+							buffer.push_back(sharedLineColor.b);
+							buffer.push_back(1.0f);
+						}
+						else
+						{
+							buffer.push_back(e0.x * debugLineScale);
+							buffer.push_back(y);
+							buffer.push_back(e0.y * debugLineScale);
+							buffer.push_back(lineColor.r);
+							buffer.push_back(lineColor.g);
+							buffer.push_back(lineColor.b);
+							buffer.push_back(1.0f);
+
+							buffer.push_back(e1.x * debugLineScale);
+							buffer.push_back(y);
+							buffer.push_back(e1.y * debugLineScale);
+							buffer.push_back(lineColor.r);
+							buffer.push_back(lineColor.g);
+							buffer.push_back(lineColor.b);
+							buffer.push_back(1.0f);
+						}
+					}
+				}
+
+				if (fill)
+				{
+					fillBuffer.push_back(e0.x * debugLineScale);
+					fillBuffer.push_back(y);
+					fillBuffer.push_back(e0.y * debugLineScale);
+
+					fillColor.push_back(difficultyColor.r);
+					fillColor.push_back(difficultyColor.g);
+					fillColor.push_back(difficultyColor.b);
+					fillColor.push_back(0.8f);
+
+					/*
+					fillBuffer.push_back(e1.x * debugScale);
+					fillBuffer.push_back(y);
+					fillBuffer.push_back(e1.y * debugScale);
+
+					fillColor.push_back(difficultyColor.r);
+					fillColor.push_back(difficultyColor.g);
+					fillColor.push_back(difficultyColor.b);
+					fillColor.push_back(0.8f);
+					*/
+
+					addPolygon = true;
+
+					for (int i = 0; i < 1; i++)
+					{
+						fillIndices.push_back((index * 1) + i);
+					}
+					index++;
+				}
+			}
+			else
+			{
+				if (omittedCells)
+				{
+					if (type == Site::Type::OMITTED)
+					{
+						auto coOwner = e->getCoOwner();
+						if (coOwner)
+						{
+							if (coOwner->getSiteType() == Site::Type::BORDER)
+							{
+								buffer.push_back(e0.x * debugLineScale);
+								buffer.push_back(y);
+								buffer.push_back(e0.y * debugLineScale);
+								buffer.push_back(0.5f);
+								buffer.push_back(0.5f);
+								buffer.push_back(0.5f);
+								buffer.push_back(1.0f);
+
+								buffer.push_back(e1.x * debugLineScale);
+								buffer.push_back(y);
+								buffer.push_back(e1.y * debugLineScale);
+								buffer.push_back(0.5f);
+								buffer.push_back(0.5f);
+								buffer.push_back(0.5f);
+								buffer.push_back(1.0f);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (addPolygon)
+		{
+			fillIndices.push_back(PRIMITIVE_RESTART);
+		}
+
+		if (graph)
+		{
+			auto& neighbors = (c.second)->getNeighbors();
+			auto pos = (c.second)->getSitePosition();
+
+			for (auto nc : neighbors)
+			{
+				auto nPos = nc->getSitePosition();
+				graphBuffer.push_back(pos.x * debugLineScale);
+				graphBuffer.push_back(y + 0.5f);
+				graphBuffer.push_back(pos.y * debugLineScale);
+				graphBuffer.push_back(graphColor.r);
+				graphBuffer.push_back(graphColor.g);
+				graphBuffer.push_back(graphColor.b);
+				graphBuffer.push_back(1.0f);
+
+				graphBuffer.push_back(nPos.x * debugLineScale);
+				graphBuffer.push_back(y + 0.5f);
+				graphBuffer.push_back(nPos.y * debugLineScale);
+				graphBuffer.push_back(graphColor.r);
+				graphBuffer.push_back(graphColor.g);
+				graphBuffer.push_back(graphColor.b);
+				graphBuffer.push_back(1.0f);
+			}
+		}
+	}
+
+	if (fill)
+	{
+		fillIndices.pop_back();
+	}
+
+	if (infiniteEdges)
+	{
+		// Draw infinite edges for debug .
+		auto vdEdges = vd.edges();
+		for (auto& e : vdEdges)
+		{
+			if (e.is_secondary()) continue;
+
+			if (e.is_linear())
+			{
+				if (e.is_infinite())
+				{
+					glm::vec2 e0, e1;
+					clipInfiniteEdge(e, e0, e1, maxBound);
+
+					buffer.push_back(e0.x * debugLineScale);
+					buffer.push_back(y + 0.5f);
+					buffer.push_back(e0.y * debugLineScale);
+					buffer.push_back(0.0f);
+					buffer.push_back(0.0f);
+					buffer.push_back(1.0f);
+					buffer.push_back(1.0f);
+
+					buffer.push_back(e1.x * debugLineScale);
+					buffer.push_back(y + 0.5f);
+					buffer.push_back(e1.y * debugLineScale);
+					buffer.push_back(0.0f);
+					buffer.push_back(0.0f);
+					buffer.push_back(1.0f);
+					buffer.push_back(1.0f);
+				}
+			}
+		}
+	}
+
+	if (posPin)
+	{
+		for (auto& c : cells)
+		{
+			auto pos = (c.second)->getSitePosition();
+			if ((c.second)->isValid())
+			{
+				auto type = (c.second)->getSiteType();
+
+				glm::vec3 color;
+				if (type == Site::Type::MARKED)
+				{
+					color = glm::vec3(0.0f, 1.0f, 0.0f);
+				}
+				else if (type == Site::Type::OMITTED)
+				{
+					color = glm::vec3(1.0f, 0.5f, 0.0f);
+				}
+				else
+				{
+					color = glm::vec3(1.0f);
+				}
+
+				auto difficulty = (c.second)->getRegion()->getDifficulty();
+
+				float yPad = 1.0f;
+				if (difficulty == 0)
+				{
+					yPad = 3.0f;
+					color = glm::vec3(0.5f, 1.0f, 0.0f);
+				}
+
+				posBuffer.push_back(pos.x * debugLineScale);
+				posBuffer.push_back(y + yPad);
+				posBuffer.push_back(pos.y * debugLineScale);
+				posBuffer.push_back(color.r);
+				posBuffer.push_back(color.g);
+				posBuffer.push_back(color.b);
+				posBuffer.push_back(1.0f);
+
+				posBuffer.push_back(pos.x * debugLineScale);
+				posBuffer.push_back(y - yPad);
+				posBuffer.push_back(pos.y * debugLineScale);
+				posBuffer.push_back(color.r);
+				posBuffer.push_back(color.g);
+				posBuffer.push_back(color.b);
+				posBuffer.push_back(1.0f);
+			}
+			else
+			{
+				posBuffer.push_back(pos.x * debugLineScale);
+				posBuffer.push_back(y + 1.0f);
+				posBuffer.push_back(pos.y * debugLineScale);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(1.0f);
+
+				posBuffer.push_back(pos.x * debugLineScale);
+				posBuffer.push_back(y - 1.0f);
+				posBuffer.push_back(pos.y * debugLineScale);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(0.3f);
+				posBuffer.push_back(1.0f);
+
+			}
+		}
+	}
+
+	// Enable vertices attrib
+	auto defaultProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	GLint vertLoc = defaultProgram->getAttribLocation("vert");
+	GLint colorLoc = defaultProgram->getAttribLocation("color");
+
+	if (sharedEdges)
+	{
+		// draw 
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		GLuint vbo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buffer.size(), &buffer.front(), GL_STATIC_DRAW);
+
+		// vert
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+		// color
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &vbo);
+
+		size = buffer.size() / 7;
+	}
+
+	if (fill)
+	{
+		glGenVertexArrays(1, &fillVao);
+		glBindVertexArray(fillVao);
+
+		GLuint fillVbo;
+		glGenBuffers(1, &fillVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, fillVbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillBuffer.size(), &fillBuffer.front(), GL_STATIC_DRAW);
+
+		// vert
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+		GLuint fillColorVbo;
+		glGenBuffers(1, &fillColorVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, fillColorVbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * fillColor.size(), &fillColor.front(), GL_STATIC_DRAW);
+
+		// color
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+		GLuint fillIbo;
+		glGenBuffers(1, &fillIbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fillIbo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * fillIndices.size(), &fillIndices.front(), GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &fillVbo);
+		glDeleteBuffers(1, &fillColorVbo);
+		glDeleteBuffers(1, &fillIbo);
+
+		fillSize = fillIndices.size();
+	}
+
+	if (border)
+	{
+		std::vector<float> borderBuffer;
+
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(minBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(y);
+		borderBuffer.push_back(maxBound * debugLineScale);
+		borderBuffer.push_back(1.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(0.0f);
+		borderBuffer.push_back(1.0f);
+
+		glGenVertexArrays(1, &borderVao);
+		glBindVertexArray(borderVao);
+
+		GLuint borderVbo;
+		glGenBuffers(1, &borderVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, borderVbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * borderBuffer.size(), &borderBuffer.front(), GL_STATIC_DRAW);
+
+		// vert
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+		// color
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &borderVbo);
+
+		borderSize = (borderBuffer.size() / 7);
+
+	}
+
+	if (posPin)
+	{
+		glGenVertexArrays(1, &posPinVao);
+		glBindVertexArray(posPinVao);
+
+		GLuint lineVbo;
+		glGenBuffers(1, &lineVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * posBuffer.size(), &posBuffer.front(), GL_STATIC_DRAW);
+
+		// vert
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+		// color
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &lineVbo);
+
+		posPinSize = (posBuffer.size() / 7);
+	}
+
+	if (graph)
+	{
+		// graph
+		glGenVertexArrays(1, &graphLineVao);
+		glBindVertexArray(graphLineVao);
+
+		GLuint graphVbo;
+		glGenBuffers(1, &graphVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, graphVbo);
+
+		// Load cube vertices
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * graphBuffer.size(), &graphBuffer.front(), GL_STATIC_DRAW);
+
+		// vert
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+		// color
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &graphVbo);
+
+		graphLineSize = graphBuffer.size() / 7;
+	}
+}
+
 void Voxel::Voronoi::Diagram::render()
 {
-	// For debug
-	auto glView = Application::getInstance().getGLView();
-
 	if (vao)
 	{
 		glBindVertexArray(vao);
 
 		glDrawArrays(GL_LINES, 0, size);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(size / 2);
-		}
 	}
 
 	if (fillVao)
 	{
 		glBindVertexArray(fillVao);
 		glDrawElements(GL_TRIANGLE_FAN, fillSize, GL_UNSIGNED_INT, 0);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(fillSize);
-		}
 	}
 
 	if (borderVao)
@@ -1792,16 +1826,6 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(borderVao);
 
 		glDrawArrays(GL_LINES, 0, borderSize);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(borderSize / 2);
-		}
 	}
 
 	if (posPinVao)
@@ -1809,16 +1833,6 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(posPinVao);
 
 		glDrawArrays(GL_LINES, 0, posPinSize);
-
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(posPinSize / 2);
-		}
 	}
 
 	if (graphLineVao)
@@ -1826,42 +1840,6 @@ void Voxel::Voronoi::Diagram::render()
 		glBindVertexArray(graphLineVao);
 
 		glDrawArrays(GL_LINES, 0, graphLineSize);
-		
-		if (glView->doesCountDrawCalls())
-		{
-			glView->incrementDrawCall();
-		}
-
-		if (glView->doesCountVerticesSize())
-		{
-			glView->addVerticesSize(graphLineSize / 2);
-		}
 	}
 }
-
-
-
-Voxel::Voronoi::Site::Site(const glm::vec2 & position, const Type type)
-	: position(position)
-	, type(type)
-{}
-
-glm::vec2 Voxel::Voronoi::Site::getPosition()
-{
-	return position;
-}
-
-Site::Type Voxel::Voronoi::Site::getType()
-{
-	return type;
-}
-
-void Voxel::Voronoi::Site::updateType(const Type type)
-{
-	this->type = type;
-}
-
-bool Voxel::Voronoi::Site::isBorder()
-{
-	return type == Voxel::Voronoi::Site::Type::BORDER;
-}
+#endif

@@ -1,5 +1,6 @@
 #include "ChunkMesh.h"
 
+#include <Config.h>
 #include <ProgramManager.h>
 #include <Program.h>
 #include <InputHandler.h>
@@ -168,18 +169,22 @@ void ChunkMesh::render()
 	assert(indicesSize > 0);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 
-	// For debug
+#if V_DEBUG
 	auto glView = Application::getInstance().getGLView();
-
+#if V_DEBUG_COUNT_DRAW_CALLS
 	if (glView->doesCountDrawCalls())
 	{
 		glView->incrementDrawCall();
 	}
-
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
 	if (glView->doesCountVerticesSize())
 	{
 		glView->addVerticesSize(indicesSize);
 	}
+#endif
+#endif
+
 }
 
 void ChunkMesh::unbind()

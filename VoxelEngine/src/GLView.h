@@ -1,6 +1,7 @@
 #ifndef GLVIEW_H
 #define GLVIEW_H
 
+#include <Config.h>
 #include <glm\glm.hpp>
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
@@ -38,14 +39,6 @@ namespace Voxel
 		
 		// vsync
 		bool vsync;
-
-		// Draw calls
-		bool countDrawCalls;
-		unsigned int totalDrawCalls;
-
-		// total vert
-		bool countVertices;
-		unsigned int totalVertices;
 
 		// GL clear color
 		glm::vec3 clearColor;
@@ -136,50 +129,73 @@ namespace Voxel
 		int getFPS();
 		double getElaspedTime();
 
+		// Checks if window is fullscreen
 		bool isFullScreen();
+
+		// Set window to fullscreen on primary monitor
 		void setFullScreen();
+
+		// Set window to fullscreen on desired monitor index. If monitor doesn't exists, uses primary monitor
 		void setFullScreen(const int monitorIndex);
+
+		// Set window to fullscreen on specific monitor
 		void setFullScreen(GLFWmonitor* monitor);
-
-		void reopenWindow();
-
+		
+		// Get GLFWmonitor with specific monitor index
 		GLFWmonitor* getMonitorFromIndex(const int monitorIndex);
 
+		// Check if window is windowed
 		bool isWindowed();
+
+		// Set window to windowed mode with specific size of resolution. Resolution must be greater than 0
 		void setWindowed(int width, int height);
+
+		// Set window's position to desired position. Origin is at primary monitor's top left corner.
 		void setWindowPosition(int x, int y);
 		
+		// Check if window is windowed fullscreen mode
 		bool isWindowedFullScreen();
+
+		// Set window to windowed fullscreen on primary monitor
 		void setWindowedFullScreen();
+
+		// Set window to windowed fullscreen on desired monitor index. If monitor doesn't exists, uses primary monitor
 		void setWindowedFullScreen(const int monitorIndex);
+
+		// Set window to windowed fullscreen on specific monitor
 		void setWindowedFullScreen(GLFWmonitor* monitor);
 
+		// Set vsync mode. true to enable vsync, false to disable.
 		void setVsync(const bool vsync);
 
+		// Check if window is decoreated (has window menu and border)
 		bool isWindowDecorated();
+
+		// Set window's decoration. true to enable, false to disable.
 		void setWindowDecoration(const bool mode);
 
+		// Set window's floating. For debug
 		void setWindowFloating(const bool mode);
 
-		bool doesCountDrawCalls();
-		bool doesCountVerticesSize();
-		void incrementDrawCall();
-
-		int getTotalDrawCalls();
-		int getTotalVerticesSize();
-		void addVerticesSize(const int size);
-
+		// Get screen size (resolution)
 		glm::ivec2 getScreenSize();
+
+		// Get screen size with glfw call.
 		glm::ivec2 getGLFWWindowSize();
 
+		// Set window's size to specific size regardless of window mode
 		void setWindowSize(const int width, const int height);
 
+		// Check if vsync is enabled or not.
 		bool isVsyncEnabled();
 
+		// Set opengl's buffer clear color. Color value must be between 0 to 1
 		void setClearColor(const glm::vec3& color);
 
+		// Set glfw cursor mode.
 		void setCursorMode(const int mode);
 
+		// Close glfw window
 		void close();
 
 		// FPS callback
@@ -190,6 +206,30 @@ namespace Voxel
 		std::string getGLVersion();
 		std::string getGPUVendor();
 		std::string getGPURenderer();
+
+
+#if V_DEBUG
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
+		// total vert
+		bool countVertices;
+		unsigned int totalVertices;
+
+		bool doesCountVerticesSize();
+		int getTotalVerticesSize();
+		void addVerticesSize(const int size);
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
+		// Draw calls
+		bool countDrawCalls;
+		unsigned int totalDrawCalls;
+
+		bool doesCountDrawCalls();
+		void incrementDrawCall();
+
+		int getTotalDrawCalls();
+#endif
+#endif
+
 	};
 }
 

@@ -58,10 +58,11 @@ void Voxel::World::init(const int gridWidth, const int gridLength, const unsigne
 	initRegions(engine);
 	initRegionDifficulty();
 	initRegionBiomeAndTerrain();
-	//initRegionBiome();
-	//initRegionTerrain();
 	printRegionBiomeAndTerrain();
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
 	initVoronoiDebug();
+#endif
 
 	print();
 }
@@ -73,7 +74,10 @@ void Voxel::World::rebuildWorldMap()
 
 	rebuildVoronoi(engine);
 	rebuildRegions(engine);
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
 	initVoronoiDebug();
+#endif
 }
 
 Region * Voxel::World::getCurrentRegion()
@@ -553,14 +557,6 @@ void Voxel::World::initVoronoi(std::mt19937& engine)
 	vd->makeSharedEdgesNoisy(engine);
 }
 
-void Voxel::World::initVoronoiDebug()
-{
-	if (vd)
-	{
-		vd->initDebugDiagram(/*shared edges*/true, /*omitted cells*/true, /*pos pin*/true, /*graph*/true, /*fill*/true, /*infinite edges*/true, /*border*/true);
-	}
-}
-
 void Voxel::World::initRegions(std::mt19937& engine)
 {
 	auto& cells = vd->getCells();
@@ -791,15 +787,6 @@ void Voxel::World::render()
 {
 }
 
-void Voxel::World::renderVoronoi(Program* program)
-{
-	if (renderVoronoiMode)
-	{
-		program->setUniformMat4("modelMat", glm::mat4(1.0f));
-		vd->render();
-	}
-}
-
 void Voxel::World::print()
 {
 	std::cout << "[World] info\n";
@@ -813,3 +800,23 @@ void Voxel::World::print()
 
 	std::cout << "\n";
 }
+
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+void Voxel::World::initVoronoiDebug()
+{
+	if (vd)
+	{
+		vd->initDebugDiagram(/*shared edges*/true, /*omitted cells*/true, /*pos pin*/true, /*graph*/true, /*fill*/true, /*infinite edges*/true, /*border*/true);
+	}
+}
+
+void Voxel::World::renderVoronoi(Program* program)
+{
+	if (renderVoronoiMode)
+	{
+		program->setUniformMat4("modelMat", glm::mat4(1.0f));
+		vd->render();
+	}
+}
+#endif

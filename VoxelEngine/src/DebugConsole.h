@@ -109,7 +109,8 @@ namespace Voxel
 		void updateChunkNumbers(const int visible, const int active, const int total, const std::string& workOrder);
 		void updateBiome(const std::string& biomeType, const std::string& terrainType, const float t, const float m);
 		void updateRegion(const unsigned int regionID);
-		void updateDrawCallsAndVerticesSize();
+		
+		//void updateDrawCallsAndVerticesSize();
 	};
 }
 

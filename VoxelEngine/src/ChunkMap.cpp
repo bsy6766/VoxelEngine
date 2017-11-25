@@ -2053,18 +2053,21 @@ void Voxel::ChunkMap::renderBlockOutline(Program * lineProgram, const glm::vec3&
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 
-		// For debug
+#if V_DEBUG
 		auto glView = Application::getInstance().getGLView();
-
+#if V_DEBUG_COUNT_DRAW_CALLS
 		if (glView->doesCountDrawCalls())
 		{
 			glView->incrementDrawCall();
 		}
-
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
 		if (glView->doesCountVerticesSize())
 		{
 			glView->addVerticesSize(12);
 		}
+#endif
+#endif
 	}
 }
 
@@ -2263,18 +2266,21 @@ void Voxel::ChunkMap::renderChunkBorder(Program * program)
 
 		glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
 
-		// For debug
+#if V_DEBUG
 		auto glView = Application::getInstance().getGLView();
-
+#if V_DEBUG_COUNT_DRAW_CALLS
 		if (glView->doesCountDrawCalls())
 		{
 			glView->incrementDrawCall();
 		}
-
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
 		if (glView->doesCountVerticesSize())
 		{
 			glView->addVerticesSize(chunkBorderLineSize / 2);
 		}
+#endif
+#endif
 	}
 }
 
@@ -2296,18 +2302,21 @@ void Voxel::ChunkMap::renderCameraChunkBorder(Program * program, const glm::vec3
 
 			glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
 
-			// For debug
+#if V_DEBUG
 			auto glView = Application::getInstance().getGLView();
-
+#if V_DEBUG_COUNT_DRAW_CALLS
 			if (glView->doesCountDrawCalls())
 			{
 				glView->incrementDrawCall();
 			}
-
+#endif
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
 			if (glView->doesCountVerticesSize())
 			{
 				glView->addVerticesSize(chunkBorderLineSize / 2);
 			}
+#endif
+#endif
 		}
 	}
 }

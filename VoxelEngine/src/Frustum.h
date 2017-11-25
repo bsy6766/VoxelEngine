@@ -1,6 +1,7 @@
 #ifndef FRUSTUM_H
 #define FRUSTUM_H
 
+#include <Config.h>
 #include <vector>
 #include <glm\glm.hpp>
 #include <GL\glew.h>
@@ -45,21 +46,24 @@ namespace Voxel
 
 		// projection
 		glm::mat4 projection;
-
-		GLuint vao;
 	public:
+		// Constructor
 		Frustum();
+		// Destructor
 		~Frustum();
 
-		void initDebugLines(const float fovy, const float fovx, const float near, const float far);
-
+		// Update frustum projection
 		void updateProjection(const float fovy, const float aspect, const float near, const float far);
-
-		void update(const glm::mat4& playerVP);
+		
+		// Update
 		void updateFrustumPlanes(const glm::mat4& MVP);
 		bool isChunkBorderInFrustum(Chunk* chunk);
 
+#if V_DEBUG && V_DEBUG_FRUSTUM_LINE
+		GLuint vao;
+		void initDebugLines(const float fovy, const float fovx, const float near, const float far);
 		void render(const glm::mat4& modelMat, Program* prog);
+#endif
 	};
 }
 

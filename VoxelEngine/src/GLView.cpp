@@ -29,12 +29,17 @@ GLView::GLView()
 	, windowTitle("")
 	, clearColor(0)
 	, vsync(false)
-	, countDrawCalls(true)
-	, totalDrawCalls(0)
+#if V_DEBUG
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
 	, countVertices(true)
 	, totalVertices(0)
-{
-}
+#endif
+#if V_DEBUG_COUNT_DRAW_CALLS
+	, countDrawCalls(true)
+	, totalDrawCalls(0)
+#endif
+#endif
+{}
 
 GLView::~GLView()
 {
@@ -426,12 +431,6 @@ void Voxel::GLView::setFullScreen(GLFWmonitor * monitor)
 	Camera::mainCamera->updateScreenSizeAndAspect(static_cast<float>(w), static_cast<float>(h));
 }
 
-void Voxel::GLView::reopenWindow()
-{
-	glfwDestroyWindow(window);
-	initWindow(1920, 1080, "reopend", 1, false);
-}
-
 GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
 {
 	int count = 0;
@@ -602,39 +601,6 @@ void Voxel::GLView::setWindowFloating(const bool mode)
 	glfwSetWindowAttrib(window, GLFW_FLOATING, mode);
 }
 
-bool Voxel::GLView::doesCountDrawCalls()
-{
-	return countDrawCalls;
-}
-
-bool Voxel::GLView::doesCountVerticesSize()
-{
-	return countVertices;
-}
-
-void Voxel::GLView::incrementDrawCall()
-{
-	totalDrawCalls++;
-}
-
-int Voxel::GLView::getTotalDrawCalls()
-{
-	return totalDrawCalls;
-}
-
-int Voxel::GLView::getTotalVerticesSize()
-{
-	return totalVertices;
-}
-
-void Voxel::GLView::addVerticesSize(const int size)
-{
-	if (size > 0)
-	{
-		totalVertices += size;
-	}
-}
-
 glm::ivec2 Voxel::GLView::getScreenSize()
 {
 	return glm::ivec2(screenWidth, screenHeight);
@@ -718,3 +684,42 @@ void Voxel::GLView::glfwWindowFocusCallback(GLFWwindow * window, int focus)
 		std::cout << "Lost focus\n";
 	}
 }
+
+#if V_DEBUG
+#if V_DEBUG_COUNT_VISIBLE_VERTICES
+bool Voxel::GLView::doesCountVerticesSize()
+{
+	return countVertices;
+}
+
+int Voxel::GLView::getTotalVerticesSize()
+{
+	return totalVertices;
+}
+
+void Voxel::GLView::addVerticesSize(const int size)
+{
+	if (size > 0)
+	{
+		totalVertices += size;
+	}
+}
+#endif
+#if V_DEBUG_COUNT_DRAW_CALLS
+bool Voxel::GLView::doesCountDrawCalls()
+{
+	return countDrawCalls;
+}
+
+void Voxel::GLView::incrementDrawCall()
+{
+	totalDrawCalls++;
+}
+
+int Voxel::GLView::getTotalDrawCalls()
+{
+	return totalDrawCalls;
+}
+
+#endif
+#endif

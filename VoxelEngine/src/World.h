@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include <Config.h>
 #include <unordered_map>
 #include <Voronoi.h>
 #include <random>
@@ -49,10 +50,7 @@ namespace Voxel
 		// Voronoi 
 		void initVoronoi(std::mt19937& engine);
 		void rebuildVoronoi(std::mt19937& engine);
-
-		// Voronoi debug
-		void initVoronoiDebug(); // Must call after building region
-
+		
 		// regions
 		void initRegions(std::mt19937& engine);
 		void rebuildRegions(std::mt19937& engine);
@@ -118,10 +116,15 @@ namespace Voxel
 
 		// Renders visible chunk
 		void render();
-		void renderVoronoi(Program* program);
 
 		// for debug
 		void print();
+
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+		// Voronoi debug
+		void initVoronoiDebug(); // Must call after building region
+		void renderVoronoi(Program* program);
+#endif
 	};
 }
 

@@ -1,6 +1,7 @@
 #ifndef VORONOI_H
 #define VORONOI_H
 
+#include <Config.h>
 #include <glm\glm.hpp>
 #include <vector>
 #include <list>
@@ -162,10 +163,6 @@ namespace Voxel
 			// Boundary
 			float minBound;
 			float maxBound;
-
-			// Scale of diagram. For debug
-			float scale;
-			float debugScale;
 			
 			// total valid cells
 			int totalValidCells;
@@ -175,19 +172,7 @@ namespace Voxel
 			bool inRange(const unsigned int index);
 			void checkNeighborCell(const std::list<std::shared_ptr<Edge>>& edges, Cell* curCell, const unsigned int index);
 			bool isConnected(const std::list<std::shared_ptr<Edge>>& edges, Cell* neighborCell);
-
-			// For debug rendering
-			GLuint vao;
-			unsigned int size;
-			GLuint fillVao;
-			unsigned int fillSize;
-			GLuint borderVao;
-			unsigned int borderSize;
-			GLuint posPinVao;
-			unsigned int posPinSize;
-			GLuint graphLineVao;
-			unsigned int graphLineSize;
-
+			
 			/**
 			*	helper recursion function for noisy edge
 			*	@param [in] e0 Start vertex of edge
@@ -208,20 +193,24 @@ namespace Voxel
 			// Construct voronoi diagram based on random sites
 			//void construct(const std::vector<glm::ivec2>& randomSites);
 			void construct(const std::vector<Site>& randomSites, const float minBound, const float maxBound);
+
 			// Relax voronoi diagram by using Lloyd's relaxation algorithm
 			std::vector<Site> relax();
+
 			// Build cells with edges. Any cells that has edges out of boundary will be omitted.
 			void buildCells(boost::polygon::voronoi_diagram<double>& vd);
+
 			// Randomize cells by removing cells
 			void randomizeCells(const int w, const int l, std::mt19937& engine);
+
 			// Build graph based on cells.
 			void buildGraph(const int w, const int l);
+
 			// Remove duplicated edges
 			void removeDuplicatedEdges();
+
 			// Make edges noisy. Ref: https://www.redblobgames.com/maps/noisy-edges
 			void makeSharedEdgesNoisy(std::mt19937& engine);
-			// Intialize debug lines of diagram
-			void initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border);
 
 			// get cells
 			std::map<unsigned int, Cell*>& getCells();
@@ -236,8 +225,29 @@ namespace Voxel
 			float getMinBound();
 			float getMaxBound();
 
+#if V_DEBUG && V_DEBUG_VORONOI_LINE
+			// Scale of diagram. For debug
+			float debugSizeScale;
+			float debugLineScale;
+
+			// Intialize debug lines of diagram
+			void initDebugDiagram(const bool sharedEdges, const bool omittedCells, const bool posPin, const bool graph, const bool fill, const bool infiniteEdges, const bool border);
+
+			// For debug rendering
+			GLuint vao;
+			unsigned int size;
+			GLuint fillVao;
+			unsigned int fillSize;
+			GLuint borderVao;
+			unsigned int borderSize;
+			GLuint posPinVao;
+			unsigned int posPinSize;
+			GLuint graphLineVao;
+			unsigned int graphLineSize;
+
 			// render the diagram
 			void render();
+#endif
 		};
 	}
 }

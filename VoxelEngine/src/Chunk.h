@@ -80,8 +80,6 @@ namespace Voxel
 		// Random engine. Keep 1 for each chunk
 		std::mt19937 randomEngine;
 
-		// Create chunk and initailize
-		static Chunk* create(const int x, const int z);
 		// Create empty chunk
 		static Chunk* createEmpty(const int x, const int z);
 
@@ -91,14 +89,6 @@ namespace Voxel
 
 		// Generates chunk.
 		bool generate();
-		// Generates chunk. Default generation. Fills single chunk section with grass block
-		bool generateSingleSection();
-		// Generates chunk. Uses noise to generate biome.
-		bool generateWithBiomeTest();
-		// Generates chunk. Same as default generation but with color
-		bool generateWithColor(const glm::uvec3& color);
-		// Generates chunk with region color. This is for to test if block has correct region data
-		bool generateWithRegionColor();
 
 		// Pre generate chunk sections
 		void generateChunkSections(const int minY, const int maxY);
