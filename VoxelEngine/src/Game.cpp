@@ -136,7 +136,7 @@ void Voxel::Game::init()
 	player = new Player();
 
 	// program
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	// use it
 	program->use(true);
 
@@ -371,7 +371,7 @@ void Game::createChunkMap()
 	}
 
 	// Get line program for debug
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 
 	// block outline. this is not debug. Required for building.
 	chunkMap->initBlockOutline(program);
@@ -576,7 +576,7 @@ void Game::update(const float delta)
 			world->updatePlayerPos(playerPos);
 #endif
 
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+			auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 			program->use(true);
 			program->setUniformVec3("playerPosition", playerPos);
 		}
@@ -1695,7 +1695,7 @@ void Voxel::Game::renderWorld(const float delta)
 	auto& pm = ProgramManager::getInstance();
 
 	// Get block shader porgram
-	auto program = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	auto program = pm.getProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	// use it
 	program->use(true);
 
@@ -1767,7 +1767,7 @@ void Voxel::Game::renderWorld(const float delta)
 	// --------------------------------------------------------------------------------------
 
 	// ------------------------------ Render Lines ------------------------------------------
-	auto lineProgram = pm.getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto lineProgram = pm.getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);	
 
 	// Use viewmat first
@@ -1836,7 +1836,7 @@ void Voxel::Game::renderWorldMap(const float delta)
 	// --------------------------------------------------------------------------------------
 	
 	// ------------------------------ Render Lines ------------------------------------------
-	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto lineProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	lineProgram->use(true);
 
 	lineProgram->setUniformMat4("viewMat", viewMat);
@@ -1872,7 +1872,7 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 	program->use(true);
 
 	// fog

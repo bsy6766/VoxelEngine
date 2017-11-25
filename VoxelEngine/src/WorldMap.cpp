@@ -199,11 +199,11 @@ void Voxel::WorldMap::init()
 {
 	// Initailize world map
 	auto& pm = ProgramManager::getInstance();
-	RegionMesh::polygonProgram = pm.getDefaultProgram(Voxel::ProgramManager::PROGRAM_NAME::POLYGON_SHADER);
+	RegionMesh::polygonProgram = pm.getProgram(Voxel::ProgramManager::PROGRAM_NAME::POLYGON_SHADER);
 	RegionMesh::polygonProgram->use(true);
 	RegionMesh::polygonProgram->setUniformMat4("projMat", Camera::mainCamera->getProjection());
 
-	RegionMesh::sideProgram = pm.getDefaultProgram(Voxel::ProgramManager::PROGRAM_NAME::POLYGON_SIDE_SHADER);
+	RegionMesh::sideProgram = pm.getProgram(Voxel::ProgramManager::PROGRAM_NAME::POLYGON_SIDE_SHADER);
 	RegionMesh::sideProgram->use(true);
 	RegionMesh::sideProgram->setUniformMat4("projMat", Camera::mainCamera->getProjection());
 
@@ -953,7 +953,7 @@ void Voxel::WorldMap::initDebugCenterLine()
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 
@@ -999,7 +999,7 @@ void Voxel::WorldMap::initDebugMousePickRayLine(const Ray & ray)
 	// Load cube vertices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 

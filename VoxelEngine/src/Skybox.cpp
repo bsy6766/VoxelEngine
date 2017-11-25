@@ -117,7 +117,7 @@ void Voxel::Skybox::initSkybox()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 
 	// Get program
-	skyboxProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::SKYBOX_SHADER);
+	skyboxProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::SKYBOX_SHADER);
 
 	// Enable vertices attrib
 	GLint vertLoc = skyboxProgram->getAttribLocation("vert");

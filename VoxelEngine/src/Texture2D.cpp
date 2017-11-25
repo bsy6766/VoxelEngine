@@ -78,7 +78,12 @@ glm::ivec2 Voxel::Texture2D::getTextureSize()
 void Voxel::Texture2D::setLocationOnProgram(ProgramManager::PROGRAM_NAME programName)
 {
 	//ProgramManager::getInstance().getDefaultProgram(programName)->use(true);
-	this->textureLocation = ProgramManager::getInstance().getDefaultProgram(programName)->getUniformLocation("tex");
+	setLocationOnProgram(ProgramManager::getInstance().getProgram(programName)->getUniformLocation("tex"));
+}
+
+void Voxel::Texture2D::setLocationOnProgram(const GLint textureLocation)
+{
+	this->textureLocation = textureLocation;
 }
 
 unsigned int Voxel::Texture2D::getID()

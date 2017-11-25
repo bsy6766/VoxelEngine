@@ -7,6 +7,7 @@ namespace Voxel
 	namespace UI
 	{
 		class UINode;
+		class Node;
 		class Canvas;
 	}
 
@@ -29,14 +30,17 @@ namespace Voxel
 	{
 		friend struct ZOrderComp;
 		friend class UI::UINode;
+		friend class UI::Node;
 		friend class UI::Canvas;
 		friend class NewUI::UINode;
 		friend class NewUI::Canvas;
 	private:
 		// Global Z order
 		int globalZOrder;
+
 		// Local Z order
 		int localZOrder;
+
 		// True if initialized
 		bool initialized;
 
@@ -45,8 +49,10 @@ namespace Voxel
 	public:
 		// constructor
 		ZOrder() : globalZOrder(0), localZOrder(0), initialized(false) {}
+
 		// constructor with global
 		ZOrder(const int zOrder) : globalZOrder(zOrder), localZOrder(0), initialized(false) {}
+
 		// default destructor
 		~ZOrder() = default;
 

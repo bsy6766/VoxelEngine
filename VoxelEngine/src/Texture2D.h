@@ -73,6 +73,7 @@ namespace Voxel
 
 		// set texture's location on shader
 		void setLocationOnProgram(ProgramManager::PROGRAM_NAME programName);
+		void setLocationOnProgram(const GLint textureLocation);
 
 		// get texture id
 		unsigned int getID();

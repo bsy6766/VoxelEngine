@@ -8,12 +8,593 @@
 #include <Program.h>
 #include <FontManager.h>
 #include <Font.h>
+#include <Limits.h>
 #include <Camera.h>
 #include <SpriteSheet.h>
 #include <Application.h>
 #include <glm/gtx/transform.hpp>
 
 using namespace Voxel::UI;
+
+//=============================================================== Node ===============================================================
+
+Voxel::UI::Node::Node()
+	: visibility(true)
+	, opacity(0.0f)
+	, position(0.0f)
+	, angle(0.0f)
+	, scale(1.0f)
+	, pivot(0.0f)
+	, modelMat(1.0f)
+	, sequence(nullptr)
+	, zOrder()
+	, program(nullptr)
+	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
+{}
+
+Voxel::UI::Node::Node(const std::string & name)
+	: name(name)
+	, visibility(true)
+	, opacity(0.0f)
+	, position(0.0f)
+	, angle(0.0f)
+	, scale(1.0f)
+	, pivot(0.0f)
+	, modelMat(1.0f)
+	, sequence(nullptr)
+	, zOrder()
+	, program(nullptr)
+	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
+{}
+
+Voxel::UI::Node::~Node()
+{
+	if (sequence)
+	{
+		delete sequence;
+	}
+}
+
+void Voxel::UI::Node::setOpacity(const float opacity)
+{
+	this->opacity = glm::clamp(opacity, 0.0f, 1.0f);
+}
+
+float Voxel::UI::Node::getOpacity() const
+{
+	return opacity;
+}
+
+void Voxel::UI::Node::setPosition(const glm::vec2 & position)
+{
+	this->position = position;
+
+	this->boundingBox.center = position;
+}
+
+glm::vec2 Voxel::UI::Node::getPosition() const
+{
+	return position;
+}
+
+void Voxel::UI::Node::setAngle(const float angle)
+{
+	float newAngle = angle;
+	if (newAngle < 0.0f)
+	{
+		while (newAngle < 0.0f)
+		{
+			newAngle += 360.0f;
+		}
+	}
+	else if (newAngle >= 360.0f)
+	{
+		while (newAngle < 360.0f)
+		{
+			newAngle -= 360.0f;
+		}
+	}
+
+	this->angle = newAngle;
+}
+
+float Voxel::UI::Node::getAngle() const
+{
+	return angle;
+}
+
+void Voxel::UI::Node::setScale(const glm::vec2 & scale)
+{
+	this->scale = scale;
+
+	if (this->scale.x < 0.0f)
+	{
+		this->scale.x = 0.0f;
+	}
+	
+	if (this->scale.y < 0.0f)
+	{
+		this->scale.y = 0.0f;
+	}
+}
+
+glm::vec2 Voxel::UI::Node::getScale() const
+{
+	return scale;
+}
+
+void Voxel::UI::Node::setPivot(const glm::vec2 & pivot)
+{
+	this->pivot = glm::clamp(pivot, -0.5f, 0.5f);
+}
+
+glm::vec2 Voxel::UI::Node::getPivot() const
+{
+	return pivot;
+}
+
+void Voxel::UI::Node::setZorder(const ZOrder & zOrder)
+{
+	this->zOrder = zOrder;
+}
+
+Voxel::ZOrder Voxel::UI::Node::getZOrder() const
+{
+	return zOrder;
+}
+
+bool Voxel::UI::Node::addChild(Node * child)
+{
+	if (child == nullptr) return false;
+
+	if (children.empty())
+	{
+		return addChild(child, Voxel::ZOrder(0, 0));
+	}
+	else
+	{
+		auto& lastZorder = children.rbegin()->first;
+
+		if (lastZorder.isGlobalZOrderMaxInt())
+		{
+			return false;
+		}
+		else
+		{
+			return addChild(child, Voxel::ZOrder(lastZorder.getGlobalZOrder() + 1, 0));
+		}
+	}
+
+	return true;
+}
+
+bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, int zOrder)
+{
+	return addChild(child, ZOrder(zOrder));
+}
+
+bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, Voxel::ZOrder& zOrder)
+{
+	if (child == nullptr) return false;
+
+	bool result = getNextZOrder(zOrder);
+
+	if (result == false)
+	{
+		return false;
+	}
+	else
+	{
+		children.insert(std::make_pair(zOrder, std::unique_ptr<Voxel::UI::Node>(child)));
+		return true;
+	}
+}
+
+bool Voxel::UI::Node::getNextZOrder(Voxel::ZOrder & curZOrder)
+{
+	bool lookForLocal = false;
+	int globalTemp = std::numeric_limits<int>::min();
+	int localTemp = globalTemp;
+	bool found = false;
+
+	for (auto& e : children)
+	{
+		if (!lookForLocal)
+		{
+			if (e.first.getGlobalZOrder() == curZOrder.getGlobalZOrder())
+			{
+				lookForLocal = true;
+				globalTemp = e.first.getGlobalZOrder();
+				localTemp = e.first.getLocalZOrder();
+
+				if (e.first.isLocalZOrderMaxInt())
+				{
+					return false;
+				}
+				else
+				{
+					continue;
+				}
+			}
+		}
+		else
+		{
+			localTemp = e.first.getLocalZOrder();
+
+			if (e.first.getGlobalZOrder() != globalTemp)
+			{
+				if (localTemp == std::numeric_limits<int>::max())
+				{
+					return false;
+				}
+				else
+				{
+					found = true;
+					curZOrder.globalZOrder = globalTemp;
+					curZOrder.localZOrder = localTemp + 1;
+					break;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+	}
+
+	if (lookForLocal)
+	{
+		if (found)
+		{
+			return true;
+		}
+		else
+		{
+			if (localTemp == std::numeric_limits<int>::max())
+			{
+				return false;
+			}
+			else
+			{
+				curZOrder.globalZOrder = globalTemp;
+				curZOrder.localZOrder = localTemp + 1;
+				return true;
+			}
+		}
+	}
+
+	return true;
+}
+
+Node * Voxel::UI::Node::getChild(const std::string & name)
+{
+	for (auto& e : children)
+	{
+		if ((e.second)->name == name)
+		{
+			return (e.second).get();
+		}
+	}
+
+	return nullptr;
+}
+
+void Voxel::UI::Node::update(const float delta)
+{
+	if (sequence)
+	{
+
+		updateModelMatrix();
+	}
+}
+
+void Voxel::UI::Node::runAction(Voxel::UI::Sequence * sequence)
+{
+	if (sequence)
+	{
+		delete sequence;
+	}
+
+	this->sequence = sequence;
+}
+
+void Voxel::UI::Node::print(const int tab)
+{
+	for (int i = 0; i < tab; i++)
+	{
+		std::cout << "\t";
+	}
+
+	std::cout << name << "\n";
+}
+
+void Voxel::UI::Node::updateModelMatrix()
+{
+	modelMat = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * boundingBox.size * scale * -1.0f, 0)), glm::vec3(scale, 1));
+}
+
+//====================================================================================================================================
+
+//============================================================== Canvas ==============================================================
+
+Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition)
+	: Node()
+	, size(size)
+	, centerPosition(centerPosition)
+	, uiScreenMatrix(1.0f)
+{
+	std::cout << "[Canvas] Creating new canvas\n";
+	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
+	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")\n";
+}
+
+void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
+{
+	this->size = size;
+}
+
+void Voxel::UI::Canvas::update(const float delta)
+{
+}
+
+void Voxel::UI::Canvas::render()
+{
+	if (!visibility) return;
+
+	uiScreenMatrix = glm:: glm::translate(glm::mat4(1.0f), glm::vec3(centerPosition, 0.0f));
+
+	/*
+	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	imageShader->use(true);
+	imageShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
+
+	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
+
+	for (auto image : images)
+	{
+	auto canvasPivot = (image.second)->getCanvasPivot();
+	canvasPivot.x *= size.x;
+	canvasPivot.y *= size.y;
+	glm::mat4 canvasMat = glm::mat4(1.0f);
+	canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
+	canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
+	(image.second)->render(uiMat, canvasMat, imageShader);
+	}
+
+	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
+	textShader->use(true);
+	textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
+
+	uiMat = Camera::mainCamera->getScreenSpaceMatrix();
+
+	for (auto& text : texts)
+	{
+	bool outlined = (text.second)->isOutlined();
+	if (outlined)
+	{
+	textShader->setUniformBool("outlined", outlined);
+	textShader->setUniformInt("outlineSize", 2);
+	textShader->setUniformVec4("outlineColor", (text.second)->getOutlineColor());
+	}
+	else
+	{
+	textShader->setUniformBool("outlined", outlined);
+	textShader->setUniformInt("outlineSize", 0);
+	textShader->setUniformVec4("outlineColor", glm::vec4(1.0f));
+	}
+
+	auto canvasPivot = (text.second)->getCanvasPivot();
+	canvasPivot.x *= size.x;
+	canvasPivot.y *= size.y;
+	glm::mat4 canvasMat = glm::mat4(1.0f);
+	canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
+	canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
+	(text.second)->render(uiMat, canvasMat, textShader);
+	}
+	*/
+}
+
+//====================================================================================================================================
+
+//============================================================== Image ===============================================================
+
+Voxel::UI::Image::Image(const std::string& name)
+	: Node(name)
+	, vao(0)
+	, texture(nullptr)
+{
+	program = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+}
+
+Image::~Image()
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+}
+
+Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFileName)
+{
+	auto newImage = new Image(name);
+
+	if (newImage->init(imageFileName))
+	{
+		return newImage;
+	}
+	else
+	{
+		delete newImage;
+		return nullptr;
+	}
+}
+
+Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & name, const std::string & imageFileName, const std::string & spriteSheetName)
+{
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		auto newImage = new Image(name);
+
+		if (newImage->initFromSpriteSheet(ss, imageFileName))
+		{
+			return newImage;
+		}
+		else
+		{
+			delete newImage;
+			return nullptr;
+		}
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+bool Voxel::UI::Image::init(const std::string& textureName)
+{
+	texture = Texture2D::create(textureName, GL_TEXTURE_2D);
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+
+	auto size = texture->getTextureSize();
+
+	auto vertices = Quad::getVertices(glm::vec2(size));
+
+	boundingBox.center = position;
+	boundingBox.size = size;
+	
+	updateModelMatrix();
+
+	build(vertices, Quad::getColors(glm::vec4(1.0f)), Quad::uv, Quad::indices);
+
+	return true;
+}
+
+bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName)
+{
+	this->texture = ss->getTexture();
+
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	
+	auto imageEntry = ss->getImageEntry(textureName);
+
+	auto size = glm::vec2(imageEntry->width, imageEntry->height);
+	auto vertices = Quad::getVertices(size);
+
+	auto& uvOrigin = imageEntry->uvOrigin;
+	auto& uvEnd = imageEntry->uvEnd;
+
+	std::vector<float> uvs =
+	{
+		uvOrigin.x, uvOrigin.y,
+		uvOrigin.x, uvEnd.y,
+		uvEnd.x, uvOrigin.y,
+		uvEnd.x, uvEnd.y
+	};
+
+	boundingBox.center = position;
+	boundingBox.size = size;
+
+	updateModelMatrix();
+
+	build(vertices, Quad::getColors(glm::vec4(1.0f)), uvs, Quad::indices);
+
+	return true;
+}
+
+void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat)
+{
+	if (!visibility) return;
+	if (!texture) return;
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	program->use(true);
+	program->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMat);
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	
+	//============= find error here. error count: 14. Only during using sprite sheet
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	//========================
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+}
+
+//====================================================================================================================================
+
+//========================================================= Text =====================================================================
+
+
+
+//====================================================================================================================================
+
+
+
+
+
+
 
 Voxel::UI::UINode::UINode()
 	: pivot(glm::vec2(0))
@@ -710,7 +1291,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	glGenBuffers(1, &vbo);
@@ -974,230 +1555,6 @@ void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvas
 
 
 
-Image::Image()
-	: UINode()
-	, texture(nullptr)
-{
-
-}
-
-Image::~Image()
-{
-	// Delte array
-	glDeleteVertexArrays(1, &vao);
-}
-
-Image* Image::create(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
-{
-	auto newImage = new Image();
-
-	if (newImage->init(textureName, screenPosition, color))
-	{
-		return newImage;
-	}
-	else
-	{
-		delete newImage;
-		return nullptr;
-	}
-}
-
-Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & spriteSheetName, const std::string & textureName, const glm::vec2 & screenPosition, const glm::vec4 & color)
-{
-	auto& ssm = SpriteSheetManager::getInstance();
-	
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
-
-	if (ss)
-	{
-		auto newImage = new Image();
-
-		if (newImage->initFromSpriteSheet(ss, textureName, screenPosition, color))
-		{
-			return newImage;
-		}
-		else
-		{
-			delete newImage;
-			return nullptr;
-		}
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog)
-{
-	if (!visible) return;
-	if (!texture) return;
-
-	texture->activate(GL_TEXTURE0);
-	texture->bind();
-
-	prog->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMatrix);
-
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	//glBindVertexArray(0);
-}
-
-bool Voxel::UI::Image::init(const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
-{
-	texture = Texture2D::create(textureName, GL_TEXTURE_2D);
-
-	if (texture == nullptr)
-	{
-		return false;
-	}
-
-	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-
-	position = screenPosition;
-
-	auto size = texture->getTextureSize();
-
-	auto vertices = Quad::getVertices(glm::vec2(size));
-	auto indices = Quad::indices;
-	auto colors = Quad::getColors(color);
-	auto uv = Quad::uv;
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint uvVertLoc = program->getAttribLocation("uvVert");
-
-	GLuint uvbo;
-	glGenBuffers(1, &uvbo);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(uvVertLoc);
-	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLuint ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
-
-	this->boxMin = glm::vec2(vertices.at(6), vertices.at(7));
-	this->boxMax = glm::vec2(vertices.at(3), vertices.at(4));
-
-	this->updateMatrix();
-
-	this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
-
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &uvbo);
-	glDeleteBuffers(1, &ibo);
-
-	return true;
-}
-
-bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName, const glm::vec2& screenPosition, const glm::vec4& color)
-{
-	this->texture = ss->getTexture();
-
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-
-	position = screenPosition;
-
-	auto imageEntry = ss->getImageEntry(textureName);
-	
-	auto vertices = Quad::getVertices(glm::vec2(imageEntry->width, imageEntry->height));
-	auto indices = Quad::indices;
-	auto colors = Quad::getColors(color);
-
-	auto& uvOrigin = imageEntry->uvOrigin;
-	auto& uvEnd = imageEntry->uvEnd;
-	
-	std::vector<float> uv = 
-	{
-		uvOrigin.x, uvOrigin.y,
-		uvOrigin.x, uvEnd.y,
-		uvEnd.x, uvOrigin.y,
-		uvEnd.x, uvEnd.y
-	};
-
-	//std::vector<float> uv = Quad::uv;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertLoc);	// error stack: 2
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint uvVertLoc = program->getAttribLocation("uvVert");
-
-	GLuint uvbo;
-	glGenBuffers(1, &uvbo);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(uvVertLoc);
-	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	//============= find error here. error count: 14
-	GLuint ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-	//========================
-	glBindVertexArray(0);
-
-	this->boxMin = glm::vec2(vertices.at(6), vertices.at(7));
-	this->boxMax = glm::vec2(vertices.at(3), vertices.at(4));
-
-	this->updateMatrix();
-
-	this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
-
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &uvbo);
-	glDeleteBuffers(1, &ibo);
-
-	return true;
-}
-
-
-
 
 Voxel::UI::Cursor::Cursor()
 	: vao(0)
@@ -1256,7 +1613,7 @@ bool Voxel::UI::Cursor::init()
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -1422,7 +1779,7 @@ void Voxel::UI::Cursor::render()
 	{
 		if (vao)
 		{
-			auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+			auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
 			program->use(true);
 			program->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -1439,232 +1796,3 @@ void Voxel::UI::Cursor::render()
 	}
 }
 
-
-
-
-Canvas::Canvas()
-	: size(0)
-	, centerPosition(0)
-	, visible(true)
-{}
-
-Canvas::~Canvas()
-{
-	// Release all images
-	for (auto image : images)
-	{
-		if (image.second)
-		{
-			delete image.second;
-		}
-	}
-
-	images.clear();
-}
-
-Canvas* Canvas::create(const glm::vec2& size, const glm::vec2& centerPosition)
-{
-	auto newCanvas = new Canvas();
-	
-	newCanvas->size = size;
-	newCanvas->centerPosition = centerPosition;
-
-	std::cout << "[Canvas] Creating new canvas\n";
-	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
-	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")\n";
-
-	return newCanvas;
-}
-
-/*
-bool Voxel::UI::Canvas::addImage(const std::string & name, const std::string & textureName, const glm::vec2& position, const glm::vec4& color)
-{
-	auto newImage = Image::create(textureName, position, color);
-	if (newImage)
-	{
-		return addImage(name, newImage, 0);
-	}
-	else
-	{
-		delete newImage;
-		return false;
-	}
-}
-*/
-
-bool Voxel::UI::Canvas::addImage(const std::string & name, Image * image, const int z)
-{
-	if (image)
-	{
-		auto find_it = images.find(name);
-		if (find_it == images.end())
-		{
-			images.emplace(name, image);
-			return true;
-		}
-	}
-	return false;
-}
-
-/*
-bool Voxel::UI::Canvas::addText(const std::string & name, const std::string & text, const glm::vec2 & position, const glm::vec4& color, const int fontID, Text::ALIGN align, Text::TYPE type, const int maxLength)
-{
-	auto newText = Text::create(text, position, color, fontID, align, type, maxLength);
-	if (newText)
-	{
-		return addText(name, newText, 0);
-	}
-	else
-	{
-		delete newText;
-		return false;
-	}
-}
-*/
-
-bool Voxel::UI::Canvas::addText(const std::string & name, Text * text, const int z)
-{
-	if (text)
-	{
-		auto find_it = texts.find(name);
-		if (find_it == texts.end())
-		{
-			texts.emplace(name, text);
-			return true;
-		}
-	}
-	return false;
-}
-
-void Voxel::UI::Canvas::render()
-{
-	if (!visible) return;
-
-	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-	imageShader->use(true);
-	imageShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
-
-	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
-
-	for (auto image : images)
-	{
-		auto canvasPivot = (image.second)->getCanvasPivot();
-		canvasPivot.x *= size.x;
-		canvasPivot.y *= size.y;
-		glm::mat4 canvasMat = glm::mat4(1.0f);
-		canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
-		canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
-		(image.second)->render(uiMat, canvasMat, imageShader);
-	}
-
-	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
-	textShader->use(true);
-	textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
-
-	uiMat = Camera::mainCamera->getScreenSpaceMatrix();
-
-	for (auto& text : texts)
-	{
-		bool outlined = (text.second)->isOutlined();
-		if (outlined)
-		{
-			textShader->setUniformBool("outlined", outlined);
-			textShader->setUniformInt("outlineSize", 2);
-			textShader->setUniformVec4("outlineColor", (text.second)->getOutlineColor());
-		}
-		else
-		{
-			textShader->setUniformBool("outlined", outlined);
-			textShader->setUniformInt("outlineSize", 0);
-			textShader->setUniformVec4("outlineColor", glm::vec4(1.0f));
-		}
-
-		auto canvasPivot = (text.second)->getCanvasPivot();
-		canvasPivot.x *= size.x;
-		canvasPivot.y *= size.y;
-		glm::mat4 canvasMat = glm::mat4(1.0f);
-		canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
-		canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
-		(text.second)->render(uiMat, canvasMat, textShader);
-	}
-}
-
-Image * Voxel::UI::Canvas::getImage(const std::string & name)
-{
-	auto find_it = images.find(name);
-	if (find_it == images.end())
-	{
-		return nullptr;
-	}
-	else
-	{
-		return find_it->second;
-	}
-}
-
-Text * Voxel::UI::Canvas::getText(const std::string & name)
-{
-	auto find_it = texts.find(name);
-	if (find_it == texts.end())
-	{
-		return nullptr;
-	}
-	else
-	{
-		return find_it->second;
-	}
-}
-
-glm::vec2 Voxel::UI::Canvas::getPivotCanvasPos(PIVOT pivot)
-{
-	auto centerPos = this->centerPosition;
-
-	switch (pivot)
-	{
-	case Voxel::UI::Canvas::PIVOT::CENTER:
-		break;
-	case Voxel::UI::Canvas::PIVOT::LEFT:
-		centerPos.x -= (size.x * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::RIGHT:
-		centerPos.x += (size.x * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::TOP:
-		centerPos.y += (size.y * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::BOTTOM:
-		centerPos.y -= (size.y * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::LEFT_TOP:
-		centerPos.x -= (size.x * 0.5f);
-		centerPos.y += (size.y * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::LEFT_BOTTOM:
-		centerPos.x -= (size.x * 0.5f);
-		centerPos.y -= (size.y * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::RIGHT_TOP:
-		centerPos.x += (size.x * 0.5f);
-		centerPos.y += (size.y * 0.5f);
-		break;
-	case Voxel::UI::Canvas::PIVOT::RIGHT_BOTTOM:
-		centerPos.x += (size.x * 0.5f);
-		centerPos.y -= (size.y * 0.5f);
-		break;
-	default:
-		return glm::vec2(0);
-		break;
-	}
-
-	return centerPos;
-}
-
-void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
-{
-	this->size = size;
-}
-
-void Voxel::UI::Canvas::setVisibility(const bool visibility)
-{
-	visible = visibility;
-}

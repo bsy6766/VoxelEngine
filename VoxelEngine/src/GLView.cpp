@@ -250,7 +250,7 @@ void Voxel::GLView::initOpenGL()
 
 void Voxel::GLView::initDefaultShaderProgram()
 {
-	ProgramManager::getInstance().initDefaultPrograms();
+	ProgramManager::getInstance().initPrograms();
 }
 
 void Voxel::GLView::initCPUName()

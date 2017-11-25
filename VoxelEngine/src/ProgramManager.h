@@ -3,12 +3,18 @@
 
 #include <unordered_map>
 #include <string>
+#include <glm\glm.hpp>
 
 namespace Voxel
 {
+	// Forward declaration
 	class Program;
 	class Shader;
 
+	/**
+	*	@class ProgramManager
+	*	@brief Manages OpenGL programs. Singleton class
+	*/
 	class ProgramManager
 	{
 		friend class GLView;
@@ -25,7 +31,10 @@ namespace Voxel
 			SHADER_MAX_COUNT
 		};
 	private:
+		// Default constructor
 		ProgramManager() = default;
+
+		// Destructor. Releases all programs
 		~ProgramManager();
 
 		// Delete copy, move, assign operators
@@ -34,24 +43,41 @@ namespace Voxel
 		ProgramManager& operator=(ProgramManager const&) = delete;  // Copy assign
 		ProgramManager& operator=(ProgramManager &&) = delete;      // Move assign
 
-		std::unordered_map<unsigned int/*id*/, Program*> defaultPrograms;
-		std::unordered_map<std::string, Program*> userProgram;
+		// map of all programs
+		std::unordered_map<PROGRAM_NAME, Program*> programs;
 
-		void initDefaultPrograms();
+		// Initialize all the shader program that is used
+		void initPrograms();
 	public:
+		// Get instance. 
 		static ProgramManager& getInstance()
 		{
 			static ProgramManager instance;
 			return instance;
 		}
+		
+		/**
+		*	Get program by id
+		*	@param programID An program name enum to get
+		*	@return program instance if exists. Else, nullptr;
+		*/
+		Program* getProgram(const PROGRAM_NAME programID);
 
-		Program* createProgram(const std::string& name, Shader* vertexShader, Shader* fragmentShader);
+		/**
+		*	Finds the program by id and uses it
+		*	@param programID An program name enum to use
+		*/
+		void useDefaultProgram(const PROGRAM_NAME programID);
 
-		Program* getDefaultProgram(PROGRAM_NAME programID);
-		Program* getProgram(const std::string& name);
+		/**
+		*	Update "projMat" matrix on all program
+		*	@param projMat New projection matrix to set
+		*/
+		void updateProjMat(const glm::mat4& projMat);
 
-		void useDefaultProgram(PROGRAM_NAME programID);
-
+		/**
+		*	Release all programs
+		*/
 		void releaseAll();
 	};
 }

@@ -68,6 +68,7 @@ namespace Voxel
 		public:
 			// Constructor
 			Rect();
+
 			/**
 			*	Constructor
 			*	@param [in] center Center position of rectangle

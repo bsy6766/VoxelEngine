@@ -1085,7 +1085,7 @@ void Voxel::Player::initBoundingBoxLine()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
 
 	// Enable vertices attrib
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 	GLint colorLoc = program->getAttribLocation("color");
 

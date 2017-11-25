@@ -329,7 +329,7 @@ int Voxel::Chunk::findMaxY()
 
 void Voxel::Chunk::render(const glm::vec3& playerPosition)
 {
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
 
 	if (chunkMesh)
 	{

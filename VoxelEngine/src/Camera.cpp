@@ -85,16 +85,8 @@ void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const flo
 
 void Voxel::Camera::updateProjection()
 {
-	auto program = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::BLOCK_SHADER);
-	program->use(true);
-	program->setUniformMat4("projMat", getProjection());
-
-	auto lineProgram = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	lineProgram->use(true);
-	lineProgram->setUniformMat4("projMat", getProjection());
-
-	//lineProgram->use(false);
-
+	ProgramManager::getInstance().updateProjMat(getProjection());
+	
 	frustum->updateProjection(fovy, aspect, nears, fars);
 }
 
