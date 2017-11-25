@@ -235,16 +235,25 @@ void ControllerManager::addController(const SDL_ControllerDeviceEvent event)
 				// Get name
 				std::string name = std::string(SDL_JoystickName(joy));
 
+				std::cout << "\n";
+				std::cout << "[ControllerManager] Game controller is added.\n";
+				std::cout << "[ControllerManager] ID: " << instanceID << "\n";
+				std::cout << "[ControllerManager] Name: " << name << "\n";
+				std::cout << "[ControllerManager] Button count: " << buttonCount << "\n";
+				std::cout << "[ControllerManager] Axis count: " << axisCount << "\n";
+
 				SDL_Haptic* newHaptic = nullptr;
 
 				bool hasHaptic = (SDL_JoystickIsHaptic(joy) == 1);
 				if (hasHaptic)
 				{
 					newHaptic = SDL_HapticOpenFromJoystick(joy);
+					std::cout << "[ControllerManager] Has haptic: true\n";
 				}
 				else
 				{
 					newHaptic = nullptr;
+					std::cout << "[ControllerManager] Has haptic: false\n";
 				}
 
 				this->controllers[instanceID] = new Controller(newController, newHaptic, name, instanceID, buttonCount, axisCount);
@@ -253,6 +262,8 @@ void ControllerManager::addController(const SDL_ControllerDeviceEvent event)
 				{
 					onControllerConnected(instanceID);
 				}
+
+				std::cout << "\n";
 			}
 			else
 			{
@@ -278,6 +289,10 @@ void ControllerManager::removeController(const SDL_ControllerDeviceEvent event)
 		{
 			onControllerDisconnected(event.which);
 		}
+
+		std::cout << "[ControllerManager] Game controller is removed.\n";
+		std::cout << "[ControllerManager] ID: " << event.which << "\n";
+		std::cout << "[ControllerManager] Name: " << (find_it->second)->name << "\n";
 
 		delete find_it->second;
 	}

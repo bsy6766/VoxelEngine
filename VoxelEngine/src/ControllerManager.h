@@ -17,23 +17,24 @@ namespace Voxel
 	{
 		namespace XBOX_360
 		{
+			// Mapped to SDL2's controller button number
 			enum class BUTTON
 			{
-				A = 0,
-				B,
-				X,
-				Y,
-				BACK,
-				NONE,
-				START,
-				L3,
-				R3,
-				LS,
-				RS,
-				DPAD_UP,
-				DPAD_DOWN,
-				DPAD_LEFT,
-				DPAD_RIGHT
+				A = 0,			// 0
+				B,				// 1
+				X,				// 2
+				Y,				// 3
+				BACK,			// 4
+				NONE,			// 5
+				START,			// 6
+				L3,				// 7
+				R3,				// 8
+				LS,				// 9
+				RS,				// 10
+				DPAD_UP,		// 11
+				DPAD_DOWN,		// 12
+				DPAD_LEFT,		// 13
+				DPAD_RIGHT		// 14
 			};
 
 			enum class AXIS
@@ -46,6 +47,13 @@ namespace Voxel
 				RT,
 			};
 		}
+
+		/*
+		namespace XBOX_ONE
+		{
+
+		}
+		*/
 	}
 
 	class Controller
