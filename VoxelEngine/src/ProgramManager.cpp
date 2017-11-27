@@ -26,12 +26,12 @@ void Voxel::ProgramManager::initPrograms()
 	auto voxelShaderTextureColorVert = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.vert", GL_VERTEX_SHADER);
 	auto voxelShaderTextureColorFrag = shaderManager.createShader("voxelShaderTextureColor", "shaders/voxelShaderTextureColor.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextureColorProgram = Program::create(voxelShaderTextureColorVert, voxelShaderTextureColorFrag);
-	programs.emplace(PROGRAM_NAME::TEXTURE_SHADER, voxelShaderTextureColorProgram);
+	programs.emplace(PROGRAM_NAME::UI_TEXTURE_SHADER, voxelShaderTextureColorProgram);
 
 	auto voxelShaderTextVert = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.vert", GL_VERTEX_SHADER);
 	auto voxelShaderTextFrag = shaderManager.createShader("voxelShaderText", "shaders/voxelShaderText.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderTextProgram = Program::create(voxelShaderTextVert, voxelShaderTextFrag);
-	programs.emplace(PROGRAM_NAME::TEXT_SHADER, voxelShaderTextProgram);
+	programs.emplace(PROGRAM_NAME::UI_TEXT_SHADER, voxelShaderTextProgram);
 	
 	auto voxelShaderSkyboxVert = shaderManager.createShader("voxelShaderSkybox", "shaders/voxelShaderSkybox.vert", GL_VERTEX_SHADER);
 	auto voxelShaderSkyboxFrag = shaderManager.createShader("voxelShaderSkybox", "shaders/voxelShaderSkybox.frag", GL_FRAGMENT_SHADER);
@@ -63,29 +63,28 @@ Program * Voxel::ProgramManager::getProgram(const PROGRAM_NAME programID)
 	}
 }
 
-void Voxel::ProgramManager::useDefaultProgram(const PROGRAM_NAME programID)
-{
-	auto find_it = programs.find(programID);
-	if (find_it != programs.end())
-	{
-		programs[programID]->use(true);
-	}
-	else
-	{
-		throw std::runtime_error("Bad program use");
-	}
-}
-
 void Voxel::ProgramManager::updateProjMat(const glm::mat4 & projMat)
 {
-	for (auto& e : programs)
-	{
-		if ((e.first) == PROGRAM_NAME::SKYBOX_SHADER)
-		{
-			continue;
-		}
-		(e.second)->setUniformMat4("projMat", projMat);
-	}
+	programs.at(PROGRAM_NAME::LINE_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::LINE_SHADER)->setUniformMat4("projMat", projMat);
+
+	programs.at(PROGRAM_NAME::BLOCK_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::BLOCK_SHADER)->setUniformMat4("projMat", projMat);
+
+	programs.at(PROGRAM_NAME::POLYGON_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::POLYGON_SHADER)->setUniformMat4("projMat", projMat);
+
+	programs.at(PROGRAM_NAME::POLYGON_SIDE_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::POLYGON_SIDE_SHADER)->setUniformMat4("projMat", projMat);
+}
+
+void Voxel::ProgramManager::updateUIProjMat(const glm::mat4 & uiProjMat)
+{
+	programs.at(PROGRAM_NAME::UI_TEXTURE_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::UI_TEXTURE_SHADER)->setUniformMat4("projMat", uiProjMat);
+
+	programs.at(PROGRAM_NAME::UI_TEXT_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::UI_TEXT_SHADER)->setUniformMat4("projMat", uiProjMat);
 }
 
 void ProgramManager::releaseAll()

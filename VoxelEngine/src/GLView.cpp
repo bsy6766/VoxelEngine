@@ -310,9 +310,7 @@ void Voxel::GLView::render()
 	glfwSwapBuffers(window);
 
 	glfwPollEvents();
-
-	glUseProgram(0);
-
+	
 	totalDrawCalls = 0;
 	totalVertices = 0;
 }

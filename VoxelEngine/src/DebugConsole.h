@@ -2,6 +2,9 @@
 #define DEBUG_CONSOLE_H
 
 #include <Config.h>
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <string>
@@ -113,5 +116,7 @@ namespace Voxel
 		//void updateDrawCallsAndVerticesSize();
 	};
 }
+
+#endif
 
 #endif

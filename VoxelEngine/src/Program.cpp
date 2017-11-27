@@ -489,13 +489,14 @@ void Voxel::Program::use(const bool use)
 		if (lastProgramObject != programObject)
 		{
 			lastProgramObject = programObject;
-			glUseProgram(programObject);
 		}
 		// already using
+		glUseProgram(programObject);
 	}
 	else
 	{
-		glUseProgram(0);
+		lastProgramObject = 0;
+		//glUseProgram(0);
 	}
 }
 

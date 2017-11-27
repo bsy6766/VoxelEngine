@@ -13,6 +13,7 @@
 #include <SpriteSheet.h>
 #include <Application.h>
 #include <glm/gtx/transform.hpp>
+#include <Utility.h>
 
 using namespace Voxel::UI;
 
@@ -25,11 +26,15 @@ Voxel::UI::Node::Node()
 	, angle(0.0f)
 	, scale(1.0f)
 	, pivot(0.0f)
+	, coordinateOrigin(0.0f)
+	, contentSize(0.0f)
 	, modelMat(1.0f)
 	, sequence(nullptr)
 	, zOrder()
 	, program(nullptr)
 	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
+	, needToUpdateModelMat(false)
+	, parent(nullptr)
 {}
 
 Voxel::UI::Node::Node(const std::string & name)
@@ -40,11 +45,15 @@ Voxel::UI::Node::Node(const std::string & name)
 	, angle(0.0f)
 	, scale(1.0f)
 	, pivot(0.0f)
+	, coordinateOrigin(0.0f)
+	, contentSize(0.0f)
 	, modelMat(1.0f)
 	, sequence(nullptr)
 	, zOrder()
 	, program(nullptr)
 	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
+	, needToUpdateModelMat(false)
+	, parent(nullptr)
 {}
 
 Voxel::UI::Node::~Node()
@@ -65,11 +74,19 @@ float Voxel::UI::Node::getOpacity() const
 	return opacity;
 }
 
-void Voxel::UI::Node::setPosition(const glm::vec2 & position)
+void Voxel::UI::Node::setPosition(const float x, const float y)
 {
-	this->position = position;
+	this->position.x = x;
+	this->position.y = y;
 
 	this->boundingBox.center = position;
+
+	needToUpdateModelMat = true;
+}
+
+void Voxel::UI::Node::setPosition(const glm::vec2 & position)
+{
+	setPosition(position.x, position.y);
 }
 
 glm::vec2 Voxel::UI::Node::getPosition() const
@@ -96,6 +113,8 @@ void Voxel::UI::Node::setAngle(const float angle)
 	}
 
 	this->angle = newAngle;
+
+	needToUpdateModelMat = true;
 }
 
 float Voxel::UI::Node::getAngle() const
@@ -116,6 +135,8 @@ void Voxel::UI::Node::setScale(const glm::vec2 & scale)
 	{
 		this->scale.y = 0.0f;
 	}
+
+	needToUpdateModelMat = true;
 }
 
 glm::vec2 Voxel::UI::Node::getScale() const
@@ -126,11 +147,38 @@ glm::vec2 Voxel::UI::Node::getScale() const
 void Voxel::UI::Node::setPivot(const glm::vec2 & pivot)
 {
 	this->pivot = glm::clamp(pivot, -0.5f, 0.5f);
+
+	needToUpdateModelMat = true;
 }
 
 glm::vec2 Voxel::UI::Node::getPivot() const
 {
 	return pivot;
+}
+
+void Voxel::UI::Node::setCoordinateOrigin(const glm::vec2 & coordinateOrigin)
+{
+	this->coordinateOrigin = glm::clamp(coordinateOrigin, -0.5f, 0.5f);
+
+	needToUpdateModelMat = true;
+}
+
+glm::vec2 Voxel::UI::Node::getCoordinateOrigin() const
+{
+	return coordinateOrigin;
+}
+
+void Voxel::UI::Node::setBoundingBox(const glm::vec2 & center, const glm::vec2 & size)
+{
+	boundingBox.center = center;
+	boundingBox.size = size;
+}
+
+Voxel::Shape::Rect Voxel::UI::Node::getBoundingBox() const
+{
+	auto scaled = boundingBox;
+	scaled.size *= scale;
+	return scaled;
 }
 
 void Voxel::UI::Node::setZorder(const ZOrder & zOrder)
@@ -146,6 +194,10 @@ Voxel::ZOrder Voxel::UI::Node::getZOrder() const
 bool Voxel::UI::Node::addChild(Node * child)
 {
 	if (child == nullptr) return false;
+	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
+	{
+		return false;
+	}
 
 	if (children.empty())
 	{
@@ -170,12 +222,22 @@ bool Voxel::UI::Node::addChild(Node * child)
 
 bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, int zOrder)
 {
+	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
+	{
+		return false;
+	}
+
 	return addChild(child, ZOrder(zOrder));
 }
 
 bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, Voxel::ZOrder& zOrder)
 {
 	if (child == nullptr) return false;
+
+	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
+	{
+		return false;
+	}
 
 	bool result = getNextZOrder(zOrder);
 
@@ -186,6 +248,12 @@ bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, Voxel::ZOrder& zOrder)
 	else
 	{
 		children.insert(std::make_pair(zOrder, std::unique_ptr<Voxel::UI::Node>(child)));
+
+		child->parent = this;
+
+		// New child added. Update model matrix based on parent's model matrix
+		child->updateModelMatrix();
+		
 		return true;
 	}
 }
@@ -279,12 +347,80 @@ Node * Voxel::UI::Node::getChild(const std::string & name)
 	return nullptr;
 }
 
+bool Voxel::UI::Node::hasChildren()
+{
+	return !(children.empty());
+}
+
+void Voxel::UI::Node::getAllChildrenInVector(std::vector<Node*>& nodes, Node * parent)
+{
+	if (children.empty())
+	{
+		return;
+	}
+	else
+	{
+		std::vector<Node*> negativesOrder, positiveOrder;
+
+		for (auto& e : children)
+		{
+			if ((e.first).globalZOrder < 0)
+			{
+				if ((e.second)->hasChildren())
+				{
+					(e.second)->getAllChildrenInVector(negativesOrder, (e.second).get());
+				}
+				else
+				{
+					negativesOrder.push_back((e.second).get());
+				}
+			}
+			else
+			{
+				if ((e.second)->hasChildren())
+				{
+					(e.second)->getAllChildrenInVector(positiveOrder, (e.second).get());
+				}
+				else
+				{
+					positiveOrder.push_back((e.second).get());
+				}
+			}
+		}
+
+		if (!negativesOrder.empty())
+		{
+			nodes.insert(nodes.end(), negativesOrder.begin(), negativesOrder.end());
+		}
+
+		nodes.push_back(parent);
+
+		if (!positiveOrder.empty())
+		{
+			nodes.insert(nodes.end(), positiveOrder.begin(), positiveOrder.end());
+		}
+	}
+}
+
 void Voxel::UI::Node::update(const float delta)
 {
 	if (sequence)
 	{
+		needToUpdateModelMat = true;
+	}
 
+
+	/*
+	if (needToUpdateModelMat)
+	{
 		updateModelMatrix();
+		needToUpdateModelMat = false;
+	}
+	*/
+
+	for (auto& e : children)
+	{
+		(e.second)->update(delta);
 	}
 }
 
@@ -298,6 +434,38 @@ void Voxel::UI::Node::runAction(Voxel::UI::Sequence * sequence)
 	this->sequence = sequence;
 }
 
+void Voxel::UI::Node::render()
+{
+	if (children.empty())
+	{
+		renderSelf();
+	}
+	else
+	{
+		auto children_it = children.begin();
+		auto beginZOrder = ((children_it)->first).getGlobalZOrder();
+
+		if (beginZOrder < 0)
+		{
+			// has negative ordered children
+			for (; ((children_it)->first).getGlobalZOrder() < 0; children_it++)
+			{
+				((children_it)->second)->render();
+			}
+		}
+		// else, doesn't have negative ordered children
+
+		// Render self
+		renderSelf();
+
+		// Render positive 
+		for (; children_it != children.end(); children_it++)
+		{
+			((children_it)->second)->render();
+		}
+	}
+}
+
 void Voxel::UI::Node::print(const int tab)
 {
 	for (int i = 0; i < tab; i++)
@@ -308,11 +476,42 @@ void Voxel::UI::Node::print(const int tab)
 	std::cout << name << "\n";
 }
 
-void Voxel::UI::Node::updateModelMatrix()
+glm::vec2 Voxel::UI::Node::getContentSize()
 {
-	modelMat = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * boundingBox.size * scale * -1.0f, 0)), glm::vec3(scale, 1));
+	glm::vec2 scaled = contentSize;
+	scaled.x *= scale.x;
+	scaled.y *= scale.y;
+
+	return scaled;
 }
 
+glm::mat4 Voxel::UI::Node::getModelMatrix()
+{
+	return glm::scale(glm::translate(glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0)), glm::vec3(pivot * getContentSize() * -1.0f, 0)), glm::vec3(scale, 1));
+}
+
+void Voxel::UI::Node::updateModelMatrix()
+{
+	// Update model matrix
+	if (parent)
+	{
+		modelMat = parent->getModelMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
+	}
+	else
+	{
+		modelMat = getModelMatrix();
+	}
+
+	// Check if this node has children
+	if (hasChildren())
+	{
+		// Update model matrix for children as well
+		for (auto& e : children)
+		{
+			(e.second)->updateModelMatrix();
+		}
+	}
+}
 //====================================================================================================================================
 
 //============================================================== Canvas ==============================================================
@@ -321,11 +520,14 @@ Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition)
 	: Node()
 	, size(size)
 	, centerPosition(centerPosition)
-	, uiScreenMatrix(1.0f)
 {
 	std::cout << "[Canvas] Creating new canvas\n";
 	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
 	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")\n";
+
+	contentSize = size;
+
+	updateModelMatrix();
 }
 
 void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
@@ -333,15 +535,41 @@ void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
 	this->size = size;
 }
 
+void Voxel::UI::Canvas::updateModelMatrix()
+{
+	modelMat = Camera::mainCamera->getScreenSpaceMatrix() * Voxel::UI::Node::getModelMatrix();
+}
+
+glm::mat4 Voxel::UI::Canvas::getModelMatrix()
+{
+	return modelMat;
+}
+
 void Voxel::UI::Canvas::update(const float delta)
 {
+	for (auto& e : children)
+	{
+		(e.second)->update(delta);
+	}
+}
+
+void Voxel::UI::Canvas::renderSelf()
+{
+	if (!visibility) return;
+
+	// parent matrix is screen space matrix
 }
 
 void Voxel::UI::Canvas::render()
 {
 	if (!visibility) return;
-
-	uiScreenMatrix = glm:: glm::translate(glm::mat4(1.0f), glm::vec3(centerPosition, 0.0f));
+	
+	// Iterate children
+	for (auto& e : children)
+	{
+		// Multiply model matrix with screen space
+		(e.second)->render();
+	}
 
 	/*
 	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
@@ -401,9 +629,13 @@ void Voxel::UI::Canvas::render()
 Voxel::UI::Image::Image(const std::string& name)
 	: Node(name)
 	, vao(0)
+	, indicesSize(0)
 	, texture(nullptr)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	, bbVao(0)
+#endif
 {
-	program = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	program = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 }
 
 Image::~Image()
@@ -430,7 +662,7 @@ Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFi
 	}
 }
 
-Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & name, const std::string & imageFileName, const std::string & spriteSheetName)
+Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & name, const std::string & spriteSheetName, const std::string & imageFileName)
 {
 	auto& ssm = SpriteSheetManager::getInstance();
 
@@ -465,7 +697,7 @@ bool Voxel::UI::Image::init(const std::string& textureName)
 		return false;
 	}
 
-	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
 	auto size = texture->getTextureSize();
 
@@ -473,8 +705,8 @@ bool Voxel::UI::Image::init(const std::string& textureName)
 
 	boundingBox.center = position;
 	boundingBox.size = size;
-	
-	updateModelMatrix();
+
+	contentSize = size;
 
 	build(vertices, Quad::getColors(glm::vec4(1.0f)), Quad::uv, Quad::indices);
 
@@ -483,9 +715,14 @@ bool Voxel::UI::Image::init(const std::string& textureName)
 
 bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName)
 {
-	this->texture = ss->getTexture();
+	texture = ss->getTexture();
 
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 	
 	auto imageEntry = ss->getImageEntry(textureName);
 
@@ -506,26 +743,11 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 	boundingBox.center = position;
 	boundingBox.size = size;
 
-	updateModelMatrix();
-
+	contentSize = size;
+	
 	build(vertices, Quad::getColors(glm::vec4(1.0f)), uvs, Quad::indices);
 
 	return true;
-}
-
-void Voxel::UI::Image::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat)
-{
-	if (!visibility) return;
-	if (!texture) return;
-
-	texture->activate(GL_TEXTURE0);
-	texture->bind();
-
-	program->use(true);
-	program->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMat);
-
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
@@ -539,7 +761,7 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -574,158 +796,78 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 	//========================
 
+	indicesSize = indices.size();
+
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
+
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+
+#endif
 }
+
+void Voxel::UI::Image::renderSelf()
+{
+	// only render self
+	if (texture == nullptr) return;
+	if (indicesSize == 0) return;
+	if (!visibility) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+void Voxel::UI::Image::renderDebugBoundingBoxLine()
+{
+
+}
+#endif
 
 //====================================================================================================================================
 
 //========================================================= Text =====================================================================
 
-
-
-//====================================================================================================================================
-
-
-
-
-
-
-
-Voxel::UI::UINode::UINode()
-	: pivot(glm::vec2(0))
-	, canvasPivot(glm::vec2(0))
-	, position(0)
-	, scale(1)
-	, modelMatrix(1.0f)
-	, visible(true)
-	, boxMin(0)
-	, boxMax(0)
-	, size(0)
-{
-}
-
-void Voxel::UI::UINode::updateMatrix()
-{
-	// Move to pos, move by pivot, then scale
-	modelMatrix = glm::scale(glm::translate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::vec3(pivot * size * scale * -1.0f, 0)), glm::vec3(scale, 1));
-}
-
-void Voxel::UI::UINode::setCanvasPivot(const glm::vec2 & pivot)
-{
-	canvasPivot = pivot;
-}
-
-glm::vec2 Voxel::UI::UINode::getCanvasPivot()
-{
-	return canvasPivot;
-}
-
-void Voxel::UI::UINode::setScale(const glm::vec2 & scale)
-{
-	this->scale = scale;
-	updateMatrix();
-}
-
-void Voxel::UI::UINode::addScale(const glm::vec2 & scale)
-{
-	this->scale += scale;
-	updateMatrix();
-}
-
-void Voxel::UI::UINode::setPosition(const glm::vec2 & position)
-{
-	this->position = position;
-	updateMatrix();
-}
-
-void Voxel::UI::UINode::addPosition(const glm::vec2 & position)
-{
-	this->position += position;
-	updateMatrix();
-}
-
-glm::vec2 Voxel::UI::UINode::getPosition()
-{
-	return position;
-}
-
-void Voxel::UI::UINode::setPivot(const glm::vec2 & pivot)
-{
-	this->pivot = pivot;
-	updateMatrix();
-}
-
-void Voxel::UI::UINode::setVisibility(const bool visibility)
-{
-	visible = visibility;
-}
-
-bool Voxel::UI::UINode::isVisible()
-{
-	return visible;
-}
-
-void Voxel::UI::UINode::setSize(const glm::vec2 & size)
-{
-	this->size = size;
-	this->updateMatrix();
-}
-
-glm::vec2 Voxel::UI::UINode::getSize()
-{
-	return size;
-}
-
-glm::mat4 Voxel::UI::UINode::getModelMatrix()
-{
-	return modelMatrix;
-}
-
-glm::vec4 Voxel::UI::UINode::getBoundingBox()
-{
-	auto min = vec4(boxMin, 1.0f, 1.0f);
-	auto max = vec4(boxMax, 1.0f, 1.0f);
-
-	min = modelMatrix * min;
-	max = modelMatrix * max;
-
-	return glm::vec4(min.x, min.y, max.x, max.y);
-}
-
-
-
-
-
-
-Voxel::UI::Text::Text()
-	: UINode()
+Voxel::UI::Text::Text(const std::string& name)
+	: Node(name)
 	, text("")
-	, maxWidth(0)
-	, totalHeight(0)
 	, align(ALIGN::LEFT)
 	, indicesSize(0)
-	, type(TYPE::STATIC)
-	, maxTextLength(0)
 	, outlined(false)
-	, loaded(false)
 	, color(1.0f)
-	, outlineColor(1.0f)
+	, outlineColor(0.0f)
+	, vao(0)
+	, vbo(0)
+	, cbo(0)
+	, uvbo(0)
+	, ibo(0)
+{}
+
+Voxel::UI::Text::~Text()
 {
+	clear();
 }
 
-Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& position, const glm::vec4& color, const int fontID, ALIGN align, TYPE type, const int maxLength)
+Text * Voxel::UI::Text::create(const std::string & name, const std::string & text, const int fontID, const ALIGN align)
 {
-	Text* newText = new Text();
+	Text* newText = new Text(name);
+
 	newText->font = FontManager::getInstance().getFont(fontID);
 
 	if (newText->font != nullptr)
 	{
-		if (newText->init(text, position, color, align, type, maxLength))
+		if (newText->init(text, align))
 		{
 			return newText;
 		}
@@ -733,12 +875,14 @@ Text * Voxel::UI::Text::create(const std::string & text, const glm::vec2& positi
 
 	delete newText;
 	newText = nullptr;
+
 	return nullptr;
 }
 
-Text * Voxel::UI::Text::createWithOutline(const std::string & text, const glm::vec2 & position, const int fontID, const glm::vec4 & color, const glm::vec4 & outlineColor, ALIGN align, TYPE type, const int maxLength)
+Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec4 & outlineColor, const ALIGN align)
 {
-	Text* newText = new Text();
+	Text* newText = new Text(name);
+
 	newText->font = FontManager::getInstance().getFont(fontID);
 
 	if (newText->font != nullptr)
@@ -746,7 +890,7 @@ Text * Voxel::UI::Text::createWithOutline(const std::string & text, const glm::v
 		// Check if font supports outline
 		if (newText->font->isOutlineEnabled())
 		{
-			if (newText->initWithOutline(text, position, color, outlineColor, align, type, maxLength))
+			if (newText->initWithOutline(text, outlineColor, align))
 			{
 				return newText;
 			}
@@ -755,54 +899,70 @@ Text * Voxel::UI::Text::createWithOutline(const std::string & text, const glm::v
 
 	delete newText;
 	newText = nullptr;
+
 	return nullptr;
+}
+
+bool Voxel::UI::Text::init(const std::string & text, const ALIGN align)
+{
+	this->text = text;
+	this->align = align;
+
+	updateModelMatrix();
+	
+	return buildMesh(true);
+}
+
+bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec4 & outlineColor, ALIGN align)
+{
+	this->text = text;
+	this->align = align;
+	this->outlineColor = outlineColor;
+
+	this->outlined = (this->font->getOutlineSize() > 0);
+
+	updateModelMatrix();
+
+	return buildMesh(true);
 }
 
 void Voxel::UI::Text::setText(const std::string & text)
 {
-	if (!text.empty())
+	// Check if text is empty
+	if (text.empty())
 	{
-		if (text != this->text)
-		{
-			if (type == TYPE::STATIC)
-			{
-				std::cout << "[TEXT] Static text's can't be modified. Use Dynamic Text\n";
-			}
-			else
-			{
-				// Can modify text. reject larger texts
-				if (text.length() >= maxTextLength)
-				{
-					std::cout << "[Text] Can't not rebuild text over initial maximum size\n";
-					return;
-				}
-				else
-				{
-					this->text = text;
-					if (vao)
-					{
-						buildMesh(true);
-					}
-					else
-					{
-						buildMesh(false);
-					}
-				}
-			}
-		}
+		// It's empty. Clear the text.
+		clear();
 	}
 	else
 	{
-		clear();
+		// Not empty. Check if it's different.
+		if (text != this->text)
+		{
+			bool update = false;
+
+			// Check if new text is longer than current text. if so, we have to reallocate the buffer. Else, do nothing
+			if (text.size() > this->text.size())
+			{
+				// new text is larger than current text
+				update = true;
+			}
+			// Else, it's same length or shorter.
+
+			// Different. rebuild text
+			this->text = text;
+
+			buildMesh(update);
+		}
 	}
 }
 
-std::string Voxel::UI::Text::getText()
+std::string Voxel::UI::Text::getText() const
 {
 	return text;
 }
 
-bool Voxel::UI::Text::isOutlined()
+bool Voxel::UI::Text::isOutlined() const
 {
 	return outlined;
 }
@@ -814,92 +974,72 @@ void Voxel::UI::Text::setColor(const glm::vec4 & color)
 	// Todo: rebuild color buffer
 }
 
-glm::vec4 Voxel::UI::Text::getOutlineColor()
+glm::vec4 Voxel::UI::Text::getOutlineColor() const
 {
 	return outlineColor;
 }
 
 void Voxel::UI::Text::clear()
 {
-	text = "";
-}
-
-Voxel::UI::Text::~Text()
-{
 	// Delte buffers
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &ibo);
-	glDeleteBuffers(1, &uvbo);
+	if (vbo)
+		glDeleteBuffers(1, &vbo);
+	if (cbo)
+		glDeleteBuffers(1, &cbo);
+	if (ibo)
+		glDeleteBuffers(1, &ibo);
+	if (uvbo)
+		glDeleteBuffers(1, &uvbo);
+
+	vbo = 0;
+	cbo = 0;
+	ibo = 0;
+	uvbo = 0;
+
 	// Delte array
-	glDeleteVertexArrays(1, &vao);
-}
+	if (vao)
+		glDeleteVertexArrays(1, &vao);
 
-bool Voxel::UI::Text::init(const std::string & text, const glm::vec2& position, const glm::vec4& color, ALIGN align, TYPE type, const int maxLength)
-{
-	this->text = text;
-	this->align = align;
-	this->color = color;
-	this->position = position;
-	this->align = align;
-	this->type = type;
-	this->maxTextLength = maxLength;
-	//color will be same for all color for now
-	// Todo: make char quad to have own separate color
-
-	return buildMesh(false);
-}
-
-bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec2 & position, const glm::vec4 & color, const glm::vec4 & outlineColor, ALIGN align, TYPE type, const int maxLength)
-{
-	this->text = text;
-	this->align = align;
-	this->color = color;
-	this->outlineColor = outlineColor;
-	this->position = position;
-	this->align = align;
-	this->type = type;
-	this->maxTextLength = maxLength;
-
-	return buildMesh(false);
+	vao = 0;
 }
 
 bool Voxel::UI::Text::buildMesh(const bool update)
 {
+	// Check font
 	if (font)
 	{
-		this->outlined = (font->getOutlineSize() > 0);
-
+		// Check text
 		if (text.empty())
 		{
 			return true;
 		}
 
-		if (type == TYPE::DYNAMIC)
-		{
-			if (text.length() >= this->maxTextLength)
-			{
-				// Todo: automatically reallocate buffer with new size
-				std::cout << "[Text] Can't not rebuild text over initial maximum size\n";
-				return false;
-			}
-		}
-
 		// Split text label by line
 		std::vector<std::string> split;
-		std::stringstream ss(text); // Turn the string into a stream.
+
+		// Turn the string into a stream.
+		std::stringstream ss(text); 
+
+		// token (line)
 		std::string tok;
+
+		// iterate and get line by new line char
 		while (getline(ss, tok, '\n'))
 		{
 			split.push_back(tok);
 		}
 
+		// local struct. Defines line size
 		struct LineSize
 		{
+			// Width of line
 			int width;
+			// max bearing of line
 			int maxBearingY;
+			// max bot of line
 			int maxBotY;
 		};
+
 		// This is where we store each line's size so we can properly reposition all character based on align type
 		std::vector<LineSize> lineSizes;
 
@@ -995,19 +1135,23 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		}
 
 		// Set size of Text object. Ignore last line's line gap
-		this->boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap)) * -0.5f);
-		this->boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap)) * 0.5f);
+		auto boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap)) * -0.5f);
+		auto boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap)) * 0.5f);
 
-		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
+		boundingBox.center = position;
+		boundingBox.size = glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y);
 
-		this->updateMatrix();
-
+		contentSize = boundingBox.size;
+		
 		// Pen position. Also called as origin or base line in y pos.
 		std::vector<glm::vec2> penPositions;
+
 		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
 		float curY = boxMax.y;
+
 		//curY -= lineSizes.front().maxBearingY;
 		curY -= font->getSize();
+
 		// Iterate line sizes to find out each line's pen position from origin
 		for (auto lineSize : lineSizes)
 		{
@@ -1050,7 +1194,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		std::vector<unsigned int> indices;
 		std::vector<float> uvVertices;
 		unsigned int indicesIndex = 0;
-		
+
 		for (auto& line : split)
 		{
 			if (line != " ")
@@ -1125,17 +1269,8 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		}
 
 		// load buffer
-		if (update)
-		{
-			updateBuffer(vertices, colors, uvVertices, indices);
-		}
-		else
-		{
-			loadBuffers(vertices, colors, uvVertices, indices);
-		}
-
-		this->loaded = true;
-
+		loadBuffers(vertices, colors, uvVertices, indices, update);
+		
 		return true;
 	}
 	else
@@ -1143,243 +1278,76 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		std::cout << "[Text] Error: Font is nullptr\n";
 		return false;
 	}
-
-	/*
-	// Legacy algorithm back in 2013 inmplemented by myself
-
-	std::vector<float> vertices;
-	std::vector<float> colors;
-	std::vector<unsigned int> indices;
-	std::vector<float> uvVertices;
-
-
-	if (font)
-	{
-		// List of origin of each character.
-		std::vector<glm::vec2> originList;
-		// Iterate through each line and compute origin point of each character to compute vertex
-		// Think like how human writes in lined paper. 
-		originList = computeOrigins(font, split);
-
-		glm::vec2 min(10000, 10000);
-		glm::vec2 max(-10000, -10000);
-
-		unsigned int indicesIndex = 0;
-		int index = 0;
-		for (auto& line : split)
-		{
-			glm::vec2 origin = originList.at(index);
-			index++;
-			unsigned int len = line.size();
-			for (unsigned int i = 0; i < len; i++)
-			{
-				const char c = line[i];
-				Glyph* glyph = font->getCharGlyph(c);
-				if (glyph == nullptr)
-				{
-					std::cout << "[Text] Failed to find glyph for char: " << c << std::endl;
-					continue;
-				}
-
-				if (glyph->valid == false)
-				{
-					std::cout << "[Text] Glyph is invalid\n";
-					continue;
-				}
-
-				// get data from gylph. 
-				int bearingY = glyph->bearingY;
-				int glyphHeight = glyph->height;
-				int glyphWidth = glyph->width;
-
-				// compute vertex quad at origin
-				// Left bottom
-				glm::vec2 p1 = glm::vec2(glyphWidth / -2, -(glyphHeight - bearingY));	// botY
-				// right top
-				glm::vec2 p2 = glm::vec2(glyphWidth / 2, bearingY);
-
-				// get point where each char ahs to move (center of quad)
-				// y just follow's origin's y because that is the guideline for each line
-				glm::vec2 fPos = glm::vec2(origin.x + (static_cast<float>(glyphWidth) * 0.5f), origin.y);
-				// fPos is also distance from origin
-				// So add to vertex to translate
-				p1 += fPos;
-				p2 += fPos;
-
-				if (p1.x < min.x)
-				{
-					min.x = p1.x;
-				}
-				else if (p2.x > max.x)
-				{
-					max.x = p2.x;
-				}
-
-				if (p1.y < min.y)
-				{
-					min.y = p1.y;
-				}
-				else if (p2.y > max.y)
-				{
-					max.y = p2.y;
-				}
-
-				// add to vertices
-				vertices.push_back(p1.x); vertices.push_back(p1.y); vertices.push_back(0);	// left bottom
-				vertices.push_back(p1.x); vertices.push_back(p2.y); vertices.push_back(0);	// left top
-				vertices.push_back(p2.x); vertices.push_back(p1.y); vertices.push_back(0);	// right bottom
-				vertices.push_back(p2.x); vertices.push_back(p2.y); vertices.push_back(0);	// right top
-
-				// Add global color for now
-				for (int j = 0; j < 16; j++)
-				{
-					colors.push_back(1.0f);
-				}
-
-				// compute uv.
-				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvBotRight.y);	// Left bottom
-				uvVertices.push_back(glyph->uvTopLeft.x); uvVertices.push_back(glyph->uvTopLeft.y);	// Left top
-				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvBotRight.y);	// right bottom
-				uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvTopLeft.y);	// right top
-
-				// indices.
-				indices.push_back(indicesIndex * 4);
-				indices.push_back(indicesIndex * 4 + 1);
-				indices.push_back(indicesIndex * 4 + 2);
-				indices.push_back(indicesIndex * 4 + 1);
-				indices.push_back(indicesIndex * 4 + 2);
-				indices.push_back(indicesIndex * 4 + 3);
-
-				indicesIndex++;
-
-				// advance origin
-				origin.x += (glyph->metrics.horiAdvance >> 6);
-			}
-		}
-
-		this->boxMin = min;
-		this->boxMax = max;
-
-		this->setSize(glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y));
-
-		this->updateMatrix();
-
-
-
-		if (update)
-		{
-			updateBuffer(vertices, colors, uvVertices, indices);
-		}
-		else
-		{
-			loadBuffers(vertices, colors, uvVertices, indices);
-		}
-
-		return true;
-	}
-	else
-	{
-		std::cout << "[Text] Error: Failed to build mesh with font id: " << fontID << std::endl;
-		return false;
-	}
-	*/
 }
 
-void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool update)
 {
-	// based on data, load data for the first time
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	auto textSize = text.size();
 
-	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	if (type == TYPE::STATIC)
+	if (update)
 	{
-		// Allocate buffer just enough for the text
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-	}
-	else
-	{
+		// reallocate buffer
+		clear();
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXT_SHADER);
+		GLint vertLoc = program->getAttribLocation("vert");
+
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
 		// Allocate empty buffer for max length. 12 vertices(4 vec3) per char * max length
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 12, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 12, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
-	}
 
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glEnableVertexAttribArray(vertLoc);
+		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	GLint colorLoc = program->getAttribLocation("color");
+		GLint colorLoc = program->getAttribLocation("color");
 
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+		glGenBuffers(1, &cbo);
+		glBindBuffer(GL_ARRAY_BUFFER, cbo);
 
-	if (type == TYPE::STATIC)
-	{
-		// Allocate buffer just enough for the text
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	}
-	else
-	{
 		// Allocate empty buffer for max length. 16 vertices(4 vec4) per char * max length
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 16, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 16, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * colors.size(), &colors.front());
-	}
 
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glEnableVertexAttribArray(colorLoc);
+		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	GLint uvVertLoc = program->getAttribLocation("uvVert");
+		GLint uvVertLoc = program->getAttribLocation("uvVert");
 
-	glGenBuffers(1, &uvbo);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+		glGenBuffers(1, &uvbo);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbo);
 
-	if (type == TYPE::STATIC)
-	{
-		// Allocate buffer just enough for the text
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
-	}
-	else
-	{
 		// Allocate empty buffer for max length. 8 verticies (4 vec2) per char * max len
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * maxTextLength * 8, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 8, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * uvs.size(), &uvs.front());
-	}
 
-	glEnableVertexAttribArray(uvVertLoc);
-	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glEnableVertexAttribArray(uvVertLoc);
+		glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glGenBuffers(1, &ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
-	if (type == TYPE::STATIC)
-	{
-		// Allocate buffer just enough for the text
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+		// Allocate empty buffer for max length. 6 indices ( 2 tri) per char * max len
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * textSize * 8, nullptr, GL_DYNAMIC_DRAW);
+		// fill buffer
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * indices.size(), &indices.front());
+
+		indicesSize = indices.size();
+
+		glBindVertexArray(0);
 	}
 	else
 	{
-		// Allocate empty buffer for max length. 6 indices ( 2 tri) per char * max len
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * maxTextLength * 8, nullptr, GL_DYNAMIC_DRAW);
-		// fill buffer
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * indices.size(), &indices.front());
-	}
+		// No need to reallocate buffer.
 
-	indicesSize = indices.size();
-
-	glBindVertexArray(0);
-}
-
-void Voxel::UI::Text::updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
-{
-	if (type == TYPE::DYNAMIC)
-	{
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
@@ -1394,15 +1362,8 @@ void Voxel::UI::Text::updateBuffer(const std::vector<float>& vertices, const std
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(float) * indices.size(), &indices.front());
 
 		indicesSize = indices.size();
-	}
-}
 
-void Voxel::UI::Text::clearBuffer()
-{
-	if (type == TYPE::DYNAMIC)
-	{
-		//instead of delete buffer and all, just render nothing
-		indicesSize = 0;
+		glBindVertexArray(0);
 	}
 }
 
@@ -1534,27 +1495,37 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 	return originList;
 }
 
-void Voxel::UI::Text::render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog)
+void Voxel::UI::Text::renderSelf()
 {
-	if (!visible) return;
 	if (indicesSize == 0) return;
-	if (!loaded) return;
-
+	if (!visibility) return;
 	if (text.empty()) return;
+	if (font == nullptr) return;
 
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
 
-	prog->setUniformMat4("modelMat", screenMat * canvasPivotMat * modelMatrix);
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+
+	if (outlined)
+	{
+		program->setUniformBool("outlined", true);
+		program->setUniformInt("outlineSize", 2);
+		program->setUniformVec4("outlineColor", outlineColor);
+	}
+	else
+	{
+		program->setUniformBool("outlined", false);
+	}
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 }
 
+//====================================================================================================================================
 
-
-
-
+//=================================================== Cursor =========================================================================
 
 Voxel::UI::Cursor::Cursor()
 	: vao(0)
@@ -1584,7 +1555,7 @@ bool Voxel::UI::Cursor::init()
 	// pointer
 	this->texture = ss->getTexture();
 
-	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	this->texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
 	auto size = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 
@@ -1613,7 +1584,7 @@ bool Voxel::UI::Cursor::init()
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
@@ -1779,7 +1750,7 @@ void Voxel::UI::Cursor::render()
 	{
 		if (vao)
 		{
-			auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
+			auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 			program->use(true);
 			program->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
 
@@ -1796,3 +1767,4 @@ void Voxel::UI::Cursor::render()
 	}
 }
 
+//====================================================================================================================================

@@ -59,6 +59,7 @@ Game::Game()
 	, prevMouseCursorPos(0)
 	, chunkWorkManager(nullptr)
 	, defaultCanvas(nullptr)
+	, timeLabel(nullptr)
 	, loadingCanvas(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
@@ -211,35 +212,42 @@ void Voxel::Game::initLoadingScreen()
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 	
 	// loading canvas
-	loadingCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+	loadingCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
 
 	// Add bg
-	auto bg = UI::Image::createFromSpriteSheet("UISpriteSheet", "1x1.png", glm::vec2(0), glm::vec4(1));
+	auto bg = UI::Image::createFromSpriteSheet("bg", "UISpriteSheet", "1x1.png");
+	bg->setPosition(glm::vec2(0.0f));
 	bg->setScale(resolution);
-	loadingCanvas->addImage("bg", bg, 0);
+
+	loadingCanvas->addChild(bg, 0);
 
 	// Add loading label
-	auto loadingLabel = UI::Image::createFromSpriteSheet("UISpriteSheet", "loading_label.png", glm::vec2(-20.0f, 20.0f), glm::vec4(1));
+	auto loadingLabel = UI::Image::createFromSpriteSheet("loadingLabel", "UISpriteSheet", "loading_label.png");
+	loadingLabel->setPosition(glm::vec2(-20.0f, 20.0f));
 	loadingLabel->setPivot(glm::vec2(0.5f, -0.5f));
-	loadingLabel->setCanvasPivot(glm::vec2(0.5f, -0.5f));
-	loadingCanvas->addImage("loadingLabel", loadingLabel, 1);
+	loadingLabel->setCoordinateOrigin(glm::vec2(0.5f, -0.5f));
+
+	loadingCanvas->addChild(loadingLabel, 1);
 }
 
 void Voxel::Game::initDefaultCanvas()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize(); 
 	
-	defaultCanvas = UI::Canvas::create(resolution, glm::vec2(0));
+	defaultCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
 
 	// Add temporary cross hair
-	auto crossHairImage = UI::Image::createFromSpriteSheet("UISpriteSheet", "cross_hair.png", glm::vec2(0), glm::vec4(1.0f));
-	defaultCanvas->addImage("crossHair", crossHairImage, 0);
+	auto crossHairImage = UI::Image::createFromSpriteSheet("crossHair", "UISpriteSheet", "cross_hair.png");
+
+	defaultCanvas->addChild(crossHairImage, 0);
 
 	// Add time label
-	UI::Text* timeLabel = UI::Text::createWithOutline(calendar->getTimeInStr(false), glm::vec2(-200.0f, -5.0f), 2, glm::vec4(1.0f), glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 10);
+	timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), 2, glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT);
+	timeLabel->setPosition(-200.0f, -5.0f);
 	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
-	timeLabel->setCanvasPivot(glm::vec2(0.5f, 0.5f));
-	defaultCanvas->addText("timeLabel", timeLabel, 0);
+	timeLabel->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
+
+	defaultCanvas->addChild(timeLabel, 0);
 
 }
 
@@ -430,6 +438,8 @@ void Game::update(const float delta)
 {
 	if (loadingState == LoadingState::INITIALIZING)
 	{
+		loadingCanvas->update(delta);
+
 		// Game is initializing
 		if (chunkWorkManager->isFirstInitDone())
 		{
@@ -442,6 +452,8 @@ void Game::update(const float delta)
 	}
 	else if (loadingState == LoadingState::RELOADING)
 	{
+		loadingCanvas->update(delta);
+
 		if (chunkWorkManager->isClearing())
 		{
 			// chunk work manager is clearing. don't update stuffs
@@ -599,7 +611,7 @@ void Game::update(const float delta)
 		skybox->update(delta);
 		skybox->updateColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 
-		defaultCanvas->getText("timeLabel")->setText(calendar->getTimeInStr(false));
+		timeLabel->setText(calendar->getTimeInStr(false));
 	}
 }
 
@@ -1658,9 +1670,6 @@ void Game::render(const float delta)
 	{
 		renderGame(delta);
 	}
-	
-	glBindVertexArray(0);
-	glUseProgram(0);
 }
 
 void Voxel::Game::renderGame(const float delta)

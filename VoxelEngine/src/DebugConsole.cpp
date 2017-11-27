@@ -1,4 +1,7 @@
 #include "DebugConsole.h"
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+
 #include <Utility.h>
 #include <Random.h>
 #include <UI.h>
@@ -1739,3 +1742,5 @@ void Voxel::DebugConsole::updateDrawCallsAndVerticesSize()
 	}
 }
 */
+
+#endif

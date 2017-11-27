@@ -122,8 +122,11 @@ namespace Voxel
 		// input handler instance
 		InputHandler* input;
 
-		// UI canvases
+		// UIs
 		UI::Canvas* defaultCanvas;
+		UI::Text* timeLabel;
+
+		// Loading screen
 		UI::Canvas* loadingCanvas;
 
 		// cursor

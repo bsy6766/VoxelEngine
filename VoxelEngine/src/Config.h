@@ -33,7 +33,7 @@
 *	If enabled, allow debug console in the game
 */
 #ifndef V_DEBUG_CONSOLE
-#define V_DEBUG_CONSOLE 1
+#define V_DEBUG_CONSOLE 0
 #endif
 
 /**
@@ -98,6 +98,14 @@
 */
 #ifndef V_DEBUG_COUNT_DRAW_CALLS
 #define V_DEBUG_COUNT_DRAW_CALLS 1
+#endif
+
+/**
+*	@def V_DEBUG_DRAW_UI_BOUNDING_BOX
+*	If enabled, draws UI bounding box
+*/
+#ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
 #endif
 
 #endif

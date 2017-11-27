@@ -25,9 +25,9 @@ namespace Voxel
 			BLOCK_SHADER,
 			POLYGON_SHADER,
 			POLYGON_SIDE_SHADER,
-			TEXTURE_SHADER,
-			TEXT_SHADER,
 			SKYBOX_SHADER,
+			UI_TEXTURE_SHADER,
+			UI_TEXT_SHADER,
 			SHADER_MAX_COUNT
 		};
 	private:
@@ -62,19 +62,19 @@ namespace Voxel
 		*	@return program instance if exists. Else, nullptr;
 		*/
 		Program* getProgram(const PROGRAM_NAME programID);
-
+		
 		/**
-		*	Finds the program by id and uses it
-		*	@param programID An program name enum to use
+		*	Update "projMat" matrix on selected program
+		*	@param projMat New projection matrix to set
 		*/
-		void useDefaultProgram(const PROGRAM_NAME programID);
+		void updateProjMat(const glm::mat4& projMat);
 
 		/**
 		*	Update "projMat" matrix on all program
 		*	@param projMat New projection matrix to set
 		*/
-		void updateProjMat(const glm::mat4& projMat);
-
+		void updateUIProjMat(const glm::mat4& uiProjMat);
+		
 		/**
 		*	Release all programs
 		*/

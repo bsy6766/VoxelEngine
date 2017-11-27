@@ -19,6 +19,7 @@
 // Voxel
 #include <ZOrder.h>
 #include <Shape.h>
+#include <UIAction.h>
 
 namespace Voxel
 {
@@ -37,15 +38,6 @@ namespace Voxel
 		class Text;
 		class Button;
 		class ProgressTimer;
-		class Sequence;
-		class Action;
-		class ActionPack;
-		class MoveTo;
-		class RotateTo;
-		class ScaleTo;
-		class FadeTo;
-		class Delay;
-		class ProgressTo;
 
 		typedef std::map<ZOrder, std::unique_ptr<Node>, ZOrderComp> Children;
 
@@ -59,6 +51,9 @@ namespace Voxel
 		class Node
 		{
 		private:
+			// updates model matrix if it's true
+			bool needToUpdateModelMat;
+
 			// Find next ZOrder
 			bool getNextZOrder(ZOrder& curZOrder);
 		protected:
@@ -71,6 +66,9 @@ namespace Voxel
 
 			// Z order of ui
 			ZOrder zOrder;
+
+			// Parent of this node
+			Node* parent;
 
 			// Visibility. true if visible. false if invisible and ignores opaicty
 			bool visibility;
@@ -89,9 +87,15 @@ namespace Voxel
 
 			// Pivot
 			glm::vec2 pivot;
+
+			// Coordinate origin. This changes coordinate origin, which makes easier to place ui objects.
+			glm::vec2 coordinateOrigin;
 			
 			// Model matrix
 			glm::mat4 modelMat;
+			
+			// Size of original content
+			glm::vec2 contentSize;
 
 			// Bounding box
 			Voxel::Shape::Rect boundingBox;
@@ -105,9 +109,14 @@ namespace Voxel
 			// Program ptr
 			Program* program;
 
-			// Updates model matrix
-			void updateModelMatrix();
+			// Get contensize
+			glm::vec2 getContentSize();
 
+			// calculate model matrix
+			virtual glm::mat4 getModelMatrix();
+			
+			// Updates model matrix based on parent's matrix
+			virtual void updateModelMatrix();
 		public:
 			virtual ~Node();
 
@@ -121,6 +130,13 @@ namespace Voxel
 			*	Get opacity. 
 			*/
 			float getOpacity() const;
+
+			/**
+			*	Set position
+			*	@param x x position in screen space
+			*	@param y y position in screen space
+			*/
+			void setPosition(const float x, const float y);
 
 			/**
 			*	Set position
@@ -167,8 +183,27 @@ namespace Voxel
 			glm::vec2 getPivot() const;
 
 			/**
+			*	Set coordinate origin
+			*	@param coordinateOrigin New coordinate origin to set. Default value is 0.0
+			*/
+			void setCoordinateOrigin(const glm::vec2& coordinateOrigin);
+
+			/**
+			*	Get coordinate origin
+			*/
+			glm::vec2 getCoordinateOrigin() const;
+
+			/**
+			*	Set bounding box
+			*	@param center Center position of bounding box
+			*	@param size Size of bounding box
+			*/
+			void setBoundingBox(const glm::vec2& center, const glm::vec2& size);
+
+			/**
 			*	Get bounding box. 
 			*/
+			Voxel::Shape::Rect getBoundingBox() const;
 
 			/**
 			*	Set Z order
@@ -210,6 +245,18 @@ namespace Voxel
 			Node* getChild(const std::string& name);
 
 			/**
+			*	Check if this node has children
+			*	@return true if has children. Else, false.
+			*/
+			bool hasChildren();
+
+			/**
+			*	Converts children map to vector.
+			*	This will search for neested childrens recursively and add up all.
+			*/
+			void getAllChildrenInVector(std::vector<Node*>& nodes, Node* parent);
+
+			/**
 			*	Updates
 			*	@param delta Elapsed time for current frame
 			*/
@@ -221,9 +268,14 @@ namespace Voxel
 			void runAction(Voxel::UI::Sequence* sequence);
 
 			/**
-			*	Render ui
+			*	Render self. Pure virtual. All UI need to override this to render itself during the ui graph traversal
 			*/
-			void render();
+			virtual void renderSelf() = 0;
+
+			/**
+			*	Render self and children
+			*/
+			virtual void render();
 
 			/**
 			*	Print. for debug
@@ -253,8 +305,6 @@ namespace Voxel
 		private:
 			// Deletes default constructor
 			Canvas() = delete;
-			// Constructor
-			Canvas(const glm::vec2& size, const glm::vec2& centerPosition);
 			
 			// Size of ui space
 			glm::vec2 size;
@@ -262,9 +312,15 @@ namespace Voxel
 			// Center position of canvas in screen space. Center of monitor screen is 0
 			glm::vec2 centerPosition;
 			
-			// UI screen matrix. 
-			glm::mat4 uiScreenMatrix;
+			// Override
+			void updateModelMatrix() override;
+
+			// override
+			glm::mat4 getModelMatrix() override;
 		public:
+			// Constructor
+			Canvas(const glm::vec2& size, const glm::vec2& centerPosition);
+
 			// Destructor.
 			~Canvas() = default;
 			
@@ -280,9 +336,14 @@ namespace Voxel
 			void update(const float delta);
 
 			/**
+			*	Render self
+			*/
+			void renderSelf() override;
+
+			/**
 			*	Render all UI
 			*/
-			void render();
+			void render() override;
 		};
 
 		/**
@@ -308,6 +369,7 @@ namespace Voxel
 
 			// gl
 			GLuint vao;
+			unsigned int indicesSize;
 
 			/**
 			*	Initialize image
@@ -335,6 +397,9 @@ namespace Voxel
 			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
 		public:
+			// Destructor.
+			~Image();
+
 			/**
 			*	Creates image with single image file.
 			*	If texture exists with same name, uses existing texture. Else, creates new texture.
@@ -345,85 +410,191 @@ namespace Voxel
 
 			/**
 			*	Creates image from sprite sheet.
-			*	@param imageFileName Name of image file.
 			*	@param spriteSheetName Name of image file.
+			*	@param imageFileName Name of image file.
 			*	@return Image instance if successfully loads image and creates ui. Else, nullptr if anything fails.
 			*/
-			static Image* createFromSpriteSheet(const std::string& name, const std::string& imageFileName, const std::string& spriteSheetName);
-
-			// Destructor.
-			~Image();
+			static Image* createFromSpriteSheet(const std::string& name, const std::string& spriteSheetName, const std::string& imageFileName);
 
 			/**
-			*	Render image
-			*	@param uiScreenMatrix A matrix that translates ui to ui screen space based on camera
-			*	@param parentPi
+			*	Render self
 			*/
-			void render(const glm::mat4& uiScreenMatrix, const glm::mat4& canvasPivotMat);
-		};
+			void renderSelf() override;
 
+			/**
+			*	Override. @see Voxel::UI::Node::render(const glm::mat4&)
+			*	@param parentNodeMat Parent node's model matrix. If parent is Canvas, ui screen space matrix is applied
+			*/
+			//void render(const glm::mat4& parentMatrix) override;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+
+			// render debug bounding box
+			void renderDebugBoundingBoxLine();
+#endif
+		};
 
 		/**
-		*	@class UINode
-		*	@brief Base class of any UI classes that contains model matrix(pos, scale in xy and rotation) with pivot data
+		*	@class Text
+		*	@brief List of quads where each quad renders each character.
+		*
+		*	Text class builds list of quads one by one, based on font metric.
+		*	It doesn't provide any font related function, such as linespace or size modification.
+		*	Use FontManager to get font and modify values from there.
 		*/
-		class UINode
+		class Text : public Node
 		{
-		protected:
-			UINode();
-
-			// True if visible. Renders object.
-			bool visible;
-
-			// Pivot. -0.5f ~ 0.5f. (0, 0) by default
-			glm::vec2 pivot;
-			// canvas pivot
-			glm::vec2 canvasPivot;
-
-			// Position in screen space
-			glm::vec2 position;
-			// scale in screen sapce
-			glm::vec2 scale;
-			// rotation
-			// glm::vec3 rotation;
-			// Model Matrix
-			glm::mat4 modelMatrix;
-
-			// Bounding box
-			glm::vec2 boxMin;
-			glm::vec2 boxMax;
-
-			// Size
-			glm::vec2 size;
-
-			virtual void updateMatrix();
 		public:
-			virtual ~UINode() = default;
+			// Text align
+			enum class ALIGN
+			{
+				LEFT = 0,
+				CENTER,
+				RIGHT
+			};
+		private:
+			// Constructor
+			Text(const std::string& name);
 			
-			virtual void setScale(const glm::vec2& scale);
-			virtual void addScale(const glm::vec2& scale);
+			// String text
+			std::string text;
 
-			virtual void setPosition(const glm::vec2& position);
-			virtual void addPosition(const glm::vec2& position);
-			virtual glm::vec2 getPosition();
+			// Pointer to font
+			Font* font;
 
-			virtual void setPivot(const glm::vec2& pivot);
+			// gl
+			GLuint vao;
+			GLuint vbo;
+			GLuint cbo;
+			GLuint uvbo;
+			GLuint ibo;
+			unsigned int indicesSize;
 
-			virtual void setVisibility(const bool visibility);
-			virtual bool isVisible();
+			// Color of text
+			glm::vec4 color;
 
-			virtual void setSize(const glm::vec2& size);
-			virtual glm::vec2 getSize();
+			// Color of outline
+			glm::vec4 outlineColor;
+						
+			// align
+			ALIGN align;
 
-			glm::mat4 getModelMatrix();
+			// outline
+			bool outlined;
 
-			// returns min and max point of box
-			glm::vec4 getBoundingBox();
+			/**
+			*	Initialize text.
+			*/
+			bool init(const std::string& text, const ALIGN align = ALIGN::LEFT);
 
-			virtual void setCanvasPivot(const glm::vec2& pivot);
-			virtual glm::vec2 getCanvasPivot();
+			/**
+			*	Initialize text with outline
+			*/
+			bool initWithOutline(const std::string& text, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT);
+
+			/**
+			*	Builds mesh and loads. 
+			*	@param update true if it's building mesh for updating text. false if it's newly 
+			*/
+			bool buildMesh(const bool update);
+
+			/**
+			*	Load buffers.
+			*	@param vertices Text vertices.
+			*	@param color Text colors.
+			*	@param uvs Texture coordinates for each character
+			*	@param indices Indices for rendering
+			*	@param update true if it needs to reallocate buffer. Else, false.
+			*/
+			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool update);
+
+			/**
+			*	Computes the origin point for each line
+			*	Origin point equals to point where guide lines start in real life notebooks. 
+			*/
+			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
+
+		public:
+			// Destructor
+			~Text();
+
+			/**
+			*	Create text
+			*	@param name Name of ui
+			*	@param text A string text to render
+			*	@param fontID Font id to use
+			*	@param align Text align. Left by default.
+			*	@return Text ui if successfully loads text to render. Else, nullptr
+			*/
+			static Text* create(const std::string& name, const std::string& text, const int fontID, const ALIGN align = ALIGN::LEFT);
+
+			/**
+			*	Create text
+			*	@param name Name of ui
+			*	@param text A string text to render
+			*	@param fontID Font id to use
+			*	@param outlineColor Color of text outline
+			*	@param align Text align. Left by default.
+			*	@return Text ui if successfully loads text to render. Else, nullptr
+			*/
+			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec4& outlineColor = glm::vec4(0.0f), const ALIGN align = ALIGN::LEFT);
+
+			/**
+			*	Sets text.
+			*	Rebuild buffer and updates
+			*	@param text A string text to set.
+			*/
+			void setText(const std::string& text);
+
+			/**
+			*	Get text
+			*/
+			std::string getText() const;
+
+			/**
+			*	Checks if text is outlined
+			*	@return true if text is outlined. Else, false.
+			*/
+			bool isOutlined() const;
+
+			/**
+			*	Set text color. White by default
+			*	@param color Color of text in range of 0.0 ~ 1.0
+			*/
+			void setColor(const glm::vec4& color);
+
+			/**
+			*	Set outline color. Black by default
+			*	@param color Color of text in range of 0.0 ~ 1.0
+			*/
+			void setOutlineColor(const glm::vec4& color);
+
+			/**
+			*	Get outline color
+			*/
+			glm::vec4 getOutlineColor() const;
+
+			/**
+			*	Clear text.
+			*/
+			void clear();
+
+			/**
+			*	Render self
+			*/
+			void renderSelf() override;
+			
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+
+			// render debug bounding box
+			void renderDebugBoundingBoxLine();
+#endif
 		};
-
+		
 		/**
 		*	@class Cursor
 		*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
@@ -491,89 +662,10 @@ namespace Voxel
 		};
 
 		/**
-		*	@class Text
-		*	@brief List of quads where each quad renders each character.
-		*
-		*	Text class builds list of quads one by one, based on font metric.
-		*	It doesn't provide any font related function, such as linespace or size modification.
-		*	Use FontManager to get font and modify values from there.
-		*/
-		class Text : public UINode
-		{
-		public:
-			enum class ALIGN
-			{
-				LEFT = 0,
-				CENTER,
-				RIGHT
-			};
-
-			enum class TYPE
-			{
-				STATIC = 0,
-				DYNAMIC
-			};
-		private:
-			Text();
-
-			bool loaded;
-
-			std::string text;
-
-			Font* font;
-
-			GLuint vao;
-			GLuint vbo;
-			GLuint cbo;
-			GLuint uvbo;
-			GLuint ibo;
-
-			TYPE type;
-
-			glm::vec4 color;
-			glm::vec4 outlineColor;
-
-			unsigned int indicesSize;
-			unsigned int maxTextLength;
-			
-			float maxWidth;
-			float totalHeight;
-			
-			ALIGN align;
-
-			bool outlined;
-
-			bool init(const std::string& text, const glm::vec2& position, const glm::vec4& color, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
-			bool initWithOutline(const std::string& text, const glm::vec2& position, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
-			bool buildMesh(const bool update);
-			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
-			void updateBuffer(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
-			void clearBuffer();
-			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
-		public:
-			~Text();
-
-			static Text* create(const std::string& text, const glm::vec2& position, const glm::vec4& color, int fontID, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC,  const int maxLength = 0);
-			static Text* createWithOutline(const std::string& text, const glm::vec2& position, const int fontID, const glm::vec4& color, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT, TYPE type = TYPE::STATIC, const int maxLength = 0);
-
-			void setText(const std::string& text);
-			std::string getText();
-
-			bool isOutlined();
-
-			void setColor(const glm::vec4& color);
-			glm::vec4 getOutlineColor();
-
-			void clear();
-
-			void render(const glm::mat4& screenMat, const glm::mat4& canvasPivotMat, Program* prog);
-		};
-
-		/**
 		*	@class Mesh
 		*	@brief 3D object ui
 		*/
-		class Mesh : public UINode
+		class Mesh : public Node
 		{
 		private:
 			glm::mat4 modelMat;

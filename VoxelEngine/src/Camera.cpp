@@ -86,6 +86,7 @@ void Voxel::Camera::updateScreenSizeAndAspect(const float screenWidth, const flo
 void Voxel::Camera::updateProjection()
 {
 	ProgramManager::getInstance().updateProjMat(getProjection());
+	ProgramManager::getInstance().updateUIProjMat(getProjection(Camera::UIFovy));
 	
 	frustum->updateProjection(fovy, aspect, nears, fars);
 }
