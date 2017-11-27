@@ -21,7 +21,7 @@ using namespace Voxel::UI;
 
 Voxel::UI::Node::Node()
 	: visibility(true)
-	, opacity(0.0f)
+	, opacity(1.0f)
 	, position(0.0f)
 	, angle(0.0f)
 	, scale(1.0f)
@@ -40,7 +40,7 @@ Voxel::UI::Node::Node()
 Voxel::UI::Node::Node(const std::string & name)
 	: name(name)
 	, visibility(true)
-	, opacity(0.0f)
+	, opacity(1.0f)
 	, position(0.0f)
 	, angle(0.0f)
 	, scale(1.0f)
@@ -62,6 +62,21 @@ Voxel::UI::Node::~Node()
 	{
 		delete sequence;
 	}
+}
+
+std::string Voxel::UI::Node::getName() const
+{
+	return name;
+}
+
+void Voxel::UI::Node::setVisibility(const bool visibility)
+{
+	this->visibility = visibility;
+}
+
+bool Voxel::UI::Node::getVisibility() const
+{
+	return visibility;
 }
 
 void Voxel::UI::Node::setOpacity(const float opacity)
@@ -476,6 +491,22 @@ void Voxel::UI::Node::print(const int tab)
 	std::cout << name << "\n";
 }
 
+void Voxel::UI::Node::printChildren(const int tab)
+{
+	std::string str = "";
+
+	for (int i = 0; i < tab; i++)
+	{
+		str += "\t";
+	}
+
+	for (auto& e : children)
+	{
+		std::cout << str << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
+		e.second->printChildren(tab + 1);
+	}
+}
+
 glm::vec2 Voxel::UI::Node::getContentSize()
 {
 	glm::vec2 scaled = contentSize;
@@ -622,6 +653,26 @@ void Voxel::UI::Canvas::render()
 	*/
 }
 
+void Voxel::UI::Canvas::print(const int tab)
+{
+	std::cout << "[Canvas] Canvas info...\n";
+	std::cout << "Size (" << size.x << ", " << size.y << ")\n";
+	std::cout << "Pos  (" << position.x << ", " << position.y << ")\n";
+
+	std::cout << "UIs\n";
+
+	for (auto& e : children)
+	{
+		std::cout << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
+		if (e.second->hasChildren())
+		{
+			e.second->printChildren(1);
+		}
+	}
+
+	std::cout << "\n";
+}
+
 //====================================================================================================================================
 
 //============================================================== Image ===============================================================
@@ -714,7 +765,7 @@ bool Voxel::UI::Image::init(const std::string& textureName)
 
 	contentSize = size;
 
-	build(vertices, Quad::getColors(glm::vec4(1.0f)), Quad::uv, Quad::indices);
+	build(vertices, Quad::getColors3(glm::vec3(1.0f)), Quad::uv, Quad::indices);
 
 	return true;
 }
@@ -751,7 +802,7 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 
 	contentSize = size;
 	
-	build(vertices, Quad::getColors(glm::vec4(1.0f)), uvs, Quad::indices);
+	build(vertices, Quad::getColors3(glm::vec3(1.0f)), uvs, Quad::indices);
 
 	return true;
 }
@@ -784,7 +835,7 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
@@ -864,6 +915,7 @@ void Voxel::UI::Image::renderSelf()
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
@@ -1062,6 +1114,7 @@ void Voxel::UI::Text::clear()
 	{
 		// Delte array
 		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
 	}
 #endif
 }
@@ -1306,7 +1359,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 						colors.push_back(color.r);
 						colors.push_back(color.g);
 						colors.push_back(color.b);
-						colors.push_back(color.a);
+						//colors.push_back(color.a);
 					}
 
 					// uv.
@@ -1330,6 +1383,8 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 
 			penPosIndex++;
 		}
+
+		updateModelMatrix();
 
 		// load buffer
 		loadBuffers(vertices, colors, uvVertices, indices, update);
@@ -1374,13 +1429,13 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 		glGenBuffers(1, &cbo);
 		glBindBuffer(GL_ARRAY_BUFFER, cbo);
 
-		// Allocate empty buffer for max length. 16 vertices(4 vec4) per char * max length
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 16, nullptr, GL_DYNAMIC_DRAW);
+		// Allocate empty buffer for max length. 12 vertices(4 vec3) per char * max length
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 12, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * colors.size(), &colors.front());
 
 		glEnableVertexAttribArray(colorLoc);
-		glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		GLint uvVertLoc = program->getAttribLocation("uvVert");
 
@@ -1437,7 +1492,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 
 	glGenVertexArrays(1, &bbVao);
 	glBindVertexArray(bbVao);
-
+	
 	auto min = -boundingBox.size * 0.5f;
 	auto max = boundingBox.size * 0.5f;
 
@@ -1612,12 +1667,14 @@ void Voxel::UI::Text::renderSelf()
 	if (!visibility) return;
 	if (text.empty()) return;
 	if (font == nullptr) return;
+	if (vao == 0) return;
 
 	font->activateTexture(GL_TEXTURE0);
 	font->bind();
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
 
 	if (outlined)
 	{
@@ -1687,7 +1744,7 @@ bool Voxel::UI::Cursor::init()
 
 	auto vertices = Quad::getVertices(glm::vec2(imageEntry->width, imageEntry->height));
 	auto indices = Quad::indices;
-	auto colors = Quad::getColors(glm::vec4(1.0f));
+	auto colors = Quad::getColors3(glm::vec3(1.0f));
 
 	auto& uvOrigin = imageEntry->uvOrigin;
 	auto& uvEnd = imageEntry->uvEnd;
@@ -1722,7 +1779,7 @@ bool Voxel::UI::Cursor::init()
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 

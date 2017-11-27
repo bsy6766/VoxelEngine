@@ -89,7 +89,21 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
 	}
 }
 
-std::vector<float> Voxel::Quad::getColors(const glm::vec4 & color)
+std::vector<float> Voxel::Quad::getColors3(const glm::vec3 & color)
+{
+	auto colors = std::vector<float>();
+
+	for (int i = 0; i < 4; i++)
+	{
+		colors.push_back(color.r);
+		colors.push_back(color.g);
+		colors.push_back(color.b);
+	}
+
+	return colors;
+}
+
+std::vector<float> Voxel::Quad::getColors4(const glm::vec4 & color)
 {
 	auto colors = std::vector<float>();
 

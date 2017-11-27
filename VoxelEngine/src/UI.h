@@ -121,6 +121,23 @@ namespace Voxel
 			virtual ~Node();
 
 			/**
+			*	Get name
+			*/
+			std::string getName() const;
+
+			/**
+			*	Set visibility
+			*	Setting visibility false will also affect all the children
+			*	@parma visibility true to render this ui. false to not render.
+			*/
+			void setVisibility(const bool visibility);
+
+			/**
+			*1	Get visibility
+			*/
+			bool getVisibility() const;
+
+			/**
 			*	Set opacity
 			*	@param opacity Value of new opacity. Must be 0.0 ~ 1.0
 			*/
@@ -277,10 +294,9 @@ namespace Voxel
 			*/
 			virtual void render();
 
-			/**
-			*	Print. for debug
-			*/
-			void print(const int tab);
+			// Debug print
+			virtual void print(const int tab);
+			void printChildren(const int tab);
 		};
 
 		/**
@@ -344,6 +360,9 @@ namespace Voxel
 			*	Render all UI
 			*/
 			void render() override;
+
+			// print
+			void print(const int tab) override;
 		};
 
 		/**

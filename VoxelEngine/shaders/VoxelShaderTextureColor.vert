@@ -6,6 +6,7 @@ layout(location = 2) in vec2 uvVert;
 
 uniform mat4 projMat;
 uniform mat4 modelMat;
+uniform float opacity;
 
 out vec2 fragTexCoord;
 out vec4 vertColor;
@@ -13,6 +14,6 @@ out vec4 vertColor;
 void main()
 {
 	gl_Position = projMat * modelMat * vec4(vert, 1);
-	vertColor = color;
+	vertColor = vec4(color.xyz, opacity);
 	fragTexCoord = uvVert;
 }

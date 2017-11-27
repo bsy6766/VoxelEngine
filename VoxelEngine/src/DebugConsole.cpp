@@ -47,7 +47,7 @@ DebugConsole::DebugConsole()
 	, calendar(nullptr)
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
-	debugCanvas = UI::Canvas::create(glm::vec2(res), glm::vec2(0));
+	debugCanvas = new UI::Canvas(glm::vec2(res), glm::vec2(0));
 
 	init();
 
@@ -67,38 +67,40 @@ void Voxel::DebugConsole::init()
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 	this->settingPtr = &Setting::getInstance();
 
-	commandInputField = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.225f));
+	commandInputField = UI::Image::createFromSpriteSheet("cmdInputField", "UISpriteSheet", "2x2.png");
 	commandInputField->setPivot(glm::vec2(0, -0.5f));
-	commandInputField->setCanvasPivot(glm::vec2(0, -0.5f));
+	commandInputField->setCoordinateOrigin(glm::vec2(0, -0.5f));
 	commandInputField->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
+	commandInputField->setOpacity(0.45f);
 	commandInputField->setVisibility(false);
 
-	debugCanvas->addImage("cmdInputField", commandInputField, 0);
+	debugCanvas->addChild(commandInputField, 0);
 
-	commandHistoryBg = UI::Image::createFromSpriteSheet("UISpriteSheet", "2x2.png", glm::vec2(0), glm::vec4(1, 1, 1, 0.45f));
-	commandHistoryBg->setCanvasPivot(glm::vec2(0, -0.5f));
+	commandHistoryBg = UI::Image::createFromSpriteSheet("cmdHistoryBg", "UISpriteSheet", "2x2.png");
+	commandHistoryBg->setCoordinateOrigin(glm::vec2(0, -0.5f));
 	commandHistoryBg->setPivot(glm::vec2(0, -0.5f));
 	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 85.0f));
+	commandHistoryBg->setOpacity(0.45f);
 	commandHistoryBg->setVisibility(false);
 
-	debugCanvas->addImage("commandHistoryBg", commandHistoryBg, 0);
+	debugCanvas->addChild(commandHistoryBg, 0);
 
-	command = UI::Text::create(DefaultCommandInputText, glm::vec2(5.0f, 15.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 128);
-	command->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	command = UI::Text::create("cmd", DefaultCommandInputText, 1);
+	command->setPosition(glm::vec2(5.0f, 15.0f));
 	command->setPivot(glm::vec2(-0.5f, 0.5f));
-	command->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
+	command->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	command->setVisibility(false);
 
-	debugCanvas->addText("command", command, 0);
+	debugCanvas->addChild(command, 0);
 
-	commandHistorys = UI::Text::create("_", glm::vec2(5.0f, 23.0f), glm::vec4(1.0f), 1, Voxel::UI::Text::ALIGN::LEFT, Voxel::UI::Text::TYPE::DYNAMIC, 1024);
+	commandHistorys = UI::Text::create("cmdHistorys", "_", 1);
+	commandHistorys->setPosition(glm::vec2(5.0f, 23.0f));
 	commandHistorys->setText("");
-	commandHistorys->setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	commandHistorys->setPivot(glm::vec2(-0.5f, -0.5f));
-	commandHistorys->setCanvasPivot(glm::vec2(-0.5f, -0.5f));
+	commandHistorys->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	commandHistorys->setVisibility(false);
 
-	debugCanvas->addText("commandHistorys", commandHistorys, 0);
+	debugCanvas->addChild(commandHistorys, 0);
 
 	auto glview = Application::getInstance().getGLView();
 
@@ -111,88 +113,92 @@ void Voxel::DebugConsole::init()
 	glm::vec4 outlineColor = glm::vec4(0, 0, 0, 1.0f);
 	const int fontID = 2;
 
-	/*
-	staticLabels = UI::Text::createWithOutline("fps:\nresolution:\nvsync:\n\nCPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion + "\n\nplayer position:\nplayer chunk position:\nplayer looking at:\n\nChunk:\n\nBiome:\n\nRegion:", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor);
-	staticLabels->setVisibility(false);
-	staticLabels->setPivot(glm::vec2(-0.5f, 0.5f));
-	staticLabels->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
-
-	debugCanvas->addText("staticLabels", staticLabels, 0);
-	*/
-
-	//defaultCanvas->addText("FPSLabel", "FPS: ", glm::vec2(-50, 70), 1, UI::Text::ALIGN::LEFT, UI::Text::TYPE::STATIC);
-	fpsNumber = UI::Text::createWithOutline("fps: 00000", glm::vec2(5.0f, -5.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	fpsNumber = UI::Text::createWithOutline("fpsNumber", "fps: 00000", fontID, outlineColor);
+	fpsNumber->setPosition(glm::vec2(5.0f, -5.0f));
 	fpsNumber->setPivot(glm::vec2(-0.5f, 0.5f));
-	fpsNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	fpsNumber->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	fpsNumber->setVisibility(false);
-	debugCanvas->addText("fpsNumber", fpsNumber, 0);
+	debugCanvas->addChild(fpsNumber, 0);
 
-	resolutionNumber = UI::Text::createWithOutline("resolution: " + std::to_string(resolution.x) + " x " + std::to_string(resolution.y), glm::vec2(5.0f, -19.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 32);
+	resolutionNumber = UI::Text::createWithOutline("resolutionNumber", "resolution: " + std::to_string(resolution.x) + " x " + std::to_string(resolution.y), fontID, outlineColor);
 	resolutionNumber->setPivot(glm::vec2(-0.5f, 0.5f));
-	resolutionNumber->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	resolutionNumber->setPosition(glm::vec2(5.0f, -19.0f));
+	resolutionNumber->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setVisibility(false);
-	debugCanvas->addText("resolutionNumber", resolutionNumber, 0);
+	debugCanvas->addChild(resolutionNumber, 0);
 
 	auto vsync = Application::getInstance().getGLView()->isVsyncEnabled();
-	vsyncMode = UI::Text::createWithOutline("vsync: " + (vsync ? std::string("true") : std::string("false")), glm::vec2(5.0f, -33.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	vsyncMode = UI::Text::createWithOutline("vsyncMode", "vsync: " + (vsync ? std::string("true") : std::string("false")), fontID, outlineColor);
 	vsyncMode->setPivot(glm::vec2(-0.5f, 0.5f));
-	vsyncMode->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	vsyncMode->setPosition(glm::vec2(5.0f, -33.0f));
+	vsyncMode->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
-	debugCanvas->addText("vsyncMode", vsyncMode, 0);
+	debugCanvas->addChild(vsyncMode, 0);
 
-	hardwardInfo = UI::Text::createWithOutline("CPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion, glm::vec2(5.0f, -61.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	hardwardInfo = UI::Text::createWithOutline("hardwardInfo", "CPU:" + CPUName + "\n" + GPUVendor + "\n" + GPURenderer + "\n" + GLVersion, fontID, outlineColor);
 	hardwardInfo->setPivot(glm::vec2(-0.5f, 0.5f));
-	hardwardInfo->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	hardwardInfo->setPosition(glm::vec2(5.0f, -61.0f));
+	hardwardInfo->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	hardwardInfo->setVisibility(false);
-	debugCanvas->addText("hardwardInfo", hardwardInfo, 0);
+	debugCanvas->addChild(hardwardInfo, 0);
 
-	playerPosition = UI::Text::createWithOutline("player position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -131.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerPosition = UI::Text::createWithOutline("playerPosition", "player position: 00000.00, 00000.00, 00000.00", fontID, outlineColor);
 	playerPosition->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerPosition->setPosition(glm::vec2(5.0f, -131.0f));
+	playerPosition->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerPosition->setVisibility(false);
-	debugCanvas->addText("playerPosition", playerPosition, 0);
+	debugCanvas->addChild(playerPosition, 0);
 
-	playerRotation = UI::Text::createWithOutline("player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", glm::vec2(5.0f, -145.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	playerRotation = UI::Text::createWithOutline("playerRotation", "player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", fontID, outlineColor);
 	playerRotation->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerRotation->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerRotation->setPosition(glm::vec2(5.0f, -145.0f));
+	playerRotation->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setVisibility(false);
-	debugCanvas->addText("playerRotation", playerRotation, 0);
+	debugCanvas->addChild(playerRotation, 0);
 
-	playerChunkPosition = UI::Text::createWithOutline("player chunk position: 00000.00, 00000.00, 00000.00", glm::vec2(5.0f, -159.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerChunkPosition = UI::Text::createWithOutline("playerChunkPosition", "player chunk position: 00000.00, 00000.00, 00000.00", fontID, outlineColor);
 	playerChunkPosition->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerChunkPosition->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerChunkPosition->setPosition(glm::vec2(5.0f, -159.0f));
+	playerChunkPosition->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setVisibility(false);
-	debugCanvas->addText("playerChunkPosition", playerChunkPosition, 0);
+	debugCanvas->addChild(playerChunkPosition, 0);
 
-	playerLookingAt = UI::Text::createWithOutline("player looking at: 000000, 000000, 000000 Face (front)", glm::vec2(5.0f, -173.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	playerLookingAt = UI::Text::createWithOutline("playerLookingAt", "player looking at: 000000, 000000, 000000 Face (front)", fontID, outlineColor);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerLookingAt->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	playerLookingAt->setPosition(glm::vec2(5.0f, -173.0f));
+	playerLookingAt->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
-	debugCanvas->addText("playerLookingAt", playerLookingAt, 0);
+	debugCanvas->addChild(playerLookingAt, 0);
 
-	chunkNumbers = UI::Text::createWithOutline("Chunks: 00000 / 00000 / 00000", glm::vec2(5.0f, -201.f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	chunkNumbers = UI::Text::createWithOutline("chunkNumbers", "Chunks: 00000 / 00000 / 00000", fontID, outlineColor);
+	chunkNumbers->setPosition(glm::vec2(5.0f, -201.f));
 	chunkNumbers->setPivot(glm::vec2(-0.5f, 0.5f));
-	chunkNumbers->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	chunkNumbers->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	chunkNumbers->setVisibility(false);
-	debugCanvas->addText("chunkNumbers", chunkNumbers, 0);
+	debugCanvas->addChild(chunkNumbers, 0);
 
-	biomeAndTerrainInfo = UI::Text::createWithOutline("biome: type / 00.00 / 00.00", glm::vec2(5.0f, -215.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 128);
+	biomeAndTerrainInfo = UI::Text::createWithOutline("biome", "biome: type / 00.00 / 00.00", fontID, outlineColor);
+	biomeAndTerrainInfo->setPosition(glm::vec2(5.0f, -215.0f));
 	biomeAndTerrainInfo->setPivot(glm::vec2(-0.5f, 0.5f));
-	biomeAndTerrainInfo->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	biomeAndTerrainInfo->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	biomeAndTerrainInfo->setVisibility(false);
-	debugCanvas->addText("biome", biomeAndTerrainInfo, 0);
+	debugCanvas->addChild(biomeAndTerrainInfo, 0);
 
-	regionID = UI::Text::createWithOutline("region: 000", glm::vec2(5.0f, -229.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 16);
+	regionID = UI::Text::createWithOutline("region", "region: 000", fontID, outlineColor);
 	regionID->setPivot(glm::vec2(-0.5f, 0.5f));
-	regionID->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	regionID->setPosition(glm::vec2(5.0f, -229.0f));
+	regionID->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	regionID->setVisibility(false);
-	debugCanvas->addText("region", regionID, 0);
+	debugCanvas->addChild(regionID, 0);
 
-	drawCallAndVertCount = UI::Text::createWithOutline("Draw calls: ----, vertices: -------", glm::vec2(5.0f, -257.0f), fontID, color, outlineColor, UI::Text::ALIGN::LEFT, UI::Text::TYPE::DYNAMIC, 64);
+	drawCallAndVertCount = UI::Text::createWithOutline("drawCallAndVertCount", "Draw calls: ----, vertices: -------", fontID, outlineColor);
 	drawCallAndVertCount->setPivot(glm::vec2(-0.5f, 0.5f));
-	drawCallAndVertCount->setCanvasPivot(glm::vec2(-0.5f, 0.5f));
+	drawCallAndVertCount->setPosition(glm::vec2(5.0f, -257.0f));
+	drawCallAndVertCount->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	drawCallAndVertCount->setVisibility(false);
-	debugCanvas->addText("drawCallAndVertCount", drawCallAndVertCount, 0);
+	debugCanvas->addChild(drawCallAndVertCount, 0);
+
+	debugCanvas->print(0);
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -1598,7 +1604,7 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 
 	if (debugOutputVisibility)
 	{
-		if (playerLookingAt->isVisible())
+		if (playerLookingAt->getVisibility())
 		{
 			playerLookingAt->setVisibility(true);
 		}

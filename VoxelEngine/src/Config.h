@@ -33,7 +33,7 @@
 *	If enabled, allow debug console in the game
 */
 #ifndef V_DEBUG_CONSOLE
-#define V_DEBUG_CONSOLE 0
+#define V_DEBUG_CONSOLE 1
 #endif
 
 /**
