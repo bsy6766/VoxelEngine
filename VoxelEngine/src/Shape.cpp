@@ -86,6 +86,16 @@ Voxel::Shape::Rect::Rect(const glm::vec2 & center, const glm::vec2 & size)
 	, size(size)
 {}
 
+glm::vec2 Voxel::Shape::Rect::getMin() const
+{
+	return center - (size * 0.5f);
+}
+
+glm::vec2 Voxel::Shape::Rect::getMax() const
+{
+	return center + (size * 0.5f);
+}
+
 
 
 

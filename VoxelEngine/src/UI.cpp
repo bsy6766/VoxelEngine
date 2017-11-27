@@ -788,7 +788,7 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-	
+
 	//============= find error here. error count: 14. Only during using sprite sheet
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
@@ -807,7 +807,46 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
 
+	auto min = boundingBox.getMin();
+	auto max = boundingBox.getMax();
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
 #endif
 }
 
@@ -826,14 +865,17 @@ void Voxel::UI::Image::renderSelf()
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-void Voxel::UI::Image::renderDebugBoundingBoxLine()
-{
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	lineProgram->use(true);
+	lineProgram->setUniformMat4("modelMat", modelMat);
+	lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
 
-}
+	glBindVertexArray(bbVao);
+	glDrawArrays(GL_LINES, 0, 8);
 #endif
+}
 
 //====================================================================================================================================
 

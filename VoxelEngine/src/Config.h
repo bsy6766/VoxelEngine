@@ -105,7 +105,7 @@
 *	If enabled, draws UI bounding box
 */
 #ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
-#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 1
 #endif
 
 #endif

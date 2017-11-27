@@ -81,8 +81,19 @@ namespace Voxel
 
 			// Center of rectangle
 			glm::vec2 center;
+
 			// Size of rectangle
 			glm::vec2 size;
+
+			/**
+			*	@return A minimum point of AABB.
+			*/
+			glm::vec2 getMin() const;
+
+			/**
+			*	@return A maximum point of AABB.
+			*/
+			glm::vec2 getMax() const;
 		};
 
 		/**
@@ -106,6 +117,7 @@ namespace Voxel
 
 			// Radius of sphere. Must be positive number.
 			float radius;
+
 			// Position of sphere.
 			glm::vec3 position;
 		};
