@@ -634,9 +634,7 @@ Voxel::UI::Image::Image(const std::string& name)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	, bbVao(0)
 #endif
-{
-	program = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
-}
+{}
 
 Image::~Image()
 {
@@ -645,6 +643,14 @@ Image::~Image()
 		// Delte array
 		glDeleteVertexArrays(1, &vao);
 	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &bbVao);
+	}
+#endif
 }
 
 Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFileName)
@@ -805,13 +811,12 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	glGenVertexArrays(1, &bbVao);
 	glBindVertexArray(bbVao);
 
-	auto min = boundingBox.getMin();
-	auto max = boundingBox.getMax();
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
 
 	std::vector<float> lineVertices =
 	{
@@ -894,6 +899,9 @@ Voxel::UI::Text::Text(const std::string& name)
 	, cbo(0)
 	, uvbo(0)
 	, ibo(0)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	, bbVao(0)
+#endif
 {}
 
 Voxel::UI::Text::~Text()
@@ -1016,6 +1024,11 @@ void Voxel::UI::Text::setColor(const glm::vec4 & color)
 	// Todo: rebuild color buffer
 }
 
+void Voxel::UI::Text::setOutlineColor(const glm::vec4 & color)
+{
+	outlineColor = glm::clamp(color, 0.0f, 1.0f);
+}
+
 glm::vec4 Voxel::UI::Text::getOutlineColor() const
 {
 	return outlineColor;
@@ -1043,6 +1056,14 @@ void Voxel::UI::Text::clear()
 		glDeleteVertexArrays(1, &vao);
 
 	vao = 0;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &bbVao);
+	}
+#endif
 }
 
 bool Voxel::UI::Text::buildMesh(const bool update)
@@ -1407,6 +1428,54 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 
 		glBindVertexArray(0);
 	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		glDeleteVertexArrays(1, &bbVao);
+	}
+
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
+
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
+#endif
 }
 
 std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::vector<std::string>& split)
@@ -1563,6 +1632,16 @@ void Voxel::UI::Text::renderSelf()
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	lineProgram->use(true);
+	lineProgram->setUniformMat4("modelMat", modelMat);
+	lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+	glBindVertexArray(bbVao);
+	glDrawArrays(GL_LINES, 0, 8);
+#endif
 }
 
 //====================================================================================================================================
@@ -1679,29 +1758,6 @@ Cursor * Voxel::UI::Cursor::create()
 	return nullptr;
 }
 
-void Voxel::UI::Cursor::setPosition(const glm::vec2 & position)
-{
-	this->position = position;
-
-	if (this->position.x > maxScreenBoundary.x)
-	{
-		this->position.x = maxScreenBoundary.x;
-	}
-	else if (this->position.x < minScreenBoundary.x)
-	{
-		this->position.x = minScreenBoundary.x;
-	}
-
-	if (this->position.y > maxScreenBoundary.y)
-	{
-		this->position.y = maxScreenBoundary.y;
-	}
-	else if (this->position.y < minScreenBoundary.y)
-	{
-		this->position.y = minScreenBoundary.y;
-	}
-}
-
 void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
 {
 	this->position += distance;
@@ -1776,14 +1832,9 @@ void Voxel::UI::Cursor::setVisibility(const bool visibility)
 	visible = visibility;
 }
 
-glm::vec2 Voxel::UI::Cursor::getPosition()
+glm::vec2 Voxel::UI::Cursor::getPosition() const
 {
 	return position;
-}
-
-glm::vec3 Voxel::UI::Cursor::getWorldPosition()
-{
-	return glm::vec3(Camera::mainCamera->getScreenSpaceMatrix() * glm::vec4(position.x, position.y, 0.0f, 1.0f));
 }
 
 void Voxel::UI::Cursor::render()

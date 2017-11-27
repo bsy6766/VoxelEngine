@@ -420,19 +420,10 @@ namespace Voxel
 			*	Render self
 			*/
 			void renderSelf() override;
-
-			/**
-			*	Override. @see Voxel::UI::Node::render(const glm::mat4&)
-			*	@param parentNodeMat Parent node's model matrix. If parent is Canvas, ui screen space matrix is applied
-			*/
-			//void render(const glm::mat4& parentMatrix) override;
-
+			
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
-
-			// render debug bounding box
-			void renderDebugBoundingBoxLine();
 #endif
 		};
 
@@ -589,78 +580,9 @@ namespace Voxel
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
-
-			// render debug bounding box
-			void renderDebugBoundingBoxLine();
 #endif
 		};
 		
-		/**
-		*	@class Cursor
-		*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
-		*
-		*	Unlike other UIs, cursor doesn't have parent canvas. It's universal for all canvases. Therefore cursor is managed by Game class.
-		*/
-		class Cursor
-		{
-		public:
-			enum class CursorType
-			{
-				POINTER = 0,	// Default cursor
-				FINGER,
-			};
-		private:
-			Cursor();
-
-			// Textures for cursor.
-			Texture2D* texture;
-
-			// position of cursor
-			glm::vec2 position;
-			// Pivot. -0.5f ~ 0.5f.
-			glm::vec2 pivot;
-
-			// size is fixed to 32 x 32
-			const glm::vec2 size = glm::vec2(32.0f, 32.0f);
-
-			GLuint vao;
-			GLuint uvbo;
-
-			// visibility
-			bool visible;
-
-			// screen boundary
-			glm::vec2 minScreenBoundary;
-			glm::vec2 maxScreenBoundary;
-
-			// Current cursor type
-			CursorType currentCursorType;
-
-			float screenSpaceZ;
-
-			// Initailize all cursors
-			bool init();
-		public:
-			~Cursor();
-
-			// Creates cursor.
-			static Cursor* create();
-
-			void setPosition(const glm::vec2& position);
-			void addPosition(const glm::vec2& distance);
-
-			void updateBoundary();
-
-			void setCursorType(const CursorType cursorType);
-
-			void setVisibility(const bool visibility);
-
-			glm::vec2 getPosition();
-			glm::vec3 getWorldPosition();
-
-			void render();
-		};
-
 		/**
 		*	@class Mesh
 		*	@brief 3D object ui
@@ -679,6 +601,95 @@ namespace Voxel
 		class Button
 		{
 
+		};
+
+
+
+		/**
+		*	@class Cursor
+		*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
+		*
+		*	Unlike other UIs, cursor doesn't have parent canvas. It's universal for all canvases. Therefore cursor is managed by Game class.
+		*	Todo: Instead of updating uv buffer, intialize all cursor quads and just render part of vao.
+		*/
+		class Cursor
+		{
+		public:
+			enum class CursorType
+			{
+				POINTER = 0,	// Default cursor
+				FINGER,
+			};
+		private:
+			Cursor();
+
+			// Textures for cursor.
+			Texture2D* texture;
+
+			// position of cursor
+			glm::vec2 position;
+
+			// Pivot. -0.5f ~ 0.5f.
+			glm::vec2 pivot;
+
+			// size is fixed to 32 x 32
+			const glm::vec2 size = glm::vec2(32.0f, 32.0f);
+
+			// gl
+			GLuint vao;
+			GLuint uvbo;
+
+			// visibility
+			bool visible;
+
+			// screen boundary
+			glm::vec2 minScreenBoundary;
+			glm::vec2 maxScreenBoundary;
+
+			// Current cursor type
+			CursorType currentCursorType;
+			
+			// Initailize all cursors
+			bool init();
+		public:
+			// Destructor
+			~Cursor();
+
+			// Creates cursor.
+			static Cursor* create();
+
+			/**
+			*	Add position to current cursor position
+			*	@param distance Amount of distance to add to cursor's position
+			*/
+			void addPosition(const glm::vec2& distance);
+
+			/**
+			*	Updates boundary. Call this whenever window size changes.
+			*/
+			void updateBoundary();
+
+			/**
+			*	Set cursor type
+			*	@param cursorType Type of cursor.
+			*/
+			void setCursorType(const CursorType cursorType);
+
+			/**
+			*	Toggle visibilty of cursor
+			*	@param visibility true to show cursor. Else, false.
+			*/
+			void setVisibility(const bool visibility);
+
+			/**
+			*	Get current position of cursor in screen space
+			*/
+			glm::vec2 getPosition() const;
+			
+			/**
+			*
+			*/
+			void render();
 		};
 	}
 }
