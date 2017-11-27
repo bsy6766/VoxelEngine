@@ -70,7 +70,8 @@ void Voxel::Application::initGLView()
 {
 	glView = new GLView();
 
-	auto title = "Voxel Engine / version: 0 / build: " + internalSetting->getString("buildNumber");
+	//auto title = "Voxel Engine / version: 0 / build: " + internalSetting->getString("buildNumber");
+	auto title = "Voxel Engine";
 
 	auto& setting = Setting::getInstance();
 	auto resolution = setting.getResolution();

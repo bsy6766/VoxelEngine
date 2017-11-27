@@ -593,10 +593,6 @@ void Game::update(const float delta)
 			program->setUniformVec3("playerPosition", playerPos);
 		}
 
-#if V_DEBUG && V_DEBUG_CONSOLE
-		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
-#endif
-
 		player->update(delta);
 
 		if (player->isOnTPViewMode())
@@ -612,6 +608,11 @@ void Game::update(const float delta)
 		skybox->updateColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 
 		timeLabel->setText(calendar->getTimeInStr(false));
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
+		debugConsole->update(delta);
+#endif
 	}
 }
 

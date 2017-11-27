@@ -19,6 +19,7 @@ namespace Voxel
 		class Canvas;
 		class Text;
 		class Image;
+		class AnimatedImage;
 	}
 
 	class Player;
@@ -103,6 +104,7 @@ namespace Voxel
 
 		void onFPSUpdate(int fps);
 		
+		void update(const float delta);
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);
 		void updatePlayerPosition(const glm::vec3& position);
@@ -114,6 +116,12 @@ namespace Voxel
 		void updateRegion(const unsigned int regionID);
 		
 		//void updateDrawCallsAndVerticesSize();
+
+#if V_DEBUG && V_DEBUG_UI_TEST
+		Voxel::UI::Image* testImage;
+		Voxel::UI::AnimatedImage* testAnimatedImage;
+		Voxel::UI::Text* testText;
+#endif
 	};
 }
 

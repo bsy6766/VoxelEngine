@@ -237,6 +237,36 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../sprites/ui/debug_anim_frame_0.png</key>
+            <key type="filename">../sprites/ui/debug_anim_frame_1.png</key>
+            <key type="filename">../sprites/ui/debug_anim_frame_2.png</key>
+            <key type="filename">../sprites/ui/debug_anim_frame_3.png</key>
+            <key type="filename">../sprites/ui/debug_anim_frame_4.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>13,13,25,25</rect>
+                <key>scale9Paddings</key>
+                <rect>13,13,25,25</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../sprites/ui/debug_image.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>38,50,75,100</rect>
+                <key>scale9Paddings</key>
+                <rect>38,50,75,100</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../sprites/ui/debug_square_0.png</key>
             <key type="filename">../sprites/ui/debug_square_1.png</key>
             <key type="filename">../sprites/ui/debug_square_2.png</key>

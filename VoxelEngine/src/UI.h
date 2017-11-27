@@ -277,7 +277,7 @@ namespace Voxel
 			*	Updates
 			*	@param delta Elapsed time for current frame
 			*/
-			void update(const float delta);
+			virtual void update(const float delta);
 
 			/**
 			*	Run action.
@@ -376,6 +376,8 @@ namespace Voxel
 		class Image : public Node
 		{
 		private:
+			Image() = delete;
+
 			/**
 			*	Constructor
 			*	@param name Name of ui
@@ -446,6 +448,109 @@ namespace Voxel
 #endif
 		};
 
+		class AnimatedImage : public Node
+		{
+		private:
+			AnimatedImage() = delete;
+
+			// Constructor
+			AnimatedImage(const std::string& name);
+
+			// Frame size of animation. Must be positive number
+			int frameSize;
+
+			// Interval between frames.
+			float interval;
+
+			// Currently elapsed time to keep track interval.
+			float elapsedTime;
+
+			// Current frame index. Starts from 0.
+			int currentFrameIndex;
+
+			// Texture (spritesheet)
+			Texture2D* texture;
+
+			// gl
+			GLuint vao;
+			unsigned int indicesSize;
+			unsigned int currentIndex;
+
+			// Repeats animation if this is true. Else, stops on last frame.
+			bool repeat;
+
+			// If animation is stopped, can't be paused or resumed. Must call start() to run animation from the beginning.
+			bool stopped;
+
+			// If animation is paused, then it can either call start() to start over animation or call resume() to resume animation.
+			bool paused;
+
+			/**
+			*	Initialize animated image
+			*	@param ss SpriteSheet pointer
+			*	@param frameName Image frame file name.
+			*	@param frameSize Size of frame. Must be greater than 0.
+			*	@param interval Interval between frame.
+			*	@param repeat true if animation repeats. Else false.
+			*/
+			bool init(SpriteSheet* ss, const std::string& frameName, const int frameSize, const float interval, const bool repeat);
+		public:
+			/**
+			*	Initialize animated image
+			*	@param spriteSheetName Name of sprite sheet that has image frames. All frames must be in same sprite sheet.
+			*	@param frameName Image frame file name.
+			*	@param frameSize Size of frame. Must be greater than 0.
+			*	@param interval Interval between frame. Must be greater than 0.
+			*	@param repeat true if animation repeats. Else false.
+			*/
+			static AnimatedImage* create(const std::string& name, const std::string& spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat);
+
+			/**
+			*	Build image.
+			*	Initialize vao.
+			*	@param vertices Vertices of image quad
+			*	@param colors Colors of image quad
+			*	@param uvs Texture coordinates of image quad
+			*	@param indices Indices of image quad
+			*/
+			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+
+			/**
+			*	Start animation from the first frame
+			*/
+			void start();
+
+			/**
+			*	Pause animation
+			*/
+			void pause();
+
+			/**
+			*	Resume animation
+			*/
+			void resume();
+
+			/**
+			*	Stop animation. 
+			*/
+			void stop();
+
+			/**
+			*	Set interval. Must be greater than 0.
+			*/
+			void setInterval(const float interval);
+
+			/**
+			*	Override bases update function 
+			*/
+			void update(const float delta) override;
+
+			/**
+			*	Render self
+			*/
+			void renderSelf() override;
+		};
+
 		/**
 		*	@class Text
 		*	@brief List of quads where each quad renders each character.
@@ -465,6 +570,8 @@ namespace Voxel
 				RIGHT
 			};
 		private:
+			Text() = delete;
+
 			// Constructor
 			Text(const std::string& name);
 			
@@ -549,7 +656,7 @@ namespace Voxel
 			*	@param align Text align. Left by default.
 			*	@return Text ui if successfully loads text to render. Else, nullptr
 			*/
-			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec3& outlineColor = glm::vec4(0.0f), const ALIGN align = ALIGN::LEFT);
+			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec3& outlineColor = glm::vec3(0.0f), const ALIGN align = ALIGN::LEFT);
 
 			/**
 			*	Sets text.

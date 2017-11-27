@@ -936,6 +936,253 @@ void Voxel::UI::Image::renderSelf()
 
 //====================================================================================================================================
 
+//===================================================== Animated Image ===============================================================
+
+Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
+	: Node(name)
+	, frameSize(0)
+	, interval(0.0f)
+	, elapsedTime(0.0f)
+	, currentFrameIndex(0)
+	, currentIndex(0)
+	, vao(0)
+	, indicesSize(0)
+	, repeat(false)
+	, stopped(false)
+	, paused(false)
+	, texture(nullptr)
+{}
+
+AnimatedImage * Voxel::UI::AnimatedImage::create(const std::string & name, const std::string & spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
+{
+	auto newAnimatedImage = new AnimatedImage(name);
+
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (newAnimatedImage->init(ss, frameName, frameSize, interval, repeat))
+	{
+		return newAnimatedImage;
+	}
+	else
+	{
+		delete newAnimatedImage;
+		return nullptr;
+	}
+}
+
+bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
+{
+	texture = ss->getTexture();
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	this->frameSize = frameSize;
+	this->interval = interval;
+	this->repeat = repeat;
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	std::vector<float> vertices;
+	std::vector<float> colors;
+	std::vector<float> uvs;
+	std::vector<unsigned int> indices;
+
+	size_t lastindex = frameName.find_last_of(".");
+
+	const std::string fileName = frameName.substr(0, lastindex);
+	std::string fileExt = frameName.substr(lastindex);
+
+	if (fileExt.empty())
+	{
+		fileExt = ".png";
+	}
+
+	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
+	auto quadIndices = Quad::indices;
+	
+	for (int i = 0; i < frameSize; i++)
+	{
+		std::string currentFrameName = fileName + "_" + std::to_string(i) + fileExt;
+
+		auto imageEntry = ss->getImageEntry(currentFrameName);
+		
+		if (imageEntry)
+		{
+			auto size = glm::vec2(imageEntry->width, imageEntry->height);
+			auto curVertices = Quad::getVertices(size);
+
+			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
+
+			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
+
+			auto& uvOrigin = imageEntry->uvOrigin;
+			auto& uvEnd = imageEntry->uvEnd;
+
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvOrigin.y); 
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvEnd.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvEnd.y);
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index + (4 * i));
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	boundingBox.center = position;
+	auto firstImageEntry = ss->getImageEntry(fileName + "_0" + fileExt);
+	boundingBox.size = glm::vec2(firstImageEntry->width, firstImageEntry->height);
+
+	contentSize = boundingBox.size;
+
+	build(vertices, colors, uvs, indices);
+
+	return true;
+}
+
+void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+
+	indicesSize = indices.size();
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+}
+
+void Voxel::UI::AnimatedImage::start()
+{
+	currentFrameIndex = 0;
+	elapsedTime = 0.0f;
+
+	paused = false;
+	stopped = false;
+}
+
+void Voxel::UI::AnimatedImage::pause()
+{
+	paused = true;
+}
+
+void Voxel::UI::AnimatedImage::resume()
+{
+	paused = false;
+}
+
+void Voxel::UI::AnimatedImage::stop()
+{
+	stopped = true;
+}
+
+void Voxel::UI::AnimatedImage::setInterval(const float interval)
+{
+	this->interval = glm::max(interval, 0.0f);
+}
+
+void Voxel::UI::AnimatedImage::update(const float delta)
+{
+	elapsedTime += delta;
+
+	while (elapsedTime >= interval)
+	{
+		elapsedTime -= interval;
+
+		currentFrameIndex++;
+		currentIndex += 6;
+
+		if (currentFrameIndex >= frameSize)
+		{
+			if (repeat)
+			{
+				currentFrameIndex = 0;
+				currentIndex = 0;
+			}
+			else
+			{
+				stopped = true;
+				currentIndex -= 6;
+			}
+		}
+	}
+}
+
+void Voxel::UI::AnimatedImage::renderSelf()
+{
+	if (texture == nullptr) return;
+	if (indicesSize == 0) return;
+	if (!visibility) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+}
+
+//====================================================================================================================================
+
 //========================================================= Text =====================================================================
 
 Voxel::UI::Text::Text(const std::string& name)

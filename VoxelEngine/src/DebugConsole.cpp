@@ -45,6 +45,11 @@ DebugConsole::DebugConsole()
 	, chunkMap(nullptr)
 	, settingPtr(nullptr)
 	, calendar(nullptr)
+#if V_DEBUG && V_DEBUG_UI_TEST
+	, testImage(nullptr)
+	, testAnimatedImage(nullptr)
+	, testText(nullptr)
+#endif
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
 	debugCanvas = new UI::Canvas(glm::vec2(res), glm::vec2(0));
@@ -199,6 +204,20 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addChild(drawCallAndVertCount, 0);
 
 	debugCanvas->print(0);
+
+#if V_DEBUG && V_DEBUG_UI_TEST
+	testImage = Voxel::UI::Image::createFromSpriteSheet("testImage", "UISpriteSheet", "debug_image.png");
+	testImage->setPosition(glm::vec2(200.0f, 100.0f));
+	debugCanvas->addChild(testImage, 100);
+
+	testAnimatedImage = Voxel::UI::AnimatedImage::create("testAnimImage", "UISpriteSheet", "debug_anim_frame.png", 5, 1.0f, true);
+	testAnimatedImage->setPosition(glm::vec2(-200.0f, 0.0f));
+	debugCanvas->addChild(testAnimatedImage, 100);
+
+	testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. \nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. \nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. \nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
+	testText->setPosition(glm::vec2(0.0f, -200.0f));
+	debugCanvas->addChild(testText, 100);
+#endif
 }
 
 void Voxel::DebugConsole::openConsole()
@@ -1627,6 +1646,11 @@ void Voxel::DebugConsole::toggleDubugOutputs()
 void Voxel::DebugConsole::onFPSUpdate(int fps)
 {
 	fpsNumber->setText("fps: " + std::to_string(fps));
+}
+
+void Voxel::DebugConsole::update(const float delta)
+{
+	debugCanvas->update(delta);
 }
 
 void Voxel::DebugConsole::updateResolution(int width, int height)

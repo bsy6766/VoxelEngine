@@ -37,6 +37,15 @@
 #endif
 
 /**
+*	@def V_DEBUG_UI_TEST
+*	If enabled, render test uis.
+*/
+#ifndef V_DEBUG_UI_TEST
+#define V_DEBUG_UI_TEST 1
+#endif
+
+
+/**
 *	@def V_DEBUG_CHUNK_BORDER_LINE
 *	If enabled, can render chunk border debug line in ChunkMap.
 */
