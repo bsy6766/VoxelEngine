@@ -127,7 +127,7 @@ void Voxel::DebugConsole::init()
 
 	resolutionNumber = UI::Text::createWithOutline("resolutionNumber", "resolution: " + std::to_string(resolution.x) + " x " + std::to_string(resolution.y), fontID, outlineColor);
 	resolutionNumber->setPivot(glm::vec2(-0.5f, 0.5f));
-	resolutionNumber->setPosition(glm::vec2(5.0f, -19.0f));
+	resolutionNumber->setPosition(glm::vec2(5.0f, -21.0f));
 	resolutionNumber->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	resolutionNumber->setVisibility(false);
 	debugCanvas->addChild(resolutionNumber, 0);
@@ -135,7 +135,7 @@ void Voxel::DebugConsole::init()
 	auto vsync = Application::getInstance().getGLView()->isVsyncEnabled();
 	vsyncMode = UI::Text::createWithOutline("vsyncMode", "vsync: " + (vsync ? std::string("true") : std::string("false")), fontID, outlineColor);
 	vsyncMode->setPivot(glm::vec2(-0.5f, 0.5f));
-	vsyncMode->setPosition(glm::vec2(5.0f, -33.0f));
+	vsyncMode->setPosition(glm::vec2(5.0f, -37.0f));
 	vsyncMode->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	vsyncMode->setVisibility(false);
 	debugCanvas->addChild(vsyncMode, 0);
@@ -156,21 +156,21 @@ void Voxel::DebugConsole::init()
 
 	playerRotation = UI::Text::createWithOutline("playerRotation", "player rotation: 00000.00, 00000.00, 00000.00 (Facing north)", fontID, outlineColor);
 	playerRotation->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerRotation->setPosition(glm::vec2(5.0f, -145.0f));
+	playerRotation->setPosition(glm::vec2(5.0f, -147.0f));
 	playerRotation->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerRotation->setVisibility(false);
 	debugCanvas->addChild(playerRotation, 0);
 
 	playerChunkPosition = UI::Text::createWithOutline("playerChunkPosition", "player chunk position: 00000.00, 00000.00, 00000.00", fontID, outlineColor);
 	playerChunkPosition->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerChunkPosition->setPosition(glm::vec2(5.0f, -159.0f));
+	playerChunkPosition->setPosition(glm::vec2(5.0f, -163.0f));
 	playerChunkPosition->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerChunkPosition->setVisibility(false);
 	debugCanvas->addChild(playerChunkPosition, 0);
 
 	playerLookingAt = UI::Text::createWithOutline("playerLookingAt", "player looking at: 000000, 000000, 000000 Face (front)", fontID, outlineColor);
 	playerLookingAt->setPivot(glm::vec2(-0.5f, 0.5f));
-	playerLookingAt->setPosition(glm::vec2(5.0f, -173.0f));
+	playerLookingAt->setPosition(glm::vec2(5.0f, -179.0f));
 	playerLookingAt->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	playerLookingAt->setVisibility(false);
 	debugCanvas->addChild(playerLookingAt, 0);
@@ -183,7 +183,7 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addChild(chunkNumbers, 0);
 
 	biomeAndTerrainInfo = UI::Text::createWithOutline("biome", "biome: type / 00.00 / 00.00", fontID, outlineColor);
-	biomeAndTerrainInfo->setPosition(glm::vec2(5.0f, -215.0f));
+	biomeAndTerrainInfo->setPosition(glm::vec2(5.0f, -217.0f));
 	biomeAndTerrainInfo->setPivot(glm::vec2(-0.5f, 0.5f));
 	biomeAndTerrainInfo->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	biomeAndTerrainInfo->setVisibility(false);
@@ -191,14 +191,14 @@ void Voxel::DebugConsole::init()
 
 	regionID = UI::Text::createWithOutline("region", "region: 000", fontID, outlineColor);
 	regionID->setPivot(glm::vec2(-0.5f, 0.5f));
-	regionID->setPosition(glm::vec2(5.0f, -229.0f));
+	regionID->setPosition(glm::vec2(5.0f, -233.0f));
 	regionID->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	regionID->setVisibility(false);
 	debugCanvas->addChild(regionID, 0);
 
 	drawCallAndVertCount = UI::Text::createWithOutline("drawCallAndVertCount", "Draw calls: ----, vertices: -------", fontID, outlineColor);
 	drawCallAndVertCount->setPivot(glm::vec2(-0.5f, 0.5f));
-	drawCallAndVertCount->setPosition(glm::vec2(5.0f, -257.0f));
+	drawCallAndVertCount->setPosition(glm::vec2(5.0f, -265.0f));
 	drawCallAndVertCount->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	drawCallAndVertCount->setVisibility(false);
 	debugCanvas->addChild(drawCallAndVertCount, 0);
@@ -214,8 +214,15 @@ void Voxel::DebugConsole::init()
 	testAnimatedImage->setPosition(glm::vec2(-200.0f, 0.0f));
 	debugCanvas->addChild(testAnimatedImage, 100);
 
-	testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. \nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. \nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. \nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
-	testText->setPosition(glm::vec2(0.0f, -200.0f));
+	testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. \nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. \nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
+	//testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting i", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
+	//testText = Voxel::UI::Text::createWithOutline("testText", "ABCD", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
+	//testText = Voxel::UI::Text::create("testText", "Vsync: false", 1, Voxel::UI::Text::ALIGN::LEFT);
+	//testText->setPosition(glm::vec2(5.0f, -281.0f));
+	testText->setPosition(glm::vec2(0.0f, -281.0f));
+	//testText->setPivot(glm::vec2(-0.5f, 0.0f));
+	//testText->setPivot(glm::vec2(0.0f, 0.0f));
+	//testText->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	debugCanvas->addChild(testText, 100);
 #endif
 }

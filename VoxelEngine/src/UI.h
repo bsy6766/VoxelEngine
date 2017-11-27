@@ -471,6 +471,9 @@ namespace Voxel
 			// Texture (spritesheet)
 			Texture2D* texture;
 
+			// Size of rames
+			std::vector<glm::vec2> frameSizes;
+
 			// gl
 			GLuint vao;
 			unsigned int indicesSize;
@@ -495,6 +498,9 @@ namespace Voxel
 			*/
 			bool init(SpriteSheet* ss, const std::string& frameName, const int frameSize, const float interval, const bool repeat);
 		public:
+			// Desturctor
+			~AnimatedImage();
+
 			/**
 			*	Initialize animated image
 			*	@param spriteSheetName Name of sprite sheet that has image frames. All frames must be in same sprite sheet.
@@ -549,6 +555,11 @@ namespace Voxel
 			*	Render self
 			*/
 			void renderSelf() override;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+#endif
 		};
 
 		/**

@@ -518,7 +518,13 @@ glm::vec2 Voxel::UI::Node::getContentSize()
 
 glm::mat4 Voxel::UI::Node::getModelMatrix()
 {
-	return glm::scale(glm::translate(glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0)), glm::vec3(pivot * getContentSize() * -1.0f, 0)), glm::vec3(scale, 1));
+	auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
+	if (pivot.x != 0.0f || pivot.y != 0.0f)
+	{
+		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
+	}
+
+	return glm::scale(mat, glm::vec3(scale, 1));
 }
 
 void Voxel::UI::Node::updateModelMatrix()
@@ -924,13 +930,16 @@ void Voxel::UI::Image::renderSelf()
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	lineProgram->use(true);
-	lineProgram->setUniformMat4("modelMat", modelMat);
-	lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
 
-	glBindVertexArray(bbVao);
-	glDrawArrays(GL_LINES, 0, 8);
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
 #endif
 }
 
@@ -952,6 +961,23 @@ Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
 	, paused(false)
 	, texture(nullptr)
 {}
+
+Voxel::UI::AnimatedImage::~AnimatedImage()
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &bbVao);
+	}
+#endif
+}
 
 AnimatedImage * Voxel::UI::AnimatedImage::create(const std::string & name, const std::string & spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
 {
@@ -1036,6 +1062,8 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 			{
 				indices.push_back(index + (4 * i));
 			}
+
+			frameSizes.push_back(size);
 		}
 		else
 		{
@@ -1106,6 +1134,49 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
+
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
+#endif
 }
 
 void Voxel::UI::AnimatedImage::start()
@@ -1141,12 +1212,16 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 {
 	elapsedTime += delta;
 
+	bool updated = false;
+
 	while (elapsedTime >= interval)
 	{
 		elapsedTime -= interval;
 
 		currentFrameIndex++;
 		currentIndex += 6;
+
+		updated = true;
 
 		if (currentFrameIndex >= frameSize)
 		{
@@ -1159,8 +1234,64 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 			{
 				stopped = true;
 				currentIndex -= 6;
+
+				updated = false;
 			}
 		}
+	}
+
+	if (updated)
+	{
+		boundingBox.size = frameSizes.at(currentFrameIndex);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+		if (bbVao)
+		{
+			glDeleteVertexArrays(1, &bbVao);
+			bbVao = 0;
+		}
+
+		glGenVertexArrays(1, &bbVao);
+		glBindVertexArray(bbVao);
+
+		auto min = -boundingBox.size * 0.5f;
+		auto max = boundingBox.size * 0.5f;
+
+		std::vector<float> lineVertices =
+		{
+			min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+			min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+			max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+			max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		};
+
+		GLuint lineVbo;
+		glGenBuffers(1, &lineVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+		glEnableVertexAttribArray(lineVertLoc);
+		glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+		GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+		glEnableVertexAttribArray(lineColorLoc);
+		glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &lineVbo);
+#endif
 	}
 }
 
@@ -1179,6 +1310,19 @@ void Voxel::UI::AnimatedImage::renderSelf()
 
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
 }
 
 //====================================================================================================================================
@@ -1412,7 +1556,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		const float outlineSize = static_cast<float>(font->getOutlineSize());
 
 		int lineGap = 0;
-		int lineGapHeight = 2 + static_cast<int>(outlineSize);
+		int lineGapHeight = 0 + static_cast<int>(outlineSize);
 		int lineSpace = font->getLineSpace();
 
 		// Iterate per line. Find the maximum width and height
@@ -1431,7 +1575,16 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 				Glyph* glyph = font->getCharGlyph(c);
 
 				// Advance value is the distance between pen position of each character in horizontal layout
-				totalWidth += glyph->advance;
+				// Advance includes bearing x + width + extra space for next character.
+				// We don't have to add extra space for last char because line ends.
+				if (i == (len - 1))
+				{
+					totalWidth += (glyph->bearingX + glyph->width);
+				}
+				else
+				{
+					totalWidth += glyph->advance;
+				}
 
 				// Find max bearing Y. BearingY is the upper height of character from pen position.
 				if (maxBearingY < glyph->bearingY)
@@ -1446,10 +1599,16 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 				}
 			}
 
-			if (totalWidth > maxWidth)
+			// Make max width and height even number because this is UI(?)
+			// Note: The reason why I added this is because when pen position x had decimal points due to width being odd number, entire text rendering becaome weird (extended in x axis. slightly)
+			// This fixed the issue.
+			if (totalWidth % 2 == 1)
 			{
-				maxWidth = totalWidth;
+				totalWidth++;
 			}
+
+			// total width is sum of glyph's advance, which includes extra space for next character. Remove it
+			maxWidth = glm::max(totalWidth, maxWidth);
 
 			if (line.empty())
 			{
@@ -1458,44 +1617,25 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 				lineSizes.back().width = 0;
 				lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
 				lineSizes.back().maxBotY = 0;
-
-				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
-				// I'm going to customize just for MunroSmall. 
-				//totalHeight += lineSizes.back().maxBearingY;
-				lineGap += lineGapHeight;
-				totalHeight += lineSpace;
 			}
 			else
 			{
 				lineSizes.back().width = totalWidth;
 				lineSizes.back().maxBearingY = maxBearingY;
 				lineSizes.back().maxBotY = maxBotY;
-
-				// For MunroSmall sized 20, linespace was 34 which was ridiculous. 
-				// I'm going to customize just for MunroSmall. 
-				//totalHeight += (maxBearingY + maxBotY);
-				lineGap += lineGapHeight;
-				totalHeight += lineSpace;
 			}
 		}
 
-		lineGap -= lineGapHeight;
+		auto lineSize = split.size() - 1;
+		totalHeight = (lineSize * lineSpace) + font->getSize();
+		lineGap = lineSize * lineGapHeight;
 
-		if (split.size() == 1)
-		{
-			lineGap = 0;
-		}
-
-		// Make max width and height even number because this is UI(?)
-		if (maxWidth % 2 == 1)
-		{
-			maxWidth++;
-		}
-
+		/*
 		if (totalHeight % 2 == 1)
 		{
 			totalHeight++;
 		}
+		*/
 
 		// Set size of Text object. Ignore last line's line gap
 		auto boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap)) * -0.5f);
@@ -1735,6 +1875,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 	if (bbVao)
 	{
 		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
 	}
 
 	glGenVertexArrays(1, &bbVao);
@@ -1938,13 +2079,17 @@ void Voxel::UI::Text::renderSelf()
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	lineProgram->use(true);
-	lineProgram->setUniformMat4("modelMat", modelMat);
-	lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
 
-	glBindVertexArray(bbVao);
-	glDrawArrays(GL_LINES, 0, 8);
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+
+	}
 #endif
 }
 

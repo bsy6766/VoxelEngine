@@ -257,9 +257,11 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 
 	//linespace = (face->height >> 6);
-	linespace = customLineSpace;
+	//linespace = customLineSpace;
 
 	glyphMap[' '].height = whitespaceHeight;
+	//linespace = whitespaceHeight;
+	linespace = face->size->metrics.height >> 6;
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
