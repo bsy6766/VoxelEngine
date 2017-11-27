@@ -96,6 +96,13 @@ glm::vec2 Voxel::Shape::Rect::getMax() const
 	return center + (size * 0.5f);
 }
 
+bool Voxel::Shape::Rect::containsPoint(const glm::vec2 & point)
+{
+	auto min = getMin();
+	auto max = getMax();
+	return ((min.x <= point.x && point.x <= max.x) && (min.y <= point.y && point.y <= max.y));
+}
+
 
 
 

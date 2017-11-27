@@ -49,6 +49,7 @@ DebugConsole::DebugConsole()
 	, testImage(nullptr)
 	, testAnimatedImage(nullptr)
 	, testText(nullptr)
+	, testButton(nullptr)
 #endif
 {
 	auto res = Application::getInstance().getGLView()->getScreenSize();
@@ -224,6 +225,10 @@ void Voxel::DebugConsole::init()
 	//testText->setPivot(glm::vec2(0.0f, 0.0f));
 	//testText->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	debugCanvas->addChild(testText, 100);
+
+	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug_button.png");
+	testButton->setPosition(glm::vec2(100.0f, 300.0f));
+	debugCanvas->addChild(testButton, 100);
 #endif
 }
 
@@ -1658,6 +1663,21 @@ void Voxel::DebugConsole::onFPSUpdate(int fps)
 void Voxel::DebugConsole::update(const float delta)
 {
 	debugCanvas->update(delta);
+}
+
+void Voxel::DebugConsole::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	debugCanvas->updateMouseMove(mousePosition);
+}
+
+void Voxel::DebugConsole::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	debugCanvas->updateMouseClick(mousePosition, button);
+}
+
+void Voxel::DebugConsole::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	debugCanvas->updateMouseRelease(mousePosition, button);
 }
 
 void Voxel::DebugConsole::updateResolution(int width, int height)

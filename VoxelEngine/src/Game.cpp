@@ -643,6 +643,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		if (debugConsole->isConsoleOpened())
 		{
 			debugConsole->closeConsole();
+			toggleCursorMode(false);
 		}
 		else
 #endif
@@ -671,10 +672,12 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		if (debugConsole->isConsoleOpened())
 		{
 			debugConsole->closeConsole();
+			toggleCursorMode(false);
 		}
 		else
 		{
 			debugConsole->openConsole();
+			toggleCursorMode(true);
 		}
 		return;
 	}
@@ -969,6 +972,8 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	}
 
 #if V_DEBUG && V_DEBUG_CONSOLE
+	debugConsole->updateMouseMove(cursor->getPosition());
+
 	if (debugConsole->isConsoleOpened())
 	{
 		// Stop input while opening console
@@ -1037,6 +1042,52 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 void Voxel::Game::updateMouseClickInput()
 {
 #if V_DEBUG && V_DEBUG_CONSOLE
+	int button = -1;
+	bool clicked = false;
+
+	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+	{
+		button = 0;
+		clicked = true;
+	}
+	else if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+	{
+		button = 1;
+		clicked = true;
+	}
+	else if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
+	{
+		button = 2;
+		clicked = true;
+	}
+	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
+	{
+		button = 0;
+		clicked = false;
+	}
+	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_2, true))
+	{
+		button = 1;
+		clicked = false;
+	}
+	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_3, true))
+	{
+		button = 2;
+		clicked = false;
+	}
+
+	if (button != -1)
+	{
+		if (clicked)
+		{
+			debugConsole->updateMouseClick(cursor->getPosition(), button);
+		}
+		else
+		{
+			debugConsole->updateMouseRelease(cursor->getPosition(), button);
+		}
+	}
+
 	if (debugConsole->isConsoleOpened())
 	{
 		// Stop input while opening console

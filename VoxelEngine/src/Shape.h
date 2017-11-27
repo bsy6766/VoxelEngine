@@ -94,6 +94,11 @@ namespace Voxel
 			*	@return A maximum point of AABB.
 			*/
 			glm::vec2 getMax() const;
+
+			/**
+			*	Check if point is in rect
+			*/
+			bool containsPoint(const glm::vec2& point);
 		};
 
 		/**

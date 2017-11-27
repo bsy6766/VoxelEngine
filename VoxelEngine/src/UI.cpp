@@ -439,6 +439,20 @@ void Voxel::UI::Node::update(const float delta)
 	}
 }
 
+void Voxel::UI::Node::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	
+}
+
+void Voxel::UI::Node::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+
+}
+
+void Voxel::UI::Node::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+}
+
 void Voxel::UI::Node::runAction(Voxel::UI::Sequence * sequence)
 {
 	if (sequence)
@@ -539,6 +553,8 @@ void Voxel::UI::Node::updateModelMatrix()
 		modelMat = getModelMatrix();
 	}
 
+	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
 	// Check if this node has children
 	if (hasChildren())
 	{
@@ -587,6 +603,30 @@ void Voxel::UI::Canvas::update(const float delta)
 	for (auto& e : children)
 	{
 		(e.second)->update(delta);
+	}
+}
+
+void Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	for (auto& e : children)
+	{
+		(e.second)->updateMouseMove(mousePosition);
+	}
+}
+
+void Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	for (auto& e : children)
+	{
+		(e.second)->updateMouseClick(mousePosition, button);
+	}
+}
+
+void Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	for (auto& e : children)
+	{
+		(e.second)->updateMouseRelease(mousePosition, button);
 	}
 }
 
@@ -955,7 +995,6 @@ Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
 	, currentFrameIndex(0)
 	, currentIndex(0)
 	, vao(0)
-	, indicesSize(0)
 	, repeat(false)
 	, stopped(false)
 	, paused(false)
@@ -987,15 +1026,16 @@ AnimatedImage * Voxel::UI::AnimatedImage::create(const std::string & name, const
 
 	auto ss = ssm.getSpriteSheet(spriteSheetName);
 
-	if (newAnimatedImage->init(ss, frameName, frameSize, interval, repeat))
+	if (ss)
 	{
-		return newAnimatedImage;
+		if (newAnimatedImage->init(ss, frameName, frameSize, interval, repeat))
+		{
+			return newAnimatedImage;
+		}
 	}
-	else
-	{
-		delete newAnimatedImage;
-		return nullptr;
-	}
+
+	delete newAnimatedImage;
+	return nullptr;
 }
 
 bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
@@ -1020,14 +1060,20 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 
 	size_t lastindex = frameName.find_last_of(".");
 
-	const std::string fileName = frameName.substr(0, lastindex);
-	std::string fileExt = frameName.substr(lastindex);
+	std::string fileName;
+	std::string fileExt;
 
-	if (fileExt.empty())
+	if (lastindex == std::string::npos)
 	{
+		fileName = frameName;
 		fileExt = ".png";
 	}
-
+	else
+	{
+		fileName = frameName.substr(0, lastindex);
+		fileExt = frameName.substr(lastindex);
+	}
+	
 	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
 	auto quadIndices = Quad::indices;
 	
@@ -1072,8 +1118,7 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 	}
 
 	boundingBox.center = position;
-	auto firstImageEntry = ss->getImageEntry(fileName + "_0" + fileExt);
-	boundingBox.size = glm::vec2(firstImageEntry->width, firstImageEntry->height);
+	boundingBox.size = frameSizes.front();
 
 	contentSize = boundingBox.size;
 
@@ -1125,9 +1170,7 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-
-	indicesSize = indices.size();
-
+	
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
@@ -1136,6 +1179,126 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glDeleteBuffers(1, &ibo);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	initDebugBoundingBoxLine();
+#endif
+}
+
+void Voxel::UI::AnimatedImage::start()
+{
+	currentFrameIndex = 0;
+	elapsedTime = 0.0f;
+
+	paused = false;
+	stopped = false;
+}
+
+void Voxel::UI::AnimatedImage::pause()
+{
+	paused = true;
+}
+
+void Voxel::UI::AnimatedImage::resume()
+{
+	paused = false;
+}
+
+void Voxel::UI::AnimatedImage::stop()
+{
+	stopped = true;
+}
+
+void Voxel::UI::AnimatedImage::setInterval(const float interval)
+{
+	this->interval = glm::max(interval, 0.0f);
+}
+
+void Voxel::UI::AnimatedImage::update(const float delta)
+{
+	// If animation is stopped, don't update
+	if (stopped) return;
+
+	// If animation is paused, don't update
+	if (paused) return;
+
+
+	elapsedTime += delta;
+
+	bool updated = false;
+
+	while (elapsedTime >= interval)
+	{
+		elapsedTime -= interval;
+
+		currentFrameIndex++;
+		currentIndex += 6;
+
+		updated = true;
+
+		if (currentFrameIndex >= frameSize)
+		{
+			if (repeat)
+			{
+				currentFrameIndex = 0;
+				currentIndex = 0;
+			}
+			else
+			{
+				stopped = true;
+				currentIndex -= 6;
+
+				updated = false;
+			}
+		}
+	}
+
+	if (updated)
+	{
+		boundingBox.size = frameSizes.at(currentFrameIndex);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+		initDebugBoundingBoxLine();
+#endif
+	}
+}
+
+void Voxel::UI::AnimatedImage::renderSelf()
+{
+	if (texture == nullptr) return;
+	if (!visibility) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
+}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+void Voxel::UI::AnimatedImage::initDebugBoundingBoxLine()
+{
+	if (bbVao)
+	{
+		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
+	}
+
 	glGenVertexArrays(1, &bbVao);
 	glBindVertexArray(bbVao);
 
@@ -1176,154 +1339,8 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &lineVbo);
+}
 #endif
-}
-
-void Voxel::UI::AnimatedImage::start()
-{
-	currentFrameIndex = 0;
-	elapsedTime = 0.0f;
-
-	paused = false;
-	stopped = false;
-}
-
-void Voxel::UI::AnimatedImage::pause()
-{
-	paused = true;
-}
-
-void Voxel::UI::AnimatedImage::resume()
-{
-	paused = false;
-}
-
-void Voxel::UI::AnimatedImage::stop()
-{
-	stopped = true;
-}
-
-void Voxel::UI::AnimatedImage::setInterval(const float interval)
-{
-	this->interval = glm::max(interval, 0.0f);
-}
-
-void Voxel::UI::AnimatedImage::update(const float delta)
-{
-	elapsedTime += delta;
-
-	bool updated = false;
-
-	while (elapsedTime >= interval)
-	{
-		elapsedTime -= interval;
-
-		currentFrameIndex++;
-		currentIndex += 6;
-
-		updated = true;
-
-		if (currentFrameIndex >= frameSize)
-		{
-			if (repeat)
-			{
-				currentFrameIndex = 0;
-				currentIndex = 0;
-			}
-			else
-			{
-				stopped = true;
-				currentIndex -= 6;
-
-				updated = false;
-			}
-		}
-	}
-
-	if (updated)
-	{
-		boundingBox.size = frameSizes.at(currentFrameIndex);
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-		if (bbVao)
-		{
-			glDeleteVertexArrays(1, &bbVao);
-			bbVao = 0;
-		}
-
-		glGenVertexArrays(1, &bbVao);
-		glBindVertexArray(bbVao);
-
-		auto min = -boundingBox.size * 0.5f;
-		auto max = boundingBox.size * 0.5f;
-
-		std::vector<float> lineVertices =
-		{
-			min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-			min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-			max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-			max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		};
-
-		GLuint lineVbo;
-		glGenBuffers(1, &lineVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
-
-		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-		GLint lineVertLoc = lineProgram->getAttribLocation("vert");
-
-		glEnableVertexAttribArray(lineVertLoc);
-		glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-		GLint lineColorLoc = lineProgram->getAttribLocation("color");
-
-		glEnableVertexAttribArray(lineColorLoc);
-		glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-		glBindVertexArray(0);
-
-		glDeleteBuffers(1, &lineVbo);
-#endif
-	}
-}
-
-void Voxel::UI::AnimatedImage::renderSelf()
-{
-	if (texture == nullptr) return;
-	if (indicesSize == 0) return;
-	if (!visibility) return;
-
-	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
-	program->setUniformFloat("opacity", opacity);
-
-	texture->activate(GL_TEXTURE0);
-	texture->bind();
-
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	if (bbVao)
-	{
-		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-		lineProgram->use(true);
-		lineProgram->setUniformMat4("modelMat", modelMat);
-		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
-
-		glBindVertexArray(bbVao);
-		glDrawArrays(GL_LINES, 0, 8);
-	}
-#endif
-}
 
 //====================================================================================================================================
 
@@ -2095,6 +2112,353 @@ void Voxel::UI::Text::renderSelf()
 
 //====================================================================================================================================
 
+//=================================================== Button =========================================================================
+
+Voxel::UI::Button::Button(const std::string & name)
+	: Node(name)
+	, buttonState(State::IDLE)
+	, texture(nullptr)
+	, vao(0)
+	, currentIndex(0)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	, bbVao(0)
+#endif
+{}
+
+Voxel::UI::Button::~Button()
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &bbVao);
+	}
+#endif
+}
+
+Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std::string & spriteSheetName, const std::string & buttonImageFileName)
+{
+	auto newButton = new Voxel::UI::Button(name);
+
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		if (newButton->init(ss, buttonImageFileName))
+		{
+			return newButton;
+		}
+	}
+
+	delete newButton;
+	return nullptr;
+}
+
+void Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	if (buttonState == State::DISABLED)
+	{
+		return;
+	}
+	else
+	{
+		if (buttonState == State::IDLE)
+		{
+			if (boundingBox.containsPoint(mousePosition))
+			{
+				buttonState = State::HOVERED;
+				currentIndex = 6;
+			}
+		}
+		else if (buttonState == State::HOVERED || buttonState == State::CLICKED)
+		{
+			if (!boundingBox.containsPoint(mousePosition))
+			{
+				buttonState = State::IDLE;
+				currentIndex = 0;
+			}
+		}
+	}
+}
+
+void Voxel::UI::Button::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_1)
+	{
+		if (buttonState == State::DISABLED)
+		{
+			return;
+		}
+		else
+		{
+			if (buttonState == State::HOVERED)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					buttonState = State::CLICKED;
+					currentIndex = 12;
+				}
+			}
+		}
+	}
+}
+
+void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_1)
+	{
+		if (buttonState == State::DISABLED)
+		{
+			return;
+		}
+		else
+		{
+			if (buttonState == State::CLICKED)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					buttonState = State::IDLE;
+					currentIndex = 0;
+
+					// button clicked!
+					std::cout << "Button " << name << " clicked\n";
+				}
+			}
+		}
+	}
+}
+
+bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFileName)
+{
+	texture = ss->getTexture();
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+	
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	std::vector<float> vertices;
+	std::vector<float> colors;
+	std::vector<float> uvs;
+	std::vector<unsigned int> indices;
+
+	size_t lastindex = buttonImageFileName.find_last_of(".");
+
+	std::string fileName;
+	std::string fileExt;
+
+	if (lastindex == std::string::npos)
+	{
+		fileName = buttonImageFileName;
+		fileExt = ".png";
+	}
+	else
+	{
+		fileName = buttonImageFileName.substr(0, lastindex);
+		fileExt = buttonImageFileName.substr(lastindex);
+	}
+
+	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
+	auto quadIndices = Quad::indices;
+
+	std::array<std::string, 4> fileNames = { fileName + "_idle" + fileExt, fileName + "_hovered" + fileExt, fileName + "_clicked" + fileExt, fileName + "_disabled" + fileExt };
+
+	for (unsigned int i = 0; i < fileNames.size(); i++)
+	{
+		auto imageEntry = ss->getImageEntry(fileNames.at(i));
+
+		if (imageEntry)
+		{
+			auto size = glm::vec2(imageEntry->width, imageEntry->height);
+			auto curVertices = Quad::getVertices(size);
+
+			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
+
+			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
+
+			auto& uvOrigin = imageEntry->uvOrigin;
+			auto& uvEnd = imageEntry->uvEnd;
+
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvEnd.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvEnd.y);
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index + (4 * i));
+			}
+
+			frameSizes.at(i) = size;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	boundingBox.center = position;
+	boundingBox.size = frameSizes.front();
+
+	contentSize = boundingBox.size;
+
+	build(vertices, colors, uvs, indices);
+
+	return true;
+}
+
+void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	initDebugBoundingBoxLine();
+#endif
+}
+
+void Voxel::UI::Button::renderSelf()
+{
+	if (texture == nullptr) return;
+	if (!visibility) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	glBindVertexArray(vao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
+}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+void Voxel::UI::Button::initDebugBoundingBoxLine()
+{
+	if (bbVao)
+	{
+		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
+	}
+
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
+
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
+}
+#endif
+//====================================================================================================================================
+
 //=================================================== Cursor =========================================================================
 
 Voxel::UI::Cursor::Cursor()
@@ -2310,3 +2674,4 @@ void Voxel::UI::Cursor::render()
 }
 
 //====================================================================================================================================
+

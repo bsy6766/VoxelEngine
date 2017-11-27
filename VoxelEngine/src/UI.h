@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <map>
 #include <memory>
+#include <array>
 
 // Voxel
 #include <ZOrder.h>
@@ -280,6 +281,26 @@ namespace Voxel
 			virtual void update(const float delta);
 
 			/**
+			*	Update mouse movement.
+			*	@param mosuePosition Current position of mouse in screen space
+			*/
+			virtual void updateMouseMove(const glm::vec2& mousePosition);
+
+			/**
+			*	update mouse click
+			*	@param mousePosition Current position of mouse in screen space
+			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
+			*/
+			virtual void updateMouseClick(const glm::vec2& mousePosition, const int button);
+
+			/**
+			*	update mouse release
+			*	@param mousePosition Current position of mouse in screen space
+			*	@param button Released mouse button. 0 = left, 1 = right, 2 = middle
+			*/
+			virtual void updateMouseRelease(const glm::vec2& mousePosition, const int button);
+
+			/**
 			*	Run action.
 			*/
 			void runAction(Voxel::UI::Sequence* sequence);
@@ -350,6 +371,26 @@ namespace Voxel
 			*	Update all UI
 			*/
 			void update(const float delta);
+
+			/**
+			*	Update mouse movement.
+			*	@param mosuePosition Current position of mouse in screen space
+			*/
+			void updateMouseMove(const glm::vec2& mousePosition);
+
+			/**
+			*	update mouse click
+			*	@param mousePosition Current position of mouse in screen space
+			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
+			*/
+			void updateMouseClick(const glm::vec2& mousePosition, const int button);
+
+			/**
+			*	update mouse released
+			*	@param mousePosition Current position of mouse in screen space
+			*	@param button Release mouse button. 0 = left, 1 = right, 2 = middle
+			*/
+			void updateMouseRelease(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	Render self
@@ -448,6 +489,17 @@ namespace Voxel
 #endif
 		};
 
+		/**
+		*	@class AnimatedImage
+		*	@brief A series of image frame that animates with interval.
+		*
+		*	Similar to image but have multiple image frames that animates within given interval.
+		*	Animated image is static and won't be able to modify once created.
+		*	Yet, can change few attributes such as interval, repeat, etc.
+		*
+		*	Image frame format must be ImageFrameName_FrameNumber.png, where ImageFrameName is image file name and FrameNumber is frame number.
+		*	For example, image file name 'player_anim" and 3 frames will be 'player_anim_0.png', 'player_anim_1.png" and 'player_anim_2.png'.
+		*/
 		class AnimatedImage : public Node
 		{
 		private:
@@ -476,7 +528,6 @@ namespace Voxel
 
 			// gl
 			GLuint vao;
-			unsigned int indicesSize;
 			unsigned int currentIndex;
 
 			// Repeats animation if this is true. Else, stops on last frame.
@@ -497,6 +548,16 @@ namespace Voxel
 			*	@param repeat true if animation repeats. Else false.
 			*/
 			bool init(SpriteSheet* ss, const std::string& frameName, const int frameSize, const float interval, const bool repeat);
+
+			/**
+			*	Build image.
+			*	Initialize vao.
+			*	@param vertices Vertices of image quad
+			*	@param colors Colors of image quad
+			*	@param uvs Texture coordinates of image quad
+			*	@param indices Indices of image quad
+			*/
+			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 		public:
 			// Desturctor
 			~AnimatedImage();
@@ -510,16 +571,6 @@ namespace Voxel
 			*	@param repeat true if animation repeats. Else false.
 			*/
 			static AnimatedImage* create(const std::string& name, const std::string& spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat);
-
-			/**
-			*	Build image.
-			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param colors Colors of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
-			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
 			/**
 			*	Start animation from the first frame
@@ -559,6 +610,7 @@ namespace Voxel
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
+			void initDebugBoundingBoxLine();
 #endif
 		};
 
@@ -719,6 +771,114 @@ namespace Voxel
 			GLuint bbVao;
 #endif
 		};
+
+		/**
+		*	@class Button
+		*	@brief A simple button that can be clicked
+		*/
+		class Button : public Node
+		{
+		public:
+			enum class State
+			{
+				IDLE = 0,
+				HOVERED,
+				CLICKED,
+				DISABLED
+			};
+		private:
+			Button() = delete;
+
+			// constructor with name
+			Button(const std::string& name);
+
+			// Button state. IDLE is default
+			State buttonState;
+
+			// Texture
+			Texture2D* texture;
+
+			// frame sizes incase button images are different
+			std::array<glm::vec2, 4> frameSizes;
+
+			// gl
+			GLuint vao;
+			unsigned int currentIndex;
+
+			/**
+			*	Initialize button
+			*/
+			bool init(SpriteSheet* ss, const std::string& buttonImageFileName);
+
+			/**
+			*	Build image.
+			*	Initialize vao.
+			*	@param vertices Vertices of image quad
+			*	@param colors Colors of image quad
+			*	@param uvs Texture coordinates of image quad
+			*	@param indices Indices of image quad
+			*/
+			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+		public:
+			// Destructor
+			~Button();
+
+			/**
+			*	Create button.
+			*	@param name Name of button ui
+			*	@param spriteSheetName Name of sprite sheet that has button images.
+			*	@param buttonImageFileName Image file name of button. Button requires total 4 (idle, hovered, clicked, disabled) images. 
+			*	buttomImageFileName will be used to load all 4 required iamges by appending '_TYPE' at the end of buttonImageFileName.
+			*	For example, buttonImageFileName 'menu_button' or 'menu_button.png' will load 'menu_button_idle.png', 'menu_button_hovered.png',
+			*	'menu_button_clicked.png' and 'menu_button_disabled.png'. 
+			*	All images must be in same sprite sheet.
+			*/
+			static Button* create(const std::string& name, const std::string& spriteSheetName, const std::string& buttonImageFileName);
+
+			/**
+			*	Check if mouse is hovering button
+			*/
+			void updateMouseMove(const glm::vec2& mousePosition) override;
+
+			/**
+			*	Check if mouse clicked the button
+			*/
+			void updateMouseClick(const glm::vec2& mousePosition, const int button) override;
+
+			/**
+			*	Check if mouse released the button
+			*/
+			void updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+
+			/**
+			*	Render self
+			*/
+			void renderSelf() override;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+			void initDebugBoundingBoxLine();
+#endif
+		};
+
+		/**
+		*	@class CheckBox
+		*	@brief A simple checkbox that can be checked or unchekced
+		*/
+		class CheckBox : public Node
+		{
+
+		};
+
+		/**
+		*	@class ProgressTimer
+		*	@brief A simple progress timer. Can be BAR type or RADIAL type.
+		*/
+		class ProgressTimer : public Node
+		{
+
+		};
 		
 		/**
 		*	@class Mesh
@@ -734,13 +894,7 @@ namespace Voxel
 		{
 
 		};
-
-		class Button
-		{
-
-		};
-
-
+		
 
 		/**
 		*	@class Cursor

@@ -20,6 +20,9 @@ namespace Voxel
 		class Text;
 		class Image;
 		class AnimatedImage;
+		class Button;
+		class CheckBox;
+		class ProgressTimer;
 	}
 
 	class Player;
@@ -105,6 +108,9 @@ namespace Voxel
 		void onFPSUpdate(int fps);
 		
 		void update(const float delta);
+		void updateMouseMove(const glm::vec2& mousePosition);
+		void updateMouseClick(const glm::vec2& mousePosition, const int button);
+		void updateMouseRelease(const glm::vec2& mousePosition, const int button);
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);
 		void updatePlayerPosition(const glm::vec3& position);
@@ -121,6 +127,7 @@ namespace Voxel
 		Voxel::UI::Image* testImage;
 		Voxel::UI::AnimatedImage* testAnimatedImage;
 		Voxel::UI::Text* testText;
+		Voxel::UI::Button* testButton;
 #endif
 	};
 }
