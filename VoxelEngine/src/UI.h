@@ -483,10 +483,10 @@ namespace Voxel
 			unsigned int indicesSize;
 
 			// Color of text
-			glm::vec4 color;
+			glm::vec3 color;
 
 			// Color of outline
-			glm::vec4 outlineColor;
+			glm::vec3 outlineColor;
 						
 			// align
 			ALIGN align;
@@ -502,7 +502,7 @@ namespace Voxel
 			/**
 			*	Initialize text with outline
 			*/
-			bool initWithOutline(const std::string& text, const glm::vec4& outlineColor, ALIGN align = ALIGN::LEFT);
+			bool initWithOutline(const std::string& text, const glm::vec3& outlineColor, ALIGN align = ALIGN::LEFT);
 
 			/**
 			*	Builds mesh and loads. 
@@ -549,7 +549,7 @@ namespace Voxel
 			*	@param align Text align. Left by default.
 			*	@return Text ui if successfully loads text to render. Else, nullptr
 			*/
-			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec4& outlineColor = glm::vec4(0.0f), const ALIGN align = ALIGN::LEFT);
+			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec3& outlineColor = glm::vec4(0.0f), const ALIGN align = ALIGN::LEFT);
 
 			/**
 			*	Sets text.
@@ -584,7 +584,7 @@ namespace Voxel
 			/**
 			*	Get outline color
 			*/
-			glm::vec4 getOutlineColor() const;
+			glm::vec3 getOutlineColor() const;
 
 			/**
 			*	Clear text.

@@ -3,7 +3,7 @@
 uniform sampler2D tex;
 uniform bool outlined;
 uniform int outlineSize;
-uniform vec4 outlineColor;
+uniform vec3 outlineColor;
 
 //uniform float fontTextureWidth;
 //uniform float fontTextureHeight;
@@ -21,7 +21,7 @@ void main()
     {
     	if(textureColor.r > 0.5)
     	{
-			fragColor = vec4(vertColor.rgb, 1);
+			fragColor = vertColor;
     	}
     	else
     	{
@@ -89,7 +89,7 @@ void main()
 
     		if(counter > 0)
     		{
-				fragColor = outlineColor;
+				fragColor = vec4(outlineColor.rgb, vertColor.a);
     		}
     		else
     		{
@@ -101,7 +101,7 @@ void main()
     {
     	if(textureColor.r > 0.5)
     	{
-			fragColor = vec4(vertColor.rgb, 1);
+			fragColor = vertColor;
     	}
 		else
 		{

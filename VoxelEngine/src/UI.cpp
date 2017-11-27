@@ -981,7 +981,7 @@ Text * Voxel::UI::Text::create(const std::string & name, const std::string & tex
 	return nullptr;
 }
 
-Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec4 & outlineColor, const ALIGN align)
+Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec3 & outlineColor, const ALIGN align)
 {
 	Text* newText = new Text(name);
 
@@ -1015,7 +1015,7 @@ bool Voxel::UI::Text::init(const std::string & text, const ALIGN align)
 	return buildMesh(true);
 }
 
-bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec4 & outlineColor, ALIGN align)
+bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec3 & outlineColor, ALIGN align)
 {
 	this->text = text;
 	this->align = align;
@@ -1081,7 +1081,7 @@ void Voxel::UI::Text::setOutlineColor(const glm::vec4 & color)
 	outlineColor = glm::clamp(color, 0.0f, 1.0f);
 }
 
-glm::vec4 Voxel::UI::Text::getOutlineColor() const
+glm::vec3 Voxel::UI::Text::getOutlineColor() const
 {
 	return outlineColor;
 }
@@ -1680,7 +1680,7 @@ void Voxel::UI::Text::renderSelf()
 	{
 		program->setUniformBool("outlined", true);
 		program->setUniformInt("outlineSize", 2);
-		program->setUniformVec4("outlineColor", outlineColor);
+		program->setUniformVec3("outlineColor", outlineColor);
 	}
 	else
 	{
