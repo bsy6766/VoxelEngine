@@ -229,6 +229,20 @@ void Voxel::DebugConsole::init()
 	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug_button.png");
 	testButton->setPosition(glm::vec2(100.0f, 300.0f));
 	debugCanvas->addChild(testButton, 100);
+
+	testDisabledButton = Voxel::UI::Button::create("testDisabledButton", "UISpriteSheet", "debug_button.png");
+	testDisabledButton->setPosition(glm::vec2(100.0f, 200.0f));
+	testDisabledButton->disable();
+	debugCanvas->addChild(testDisabledButton, 100);
+
+	testCheckBox = Voxel::UI::CheckBox::create("testCheckBox", "UISpriteSheet", "debug_checkbox.png");
+	testCheckBox->setPosition(50.0f, 10.0f);
+	debugCanvas->addChild(testCheckBox, 100);
+	
+	testDisabledCheckBox = Voxel::UI::CheckBox::create("testDisabledCheckBox", "UISpriteSheet", "debug_checkbox.png");
+	testDisabledCheckBox->setPosition(100.0f, 10.0f);
+	testDisabledCheckBox->disable();
+	debugCanvas->addChild(testDisabledCheckBox, 100);
 #endif
 }
 
@@ -1569,6 +1583,10 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						return true;
 					}
 				}
+			}
+			else if (commandStr == "testui")
+			{
+				// /testui uiName 
 			}
 		}
 	}

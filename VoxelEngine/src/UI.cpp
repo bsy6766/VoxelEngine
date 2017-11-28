@@ -19,49 +19,21 @@ using namespace Voxel::UI;
 
 //=============================================================== Node ===============================================================
 
-Voxel::UI::Node::Node()
-	: visibility(true)
-	, opacity(1.0f)
-	, position(0.0f)
-	, angle(0.0f)
-	, scale(1.0f)
-	, pivot(0.0f)
-	, coordinateOrigin(0.0f)
-	, contentSize(0.0f)
-	, modelMat(1.0f)
-	, sequence(nullptr)
-	, zOrder()
-	, program(nullptr)
-	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
-	, needToUpdateModelMat(false)
-	, parent(nullptr)
-{}
+unsigned int Node::idCounter = 0;
 
 Voxel::UI::Node::Node(const std::string & name)
 	: name(name)
-	, visibility(true)
-	, opacity(1.0f)
-	, position(0.0f)
-	, angle(0.0f)
-	, scale(1.0f)
-	, pivot(0.0f)
-	, coordinateOrigin(0.0f)
-	, contentSize(0.0f)
-	, modelMat(1.0f)
-	, sequence(nullptr)
-	, zOrder()
-	, program(nullptr)
-	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
-	, needToUpdateModelMat(false)
-	, parent(nullptr)
+	, id(++Node::idCounter)
 {}
 
 Voxel::UI::Node::~Node()
 {
-	if (sequence)
-	{
-		delete sequence;
-	}
+	//std::cout << "~Node()\n";
+}
+
+unsigned int Voxel::UI::Node::getID() const
+{
+	return id;
 }
 
 std::string Voxel::UI::Node::getName() const
@@ -69,27 +41,37 @@ std::string Voxel::UI::Node::getName() const
 	return name;
 }
 
-void Voxel::UI::Node::setVisibility(const bool visibility)
+//====================================================================================================================================
+
+//=========================================================== Transform Node =========================================================
+
+Voxel::UI::TransformNode::TransformNode(const std::string & name)
+	: Node(name)
+	, position(0.0f)
+	, angle(0.0f)
+	, scale(1.0f)
+	, pivot(0.0f)
+	, coordinateOrigin(0.0f)
+	, contentSize(0.0f)
+	, modelMat(1.0f)
+	, sequence(nullptr)
+	, zOrder()
+	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
+	, needToUpdateModelMat(false)
+	, parent(nullptr)
+{}
+
+Voxel::UI::TransformNode::~TransformNode()
 {
-	this->visibility = visibility;
+	if (sequence)
+	{
+		delete sequence;
+	}
+
+	//std::cout << "~TransformNode()\n";
 }
 
-bool Voxel::UI::Node::getVisibility() const
-{
-	return visibility;
-}
-
-void Voxel::UI::Node::setOpacity(const float opacity)
-{
-	this->opacity = glm::clamp(opacity, 0.0f, 1.0f);
-}
-
-float Voxel::UI::Node::getOpacity() const
-{
-	return opacity;
-}
-
-void Voxel::UI::Node::setPosition(const float x, const float y)
+void Voxel::UI::TransformNode::setPosition(const float x, const float y)
 {
 	this->position.x = x;
 	this->position.y = y;
@@ -99,17 +81,17 @@ void Voxel::UI::Node::setPosition(const float x, const float y)
 	needToUpdateModelMat = true;
 }
 
-void Voxel::UI::Node::setPosition(const glm::vec2 & position)
+void Voxel::UI::TransformNode::setPosition(const glm::vec2 & position)
 {
 	setPosition(position.x, position.y);
 }
 
-glm::vec2 Voxel::UI::Node::getPosition() const
+glm::vec2 Voxel::UI::TransformNode::getPosition() const
 {
 	return position;
 }
 
-void Voxel::UI::Node::setAngle(const float angle)
+void Voxel::UI::TransformNode::setAngle(const float angle)
 {
 	float newAngle = angle;
 	if (newAngle < 0.0f)
@@ -132,12 +114,12 @@ void Voxel::UI::Node::setAngle(const float angle)
 	needToUpdateModelMat = true;
 }
 
-float Voxel::UI::Node::getAngle() const
+float Voxel::UI::TransformNode::getAngle() const
 {
 	return angle;
 }
 
-void Voxel::UI::Node::setScale(const glm::vec2 & scale)
+void Voxel::UI::TransformNode::setScale(const glm::vec2 & scale)
 {
 	this->scale = scale;
 
@@ -145,7 +127,7 @@ void Voxel::UI::Node::setScale(const glm::vec2 & scale)
 	{
 		this->scale.x = 0.0f;
 	}
-	
+
 	if (this->scale.y < 0.0f)
 	{
 		this->scale.y = 0.0f;
@@ -154,59 +136,59 @@ void Voxel::UI::Node::setScale(const glm::vec2 & scale)
 	needToUpdateModelMat = true;
 }
 
-glm::vec2 Voxel::UI::Node::getScale() const
+glm::vec2 Voxel::UI::TransformNode::getScale() const
 {
 	return scale;
 }
 
-void Voxel::UI::Node::setPivot(const glm::vec2 & pivot)
+void Voxel::UI::TransformNode::setPivot(const glm::vec2 & pivot)
 {
 	this->pivot = glm::clamp(pivot, -0.5f, 0.5f);
 
 	needToUpdateModelMat = true;
 }
 
-glm::vec2 Voxel::UI::Node::getPivot() const
+glm::vec2 Voxel::UI::TransformNode::getPivot() const
 {
 	return pivot;
 }
 
-void Voxel::UI::Node::setCoordinateOrigin(const glm::vec2 & coordinateOrigin)
+void Voxel::UI::TransformNode::setCoordinateOrigin(const glm::vec2 & coordinateOrigin)
 {
 	this->coordinateOrigin = glm::clamp(coordinateOrigin, -0.5f, 0.5f);
 
 	needToUpdateModelMat = true;
 }
 
-glm::vec2 Voxel::UI::Node::getCoordinateOrigin() const
+glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 {
 	return coordinateOrigin;
 }
 
-void Voxel::UI::Node::setBoundingBox(const glm::vec2 & center, const glm::vec2 & size)
+void Voxel::UI::TransformNode::setBoundingBox(const glm::vec2 & center, const glm::vec2 & size)
 {
 	boundingBox.center = center;
 	boundingBox.size = size;
 }
 
-Voxel::Shape::Rect Voxel::UI::Node::getBoundingBox() const
+Voxel::Shape::Rect Voxel::UI::TransformNode::getBoundingBox() const
 {
 	auto scaled = boundingBox;
 	scaled.size *= scale;
 	return scaled;
 }
 
-void Voxel::UI::Node::setZorder(const ZOrder & zOrder)
+void Voxel::UI::TransformNode::setZorder(const ZOrder & zOrder)
 {
 	this->zOrder = zOrder;
 }
 
-Voxel::ZOrder Voxel::UI::Node::getZOrder() const
+Voxel::ZOrder Voxel::UI::TransformNode::getZOrder() const
 {
 	return zOrder;
 }
 
-bool Voxel::UI::Node::addChild(Node * child)
+bool Voxel::UI::TransformNode::addChild(TransformNode * child)
 {
 	if (child == nullptr) return false;
 	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
@@ -235,7 +217,7 @@ bool Voxel::UI::Node::addChild(Node * child)
 	return true;
 }
 
-bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, int zOrder)
+bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, int zOrder)
 {
 	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
 	{
@@ -245,7 +227,7 @@ bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, int zOrder)
 	return addChild(child, ZOrder(zOrder));
 }
 
-bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, Voxel::ZOrder& zOrder)
+bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel::ZOrder& zOrder)
 {
 	if (child == nullptr) return false;
 
@@ -262,18 +244,18 @@ bool Voxel::UI::Node::addChild(Voxel::UI::Node * child, Voxel::ZOrder& zOrder)
 	}
 	else
 	{
-		children.insert(std::make_pair(zOrder, std::unique_ptr<Voxel::UI::Node>(child)));
+		children.insert(std::make_pair(zOrder, std::unique_ptr<Voxel::UI::TransformNode>(child)));
 
 		child->parent = this;
 
 		// New child added. Update model matrix based on parent's model matrix
 		child->updateModelMatrix();
-		
+
 		return true;
 	}
 }
 
-bool Voxel::UI::Node::getNextZOrder(Voxel::ZOrder & curZOrder)
+bool Voxel::UI::TransformNode::getNextZOrder(Voxel::ZOrder & curZOrder)
 {
 	bool lookForLocal = false;
 	int globalTemp = std::numeric_limits<int>::min();
@@ -349,7 +331,7 @@ bool Voxel::UI::Node::getNextZOrder(Voxel::ZOrder & curZOrder)
 	return true;
 }
 
-Node * Voxel::UI::Node::getChild(const std::string & name)
+TransformNode * Voxel::UI::TransformNode::getChild(const std::string & name)
 {
 	for (auto& e : children)
 	{
@@ -362,12 +344,12 @@ Node * Voxel::UI::Node::getChild(const std::string & name)
 	return nullptr;
 }
 
-bool Voxel::UI::Node::hasChildren()
+bool Voxel::UI::TransformNode::hasChildren()
 {
 	return !(children.empty());
 }
 
-void Voxel::UI::Node::getAllChildrenInVector(std::vector<Node*>& nodes, Node * parent)
+void Voxel::UI::TransformNode::getAllChildrenInVector(std::vector<TransformNode*>& nodes, TransformNode * parent)
 {
 	if (children.empty())
 	{
@@ -375,11 +357,11 @@ void Voxel::UI::Node::getAllChildrenInVector(std::vector<Node*>& nodes, Node * p
 	}
 	else
 	{
-		std::vector<Node*> negativesOrder, positiveOrder;
+		std::vector<TransformNode*> negativesOrder, positiveOrder;
 
 		for (auto& e : children)
 		{
-			if ((e.first).globalZOrder < 0)
+			if ((e.first).getGlobalZOrder() < 0)
 			{
 				if ((e.second)->hasChildren())
 				{
@@ -417,7 +399,78 @@ void Voxel::UI::Node::getAllChildrenInVector(std::vector<Node*>& nodes, Node * p
 	}
 }
 
-void Voxel::UI::Node::update(const float delta)
+void Voxel::UI::TransformNode::print(const int tab)
+{
+	for (int i = 0; i < tab; i++)
+	{
+		std::cout << "\t";
+	}
+
+	std::cout << name << "\n";
+}
+
+void Voxel::UI::TransformNode::printChildren(const int tab)
+{
+	std::string str = "";
+
+	for (int i = 0; i < tab; i++)
+	{
+		str += "\t";
+	}
+
+	for (auto& e : children)
+	{
+		std::cout << str << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
+		e.second->printChildren(tab + 1);
+	}
+}
+
+glm::vec2 Voxel::UI::TransformNode::getContentSize()
+{
+	glm::vec2 scaled = contentSize;
+	scaled.x *= scale.x;
+	scaled.y *= scale.y;
+
+	return scaled;
+}
+
+glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
+{
+	auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
+	if (pivot.x != 0.0f || pivot.y != 0.0f)
+	{
+		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
+	}
+
+	return glm::scale(mat, glm::vec3(scale, 1));
+}
+
+void Voxel::UI::TransformNode::updateModelMatrix()
+{
+	// Update model matrix
+	if (parent)
+	{
+		modelMat = parent->getModelMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
+	}
+	else
+	{
+		modelMat = getModelMatrix();
+	}
+
+	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	// Check if this node has children
+	if (hasChildren())
+	{
+		// Update model matrix for children as well
+		for (auto& e : children)
+		{
+			(e.second)->updateModelMatrix();
+		}
+	}
+}
+
+void Voxel::UI::TransformNode::update(const float delta)
 {
 	if (sequence)
 	{
@@ -428,8 +481,8 @@ void Voxel::UI::Node::update(const float delta)
 	/*
 	if (needToUpdateModelMat)
 	{
-		updateModelMatrix();
-		needToUpdateModelMat = false;
+	updateModelMatrix();
+	needToUpdateModelMat = false;
 	}
 	*/
 
@@ -439,21 +492,21 @@ void Voxel::UI::Node::update(const float delta)
 	}
 }
 
-void Voxel::UI::Node::updateMouseMove(const glm::vec2 & mousePosition)
-{
-	
-}
-
-void Voxel::UI::Node::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+void Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition)
 {
 
 }
 
-void Voxel::UI::Node::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+void Voxel::UI::TransformNode::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+
+}
+
+void Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
 }
 
-void Voxel::UI::Node::runAction(Voxel::UI::Sequence * sequence)
+void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
 {
 	if (sequence)
 	{
@@ -463,7 +516,61 @@ void Voxel::UI::Node::runAction(Voxel::UI::Sequence * sequence)
 	this->sequence = sequence;
 }
 
-void Voxel::UI::Node::render()
+//====================================================================================================================================
+
+//======================================================= RenderNode =================================================================
+
+Voxel::UI::RenderNode::RenderNode(const std::string & name)
+	: TransformNode(name)
+	, visibility(true)
+	, opacity(1.0f)
+	, program(nullptr)
+	, vao(0)
+	, texture(nullptr)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	, bbVao(0)
+#endif
+{}
+
+Voxel::UI::RenderNode::~RenderNode()
+{
+	std::cout << "~RenderNode() " + name + "\n";
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &bbVao);
+	}
+#endif
+}
+
+void Voxel::UI::RenderNode::setVisibility(const bool visibility)
+{
+	this->visibility = visibility;
+}
+
+bool Voxel::UI::RenderNode::getVisibility() const
+{
+	return visibility;
+}
+
+void Voxel::UI::RenderNode::setOpacity(const float opacity)
+{
+	this->opacity = glm::clamp(opacity, 0.0f, 1.0f);
+}
+
+float Voxel::UI::RenderNode::getOpacity() const
+{
+	return opacity;
+}
+
+void Voxel::UI::RenderNode::render()
 {
 	if (children.empty())
 	{
@@ -494,85 +601,15 @@ void Voxel::UI::Node::render()
 		}
 	}
 }
-
-void Voxel::UI::Node::print(const int tab)
-{
-	for (int i = 0; i < tab; i++)
-	{
-		std::cout << "\t";
-	}
-
-	std::cout << name << "\n";
-}
-
-void Voxel::UI::Node::printChildren(const int tab)
-{
-	std::string str = "";
-
-	for (int i = 0; i < tab; i++)
-	{
-		str += "\t";
-	}
-
-	for (auto& e : children)
-	{
-		std::cout << str << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
-		e.second->printChildren(tab + 1);
-	}
-}
-
-glm::vec2 Voxel::UI::Node::getContentSize()
-{
-	glm::vec2 scaled = contentSize;
-	scaled.x *= scale.x;
-	scaled.y *= scale.y;
-
-	return scaled;
-}
-
-glm::mat4 Voxel::UI::Node::getModelMatrix()
-{
-	auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
-	if (pivot.x != 0.0f || pivot.y != 0.0f)
-	{
-		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
-	}
-
-	return glm::scale(mat, glm::vec3(scale, 1));
-}
-
-void Voxel::UI::Node::updateModelMatrix()
-{
-	// Update model matrix
-	if (parent)
-	{
-		modelMat = parent->getModelMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
-	}
-	else
-	{
-		modelMat = getModelMatrix();
-	}
-
-	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-	// Check if this node has children
-	if (hasChildren())
-	{
-		// Update model matrix for children as well
-		for (auto& e : children)
-		{
-			(e.second)->updateModelMatrix();
-		}
-	}
-}
 //====================================================================================================================================
 
 //============================================================== Canvas ==============================================================
 
 Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition)
-	: Node()
+	: TransformNode("")
 	, size(size)
 	, centerPosition(centerPosition)
+	, visibility(true)
 {
 	std::cout << "[Canvas] Creating new canvas\n";
 	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
@@ -583,6 +620,16 @@ Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition)
 	updateModelMatrix();
 }
 
+void Voxel::UI::Canvas::setVisibility(const bool visibility)
+{
+	this->visibility = visibility;
+}
+
+bool Voxel::UI::Canvas::getVisibility() const
+{
+	return visibility;
+}
+
 void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
 {
 	this->size = size;
@@ -590,7 +637,7 @@ void Voxel::UI::Canvas::setSize(const glm::vec2 & size)
 
 void Voxel::UI::Canvas::updateModelMatrix()
 {
-	modelMat = Camera::mainCamera->getScreenSpaceMatrix() * Voxel::UI::Node::getModelMatrix();
+	modelMat = Camera::mainCamera->getScreenSpaceMatrix() * Voxel::UI::TransformNode::getModelMatrix();
 }
 
 glm::mat4 Voxel::UI::Canvas::getModelMatrix()
@@ -630,13 +677,6 @@ void Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, cons
 	}
 }
 
-void Voxel::UI::Canvas::renderSelf()
-{
-	if (!visibility) return;
-
-	// parent matrix is screen space matrix
-}
-
 void Voxel::UI::Canvas::render()
 {
 	if (!visibility) return;
@@ -647,56 +687,6 @@ void Voxel::UI::Canvas::render()
 		// Multiply model matrix with screen space
 		(e.second)->render();
 	}
-
-	/*
-	auto imageShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXTURE_SHADER);
-	imageShader->use(true);
-	imageShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
-
-	auto uiMat = Camera::mainCamera->getScreenSpaceMatrix();
-
-	for (auto image : images)
-	{
-	auto canvasPivot = (image.second)->getCanvasPivot();
-	canvasPivot.x *= size.x;
-	canvasPivot.y *= size.y;
-	glm::mat4 canvasMat = glm::mat4(1.0f);
-	canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
-	canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
-	(image.second)->render(uiMat, canvasMat, imageShader);
-	}
-
-	auto textShader = ProgramManager::getInstance().getDefaultProgram(ProgramManager::PROGRAM_NAME::TEXT_SHADER);
-	textShader->use(true);
-	textShader->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
-
-	uiMat = Camera::mainCamera->getScreenSpaceMatrix();
-
-	for (auto& text : texts)
-	{
-	bool outlined = (text.second)->isOutlined();
-	if (outlined)
-	{
-	textShader->setUniformBool("outlined", outlined);
-	textShader->setUniformInt("outlineSize", 2);
-	textShader->setUniformVec4("outlineColor", (text.second)->getOutlineColor());
-	}
-	else
-	{
-	textShader->setUniformBool("outlined", outlined);
-	textShader->setUniformInt("outlineSize", 0);
-	textShader->setUniformVec4("outlineColor", glm::vec4(1.0f));
-	}
-
-	auto canvasPivot = (text.second)->getCanvasPivot();
-	canvasPivot.x *= size.x;
-	canvasPivot.y *= size.y;
-	glm::mat4 canvasMat = glm::mat4(1.0f);
-	canvasMat = glm::translate(canvasMat, glm::vec3(centerPosition, 0.0f));
-	canvasMat = glm::translate(canvasMat, glm::vec3(canvasPivot, 0.0f));
-	(text.second)->render(uiMat, canvasMat, textShader);
-	}
-	*/
 }
 
 void Voxel::UI::Canvas::print(const int tab)
@@ -724,31 +714,9 @@ void Voxel::UI::Canvas::print(const int tab)
 //============================================================== Image ===============================================================
 
 Voxel::UI::Image::Image(const std::string& name)
-	: Node(name)
-	, vao(0)
+	: RenderNode(name)
 	, indicesSize(0)
-	, texture(nullptr)
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	, bbVao(0)
-#endif
 {}
-
-Image::~Image()
-{
-	if (vao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &vao);
-	}
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	if (bbVao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &bbVao);
-	}
-#endif
-}
 
 Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFileName)
 {
@@ -952,12 +920,18 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 #endif
 }
 
+Voxel::UI::Image::~Image()
+{
+	//std::cout << "~Image()\n";
+}
+
 void Voxel::UI::Image::renderSelf()
 {
 	// only render self
 	if (texture == nullptr) return;
 	if (indicesSize == 0) return;
 	if (!visibility) return;
+	if (program == nullptr) return;
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
@@ -966,8 +940,11 @@ void Voxel::UI::Image::renderSelf()
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	if (bbVao)
@@ -988,35 +965,16 @@ void Voxel::UI::Image::renderSelf()
 //===================================================== Animated Image ===============================================================
 
 Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
-	: Node(name)
+	: RenderNode(name)
 	, frameSize(0)
 	, interval(0.0f)
 	, elapsedTime(0.0f)
 	, currentFrameIndex(0)
 	, currentIndex(0)
-	, vao(0)
 	, repeat(false)
 	, stopped(false)
 	, paused(false)
-	, texture(nullptr)
 {}
-
-Voxel::UI::AnimatedImage::~AnimatedImage()
-{
-	if (vao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &vao);
-	}
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	if (bbVao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &bbVao);
-	}
-#endif
-}
 
 AnimatedImage * Voxel::UI::AnimatedImage::create(const std::string & name, const std::string & spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
 {
@@ -1154,7 +1112,7 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glGenBuffers(1, &cbo);
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
+	glEnableVertexAttribArray(colorLoc);	// Errorstack 1
 	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
@@ -1265,6 +1223,7 @@ void Voxel::UI::AnimatedImage::renderSelf()
 {
 	if (texture == nullptr) return;
 	if (!visibility) return;
+	if (program == nullptr) return;
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
@@ -1273,8 +1232,11 @@ void Voxel::UI::AnimatedImage::renderSelf()
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	if (bbVao)
@@ -1347,21 +1309,17 @@ void Voxel::UI::AnimatedImage::initDebugBoundingBoxLine()
 //========================================================= Text =====================================================================
 
 Voxel::UI::Text::Text(const std::string& name)
-	: Node(name)
+	: RenderNode(name)
 	, text("")
 	, align(ALIGN::LEFT)
 	, indicesSize(0)
 	, outlined(false)
 	, color(1.0f)
 	, outlineColor(0.0f)
-	, vao(0)
 	, vbo(0)
 	, cbo(0)
 	, uvbo(0)
 	, ibo(0)
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	, bbVao(0)
-#endif
 {}
 
 Voxel::UI::Text::~Text()
@@ -1537,6 +1495,9 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		{
 			return true;
 		}
+
+		// set texture
+		texture = font->getTexture();
 
 		// Split text label by line
 		std::vector<std::string> split;
@@ -2073,9 +2034,10 @@ void Voxel::UI::Text::renderSelf()
 	if (text.empty()) return;
 	if (font == nullptr) return;
 	if (vao == 0) return;
+	if (program == nullptr) return;
 
-	font->activateTexture(GL_TEXTURE0);
-	font->bind();
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
@@ -2092,8 +2054,11 @@ void Voxel::UI::Text::renderSelf()
 		program->setUniformBool("outlined", false);
 	}
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	if (bbVao)
@@ -2115,32 +2080,10 @@ void Voxel::UI::Text::renderSelf()
 //=================================================== Button =========================================================================
 
 Voxel::UI::Button::Button(const std::string & name)
-	: Node(name)
+	: RenderNode(name)
 	, buttonState(State::IDLE)
-	, texture(nullptr)
-	, vao(0)
 	, currentIndex(0)
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	, bbVao(0)
-#endif
 {}
-
-Voxel::UI::Button::~Button()
-{
-	if (vao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &vao);
-	}
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	if (bbVao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &bbVao);
-	}
-#endif
-}
 
 Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std::string & spriteSheetName, const std::string & buttonImageFileName)
 {
@@ -2160,80 +2103,6 @@ Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std
 
 	delete newButton;
 	return nullptr;
-}
-
-void Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
-{
-	if (buttonState == State::DISABLED)
-	{
-		return;
-	}
-	else
-	{
-		if (buttonState == State::IDLE)
-		{
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				buttonState = State::HOVERED;
-				currentIndex = 6;
-			}
-		}
-		else if (buttonState == State::HOVERED || buttonState == State::CLICKED)
-		{
-			if (!boundingBox.containsPoint(mousePosition))
-			{
-				buttonState = State::IDLE;
-				currentIndex = 0;
-			}
-		}
-	}
-}
-
-void Voxel::UI::Button::updateMouseClick(const glm::vec2 & mousePosition, const int button)
-{
-	if (button == GLFW_MOUSE_BUTTON_1)
-	{
-		if (buttonState == State::DISABLED)
-		{
-			return;
-		}
-		else
-		{
-			if (buttonState == State::HOVERED)
-			{
-				if (boundingBox.containsPoint(mousePosition))
-				{
-					buttonState = State::CLICKED;
-					currentIndex = 12;
-				}
-			}
-		}
-	}
-}
-
-void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
-{
-	if (button == GLFW_MOUSE_BUTTON_1)
-	{
-		if (buttonState == State::DISABLED)
-		{
-			return;
-		}
-		else
-		{
-			if (buttonState == State::CLICKED)
-			{
-				if (boundingBox.containsPoint(mousePosition))
-				{
-					buttonState = State::IDLE;
-					currentIndex = 0;
-
-					// button clicked!
-					std::cout << "Button " << name << " clicked\n";
-				}
-			}
-		}
-	}
 }
 
 bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFileName)
@@ -2321,6 +2190,92 @@ bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFi
 	return true;
 }
 
+void Voxel::UI::Button::enable()
+{
+	buttonState = State::IDLE;
+	currentIndex = 0;
+}
+
+void Voxel::UI::Button::disable()
+{
+	buttonState = State::DISABLED;
+	currentIndex = 18;
+}
+
+void Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	if (buttonState == State::DISABLED)
+	{
+		return;
+	}
+	else
+	{
+		if (buttonState == State::IDLE)
+		{
+			if (boundingBox.containsPoint(mousePosition))
+			{
+				buttonState = State::HOVERED;
+				currentIndex = 6;
+			}
+		}
+		else if (buttonState == State::HOVERED || buttonState == State::CLICKED)
+		{
+			if (!boundingBox.containsPoint(mousePosition))
+			{
+				buttonState = State::IDLE;
+				currentIndex = 0;
+			}
+		}
+	}
+}
+
+void Voxel::UI::Button::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_1)
+	{
+		if (buttonState == State::DISABLED)
+		{
+			return;
+		}
+		else
+		{
+			if (buttonState == State::HOVERED)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					buttonState = State::CLICKED;
+					currentIndex = 12;
+				}
+			}
+		}
+	}
+}
+
+void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_1)
+	{
+		if (buttonState == State::DISABLED)
+		{
+			return;
+		}
+		else
+		{
+			if (buttonState == State::CLICKED)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					buttonState = State::IDLE;
+					currentIndex = 0;
+
+					// button clicked!
+					std::cout << "Button " << name << " clicked\n";
+				}
+			}
+		}
+	}
+}
+
 void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
 {
 	if (vao)
@@ -2381,6 +2336,7 @@ void Voxel::UI::Button::renderSelf()
 {
 	if (texture == nullptr) return;
 	if (!visibility) return;
+	if (program == nullptr) return;
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
@@ -2389,8 +2345,11 @@ void Voxel::UI::Button::renderSelf()
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
 
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	if (bbVao)
@@ -2457,6 +2416,399 @@ void Voxel::UI::Button::initDebugBoundingBoxLine()
 	glDeleteBuffers(1, &lineVbo);
 }
 #endif
+//====================================================================================================================================
+
+//============================================================= Check box ============================================================
+
+Voxel::UI::CheckBox::CheckBox(const std::string& name)
+	: RenderNode(name)
+	, currentIndex(0)
+	, checkBoxState(State::DESELECTED)
+{}
+
+CheckBox * Voxel::UI::CheckBox::create(const std::string & name, const std::string & spriteSheetName, const std::string & checkBoxImageFileName)
+{
+	auto newCheckBox = new Voxel::UI::CheckBox(name);
+
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		if (newCheckBox->init(ss, checkBoxImageFileName))
+		{
+			return newCheckBox;
+		}
+	}
+
+	delete newCheckBox;
+	return nullptr;
+}
+
+bool Voxel::UI::CheckBox::init(SpriteSheet * ss, const std::string & checkBoxImageFileName)
+{
+	texture = ss->getTexture();
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	std::vector<float> vertices;
+	std::vector<float> colors;
+	std::vector<float> uvs;
+	std::vector<unsigned int> indices;
+
+	size_t lastindex = checkBoxImageFileName.find_last_of(".");
+
+	std::string fileName;
+	std::string fileExt;
+
+	if (lastindex == std::string::npos)
+	{
+		fileName = checkBoxImageFileName;
+		fileExt = ".png";
+	}
+	else
+	{
+		fileName = checkBoxImageFileName.substr(0, lastindex);
+		fileExt = checkBoxImageFileName.substr(lastindex);
+	}
+
+	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
+	auto quadIndices = Quad::indices;
+
+	std::array<std::string, 7> fileNames =
+	{ 
+		fileName + "_deselected" + fileExt, 
+		fileName + "_hovered" + fileExt, 
+		fileName + "_clicked" + fileExt,
+		fileName + "_selected" + fileExt,
+		fileName + "_hoveredSelected" + fileExt,
+		fileName + "_clickedSelected" + fileExt,
+		fileName + "_disabled" + fileExt 
+	};
+
+	for (unsigned int i = 0; i < fileNames.size(); i++)
+	{
+		auto imageEntry = ss->getImageEntry(fileNames.at(i));
+
+		if (imageEntry)
+		{
+			auto size = glm::vec2(imageEntry->width, imageEntry->height);
+			auto curVertices = Quad::getVertices(size);
+
+			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
+
+			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
+
+			auto& uvOrigin = imageEntry->uvOrigin;
+			auto& uvEnd = imageEntry->uvEnd;
+
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvEnd.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvEnd.y);
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index + (4 * i));
+			}
+
+			//frameSizes.at(i) = size;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	boundingBox.center = position;
+	auto size = ss->getImageEntry(fileNames.at(0));
+	boundingBox.size = glm::vec2(size->width, size->height);
+
+	contentSize = boundingBox.size;
+
+	build(vertices, colors, uvs, indices);
+
+	return true;
+}
+
+void Voxel::UI::CheckBox::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint colorLoc = program->getAttribLocation("color");
+
+	GLuint cbo;
+	glGenBuffers(1, &cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &cbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+}
+
+void Voxel::UI::CheckBox::updateCurrentIndex()
+{
+	switch (checkBoxState)
+	{
+	case Voxel::UI::CheckBox::State::DESELECTED:
+		currentIndex = 0;
+		break;
+	case Voxel::UI::CheckBox::State::HOVERED:
+		currentIndex = 6;
+		break;
+	case Voxel::UI::CheckBox::State::CLICKED:
+		currentIndex = 12;
+		break;
+	case Voxel::UI::CheckBox::State::SELECTED:
+		currentIndex = 18;
+		break;
+	case Voxel::UI::CheckBox::State::HOVERED_SELECTED:
+		currentIndex = 24;
+		break;
+	case Voxel::UI::CheckBox::State::CLICKED_SELECTED:
+		currentIndex = 30;
+		break;
+	case Voxel::UI::CheckBox::State::DISABLED:
+		currentIndex = 36;
+		break;
+	default:
+		currentIndex = 0;
+		break;
+	}
+}
+
+void Voxel::UI::CheckBox::enable()
+{
+	if (checkBoxState == State::DISABLED)
+	{
+		return;
+	}
+	else
+	{
+		checkBoxState = prevCheckBoxState;
+		
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::disable()
+{
+	prevCheckBoxState = checkBoxState;
+	checkBoxState = State::DISABLED;
+
+	updateCurrentIndex();
+}
+
+void Voxel::UI::CheckBox::select()
+{
+	if (checkBoxState == State::DISABLED)
+	{
+		return;
+	}
+	else
+	{
+		checkBoxState = State::SELECTED;
+
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::deselect()
+{
+	if (checkBoxState == State::DISABLED)
+	{
+		return;
+	}
+	else
+	{
+		checkBoxState = State::DESELECTED;
+
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition)
+{
+	// mouse moved
+	if (checkBoxState == State::DISABLED)
+	{
+		// check box is disabled. do nothing
+		return;
+	}
+	else
+	{
+		// Check if mouse is in check box
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			// Mouse is in check box
+			if (checkBoxState == State::DESELECTED)
+			{
+				// check box was deselected. hover it
+				checkBoxState = State::HOVERED;
+			}
+			else if (checkBoxState == State::SELECTED)
+			{
+				// check box was selected. hover it
+				checkBoxState = State::HOVERED_SELECTED;
+			}
+		}
+		else
+		{
+			// Mouse is not in check box
+			if (checkBoxState == State::HOVERED)
+			{
+				// was hovering check box
+				checkBoxState = State::DESELECTED;
+			}
+			else if (checkBoxState == State::HOVERED_SELECTED)
+			{
+				// was hovering selected check box
+				checkBoxState = State::SELECTED;
+			}
+			else if (checkBoxState == State::CLICKED)
+			{
+				// was clikcing box. cancel
+				checkBoxState = State::DESELECTED;
+			}
+			else if (checkBoxState == State::CLICKED_SELECTED)
+			{
+				// was clicking selected box. cancel
+				checkBoxState = State::SELECTED;
+			}
+		}
+
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	// mouse clicked
+	if (checkBoxState == State::DISABLED)
+	{
+		// check box is disabled. do nothing
+		return;
+	}
+	else
+	{
+		// Check if mouse is in check box
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			// Clicked the check box
+			if (checkBoxState == State::HOVERED)
+			{
+				// Was hovering check box. click
+				checkBoxState = State::CLICKED;
+			}
+			else if (checkBoxState == State::HOVERED_SELECTED)
+			{
+				// was hovering selected box. click
+				checkBoxState = State::CLICKED_SELECTED;
+			}
+		}
+
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	// mouse release
+	if (checkBoxState == State::DISABLED)
+	{
+		// check box is disabled. do nothing
+		return;
+	}
+	else
+	{
+		// Check if mouse is in check box
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			// Released in the check box
+			if (checkBoxState == State::CLICKED)
+			{
+				// was clicking. select
+				checkBoxState = State::SELECTED;
+			}
+			else if (checkBoxState == State::CLICKED_SELECTED)
+			{
+				// was clikcing selected. deslect
+				checkBoxState = State::DESELECTED;
+			}
+		}
+
+		updateCurrentIndex();
+	}
+}
+
+void Voxel::UI::CheckBox::renderSelf()
+{
+	if (texture == nullptr) return;
+	if (!visibility) return;
+	if (program == nullptr) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
+	}
+}
+
+
 //====================================================================================================================================
 
 //=================================================== Cursor =========================================================================
@@ -2674,4 +3026,3 @@ void Voxel::UI::Cursor::render()
 }
 
 //====================================================================================================================================
-

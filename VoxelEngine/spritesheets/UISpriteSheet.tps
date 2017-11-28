@@ -254,6 +254,40 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../sprites/ui/debug_button_clicked.png</key>
+            <key type="filename">../sprites/ui/debug_button_disabled.png</key>
+            <key type="filename">../sprites/ui/debug_button_hovered.png</key>
+            <key type="filename">../sprites/ui/debug_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,12,50,24</rect>
+                <key>scale9Paddings</key>
+                <rect>25,12,50,24</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../sprites/ui/debug_checkbox_clicked.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_deselected.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_disabled.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_hovered.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_hoveredSelected.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_selected.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9Paddings</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../sprites/ui/debug_image.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>

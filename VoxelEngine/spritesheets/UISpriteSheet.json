@@ -2,7 +2,7 @@
 
 {
 	"filename": "1x1.png",
-	"frame": {"x":498,"y":53,"w":1,"h":1},
+	"frame": {"x":504,"y":53,"w":1,"h":1},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
@@ -11,7 +11,7 @@
 },
 {
 	"filename": "1x1_green.png",
-	"frame": {"x":501,"y":53,"w":1,"h":1},
+	"frame": {"x":507,"y":53,"w":1,"h":1},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
@@ -20,7 +20,7 @@
 },
 {
 	"filename": "2x2.png",
-	"frame": {"x":494,"y":53,"w":2,"h":2},
+	"frame": {"x":500,"y":53,"w":2,"h":2},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":2},
@@ -29,7 +29,7 @@
 },
 {
 	"filename": "cross_hair.png",
-	"frame": {"x":460,"y":53,"w":32,"h":32},
+	"frame": {"x":69,"y":143,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -47,7 +47,7 @@
 },
 {
 	"filename": "debug_anim_frame_1.png",
-	"frame": {"x":69,"y":166,"w":55,"h":55},
+	"frame": {"x":103,"y":166,"w":55,"h":55},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
@@ -118,6 +118,69 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
+	"filename": "debug_checkbox_clicked.png",
+	"frame": {"x":460,"y":53,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_clickedSelected.png",
+	"frame": {"x":460,"y":93,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_deselected.png",
+	"frame": {"x":460,"y":133,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_disabled.png",
+	"frame": {"x":460,"y":173,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_hovered.png",
+	"frame": {"x":1,"y":211,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_hoveredSelected.png",
+	"frame": {"x":41,"y":211,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug_checkbox_selected.png",
+	"frame": {"x":81,"y":223,"w":38,"h":38},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
+	"sourceSize": {"w":38,"h":38},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
 	"filename": "debug_image.png",
 	"frame": {"x":308,"y":1,"w":150,"h":200},
 	"rotated": false,
@@ -169,6 +232,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:7996bc81a211024d96aae088011e1d80:aba724bdbf0a7cf3c5ec27a8f5a45c2f:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:f37919c8aefd0085fdb68db9a684cdbc:07478b50a04aa15be47caa52973230c7:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }

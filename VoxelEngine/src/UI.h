@@ -34,22 +34,59 @@ namespace Voxel
 	{
 		// Forward declaration
 		class Node;
+		class TransformNode;
+		class RenderNode;
 		class Image;
 		class AnimatedImage;
 		class Text;
 		class Button;
 		class ProgressTimer;
 
-		typedef std::map<ZOrder, std::unique_ptr<Node>, ZOrderComp> Children;
+		typedef std::map<ZOrder, std::unique_ptr<TransformNode>, ZOrderComp> Children;
 
 		/**
 		*	@class Node
-		*	A base class to all UI component, including Canvas.
-		*
-		*	Contains transformation data (position, rotation, scale, opacity) and can run actions.
-		*	Bounding boxes are auto generated based on the size of content.
+		*	@brief Base class of all UI component
+		*	
+		*	Node is simple base class that has id number and name. 
+		*	Node itself does nothing and can't be created as instance.
 		*/
 		class Node
+		{
+		private:
+			static unsigned int idCounter;
+		protected:
+			// Constructor
+			Node() = delete;
+			Node(const std::string& name);
+
+			// name
+			std::string name;
+
+			// id
+			unsigned int id;
+		public:
+			// Destructor
+			~Node();
+
+			/**
+			*	Get number id of ui
+			*/
+			unsigned int getID() const;
+
+			/**
+			*	Get name of ui
+			*/
+			std::string getName() const;
+		};
+
+		/**
+		*	@class TransformNode
+		*	@brief A node that can be transformed. Derived from Node class.
+		*
+		*	TransfromNode has own model mat and can have parent and children.
+		*/
+		class TransformNode : public Node
 		{
 		private:
 			// updates model matrix if it's true
@@ -58,24 +95,18 @@ namespace Voxel
 			// Find next ZOrder
 			bool getNextZOrder(ZOrder& curZOrder);
 		protected:
-			// Constructor
-			Node();
-			Node(const std::string& name);
+			// constructor
+			TransformNode() = delete;
+			TransformNode(const std::string& name);
 
-			// Name of ui
-			std::string name;
+			// Parent
+			TransformNode* parent;
+
+			// Children
+			Children children;
 
 			// Z order of ui
 			ZOrder zOrder;
-
-			// Parent of this node
-			Node* parent;
-
-			// Visibility. true if visible. false if invisible and ignores opaicty
-			bool visibility;
-
-			// Opacity
-			float opacity;
 
 			// Position
 			glm::vec2 position;
@@ -91,10 +122,10 @@ namespace Voxel
 
 			// Coordinate origin. This changes coordinate origin, which makes easier to place ui objects.
 			glm::vec2 coordinateOrigin;
-			
+
 			// Model matrix
 			glm::mat4 modelMat;
-			
+
 			// Size of original content
 			glm::vec2 contentSize;
 
@@ -104,50 +135,17 @@ namespace Voxel
 			// Action sequence
 			Voxel::UI::Sequence* sequence;
 
-			// Children
-			Children children;
-
-			// Program ptr
-			Program* program;
-
 			// Get contensize
 			glm::vec2 getContentSize();
 
 			// calculate model matrix
 			virtual glm::mat4 getModelMatrix();
-			
+
 			// Updates model matrix based on parent's matrix
 			virtual void updateModelMatrix();
 		public:
-			virtual ~Node();
-
-			/**
-			*	Get name
-			*/
-			std::string getName() const;
-
-			/**
-			*	Set visibility
-			*	Setting visibility false will also affect all the children
-			*	@parma visibility true to render this ui. false to not render.
-			*/
-			void setVisibility(const bool visibility);
-
-			/**
-			*1	Get visibility
-			*/
-			bool getVisibility() const;
-
-			/**
-			*	Set opacity
-			*	@param opacity Value of new opacity. Must be 0.0 ~ 1.0
-			*/
-			void setOpacity(const float opacity);
-
-			/**
-			*	Get opacity. 
-			*/
-			float getOpacity() const;
+			// Destructor
+			virtual ~TransformNode();
 
 			/**
 			*	Set position
@@ -158,7 +156,7 @@ namespace Voxel
 
 			/**
 			*	Set position
-			*	@param position New position to set. 
+			*	@param position New position to set.
 			*/
 			void setPosition(const glm::vec2& position);
 
@@ -219,7 +217,7 @@ namespace Voxel
 			void setBoundingBox(const glm::vec2& center, const glm::vec2& size);
 
 			/**
-			*	Get bounding box. 
+			*	Get bounding box.
 			*/
 			Voxel::Shape::Rect getBoundingBox() const;
 
@@ -238,21 +236,21 @@ namespace Voxel
 			*	Add child to this ui node
 			*	@param child Child node to add.
 			*/
-			bool addChild(Node* child);
+			bool addChild(TransformNode* child);
 
 			/**
 			*	Add child with global z order
 			*	@param child Child node to add.
 			*	@param globalZorder Global z order to set.
 			*/
-			bool addChild(Node* child, const int globalZOrder);
+			bool addChild(TransformNode* child, const int globalZOrder);
 
 			/**
 			*	Add child with global z order
 			*	@param child Child node to add.
 			*	@param zOrder Z order to set.
 			*/
-			bool addChild(Node* child, ZOrder& zOrder);
+			bool addChild(TransformNode* child, ZOrder& zOrder);
 
 			/**
 			*	Get child by name. This isn't efficient way since it uses string key.
@@ -260,7 +258,7 @@ namespace Voxel
 			*	@param name Name of ui.
 			*	@return First ui child that matches the name. nullptr if doesn't exists
 			*/
-			Node* getChild(const std::string& name);
+			TransformNode* getChild(const std::string& name);
 
 			/**
 			*	Check if this node has children
@@ -272,7 +270,7 @@ namespace Voxel
 			*	Converts children map to vector.
 			*	This will search for neested childrens recursively and add up all.
 			*/
-			void getAllChildrenInVector(std::vector<Node*>& nodes, Node* parent);
+			void getAllChildrenInVector(std::vector<TransformNode*>& nodes, TransformNode* parent);
 
 			/**
 			*	Updates
@@ -305,6 +303,70 @@ namespace Voxel
 			*/
 			void runAction(Voxel::UI::Sequence* sequence);
 
+			// Debug print
+			virtual void print(const int tab);
+			void printChildren(const int tab);
+
+			// render
+			virtual void render() = 0;
+		};
+
+		/**
+		*	@class RenderNode
+		*	@brief A node that can be rendered. Derived from TransfomNode
+		*/
+		class RenderNode : public TransformNode
+		{
+		protected:
+			// Constructor
+			RenderNode() = delete;
+			RenderNode(const std::string& name);
+			
+			// Visibility. true if visible. false if invisible and ignores opaicty
+			bool visibility;
+
+			// Opacity
+			float opacity;
+			
+			// Program ptr
+			Program* program;
+
+			// gl 
+			GLuint vao;
+
+			// Texture that image uses
+			Texture2D* texture;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+#endif
+		public:
+			virtual ~RenderNode();
+			
+			/**
+			*	Set visibility
+			*	Setting visibility false will also affect all the children
+			*	@parma visibility true to render this ui. false to not render.
+			*/
+			void setVisibility(const bool visibility);
+
+			/**
+			*1	Get visibility
+			*/
+			bool getVisibility() const;
+
+			/**
+			*	Set opacity
+			*	@param opacity Value of new opacity. Must be 0.0 ~ 1.0
+			*/
+			void setOpacity(const float opacity);
+
+			/**
+			*	Get opacity. 
+			*/
+			float getOpacity() const;
+
 			/**
 			*	Render self. Pure virtual. All UI need to override this to render itself during the ui graph traversal
 			*/
@@ -313,18 +375,14 @@ namespace Voxel
 			/**
 			*	Render self and children
 			*/
-			virtual void render();
-
-			// Debug print
-			virtual void print(const int tab);
-			void printChildren(const int tab);
+			void render() override;
 		};
 
 		/**
 		*	@class Canvas
 		*	@brief A rectangular shape of area that defines screen space for UI.
 		*/
-		class Canvas : public Node
+		class Canvas : public TransformNode
 		{
 		public:
 			enum class PIVOT
@@ -342,6 +400,9 @@ namespace Voxel
 		private:
 			// Deletes default constructor
 			Canvas() = delete;
+
+			// Visibility. true if visible. false if invisible and ignores opaicty
+			bool visibility;
 			
 			// Size of ui space
 			glm::vec2 size;
@@ -360,7 +421,19 @@ namespace Voxel
 
 			// Destructor.
 			~Canvas() = default;
-			
+
+			/**
+			*	Set visibility
+			*	Setting visibility false will also affect all the children
+			*	@parma visibility true to render this ui. false to not render.
+			*/
+			void setVisibility(const bool visibility);
+
+			/**
+			*1	Get visibility
+			*/
+			bool getVisibility() const;
+						
 			/**
 			*	Set size of canvas
 			*	@param size Size of canvas. Must be positive numbers
@@ -391,12 +464,7 @@ namespace Voxel
 			*	@param button Release mouse button. 0 = left, 1 = right, 2 = middle
 			*/
 			void updateMouseRelease(const glm::vec2& mousePosition, const int button);
-
-			/**
-			*	Render self
-			*/
-			void renderSelf() override;
-
+			
 			/**
 			*	Render all UI
 			*/
@@ -414,7 +482,7 @@ namespace Voxel
 		*	Image will be static and won't be changed nor animated
 		*	Uses 1 vao and 1 draw call
 		*/
-		class Image : public Node
+		class Image : public RenderNode
 		{
 		private:
 			Image() = delete;
@@ -426,11 +494,7 @@ namespace Voxel
 			*/
 			Image(const std::string& name);
 
-			// Texture that image uses
-			Texture2D* texture;
-
 			// gl
-			GLuint vao;
 			unsigned int indicesSize;
 
 			/**
@@ -481,12 +545,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf() override;
-			
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			// gl
-			GLuint bbVao;
-#endif
+			void renderSelf();
 		};
 
 		/**
@@ -500,7 +559,7 @@ namespace Voxel
 		*	Image frame format must be ImageFrameName_FrameNumber.png, where ImageFrameName is image file name and FrameNumber is frame number.
 		*	For example, image file name 'player_anim" and 3 frames will be 'player_anim_0.png', 'player_anim_1.png" and 'player_anim_2.png'.
 		*/
-		class AnimatedImage : public Node
+		class AnimatedImage : public RenderNode
 		{
 		private:
 			AnimatedImage() = delete;
@@ -519,15 +578,11 @@ namespace Voxel
 
 			// Current frame index. Starts from 0.
 			int currentFrameIndex;
-
-			// Texture (spritesheet)
-			Texture2D* texture;
-
+			
 			// Size of rames
 			std::vector<glm::vec2> frameSizes;
 
 			// gl
-			GLuint vao;
 			unsigned int currentIndex;
 
 			// Repeats animation if this is true. Else, stops on last frame.
@@ -560,7 +615,7 @@ namespace Voxel
 			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 		public:
 			// Desturctor
-			~AnimatedImage();
+			~AnimatedImage() = default;
 
 			/**
 			*	Initialize animated image
@@ -605,11 +660,9 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf() override;
+			void renderSelf();
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			// gl
-			GLuint bbVao;
 			void initDebugBoundingBoxLine();
 #endif
 		};
@@ -622,7 +675,7 @@ namespace Voxel
 		*	It doesn't provide any font related function, such as linespace or size modification.
 		*	Use FontManager to get font and modify values from there.
 		*/
-		class Text : public Node
+		class Text : public RenderNode
 		{
 		public:
 			// Text align
@@ -645,7 +698,6 @@ namespace Voxel
 			Font* font;
 
 			// gl
-			GLuint vao;
 			GLuint vbo;
 			GLuint cbo;
 			GLuint uvbo;
@@ -764,19 +816,14 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf() override;
-			
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			// gl
-			GLuint bbVao;
-#endif
+			void renderSelf();
 		};
 
 		/**
 		*	@class Button
 		*	@brief A simple button that can be clicked
 		*/
-		class Button : public Node
+		class Button : public RenderNode
 		{
 		public:
 			enum class State
@@ -794,15 +841,11 @@ namespace Voxel
 
 			// Button state. IDLE is default
 			State buttonState;
-
-			// Texture
-			Texture2D* texture;
-
+			
 			// frame sizes incase button images are different
 			std::array<glm::vec2, 4> frameSizes;
 
 			// gl
-			GLuint vao;
 			unsigned int currentIndex;
 
 			/**
@@ -821,7 +864,7 @@ namespace Voxel
 			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 		public:
 			// Destructor
-			~Button();
+			~Button() = default;
 
 			/**
 			*	Create button.
@@ -834,6 +877,16 @@ namespace Voxel
 			*	All images must be in same sprite sheet.
 			*/
 			static Button* create(const std::string& name, const std::string& spriteSheetName, const std::string& buttonImageFileName);
+
+			/**
+			*	Enable button.
+			*/
+			void enable();
+
+			/**
+			*	Disable button
+			*/
+			void disable();
 
 			/**
 			*	Check if mouse is hovering button
@@ -853,11 +906,9 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf() override;
+			void renderSelf();
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			// gl
-			GLuint bbVao;
 			void initDebugBoundingBoxLine();
 #endif
 		};
@@ -866,16 +917,108 @@ namespace Voxel
 		*	@class CheckBox
 		*	@brief A simple checkbox that can be checked or unchekced
 		*/
-		class CheckBox : public Node
+		class CheckBox : public RenderNode
 		{
+		public:
+			enum class State
+			{
+				DESELECTED = 0,
+				HOVERED,
+				CLICKED,
+				SELECTED,
+				HOVERED_SELECTED,
+				CLICKED_SELECTED,
+				DISABLED
+			};
+		private:
+			// Constructor
+			CheckBox() = delete;
+			CheckBox(const std::string& name);
 
+			// state
+			State prevCheckBoxState;
+			State checkBoxState;
+
+			// gl
+			unsigned int currentIndex;
+
+			/**
+			*	Initialize button
+			*/
+			bool init(SpriteSheet* ss, const std::string& checkBoxImageFileName);
+
+			/**
+			*	Build image.
+			*	Initialize vao.
+			*	@param vertices Vertices of image quad
+			*	@param colors Colors of image quad
+			*	@param uvs Texture coordinates of image quad
+			*	@param indices Indices of image quad
+			*/
+			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+
+			/**
+			*	Update current index based on state
+			*/
+			void updateCurrentIndex();
+		public:
+			// Destructor
+			~CheckBox() = default;
+
+			/**
+			*	Create checkbox
+			*	@param name Name of ui
+			*	@param spriteSheetName Name of sprite sheet that has check box ui images
+			*	@param checkBoxImageFileName Image file name of check box. This will used to load check box ui images
+			*/
+			static CheckBox* create(const std::string& name, const std::string& spriteSheetName, const std::string& checkBoxImageFileName);
+
+			/**
+			*	Enable button.
+			*/
+			void enable();
+
+			/**
+			*	Disable button
+			*/
+			void disable();
+
+			/**
+			*	Select check box manually. Ignored when check box is disabled.
+			*/
+			void select();
+
+			/**
+			*	Deselect check box manually. Ignored when check box is disabled.
+			*/
+			void deselect();
+
+			/**
+			*	Check if mouse is hovering button
+			*/
+			void updateMouseMove(const glm::vec2& mousePosition) override;
+
+			/**
+			*	Check if mouse clicked the button
+			*/
+			void updateMouseClick(const glm::vec2& mousePosition, const int button) override;
+
+			/**
+			*	Check if mouse released the button
+			*/
+			void updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+
+			/**
+			*	Render self
+			*/
+			void renderSelf();
 		};
 
 		/**
 		*	@class ProgressTimer
 		*	@brief A simple progress timer. Can be BAR type or RADIAL type.
 		*/
-		class ProgressTimer : public Node
+		class ProgressTimer : public RenderNode
 		{
 
 		};
@@ -884,7 +1027,7 @@ namespace Voxel
 		*	@class Mesh
 		*	@brief 3D object ui
 		*/
-		class Mesh : public Node
+		class Mesh : public RenderNode
 		{
 		private:
 			glm::mat4 modelMat;

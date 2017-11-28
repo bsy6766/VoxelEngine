@@ -6,16 +6,17 @@ namespace Voxel
 	// Foward declaration
 	namespace UI
 	{
-		class UINode;
-		class Node;
+		class TransformNode;
 		class Canvas;
 	}
 
+	/*
 	namespace NewUI
 	{
 		class UINode;
 		class Canvas;
 	}
+	*/
 
 
 	/**
@@ -29,11 +30,10 @@ namespace Voxel
 	class ZOrder
 	{
 		friend struct ZOrderComp;
-		friend class UI::UINode;
-		friend class UI::Node;
+		friend class UI::TransformNode;
 		friend class UI::Canvas;
-		friend class NewUI::UINode;
-		friend class NewUI::Canvas;
+		//friend class NewUI::UINode;
+		//friend class NewUI::Canvas;
 	private:
 		// Global Z order
 		int globalZOrder;

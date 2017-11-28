@@ -128,6 +128,9 @@ namespace Voxel
 		Voxel::UI::AnimatedImage* testAnimatedImage;
 		Voxel::UI::Text* testText;
 		Voxel::UI::Button* testButton;
+		Voxel::UI::Button* testDisabledButton;
+		Voxel::UI::CheckBox* testCheckBox;
+		Voxel::UI::CheckBox* testDisabledCheckBox;
 #endif
 	};
 }
