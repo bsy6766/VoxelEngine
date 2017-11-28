@@ -243,6 +243,21 @@ void Voxel::DebugConsole::init()
 	testDisabledCheckBox->setPosition(100.0f, 10.0f);
 	testDisabledCheckBox->disable();
 	debugCanvas->addChild(testDisabledCheckBox, 100);
+
+	testProgHorBar0 = Voxel::UI::ProgressTimer::create("testProgHorBar0", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar0->setPosition(glm::vec2(-100.0f, 400.0f));
+	testProgHorBar0->setPercentage(0);
+	debugCanvas->addChild(testProgHorBar0, 100);
+
+	testProgHorBar50 = Voxel::UI::ProgressTimer::create("testProgHorBar50", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar50->setPosition(glm::vec2(-100.0f, 360.0f));
+	testProgHorBar50->setPercentage(50);
+	debugCanvas->addChild(testProgHorBar50, 100);
+
+	testProgHorBar100 = Voxel::UI::ProgressTimer::create("testProgHorBar100", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar100->setPosition(glm::vec2(-100.0f, 320.0f));
+	testProgHorBar100->setPercentage(100);
+	debugCanvas->addChild(testProgHorBar100, 100);
 #endif
 }
 

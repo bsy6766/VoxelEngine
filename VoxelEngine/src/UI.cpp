@@ -527,6 +527,7 @@ Voxel::UI::RenderNode::RenderNode(const std::string & name)
 	, program(nullptr)
 	, vao(0)
 	, texture(nullptr)
+	, color(1.0f)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	, bbVao(0)
 #endif
@@ -601,6 +602,58 @@ void Voxel::UI::RenderNode::render()
 		}
 	}
 }
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+void Voxel::UI::RenderNode::createDebugBoundingBoxLine()
+{
+	if (bbVao)
+	{
+		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
+	}
+
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
+
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
+}
+#endif
 //====================================================================================================================================
 
 //============================================================== Canvas ==============================================================
@@ -715,8 +768,12 @@ void Voxel::UI::Canvas::print(const int tab)
 
 Voxel::UI::Image::Image(const std::string& name)
 	: RenderNode(name)
-	, indicesSize(0)
 {}
+
+Voxel::UI::Image::~Image()
+{
+	//std::cout << "~Image()\n";
+}
 
 Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFileName)
 {
@@ -770,16 +827,40 @@ bool Voxel::UI::Image::init(const std::string& textureName)
 
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
-	auto size = texture->getTextureSize();
+	auto size = glm::vec2(texture->getTextureSize());
 
-	auto vertices = Quad::getVertices(glm::vec2(size));
+	std::array<float, 12> vertices = { 0.0f };
+
+	float widthHalf = size.x * 0.5f;
+	float heightHalf = size.y * 0.5f;
+
+	// Add vertices from 0 to 4
+	// 0
+	vertices.at(0) = -widthHalf;
+	vertices.at(1) = -heightHalf;
+	vertices.at(2) = 0.0f;
+
+	//1
+	vertices.at(3) = -widthHalf;
+	vertices.at(4) = heightHalf;
+	vertices.at(5) = 0.0f;
+
+	//2
+	vertices.at(6) = widthHalf;
+	vertices.at(7) = -heightHalf;
+	vertices.at(8) = 0.0f;
+
+	//3
+	vertices.at(9) = widthHalf;
+	vertices.at(10) = heightHalf;
+	vertices.at(11) = 0.0f;
 
 	boundingBox.center = position;
 	boundingBox.size = size;
 
 	contentSize = size;
 
-	build(vertices, Quad::getColors3(glm::vec3(1.0f)), Quad::uv, Quad::indices);
+	build(vertices, Quad::uv, Quad::indices);
 
 	return true;
 }
@@ -798,30 +879,58 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 	auto imageEntry = ss->getImageEntry(textureName);
 
 	auto size = glm::vec2(imageEntry->width, imageEntry->height);
-	auto vertices = Quad::getVertices(size);
+
+	std::array<float, 12> vertices = { 0.0f };
+
+	float widthHalf = size.x * 0.5f;
+	float heightHalf = size.y * 0.5f;
+
+	// Add vertices from 0 to 4
+	// 0
+	vertices.at(0) = -widthHalf;
+	vertices.at(1) = -heightHalf;
+	vertices.at(2) = 0.0f;
+
+	//1
+	vertices.at(3) = -widthHalf;
+	vertices.at(4) = heightHalf;
+	vertices.at(5) = 0.0f;
+
+	//2
+	vertices.at(6) = widthHalf;
+	vertices.at(7) = -heightHalf;
+	vertices.at(8) = 0.0f;
+
+	//3
+	vertices.at(9) = widthHalf;
+	vertices.at(10) = heightHalf;
+	vertices.at(11) = 0.0f;
 
 	auto& uvOrigin = imageEntry->uvOrigin;
 	auto& uvEnd = imageEntry->uvEnd;
 
-	std::vector<float> uvs =
-	{
-		uvOrigin.x, uvOrigin.y,
-		uvOrigin.x, uvEnd.y,
-		uvEnd.x, uvOrigin.y,
-		uvEnd.x, uvEnd.y
-	};
+	std::array<float, 8> uvs = { 0.0f };
+
+	uvs.at(0) = uvOrigin.x;
+	uvs.at(1) = uvOrigin.y;
+	uvs.at(2) = uvOrigin.x;
+	uvs.at(3) = uvEnd.y;
+	uvs.at(4) = uvEnd.x;
+	uvs.at(5) = uvOrigin.y;
+	uvs.at(6) = uvEnd.x;
+	uvs.at(7) = uvEnd.y;
 
 	boundingBox.center = position;
 	boundingBox.size = size;
 
 	contentSize = size;
 	
-	build(vertices, Quad::getColors3(glm::vec3(1.0f)), uvs, Quad::indices);
+	build(vertices, uvs, Quad::indices);
 
 	return true;
 }
 
-void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::Image::build(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices)
 {
 	if (vao)
 	{
@@ -833,30 +942,22 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	glBindVertexArray(vao);
 
 	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
 	GLuint uvbo;
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
@@ -864,78 +965,31 @@ void Voxel::UI::Image::build(const std::vector<float>& vertices, const std::vect
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 	//========================
-
-	indicesSize = indices.size();
 
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	glGenVertexArrays(1, &bbVao);
-	glBindVertexArray(bbVao);
-
-	auto min = -boundingBox.size * 0.5f;
-	auto max = boundingBox.size * 0.5f;
-
-	std::vector<float> lineVertices =
-	{
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	GLuint lineVbo;
-	glGenBuffers(1, &lineVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
-
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
-
-	glEnableVertexAttribArray(lineVertLoc);
-	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-	GLint lineColorLoc = lineProgram->getAttribLocation("color");
-
-	glEnableVertexAttribArray(lineColorLoc);
-	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &lineVbo);
+	createDebugBoundingBoxLine();
 #endif
-}
-
-Voxel::UI::Image::~Image()
-{
-	//std::cout << "~Image()\n";
 }
 
 void Voxel::UI::Image::renderSelf()
 {
 	// only render self
 	if (texture == nullptr) return;
-	if (indicesSize == 0) return;
 	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
 	program->setUniformFloat("opacity", opacity);
+	program->setUniformVec3("color", color);
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
@@ -943,7 +997,7 @@ void Voxel::UI::Image::renderSelf()
 	if (vao)
 	{
 		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
@@ -1012,27 +1066,14 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
 	std::vector<float> vertices;
-	std::vector<float> colors;
 	std::vector<float> uvs;
 	std::vector<unsigned int> indices;
-
-	size_t lastindex = frameName.find_last_of(".");
 
 	std::string fileName;
 	std::string fileExt;
 
-	if (lastindex == std::string::npos)
-	{
-		fileName = frameName;
-		fileExt = ".png";
-	}
-	else
-	{
-		fileName = frameName.substr(0, lastindex);
-		fileExt = frameName.substr(lastindex);
-	}
+	Utility::String::fileNameToNameAndExt(frameName, fileName, fileExt);
 	
-	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
 	auto quadIndices = Quad::indices;
 	
 	for (int i = 0; i < frameSize; i++)
@@ -1047,9 +1088,7 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 			auto curVertices = Quad::getVertices(size);
 
 			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
-
-			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
-
+			
 			auto& uvOrigin = imageEntry->uvOrigin;
 			auto& uvEnd = imageEntry->uvEnd;
 
@@ -1080,12 +1119,12 @@ bool Voxel::UI::AnimatedImage::init(SpriteSheet* ss, const std::string& frameNam
 
 	contentSize = boundingBox.size;
 
-	build(vertices, colors, uvs, indices);
+	build(vertices, uvs, indices);
 
 	return true;
 }
 
-void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
 {
 	if (vao)
 	{
@@ -1097,47 +1136,39 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glBindVertexArray(vao);
 
 	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);	// Errorstack 1
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
 	GLuint uvbo;
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+	//============= find error here. error count: 14. Only during using sprite sheet
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-	
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	//========================
+
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	initDebugBoundingBoxLine();
 #endif
 }
 
@@ -1214,7 +1245,7 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 		boundingBox.size = frameSizes.at(currentFrameIndex);
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-		initDebugBoundingBoxLine();
+		createDebugBoundingBoxLine();
 #endif
 	}
 }
@@ -1228,6 +1259,7 @@ void Voxel::UI::AnimatedImage::renderSelf()
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
 	program->setUniformFloat("opacity", opacity);
+	program->setUniformVec3("color", color);
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
@@ -1251,58 +1283,6 @@ void Voxel::UI::AnimatedImage::renderSelf()
 	}
 #endif
 }
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-void Voxel::UI::AnimatedImage::initDebugBoundingBoxLine()
-{
-	if (bbVao)
-	{
-		glDeleteVertexArrays(1, &bbVao);
-		bbVao = 0;
-	}
-
-	glGenVertexArrays(1, &bbVao);
-	glBindVertexArray(bbVao);
-
-	auto min = -boundingBox.size * 0.5f;
-	auto max = boundingBox.size * 0.5f;
-
-	std::vector<float> lineVertices =
-	{
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	GLuint lineVbo;
-	glGenBuffers(1, &lineVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
-
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
-
-	glEnableVertexAttribArray(lineVertLoc);
-	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-	GLint lineColorLoc = lineProgram->getAttribLocation("color");
-
-	glEnableVertexAttribArray(lineColorLoc);
-	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &lineVbo);
-}
-#endif
 
 //====================================================================================================================================
 
@@ -1880,7 +1860,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 	GLuint lineVbo;
 	glGenBuffers(1, &lineVbo);
 	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
 
 	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
 	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
@@ -2042,6 +2022,7 @@ void Voxel::UI::Text::renderSelf()
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
 	program->setUniformFloat("opacity", opacity);
+	program->setUniformVec3("color", color);
 
 	if (outlined)
 	{
@@ -2117,27 +2098,14 @@ bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFi
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
 	std::vector<float> vertices;
-	std::vector<float> colors;
 	std::vector<float> uvs;
 	std::vector<unsigned int> indices;
-
-	size_t lastindex = buttonImageFileName.find_last_of(".");
 
 	std::string fileName;
 	std::string fileExt;
 
-	if (lastindex == std::string::npos)
-	{
-		fileName = buttonImageFileName;
-		fileExt = ".png";
-	}
-	else
-	{
-		fileName = buttonImageFileName.substr(0, lastindex);
-		fileExt = buttonImageFileName.substr(lastindex);
-	}
+	Utility::String::fileNameToNameAndExt(buttonImageFileName, fileName, fileExt);
 
-	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
 	auto quadIndices = Quad::indices;
 
 	std::array<std::string, 4> fileNames = { fileName + "_idle" + fileExt, fileName + "_hovered" + fileExt, fileName + "_clicked" + fileExt, fileName + "_disabled" + fileExt };
@@ -2152,9 +2120,7 @@ bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFi
 			auto curVertices = Quad::getVertices(size);
 
 			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
-
-			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
-
+			
 			auto& uvOrigin = imageEntry->uvOrigin;
 			auto& uvEnd = imageEntry->uvEnd;
 
@@ -2185,9 +2151,58 @@ bool Voxel::UI::Button::init(SpriteSheet * ss, const std::string & buttonImageFi
 
 	contentSize = boundingBox.size;
 
-	build(vertices, colors, uvs, indices);
+	build(vertices, uvs, indices);
 
 	return true;
+}
+
+void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	//============= find error here. error count: 14. Only during using sprite sheet
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	//========================
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	createDebugBoundingBoxLine();
+#endif
 }
 
 void Voxel::UI::Button::enable()
@@ -2276,62 +2291,6 @@ void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, cons
 	}
 }
 
-void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
-{
-	if (vao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &vao);
-	}
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
-	GLint vertLoc = program->getAttribLocation("vert");
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(vertLoc);
-	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint uvVertLoc = program->getAttribLocation("uvVert");
-
-	GLuint uvbo;
-	glGenBuffers(1, &uvbo);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(uvVertLoc);
-	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLuint ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-	
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
-	glDeleteBuffers(1, &uvbo);
-	glDeleteBuffers(1, &ibo);
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	initDebugBoundingBoxLine();
-#endif
-}
-
 void Voxel::UI::Button::renderSelf()
 {
 	if (texture == nullptr) return;
@@ -2341,6 +2300,7 @@ void Voxel::UI::Button::renderSelf()
 	program->use(true);
 	program->setUniformMat4("modelMat", modelMat);
 	program->setUniformFloat("opacity", opacity);
+	program->setUniformVec3("color", color);
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
@@ -2365,57 +2325,6 @@ void Voxel::UI::Button::renderSelf()
 #endif
 }
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-void Voxel::UI::Button::initDebugBoundingBoxLine()
-{
-	if (bbVao)
-	{
-		glDeleteVertexArrays(1, &bbVao);
-		bbVao = 0;
-	}
-
-	glGenVertexArrays(1, &bbVao);
-	glBindVertexArray(bbVao);
-
-	auto min = -boundingBox.size * 0.5f;
-	auto max = boundingBox.size * 0.5f;
-
-	std::vector<float> lineVertices =
-	{
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	GLuint lineVbo;
-	glGenBuffers(1, &lineVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
-
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
-
-	glEnableVertexAttribArray(lineVertLoc);
-	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-	GLint lineColorLoc = lineProgram->getAttribLocation("color");
-
-	glEnableVertexAttribArray(lineColorLoc);
-	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &lineVbo);
-}
-#endif
 //====================================================================================================================================
 
 //============================================================= Check box ============================================================
@@ -2456,29 +2365,15 @@ bool Voxel::UI::CheckBox::init(SpriteSheet * ss, const std::string & checkBoxIma
 	}
 
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
-
-	std::vector<float> vertices;
-	std::vector<float> colors;
-	std::vector<float> uvs;
-	std::vector<unsigned int> indices;
-
-	size_t lastindex = checkBoxImageFileName.find_last_of(".");
-
+	
 	std::string fileName;
 	std::string fileExt;
 
-	if (lastindex == std::string::npos)
-	{
-		fileName = checkBoxImageFileName;
-		fileExt = ".png";
-	}
-	else
-	{
-		fileName = checkBoxImageFileName.substr(0, lastindex);
-		fileExt = checkBoxImageFileName.substr(lastindex);
-	}
+	Utility::String::fileNameToNameAndExt(checkBoxImageFileName, fileName, fileExt);
 
-	auto quadColor = Quad::getColors3(glm::vec3(1.0f));
+	std::vector<float> vertices;
+	std::vector<float> uvs;
+	std::vector<unsigned int> indices;
 	auto quadIndices = Quad::indices;
 
 	std::array<std::string, 7> fileNames =
@@ -2502,9 +2397,7 @@ bool Voxel::UI::CheckBox::init(SpriteSheet * ss, const std::string & checkBoxIma
 			auto curVertices = Quad::getVertices(size);
 
 			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
-
-			colors.insert(colors.end(), quadColor.begin(), quadColor.end());
-
+			
 			auto& uvOrigin = imageEntry->uvOrigin;
 			auto& uvEnd = imageEntry->uvEnd;
 
@@ -2536,12 +2429,12 @@ bool Voxel::UI::CheckBox::init(SpriteSheet * ss, const std::string & checkBoxIma
 
 	contentSize = boundingBox.size;
 
-	build(vertices, colors, uvs, indices);
+	build(vertices, uvs, indices);
 
 	return true;
 }
 
-void Voxel::UI::CheckBox::build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::CheckBox::build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
 {
 	if (vao)
 	{
@@ -2553,44 +2446,41 @@ void Voxel::UI::CheckBox::build(const std::vector<float>& vertices, const std::v
 	glBindVertexArray(vao);
 
 	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
 	GLint vertLoc = program->getAttribLocation("vert");
 
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertLoc);
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
 	GLuint uvbo;
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uvs) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+	//============= find error here. error count: 14. Only during using sprite sheet
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	//========================
 
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	createDebugBoundingBoxLine();
+#endif
 }
 
 void Voxel::UI::CheckBox::updateCurrentIndex()
@@ -2808,6 +2698,296 @@ void Voxel::UI::CheckBox::renderSelf()
 	}
 }
 
+//====================================================================================================================================
+
+//======================================================== Progress Timer ============================================================
+
+Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
+	: RenderNode(name)
+	, percentage(100)
+	, hasBackgroundImage(false)
+{}
+
+ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const std::string & spriteSheetName, const std::string & progressTimerImageFileName, const std::string & progressTimerBgImageName, const Type type, const Direction direction)
+{
+	auto newProgressTimer = new Voxel::UI::ProgressTimer(name);
+
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		if (newProgressTimer->init(ss, progressTimerImageFileName, progressTimerBgImageName, type))
+		{
+			return newProgressTimer;
+		}
+	}
+
+	delete newProgressTimer;
+	return nullptr;
+}
+
+bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progressTimerImageFileName, const std::string & progressTimerBgImageName, const Type type, const Direction direction)
+{
+	texture = ss->getTexture();
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	std::vector<float> vertices;
+	std::vector<float> uvs;
+	std::vector<unsigned int> indices;
+	auto quadIndices = Quad::indices;
+
+	// Try to load background image
+	if (progressTimerBgImageName.empty())
+	{
+		hasBackgroundImage = false;
+	}
+	else
+	{
+		auto imageEntry = ss->getImageEntry(progressTimerBgImageName);
+
+		if (imageEntry)
+		{
+			auto size = glm::vec2(imageEntry->width, imageEntry->height);
+			auto curVertices = Quad::getVertices(size);
+
+			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
+
+			auto& uvOrigin = imageEntry->uvOrigin;
+			auto& uvEnd = imageEntry->uvEnd;
+
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvOrigin.x);
+			uvs.push_back(uvEnd.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvOrigin.y);
+			uvs.push_back(uvEnd.x);
+			uvs.push_back(uvEnd.y);
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index);
+			}
+
+			//frameSizes.at(i) = size;
+		}
+		else
+		{
+			return false;
+		}
+
+		hasBackgroundImage = true;
+	}
+
+	auto imageEntry = ss->getImageEntry(progressTimerImageFileName);
+
+	if (imageEntry)
+	{
+		auto size = glm::vec2(imageEntry->width, imageEntry->height);
+		auto curVertcies = Quad::getVertices(size);
+		
+		auto& uvOrigin = imageEntry->uvOrigin;
+		auto& uvEnd = imageEntry->uvEnd;
+
+		std::vector<float> curUvs;
+		curUvs.push_back(uvOrigin.x);
+		curUvs.push_back(uvOrigin.y);
+		curUvs.push_back(uvOrigin.x);
+		curUvs.push_back(uvEnd.y);
+		curUvs.push_back(uvEnd.x);
+		curUvs.push_back(uvOrigin.y);
+		curUvs.push_back(uvEnd.x);
+		curUvs.push_back(uvEnd.y);
+
+		//frameSizes.at(i) = size;
+
+		buildMesh(curVertcies, curUvs, vertices, uvs, indices, type, direction);
+
+		build(vertices, uvs, indices);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices, const std::vector<float>& quadUvs, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Type type, const Direction direction)
+{
+	int indexOffset = hasBackgroundImage ? 4 : 0;
+
+	if (type == Type::HORIZONTAL)
+	{
+		// Horizontal bar type
+
+		const float stepX = (quadVertices.at(6) * 2.0f) * 0.01f;
+
+		float startX = 0.0f;
+		const float yTop = quadVertices.at(4);
+		const float yBot = quadVertices.at(1);
+
+		const float uvStepX = (quadUvs.at(4) - quadUvs.at(0)) * 0.01f;
+
+		float uvStartX = 0.0f;
+		const float uvOriginY = quadUvs.at(1);
+		const float uvEndY = quadUvs.at(3);
+
+		auto quadIndices = Quad::indices;
+
+		if (direction == Direction::CLOCK_WISE)
+		{
+			// Progress fills from left to right
+			startX = quadVertices.at(0);
+			uvStartX = quadUvs.at(0);
+		}
+		else
+		{
+			// Progress fills from right to left
+			startX = quadVertices.at(6);
+			uvStartX = quadUvs.at(4);
+		}
+
+		for (int i = 0; i <= 99; i++)
+		{
+			// 0
+			vertices.push_back(startX);
+			vertices.push_back(yBot);
+			vertices.push_back(0);
+
+			//1
+			vertices.push_back(startX);
+			vertices.push_back(yTop);
+			vertices.push_back(0);
+
+			startX += stepX;
+
+			//2
+			vertices.push_back(startX);
+			vertices.push_back(yBot);
+			vertices.push_back(0);
+
+			//3
+			vertices.push_back(startX);
+			vertices.push_back(yTop);
+			vertices.push_back(0);
+
+
+			uvs.push_back(uvStartX);
+			uvs.push_back(uvOriginY);
+
+			uvs.push_back(uvStartX);
+			uvs.push_back(uvEndY);
+
+			uvStartX += uvStepX;
+
+			uvs.push_back(uvStartX);
+			uvs.push_back(uvOriginY);
+
+			uvs.push_back(uvStartX);
+			uvs.push_back(uvEndY);
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index + (4 * i) + indexOffset);
+			}
+		}
+	}
+}
+
+void Voxel::UI::ProgressTimer::build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+{
+	if (vao)
+	{
+		// Delte array
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLint uvVertLoc = program->getAttribLocation("uvVert");
+
+	GLuint uvbo;
+	glGenBuffers(1, &uvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(uvVertLoc);
+	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	//============= find error here. error count: 14. Only during using sprite sheet
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	//========================
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &uvbo);
+	glDeleteBuffers(1, &ibo);
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	createDebugBoundingBoxLine();
+#endif
+}
+
+void Voxel::UI::ProgressTimer::setPercentage(const int percentage)
+{
+	this->percentage = glm::clamp(percentage, 0, 100);
+}
+
+int Voxel::UI::ProgressTimer::getPercentage() const
+{
+	return percentage;
+}
+
+void Voxel::UI::ProgressTimer::renderSelf()
+{
+	if (texture == nullptr) return;
+	if (!visibility) return;
+	if (program == nullptr) return;
+
+	program->use(true);
+	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformFloat("opacity", opacity);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+
+	if (vao)
+	{
+		glBindVertexArray(vao);
+		if (hasBackgroundImage)
+		{
+			glDrawElements(GL_TRIANGLES, (6 * percentage) + 6, GL_UNSIGNED_INT, 0);
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, 6 * percentage, GL_UNSIGNED_INT, 0);
+		}
+	}
+}
 
 //====================================================================================================================================
 
@@ -2852,7 +3032,6 @@ bool Voxel::UI::Cursor::init()
 
 	auto vertices = Quad::getVertices(glm::vec2(imageEntry->width, imageEntry->height));
 	auto indices = Quad::indices;
-	auto colors = Quad::getColors3(glm::vec3(1.0f));
 
 	auto& uvOrigin = imageEntry->uvOrigin;
 	auto& uvEnd = imageEntry->uvEnd;
@@ -2876,36 +3055,26 @@ bool Voxel::UI::Cursor::init()
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(vertLoc);	// error count 2
 	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-	GLint colorLoc = program->getAttribLocation("color");
-
-	GLuint cbo;
-	glGenBuffers(1, &cbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors) * colors.size(), &colors.front(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(colorLoc);
-	glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uv) * uv.size(), &uv.front(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uv.size(), &uv.front(), GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &cbo);
 	glDeleteBuffers(1, &ibo);
 
 	return true;

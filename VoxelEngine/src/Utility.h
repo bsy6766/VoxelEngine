@@ -272,6 +272,41 @@ namespace Voxel
 			}
 		}
 
+		namespace String
+		{
+			/**
+			*	Finds and removes file extention from file name.
+			*	It will look for last occuring '.' in the file name and removes all characters to the end in the string.
+			*/
+			static inline std::string removeFileExtFromFileName(const std::string& fileName)
+			{
+				size_t lastIndex = fileName.find_last_of(".");
+				if (lastIndex == std::string::npos)
+				{
+					return fileName;
+				}
+				else
+				{
+					return fileName.substr(0, lastIndex);
+				}
+			}
+
+			static inline void fileNameToNameAndExt(const std::string& fileName, std::string& name, std::string& ext = std::string(".png"))
+			{
+				size_t lastindex = fileName.find_last_of(".");
+				
+				if (lastindex == std::string::npos)
+				{
+					name = fileName;
+				}
+				else
+				{
+					name = fileName.substr(0, lastindex);
+					ext = fileName.substr(lastindex);
+				}
+			}
+		}
+
 		namespace Polygon
 		{
 			static bool isPointInPolygon(const std::vector<glm::vec2>& polygon, const glm::vec2& point)

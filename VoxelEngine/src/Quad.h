@@ -1,6 +1,7 @@
 #ifndef QUAD_H
 #define QUAD_H
 
+#include <array>
 #include <vector>
 #include <glm\glm.hpp>
 
@@ -17,9 +18,9 @@ namespace Voxel
 		Quad() = delete;
 		~Quad() = delete;
 	public:
-		const static std::vector<unsigned int> indices;
-		const static std::vector<float> defaultColors;
-		const static std::vector<float> uv;
+		const static std::array<unsigned int, 6> indices;
+		const static std::array<float, 16> defaultColors;
+		const static std::array<float, 8> uv;
 
 		static std::vector<float> getVertices(const glm::vec2& size);
 		static std::vector<float> getColors3(const glm::vec3& color);

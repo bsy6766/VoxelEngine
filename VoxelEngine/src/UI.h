@@ -336,10 +336,14 @@ namespace Voxel
 
 			// Texture that image uses
 			Texture2D* texture;
+			
+			// Color of object
+			glm::vec3 color;
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
+			void createDebugBoundingBoxLine();
 #endif
 		public:
 			virtual ~RenderNode();
@@ -493,10 +497,7 @@ namespace Voxel
 			*	@param imageName Name of image
 			*/
 			Image(const std::string& name);
-
-			// gl
-			unsigned int indicesSize;
-
+			
 			/**
 			*	Initialize image
 			*	@param textureName Name of image texture file
@@ -515,13 +516,11 @@ namespace Voxel
 			/**
 			*	Build image.
 			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param colors Colors of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
+			*	@param vertices Vertices of image quad. Single image has 12 vertices.
+			*	@param uvs Texture coordinates of image quad. Single image has 8 uv coordinates
+			*	@param indices Indices of image quad. Single image has 6 indices
 			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
-
+			virtual void build(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices);
 		public:
 			// Destructor.
 			~Image();
@@ -545,7 +544,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf();
+			void renderSelf() override;
 		};
 
 		/**
@@ -606,13 +605,12 @@ namespace Voxel
 
 			/**
 			*	Build image.
-			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param colors Colors of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
+			*	Can't use array because frame size is dynamic
+			*	@param vertices Vertices of image quad. 
+			*	@param uvs Texture coordinates of image 
+			*	@param indices Indices of image quad.
 			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			virtual void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 		public:
 			// Desturctor
 			~AnimatedImage() = default;
@@ -660,11 +658,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf();
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			void initDebugBoundingBoxLine();
-#endif
+			void renderSelf() override;
 		};
 
 		/**
@@ -816,7 +810,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf();
+			void renderSelf() override;
 		};
 
 		/**
@@ -855,13 +849,11 @@ namespace Voxel
 
 			/**
 			*	Build image.
-			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param colors Colors of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
+			*	@param vertices Vertices of image quad.
+			*	@param uvs Texture coordinates of image
+			*	@param indices Indices of image quad.
 			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			virtual void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 		public:
 			// Destructor
 			~Button() = default;
@@ -906,11 +898,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf();
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			void initDebugBoundingBoxLine();
-#endif
+			void renderSelf() override;
 		};
 
 		/**
@@ -951,11 +939,10 @@ namespace Voxel
 			*	Build image.
 			*	Initialize vao.
 			*	@param vertices Vertices of image quad
-			*	@param colors Colors of image quad
 			*	@param uvs Texture coordinates of image quad
 			*	@param indices Indices of image quad
 			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+			void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
 			/**
 			*	Update current index based on state
@@ -1011,7 +998,7 @@ namespace Voxel
 			/**
 			*	Render self
 			*/
-			void renderSelf();
+			void renderSelf() override;
 		};
 
 		/**
@@ -1020,7 +1007,69 @@ namespace Voxel
 		*/
 		class ProgressTimer : public RenderNode
 		{
+		public:
+			enum class Type
+			{
+				HORIZONTAL = 0,
+				VERTICAL,
+				RADIAL
+			};
 
+			enum class Direction
+			{
+				CLOCK_WISE = 0,
+				COUNTER_CLOCK_WISE
+			};
+		private:
+			// Constructor
+			ProgressTimer() = delete;
+			ProgressTimer(const std::string& name);
+			
+			// percenatge. 0 ~ 100
+			int percentage;
+
+			// true if progress timer has background image. Else, false.
+			bool hasBackgroundImage;
+
+			/**
+			*	Initialize button
+			*/
+			bool init(SpriteSheet* ss, const std::string& progressTimerImageFileName, const std::string& progressTimerBgImageName = std::string(), const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
+			
+			void buildMesh(const std::vector<float>& quadVertices, const std::vector<float>& quadUvs, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Type type, const Direction direction);
+
+			/**
+			*	Build image.
+			*	Initialize vao.
+			*	@param vertices Vertices of image quad
+			*	@param uvs Texture coordinates of image quad
+			*	@param indices Indices of image quad
+			*/
+			void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+		public:
+			// Desturctor
+			~ProgressTimer() = default;
+
+			/**
+			*	Create progress timer
+			*/
+			static ProgressTimer* create(const std::string& name, const std::string& spriteSheetName, const std::string& progressTimerImageFileName, const std::string& progressTimerBgImageName = std::string(), const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
+
+			/**
+			*	Set percentage. 
+			*	@param precentage. Must be 0 ~ 100
+			*/
+			void setPercentage(const int percentage);
+
+			/**
+			*	Get percentage
+			*/
+			int getPercentage() const;
+
+			/**
+			*	Render self
+			*/
+			void renderSelf() override;
 		};
 		
 		/**

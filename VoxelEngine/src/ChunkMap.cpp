@@ -204,7 +204,7 @@ void Voxel::ChunkMap::initBlockOutline(Program* program)
 		-0.502f, 0.502f, 0.502f,
 		0.502f, 0.502f, 0.502f,
 	};
-
+	
 	GLfloat color[] = {
 		// x, y, z
 		0.0f, 0.0f, 0.0f, 1.0f,
@@ -2216,7 +2216,7 @@ void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
 	}
 
 	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * lines.size(), &lines.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lines.size(), &lines.front(), GL_STATIC_DRAW);
 
 	// Enable vertices attrib
 	GLint vertLoc = program->getAttribLocation("vert");
@@ -2233,7 +2233,7 @@ void Voxel::ChunkMap::initChunkBorderDebug(Program* program)
 	glBindBuffer(GL_ARRAY_BUFFER, cbo);
 
 	// Load cube vertices
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * colors.size(), &colors.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * colors.size(), &colors.front(), GL_STATIC_DRAW);
 	// color
 	glEnableVertexAttribArray(colorLoc);
 	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);

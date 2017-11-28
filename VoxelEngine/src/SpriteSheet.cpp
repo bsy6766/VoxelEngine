@@ -96,10 +96,20 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 		newEntry.width = frame.at("w");
 		newEntry.height = frame.at("h");
 		
+		/*
 		newEntry.uvOrigin.x = ((newEntry.position.x + newEntry.width) / textureWidth);
 		newEntry.uvOrigin.y = ((newEntry.position.y + newEntry.height) / textureHeight);
 
 		newEntry.uvEnd.x = (newEntry.position.x / textureWidth);
+		newEntry.uvEnd.y = (newEntry.position.y / textureHeight);
+		*/
+
+		// Texture's y is flipped when it's read by stb_image. So we assign y as flipped
+
+		newEntry.uvOrigin.x = (newEntry.position.x / textureWidth);
+		newEntry.uvOrigin.y = ((newEntry.position.y + newEntry.height) / textureHeight);
+
+		newEntry.uvEnd.x = ((newEntry.position.x + newEntry.width) / textureWidth);
 		newEntry.uvEnd.y = (newEntry.position.y / textureHeight);
 
 		imageEntryMap.emplace(imageName, newEntry);

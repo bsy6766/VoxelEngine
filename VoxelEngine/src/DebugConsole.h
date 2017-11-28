@@ -131,6 +131,9 @@ namespace Voxel
 		Voxel::UI::Button* testDisabledButton;
 		Voxel::UI::CheckBox* testCheckBox;
 		Voxel::UI::CheckBox* testDisabledCheckBox;
+		Voxel::UI::ProgressTimer* testProgHorBar0;
+		Voxel::UI::ProgressTimer* testProgHorBar50;
+		Voxel::UI::ProgressTimer* testProgHorBar100;
 #endif
 	};
 }

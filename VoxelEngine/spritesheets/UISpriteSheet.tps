@@ -271,6 +271,7 @@
                 <false/>
             </struct>
             <key type="filename">../sprites/ui/debug_checkbox_clicked.png</key>
+            <key type="filename">../sprites/ui/debug_checkbox_clickedSelected.png</key>
             <key type="filename">../sprites/ui/debug_checkbox_deselected.png</key>
             <key type="filename">../sprites/ui/debug_checkbox_disabled.png</key>
             <key type="filename">../sprites/ui/debug_checkbox_hovered.png</key>
@@ -298,6 +299,32 @@
                 <rect>38,50,75,100</rect>
                 <key>scale9Paddings</key>
                 <rect>38,50,75,100</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../sprites/ui/debug_progress_hor.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>23,6,46,11</rect>
+                <key>scale9Paddings</key>
+                <rect>23,6,46,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../sprites/ui/debug_progress_hor_bg.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,8,50,15</rect>
+                <key>scale9Paddings</key>
+                <rect>25,8,50,15</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

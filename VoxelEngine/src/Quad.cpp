@@ -16,17 +16,17 @@ using namespace Voxel;
 				 y-
 */
 
-const std::vector<unsigned int> Quad::indices =
+const std::array<unsigned int, 6> Quad::indices =
 {
 	0, 1, 2, 1, 2, 3
 };
 
-const std::vector<float> Quad::defaultColors =
+const std::array<float, 16> Quad::defaultColors =
 {
-	1, 1, 1, 1,
-	1, 1, 1, 1,
-	1, 1, 1, 1,
-	1, 1, 1, 1,
+	1.0f, 1.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 1.0f, 1.0f,
 };
 
 /*
@@ -43,12 +43,12 @@ const std::vector<float> Quad::defaultColors =
 
 */
 
-const std::vector<float> Quad::uv = 
+const std::array<float, 8> Quad::uv = 
 {
-	0, 0,
-	0, 1,
-	1, 0,
-	1, 1
+	0.0f, 0.0f,
+	0.0f, 1.0f,
+	1.0f, 0.0f,
+	1.0f, 1.0f
 };
 
 std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
@@ -64,6 +64,7 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
 		float widthHalf = size.x * 0.5f;
 		float heightHalf = size.y * 0.5f;
 
+		/*
 		// Add vertices from 0 to 4
 		// 0
 		vertices.push_back(widthHalf);
@@ -82,6 +83,27 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
 
 		//3
 		vertices.push_back(-widthHalf);
+		vertices.push_back(heightHalf);
+		vertices.push_back(0);
+		*/
+
+		// 0
+		vertices.push_back(-widthHalf);
+		vertices.push_back(-heightHalf);
+		vertices.push_back(0);
+
+		//1
+		vertices.push_back(-widthHalf);
+		vertices.push_back(heightHalf);
+		vertices.push_back(0);
+
+		//2
+		vertices.push_back(widthHalf);
+		vertices.push_back(-heightHalf);
+		vertices.push_back(0);
+
+		//3
+		vertices.push_back(widthHalf);
 		vertices.push_back(heightHalf);
 		vertices.push_back(0);
 
