@@ -2859,7 +2859,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			uvStepX *= -1.0f;
 		}
 
-		for (int i = 0; i <= 99; i++)
+		for (int i = 0; i <= 100; i++)
 		{
 			// 0
 			vertices.push_back(startX);
@@ -2873,6 +2873,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 
 			startX += stepX;
 
+			/*
 			//2
 			vertices.push_back(startX);
 			vertices.push_back(yBot);
@@ -2882,6 +2883,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			vertices.push_back(startX);
 			vertices.push_back(yTop);
 			vertices.push_back(0);
+			*/
 
 
 			uvs.push_back(uvStartX);
@@ -2892,15 +2894,17 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 
 			uvStartX += uvStepX;
 
+			/*
 			uvs.push_back(uvStartX);
 			uvs.push_back(uvOriginY);
 
 			uvs.push_back(uvStartX);
 			uvs.push_back(uvEndY);
+			*/
 
 			for (auto index : quadIndices)
 			{
-				indices.push_back(index + (4 * i) + indexOffset);
+				indices.push_back(index + (2 * i) + indexOffset);
 			}
 		}
 	}
@@ -2988,6 +2992,22 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 		// Radial type is different compared to bar type.
 		// We have to divide quad to 100 triangles in radial.
 		// However, dividing quad in to 100 triangles with 3.6 degrees each will have problems in corner.
+
+		/*
+			
+			  c4   7*      0   c1
+				*------*------*
+				|      |     /|
+			  6 |      |   /  | 1*
+				|      | /    |
+				*      *      *
+				|             |
+			 5* |             | 2
+				|             |
+				*------*------*
+			  c3   4     3*   c2
+			
+		*/
 	}
 }
 
