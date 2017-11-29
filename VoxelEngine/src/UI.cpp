@@ -2824,9 +2824,7 @@ bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progre
 void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices, const std::vector<float>& quadUvs, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Type type, const Direction direction)
 {
 	int indexOffset = hasBackgroundImage ? 4 : 0;
-
-	auto quadIndices = Quad::indices;
-
+	
 	if (type == Type::HORIZONTAL)
 	{
 		// Horizontal bar type
@@ -2842,6 +2840,8 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 		float uvStartX = 0.0f;
 		const float uvOriginY = quadUvs.at(1);
 		const float uvEndY = quadUvs.at(3);
+
+		auto quadIndices = Quad::indices;
 
 		if (direction == Direction::CLOCK_WISE)
 		{
@@ -2872,20 +2872,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			vertices.push_back(0);
 
 			startX += stepX;
-
-			/*
-			//2
-			vertices.push_back(startX);
-			vertices.push_back(yBot);
-			vertices.push_back(0);
-
-			//3
-			vertices.push_back(startX);
-			vertices.push_back(yTop);
-			vertices.push_back(0);
-			*/
-
-
+			
 			uvs.push_back(uvStartX);
 			uvs.push_back(uvOriginY);
 
@@ -2893,14 +2880,6 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			uvs.push_back(uvEndY);
 
 			uvStartX += uvStepX;
-
-			/*
-			uvs.push_back(uvStartX);
-			uvs.push_back(uvOriginY);
-
-			uvs.push_back(uvStartX);
-			uvs.push_back(uvEndY);
-			*/
 
 			for (auto index : quadIndices)
 			{
@@ -2924,6 +2903,8 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 		const float uvOriginX = quadUvs.at(0);
 		const float uvEndX = quadUvs.at(4);
 
+		auto quadIndices = std::array<unsigned int, 6>{0, 2, 1, 2, 1, 3};
+
 		if (direction == Direction::CLOCK_WISE)
 		{
 			// Progress fills from bottom to top
@@ -2941,7 +2922,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			stepY *= -1.0f;
 		}
 
-		for (int i = 0; i <= 99; i++)
+		for (int i = 0; i <= 100; i++)
 		{
 			// 0
 			vertices.push_back(xLeft);
@@ -2949,39 +2930,23 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			vertices.push_back(0);
 
 			//1
-			vertices.push_back(xLeft);
-			vertices.push_back(startY + stepY);
-			vertices.push_back(0);
-			
-			//2
 			vertices.push_back(xRight);
 			vertices.push_back(startY);
 			vertices.push_back(0);
-
-			//3
-			vertices.push_back(xRight);
-			vertices.push_back(startY + stepY);
-			vertices.push_back(0);
-
+			
 			startY += stepY;
 
 			uvs.push_back(uvOriginX);
 			uvs.push_back(uvStartY);
 
-			uvs.push_back(uvOriginX);
-			uvs.push_back(uvStartY + uvStepY);
-			
 			uvs.push_back(uvEndX);
 			uvs.push_back(uvStartY);
-
-			uvs.push_back(uvEndX);
-			uvs.push_back(uvStartY + uvStepY);
-
+			
 			uvStartY += uvStepY;
 
 			for (auto index : quadIndices)
 			{
-				indices.push_back(index + (4 * i) + indexOffset);
+				indices.push_back(index + (2 * i) + indexOffset);
 			}
 		}
 	}
