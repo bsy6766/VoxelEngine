@@ -41,9 +41,8 @@
 *	If enabled, render test uis.
 */
 #ifndef V_DEBUG_UI_TEST
-#define V_DEBUG_UI_TEST 1
+#define V_DEBUG_UI_TEST 0
 #endif
-
 
 /**
 *	@def V_DEBUG_CHUNK_BORDER_LINE

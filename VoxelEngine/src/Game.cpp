@@ -400,7 +400,7 @@ void Voxel::Game::createWorld()
 	world->init(10, 10, 0, globalSeed);
 
 	auto startingRegionSitePos = world->getCurrentRegion()->getSitePosition();
-	startingRegionSitePos = world->getRegion(31)->getSitePosition();
+	//startingRegionSitePos = world->getRegion(31)->getSitePosition();
 
 	startingRegionSitePos = glm::vec2(glm::ivec2(startingRegionSitePos)) + 0.5f;
 

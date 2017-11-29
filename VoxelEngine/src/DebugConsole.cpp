@@ -220,14 +220,14 @@ void Voxel::DebugConsole::init()
 	//testText = Voxel::UI::Text::createWithOutline("testText", "ABCD", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
 	//testText = Voxel::UI::Text::create("testText", "Vsync: false", 1, Voxel::UI::Text::ALIGN::LEFT);
 	//testText->setPosition(glm::vec2(5.0f, -281.0f));
-	testText->setPosition(glm::vec2(0.0f, -281.0f));
+	testText->setPosition(glm::vec2(0.0f, -420.0f));
 	//testText->setPivot(glm::vec2(-0.5f, 0.0f));
 	//testText->setPivot(glm::vec2(0.0f, 0.0f));
 	//testText->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	debugCanvas->addChild(testText, 100);
 
 	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug_button.png");
-	testButton->setPosition(glm::vec2(100.0f, 300.0f));
+	testButton->setPosition(glm::vec2(100.0f, 260.0f));
 	debugCanvas->addChild(testButton, 100);
 
 	testDisabledButton = Voxel::UI::Button::create("testDisabledButton", "UISpriteSheet", "debug_button.png");
@@ -258,6 +258,51 @@ void Voxel::DebugConsole::init()
 	testProgHorBar100->setPosition(glm::vec2(-100.0f, 320.0f));
 	testProgHorBar100->setPercentage(100);
 	debugCanvas->addChild(testProgHorBar100, 100);
+
+	testProgHorBar0ccw = Voxel::UI::ProgressTimer::create("testProgHorBar0ccw", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar0ccw->setPosition(glm::vec2(10.0f, 400.0f));
+	testProgHorBar0ccw->setPercentage(0);
+	debugCanvas->addChild(testProgHorBar0ccw, 100);
+
+	testProgHorBar50ccw = Voxel::UI::ProgressTimer::create("testProgHorBar50ccw", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar50ccw->setPosition(glm::vec2(10.0f, 360.0f));
+	testProgHorBar50ccw->setPercentage(50);
+	debugCanvas->addChild(testProgHorBar50ccw, 100);
+
+	testProgHorBar100ccw = Voxel::UI::ProgressTimer::create("testProgHorBar100ccw", "UISpriteSheet", "debug_progress_hor.png", "debug_progress_hor_bg.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar100ccw->setPosition(glm::vec2(10.0f, 320.0f));
+	testProgHorBar100ccw->setPercentage(100);
+	debugCanvas->addChild(testProgHorBar100ccw, 100);
+
+	testProgVerBar0 = Voxel::UI::ProgressTimer::create("testProgVerBar0", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar0->setPosition(glm::vec2(120.0f, 360.0f));
+	testProgVerBar0->setPercentage(0);
+	debugCanvas->addChild(testProgVerBar0, 100);
+
+	testProgVerBar50 = Voxel::UI::ProgressTimer::create("testProgVerBar50", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar50->setPosition(glm::vec2(160.0f, 360.0f));
+	testProgVerBar50->setPercentage(50);
+	debugCanvas->addChild(testProgVerBar50, 100);
+
+	testProgVerBar100 = Voxel::UI::ProgressTimer::create("testProgVerBar100", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar100->setPosition(glm::vec2(200.0f, 360.0f));
+	testProgVerBar100->setPercentage(100);
+	debugCanvas->addChild(testProgVerBar100, 100);
+
+	testProgVerBar0ccw = Voxel::UI::ProgressTimer::create("testProgVerBar0ccw", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar0ccw->setPosition(glm::vec2(240.0f, 360.0f));
+	testProgVerBar0ccw->setPercentage(0);
+	debugCanvas->addChild(testProgVerBar0ccw, 100);
+
+	testProgVerBar50ccw = Voxel::UI::ProgressTimer::create("testProgVerBar50ccw", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar50ccw->setPosition(glm::vec2(280.0f, 360.0f));
+	testProgVerBar50ccw->setPercentage(50);
+	debugCanvas->addChild(testProgVerBar50ccw, 100);
+
+	testProgVerBar100ccw = Voxel::UI::ProgressTimer::create("testProgVerBar100ccw", "UISpriteSheet", "debug_progress_ver.png", "debug_progress_ver_bg.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar100ccw->setPosition(glm::vec2(320.0f, 360.0f));
+	testProgVerBar100ccw->setPercentage(100);
+	debugCanvas->addChild(testProgVerBar100ccw, 100);
 #endif
 }
 
@@ -361,6 +406,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 								std::cout << "Fail.\n";
 							}
 							closeConsole();
+							Application::getInstance().getGame()->toggleCursorMode(false);
 							return;
 						}
 					}

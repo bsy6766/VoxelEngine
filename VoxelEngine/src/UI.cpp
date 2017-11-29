@@ -2718,7 +2718,7 @@ ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const
 
 	if (ss)
 	{
-		if (newProgressTimer->init(ss, progressTimerImageFileName, progressTimerBgImageName, type))
+		if (newProgressTimer->init(ss, progressTimerImageFileName, progressTimerBgImageName, type, direction))
 		{
 			return newProgressTimer;
 		}
@@ -2825,23 +2825,23 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 {
 	int indexOffset = hasBackgroundImage ? 4 : 0;
 
+	auto quadIndices = Quad::indices;
+
 	if (type == Type::HORIZONTAL)
 	{
 		// Horizontal bar type
 
-		const float stepX = (quadVertices.at(6) * 2.0f) * 0.01f;
+		float stepX = (quadVertices.at(6) * 2.0f) * 0.01f;
 
 		float startX = 0.0f;
 		const float yTop = quadVertices.at(4);
 		const float yBot = quadVertices.at(1);
 
-		const float uvStepX = (quadUvs.at(4) - quadUvs.at(0)) * 0.01f;
+		float uvStepX = (quadUvs.at(4) - quadUvs.at(0)) * 0.01f;
 
 		float uvStartX = 0.0f;
 		const float uvOriginY = quadUvs.at(1);
 		const float uvEndY = quadUvs.at(3);
-
-		auto quadIndices = Quad::indices;
 
 		if (direction == Direction::CLOCK_WISE)
 		{
@@ -2854,6 +2854,9 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 			// Progress fills from right to left
 			startX = quadVertices.at(6);
 			uvStartX = quadUvs.at(4);
+
+			stepX *= -1.0f;
+			uvStepX *= -1.0f;
 		}
 
 		for (int i = 0; i <= 99; i++)
@@ -2900,6 +2903,91 @@ void Voxel::UI::ProgressTimer::buildMesh(const std::vector<float>& quadVertices,
 				indices.push_back(index + (4 * i) + indexOffset);
 			}
 		}
+	}
+	else if (type == Type::VERTICAL)
+	{
+		// Vertical bar type
+
+		float stepY = (quadVertices.at(4) * 2.0f) * 0.01f;
+
+		float startY = 0.0f;
+		const float xLeft = quadVertices.at(0);
+		const float xRight = quadVertices.at(6);
+
+		float uvStepY = (quadUvs.at(1) - quadUvs.at(3)) * 0.01f;
+
+		float uvStartY = 0.0f;
+		const float uvOriginX = quadUvs.at(0);
+		const float uvEndX = quadUvs.at(4);
+
+		if (direction == Direction::CLOCK_WISE)
+		{
+			// Progress fills from bottom to top
+			startY = quadVertices.at(1);
+			uvStartY = quadUvs.at(1);
+
+			uvStepY *= -1.0f;
+		}
+		else
+		{
+			// Progress fills from top to bottom
+			startY = quadVertices.at(4);
+			uvStartY = quadUvs.at(3);
+
+			stepY *= -1.0f;
+		}
+
+		for (int i = 0; i <= 99; i++)
+		{
+			// 0
+			vertices.push_back(xLeft);
+			vertices.push_back(startY);
+			vertices.push_back(0);
+
+			//1
+			vertices.push_back(xLeft);
+			vertices.push_back(startY + stepY);
+			vertices.push_back(0);
+			
+			//2
+			vertices.push_back(xRight);
+			vertices.push_back(startY);
+			vertices.push_back(0);
+
+			//3
+			vertices.push_back(xRight);
+			vertices.push_back(startY + stepY);
+			vertices.push_back(0);
+
+			startY += stepY;
+
+			uvs.push_back(uvOriginX);
+			uvs.push_back(uvStartY);
+
+			uvs.push_back(uvOriginX);
+			uvs.push_back(uvStartY + uvStepY);
+			
+			uvs.push_back(uvEndX);
+			uvs.push_back(uvStartY);
+
+			uvs.push_back(uvEndX);
+			uvs.push_back(uvStartY + uvStepY);
+
+			uvStartY += uvStepY;
+
+			for (auto index : quadIndices)
+			{
+				indices.push_back(index + (4 * i) + indexOffset);
+			}
+		}
+	}
+	else if (type == Type::RADIAL)
+	{
+		// Radial bar type.
+
+		// Radial type is different compared to bar type.
+		// We have to divide quad to 100 triangles in radial.
+		// However, dividing quad in to 100 triangles with 3.6 degrees each will have problems in corner.
 	}
 }
 

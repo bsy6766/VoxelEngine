@@ -234,13 +234,6 @@ namespace Voxel
 		
 		// Check if there is any chunks that needs to be unloaded
 		void checkUnloadedChunks();
-
-		/**
-		*	Toggles cursor mode. 
-		*	If cursor is enabled, some other inputs won't work, such as player movement or rotation.
-		*	@param mode Cursor mode to set. true to enable, false to disable.
-		*/
-		void toggleCursorMode(const bool mode);
 	public:
 		// Constructor
 		Game();
@@ -265,6 +258,13 @@ namespace Voxel
 
 		// Rebuilds world. It also rebuilds chunk map
 		void rebuildWorld();
+
+		/**
+		*	Toggles cursor mode.
+		*	If cursor is enabled, some other inputs won't work, such as player movement or rotation.
+		*	@param mode Cursor mode to set. true to enable, false to disable.
+		*/
+		void toggleCursorMode(const bool mode);
 
 		/**
 		*	Set fog mode.
