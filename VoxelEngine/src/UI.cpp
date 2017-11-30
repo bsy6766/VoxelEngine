@@ -450,7 +450,7 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 	// Update model matrix
 	if (parent)
 	{
-		modelMat = parent->getModelMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
+		modelMat = parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
 	}
 	else
 	{
@@ -2705,11 +2705,10 @@ void Voxel::UI::CheckBox::renderSelf()
 Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
 	: RenderNode(name)
 	, percentage(100)
-	, hasBackgroundImage(false)
 	, currentIndex(0)
 {}
 
-ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const std::string & spriteSheetName, const std::string & progressTimerImageFileName, const std::string & progressTimerBgImageName, const Type type, const Direction direction)
+ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const std::string & spriteSheetName, const std::string & progressTimerImageFileName, const Type type, const Direction direction)
 {
 	auto newProgressTimer = new Voxel::UI::ProgressTimer(name);
 
@@ -2719,7 +2718,7 @@ ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const
 
 	if (ss)
 	{
-		if (newProgressTimer->init(ss, progressTimerImageFileName, progressTimerBgImageName, type, direction))
+		if (newProgressTimer->init(ss, progressTimerImageFileName, type, direction))
 		{
 			return newProgressTimer;
 		}
@@ -2729,7 +2728,7 @@ ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const
 	return nullptr;
 }
 
-bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progressTimerImageFileName, const std::string & progressTimerBgImageName, const Type type, const Direction direction)
+bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progressTimerImageFileName, const Type type, const Direction direction)
 {
 	texture = ss->getTexture();
 
@@ -2745,50 +2744,6 @@ bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progre
 	std::vector<float> vertices;
 	std::vector<float> uvs;
 	std::vector<unsigned int> indices;
-	auto quadIndices = Quad::indices;
-
-	// Try to load background image
-	if (progressTimerBgImageName.empty())
-	{
-		hasBackgroundImage = false;
-	}
-	else
-	{
-		auto imageEntry = ss->getImageEntry(progressTimerBgImageName);
-
-		if (imageEntry)
-		{
-			auto size = glm::vec2(imageEntry->width, imageEntry->height);
-			auto curVertices = Quad::getVertices(size);
-
-			vertices.insert(vertices.end(), curVertices.begin(), curVertices.end());
-
-			auto& uvOrigin = imageEntry->uvOrigin;
-			auto& uvEnd = imageEntry->uvEnd;
-
-			uvs.push_back(uvOrigin.x);
-			uvs.push_back(uvOrigin.y);
-			uvs.push_back(uvOrigin.x);
-			uvs.push_back(uvEnd.y);
-			uvs.push_back(uvEnd.x);
-			uvs.push_back(uvOrigin.y);
-			uvs.push_back(uvEnd.x);
-			uvs.push_back(uvEnd.y);
-
-			for (auto index : quadIndices)
-			{
-				indices.push_back(index);
-			}
-
-			//frameSizes.at(i) = size;
-		}
-		else
-		{
-			return false;
-		}
-
-		hasBackgroundImage = true;
-	}
 
 	auto imageEntry = ss->getImageEntry(progressTimerImageFileName);
 
@@ -2815,8 +2770,6 @@ bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progre
 
 void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction)
 {
-	int indexOffset = hasBackgroundImage ? 4 : 0;
-
 	const float width = verticesEnd.x - verticesOrigin.x;
 	const float height = verticesEnd.y - verticesOrigin.y;
 	
@@ -2836,20 +2789,15 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 
 		auto quadIndices = Quad::indices;
 
-		if (direction == Direction::CLOCK_WISE)
-		{
-			// Progress fills from left to right
-			startX = verticesOrigin.x;
-			uvStartX = uvOrigin.x;
-		}
-		else
-		{
-			// Progress fills from right to left
-			startX = verticesEnd.x;
-			uvStartX = uvEnd.x;
+		// Build vertices from left to right.
+		startX = verticesOrigin.x;
+		uvStartX = uvOrigin.x;
 
-			stepX *= -1.0f;
-			uvStepX *= -1.0f;
+		int curIndex = 0;
+
+		if (direction == Direction::COUNTER_CLOCK_WISE)
+		{
+			curIndex = 99;
 		}
 
 		for (int i = 0; i <= 100; i++)
@@ -2866,26 +2814,13 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 			}
 			else if (i == 100)
 			{
-				if (direction == Direction::CLOCK_WISE)
-				{
-					vertices.push_back(verticesEnd.x);
-					vertices.push_back(yBot);
-					vertices.push_back(0);
+				vertices.push_back(verticesEnd.x);
+				vertices.push_back(yBot);
+				vertices.push_back(0);
 
-					vertices.push_back(verticesEnd.x);
-					vertices.push_back(yTop);
-					vertices.push_back(0);
-				}
-				else
-				{
-					vertices.push_back(verticesOrigin.x);
-					vertices.push_back(yBot);
-					vertices.push_back(0);
-
-					vertices.push_back(verticesOrigin.x);
-					vertices.push_back(yTop);
-					vertices.push_back(0);
-				}
+				vertices.push_back(verticesEnd.x);
+				vertices.push_back(yTop);
+				vertices.push_back(0);
 			}
 			else
 			{
@@ -2908,9 +2843,21 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 
 			uvStartX += uvStepX;
 
-			for (auto index : quadIndices)
+			if (i < 100)
 			{
-				indices.push_back(index + (2 * i) + indexOffset);
+				for (auto index : quadIndices)
+				{
+					indices.push_back(index + (2 * curIndex));
+				}
+
+				if (direction == Direction::CLOCK_WISE)
+				{
+					curIndex++;
+				}
+				else
+				{
+					curIndex--;
+				}
 			}
 		}
 	}
@@ -2930,21 +2877,17 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 
 		auto quadIndices = std::array<unsigned int, 6>{0, 2, 1, 2, 1, 3};
 
-		if (direction == Direction::CLOCK_WISE)
-		{
-			// Progress fills from bottom to top
-			startY = verticesOrigin.y;
-			uvStartY = uvOrigin.y;
+		// Build vertices from bottom to top
+		startY = verticesOrigin.y;
+		uvStartY = uvOrigin.y;
 
-			uvStepY *= -1.0f;
-		}
-		else
-		{
-			// Progress fills from top to bottom
-			startY = verticesEnd.y;
-			uvStartY = uvEnd.y;
+		uvStepY *= -1.0f;
 
-			stepY *= -1.0f;
+		int curIndex = 0;
+		
+		if (direction == Direction::COUNTER_CLOCK_WISE)
+		{
+			curIndex = 99;
 		}
 
 		for (int i = 0; i <= 100; i++)
@@ -2961,26 +2904,13 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 			}
 			else if (i == 100)
 			{
-				if (direction == Direction::CLOCK_WISE)
-				{
-					vertices.push_back(xLeft);
-					vertices.push_back(verticesEnd.y);
-					vertices.push_back(0);
+				vertices.push_back(xLeft);
+				vertices.push_back(verticesEnd.y);
+				vertices.push_back(0);
 
-					vertices.push_back(xRight);
-					vertices.push_back(verticesEnd.y);
-					vertices.push_back(0);
-				}
-				else
-				{
-					vertices.push_back(xLeft);
-					vertices.push_back(verticesOrigin.y);
-					vertices.push_back(0);
-
-					vertices.push_back(xRight);
-					vertices.push_back(verticesOrigin.y);
-					vertices.push_back(0);
-				}
+				vertices.push_back(xRight);
+				vertices.push_back(verticesEnd.y);
+				vertices.push_back(0);
 			}
 			else
 			{
@@ -3003,9 +2933,21 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 			
 			uvStartY += uvStepY;
 
-			for (auto index : quadIndices)
+			if (i < 100)
 			{
-				indices.push_back(index + (2 * i) + indexOffset);
+				for (auto index : quadIndices)
+				{
+					indices.push_back(index + (2 * curIndex));
+				}
+
+				if (direction == Direction::CLOCK_WISE)
+				{
+					curIndex++;
+				}
+				else
+				{
+					curIndex--;
+				}
 			}
 		}
 	}
@@ -3089,10 +3031,15 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 		// add first uvs
 		uvs.push_back(uvXCenter);
 		uvs.push_back(uvEnd.y);
+		
+		int index = 0;
+		const int lastIndex = 103;	// 100 + 4 corners - 1
 
-		int originIndex = 0 + indexOffset;
+		if (direction == Direction::COUNTER_CLOCK_WISE)
+		{
+			index = lastIndex;
+		}
 
-		int index = 0 + indexOffset;
 		float step = 1.0f;
 
 		for (int i = 1; i <= 100; i++)
@@ -3111,11 +3058,18 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvEnd.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
-				index++;
+				if (direction == Direction::CLOCK_WISE)
+				{
+					index++;
+				}
+				else
+				{
+					index--;
+				}
 
 				float y = verticesEnd.y - cornerHeight;
 
@@ -3131,7 +3085,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvY);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
@@ -3151,11 +3105,18 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvOrigin.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
-				index++;
+				if (direction == Direction::CLOCK_WISE)
+				{
+					index++;
+				}
+				else
+				{
+					index--;
+				}
 
 				float x = verticesEnd.x - cornerWidth;
 
@@ -3171,7 +3132,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvOrigin.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
@@ -3191,11 +3152,18 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvOrigin.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
-				index++;
+				if (direction == Direction::CLOCK_WISE)
+				{
+					index++;
+				}
+				else
+				{
+					index--;
+				}
 
 				float y = verticesOrigin.y + cornerHeight;
 
@@ -3211,7 +3179,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvY);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
@@ -3231,11 +3199,18 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvEnd.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
-				index++;
+				if (direction == Direction::CLOCK_WISE)
+				{
+					index++;
+				}
+				else
+				{
+					index--;
+				}
 
 				float x = verticesOrigin.x + cornerWidth;
 
@@ -3251,7 +3226,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				uvs.push_back(uvEnd.y);
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				indices.push_back(index + 1);
 				indices.push_back(index + 2);
 
@@ -3466,13 +3441,13 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				}
 
 				// add indices
-				indices.push_back(originIndex);
+				indices.push_back(0);
 				
-				if (i == 100)
+				if (index == lastIndex)
 				{
 					// wrap up the last one
 					indices.push_back(index + 1);
-					indices.push_back(1 + indexOffset);
+					indices.push_back(1);
 				}
 				else
 				{
@@ -3481,7 +3456,14 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 				}
 			}
 
-			index++;
+			if (direction == Direction::CLOCK_WISE)
+			{
+				index++;
+			}
+			else
+			{
+				index--;
+			}
 		}
 	}
 }
@@ -3567,11 +3549,6 @@ void Voxel::UI::ProgressTimer::updateCurrentIndex()
 	else
 	{
 		currentIndex = (6 * percentage);
-	}
-
-	if (hasBackgroundImage)
-	{
-		currentIndex += 6;
 	}
 }
 

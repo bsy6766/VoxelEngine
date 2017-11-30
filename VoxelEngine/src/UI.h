@@ -1027,10 +1027,7 @@ namespace Voxel
 			
 			// percenatge. 0 ~ 100
 			int percentage;
-
-			// true if progress timer has background image. Else, false.
-			bool hasBackgroundImage;
-
+			
 			// current index
 			int currentIndex;
 
@@ -1040,7 +1037,7 @@ namespace Voxel
 			/**
 			*	Initialize button
 			*/
-			bool init(SpriteSheet* ss, const std::string& progressTimerImageFileName, const std::string& progressTimerBgImageName = std::string(), const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
+			bool init(SpriteSheet* ss, const std::string& progressTimerImageFileName, const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
 			
 			void buildMesh(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction);
 
@@ -1065,7 +1062,7 @@ namespace Voxel
 			/**
 			*	Create progress timer
 			*/
-			static ProgressTimer* create(const std::string& name, const std::string& spriteSheetName, const std::string& progressTimerImageFileName, const std::string& progressTimerBgImageName = std::string(), const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
+			static ProgressTimer* create(const std::string& name, const std::string& spriteSheetName, const std::string& progressTimerImageFileName, const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
 
 			/**
 			*	Set percentage. 

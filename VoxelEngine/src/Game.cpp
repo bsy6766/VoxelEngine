@@ -764,14 +764,14 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		}
 		*/
 
-		int p = debugConsole->testProgRadial0cw->getPercentage();
-		debugConsole->testProgRadial0cw->setPercentage(p + 1);
+		int p = debugConsole->testProgRadial0ccw->getPercentage();
+		debugConsole->testProgRadial0ccw->setPercentage(p + 1);
 		std::cout << "p = " << p + 1 << "\n";
 	}
 	if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-		int p = debugConsole->testProgRadial0cw->getPercentage();
-		debugConsole->testProgRadial0cw->setPercentage(p - 1);
+		int p = debugConsole->testProgRadial0ccw->getPercentage();
+		debugConsole->testProgRadial0ccw->setPercentage(p - 1);
 		std::cout << "p = " << p - 1 << "\n";
 	}
 		
