@@ -303,6 +303,11 @@ void Voxel::DebugConsole::init()
 	testProgVerBar100ccw->setPosition(glm::vec2(320.0f, 360.0f));
 	testProgVerBar100ccw->setPercentage(100);
 	debugCanvas->addChild(testProgVerBar100ccw, 100);
+
+	testProgRadial0cw = Voxel::UI::ProgressTimer::create("testProgRadial0cw", "UISpriteSheet", "debug_progress_radial.png", "debug_progress_radial_bg.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial0cw->setPosition(400.0f, 400.0f);
+	testProgRadial0cw->setPercentage(0);
+	debugCanvas->addChild(testProgRadial0cw, 100);
 #endif
 }
 

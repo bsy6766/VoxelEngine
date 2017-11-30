@@ -64,29 +64,6 @@ std::vector<float> Voxel::Quad::getVertices(const glm::vec2 & size)
 		float widthHalf = size.x * 0.5f;
 		float heightHalf = size.y * 0.5f;
 
-		/*
-		// Add vertices from 0 to 4
-		// 0
-		vertices.push_back(widthHalf);
-		vertices.push_back(-heightHalf);
-		vertices.push_back(0);
-
-		//1
-		vertices.push_back(widthHalf);
-		vertices.push_back(heightHalf);
-		vertices.push_back(0);
-
-		//2
-		vertices.push_back(-widthHalf);
-		vertices.push_back(-heightHalf);
-		vertices.push_back(0);
-
-		//3
-		vertices.push_back(-widthHalf);
-		vertices.push_back(heightHalf);
-		vertices.push_back(0);
-		*/
-
 		// 0
 		vertices.push_back(-widthHalf);
 		vertices.push_back(-heightHalf);

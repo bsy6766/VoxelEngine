@@ -1031,12 +1031,18 @@ namespace Voxel
 			// true if progress timer has background image. Else, false.
 			bool hasBackgroundImage;
 
+			// current index
+			int currentIndex;
+
+			// type of progress bar
+			Type type;
+
 			/**
 			*	Initialize button
 			*/
 			bool init(SpriteSheet* ss, const std::string& progressTimerImageFileName, const std::string& progressTimerBgImageName = std::string(), const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
 			
-			void buildMesh(const std::vector<float>& quadVertices, const std::vector<float>& quadUvs, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Type type, const Direction direction);
+			void buildMesh(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction);
 
 			/**
 			*	Build image.
@@ -1046,6 +1052,12 @@ namespace Voxel
 			*	@param indices Indices of image quad
 			*/
 			void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+
+			/**
+			*	Updates current index based on progress timer.
+			*	Background, percentage and type affects index.
+			*/
+			void updateCurrentIndex();
 		public:
 			// Desturctor
 			~ProgressTimer() = default;

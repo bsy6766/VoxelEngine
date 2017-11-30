@@ -749,6 +749,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
 		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
 
+		/*
 		std::vector<glm::vec2> points;
 		points.push_back(glm::vec2(-100, -100));
 		points.push_back(glm::vec2(-100, 100));
@@ -761,6 +762,17 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		{
 			std::cout << Utility::Log::vec2ToStr(e) << "\n";
 		}
+		*/
+
+		int p = debugConsole->testProgRadial0cw->getPercentage();
+		debugConsole->testProgRadial0cw->setPercentage(p + 1);
+		std::cout << "p = " << p + 1 << "\n";
+	}
+	if (input->getKeyDown(GLFW_KEY_Y, true))
+	{
+		int p = debugConsole->testProgRadial0cw->getPercentage();
+		debugConsole->testProgRadial0cw->setPercentage(p - 1);
+		std::cout << "p = " << p - 1 << "\n";
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))

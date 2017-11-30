@@ -143,6 +143,7 @@ namespace Voxel
 		Voxel::UI::ProgressTimer* testProgVerBar0ccw;
 		Voxel::UI::ProgressTimer* testProgVerBar50ccw;
 		Voxel::UI::ProgressTimer* testProgVerBar100ccw;
+		Voxel::UI::ProgressTimer* testProgRadial0cw;
 #endif
 	};
 }
