@@ -31,6 +31,7 @@
 #include "SpriteSheet.h"
 
 #include "UI.h"
+#include "Cursor.h"
 #include "FontManager.h"
 
 #include "ProgramManager.h"
