@@ -606,8 +606,8 @@ void Voxel::DebugConsole::init()
 	// ui hierarchy action
 	auto hierBase = Voxel::UI::Image::createFromSpriteSheet("hierBase", "UISpriteSheet", "debug/debug_hier_bar.png");
 	hierBase->setPosition(glm::vec2(420.0f, 180.0f));
-	auto hierAction1 = Voxel::UI::Sequence::create({ Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.5f, 1.5f)), Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.0f, 1.0f)) }, true);
-	hierBase->runAction(hierAction1);
+	//auto hierAction1 = Voxel::UI::Sequence::create({ Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.5f, 1.5f)), Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.0f, 1.0f)) }, true);
+	//hierBase->runAction(hierAction1);
 	debugCanvas->addChild(hierBase, 100);
 
 	auto hierChild1 = Voxel::UI::Image::createFromSpriteSheet("hierChild1", "UISpriteSheet", "debug/debug_hier_bar.png");

@@ -68,6 +68,9 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	, needToUpdateModelMat(false)
 	, parent(nullptr)
 	, interaction(0)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	, bbVao(0)
+#endif
 {}
 
 Voxel::UI::TransformNode::~TransformNode()
@@ -105,8 +108,6 @@ void Voxel::UI::TransformNode::setPosition(const float x, const float y)
 	position.x = x;
 	position.y = y;
 
-	boundingBox.center = position;
-
 	needToUpdateModelMat = true;
 }
 
@@ -119,8 +120,6 @@ void Voxel::UI::TransformNode::addPosition(const glm::vec2 & delta)
 {
 	position += delta;
 
-	boundingBox.center = position;
-
 	needToUpdateModelMat = true;
 }
 
@@ -131,9 +130,9 @@ glm::vec2 Voxel::UI::TransformNode::getPosition() const
 
 void Voxel::UI::TransformNode::setAngle(const float angle)
 {
+	/*
 	float newAngle = angle;
 
-	/*
 	if (newAngle > 360.0f)
 	{
 		while (newAngle > 360.0f)
@@ -150,7 +149,7 @@ void Voxel::UI::TransformNode::setAngle(const float angle)
 	}
 	*/
 
-	this->angle = newAngle;
+	this->angle = angle;
 
 	needToUpdateModelMat = true;
 }
@@ -204,6 +203,63 @@ void Voxel::UI::TransformNode::setCoordinateOrigin(const glm::vec2 & coordinateO
 glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 {
 	return coordinateOrigin;
+}
+
+void Voxel::UI::TransformNode::updateBoundingBoxCenter()
+{
+	auto screenPos = glm::vec2(getParentMatrix() * glm::vec4(position, 1.0f, 1.0f));
+	auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
+
+	auto rotPos = glm::vec2(0);
+
+	auto r = glm::radians(angle);
+	auto cos = glm::cos(r);
+	auto sin = glm::sin(r);
+
+	rotPos.x = screenPos.x + ((shiftPos.x - screenPos.x) * cos) + ((shiftPos.y - screenPos.y) * sin);
+	rotPos.y = screenPos.y + ((shiftPos.x - screenPos.x) * sin) + ((shiftPos.y - screenPos.y) * cos);
+
+	boundingBox.center = rotPos;
+
+	auto originalBB = Voxel::Shape::Rect(rotPos, contentSize * scale);
+
+	auto p1 = originalBB.getMin();
+	auto p4 = originalBB.getMax();
+	auto p2 = glm::vec2(p1.x, p4.y);
+	auto p3 = glm::vec2(p4.x, p1.y);
+
+	std::array<glm::vec2, 4> transformed;
+
+	transformed.at(0).x = ((p1.x - shiftPos.x) * cos) + ((p1.y - shiftPos.y) * sin);
+	transformed.at(0).y = ((p1.x - shiftPos.x) * sin) + ((p1.y - shiftPos.y) * cos);
+
+	transformed.at(1).x = ((p2.x - shiftPos.x) * cos) + ((p2.y - shiftPos.y) * sin);
+	transformed.at(1).y = ((p2.x - shiftPos.x) * sin) + ((p2.y - shiftPos.y) * cos);
+
+	transformed.at(2).x = ((p3.x - shiftPos.x) * cos) + ((p3.y - shiftPos.y) * sin);
+	transformed.at(2).y = ((p3.x - shiftPos.x) * sin) + ((p3.y - shiftPos.y) * cos);
+
+	transformed.at(3).x = ((p4.x - shiftPos.x) * cos) + ((p4.y - shiftPos.y) * sin);
+	transformed.at(3).y = ((p4.x - shiftPos.x) * sin) + ((p4.y - shiftPos.y) * cos);
+
+	glm::vec2 min(std::numeric_limits<float>::max()), max(std::numeric_limits<float>::min());
+
+	for (auto& t : transformed)
+	{
+		min.x = glm::min(t.x, min.x);
+		min.y = glm::min(t.y, min.y);
+
+		max.x = glm::max(t.x, max.x);
+		max.y = glm::max(t.y, max.y);
+	}
+
+	auto size = max - min;
+
+	boundingBox.size = size;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	createDebugBoundingBoxLine();
+#endif
 }
 
 void Voxel::UI::TransformNode::setBoundingBox(const glm::vec2 & center, const glm::vec2 & size)
@@ -496,13 +552,18 @@ void Voxel::UI::TransformNode::printChildren(const int tab)
 	}
 }
 
-glm::vec2 Voxel::UI::TransformNode::getContentSize()
+glm::vec2 Voxel::UI::TransformNode::getContentSize() const
 {
 	glm::vec2 scaled = contentSize;
 	scaled.x *= scale.x;
 	scaled.y *= scale.y;
 
 	return scaled;
+}
+
+glm::mat4 Voxel::UI::TransformNode::getParentMatrix() const
+{
+	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f));
 }
 
 glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
@@ -523,7 +584,7 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 	// Update model matrix
 	if (parent)
 	{
-		modelMat = parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f)) * getModelMatrix();
+		modelMat = getParentMatrix() * getModelMatrix();
 	}
 	else
 	{
@@ -561,6 +622,7 @@ void Voxel::UI::TransformNode::update(const float delta)
 	if (needToUpdateModelMat)
 	{
 		updateModelMatrix();
+		updateBoundingBoxCenter();
 		needToUpdateModelMat = false;
 	}
 
@@ -636,9 +698,21 @@ bool Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePositio
 	}
 }
 
-void Voxel::UI::TransformNode::updateBoundary(const glm::vec2 & canvasBoundary)
+void Voxel::UI::TransformNode::updateBoundary(const Voxel::Shape::Rect& canvasBoundary)
 {
-	
+	if (boundingBox.doesIntersectsWith(canvasBoundary))
+	{
+		auto iRect = boundingBox.getIntersectingRect(canvasBoundary);
+
+		if (boundingBox.size.x > iRect.size.x)
+		{
+			//if(boundingBox.cent)
+		}
+	}
+	else
+	{
+		// UI completely out of canvas boundary. Move to neareast position.
+	}
 }
 
 void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
@@ -655,6 +729,58 @@ void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
 	}
 }
 
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+void Voxel::UI::TransformNode::createDebugBoundingBoxLine()
+{
+	if (bbVao)
+	{
+		glDeleteVertexArrays(1, &bbVao);
+		bbVao = 0;
+	}
+
+	glGenVertexArrays(1, &bbVao);
+	glBindVertexArray(bbVao);
+
+	auto min = -boundingBox.size * 0.5f;
+	auto max = boundingBox.size * 0.5f;
+
+	std::vector<float> lineVertices =
+	{
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	GLuint lineVbo;
+	glGenBuffers(1, &lineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	GLint lineColorLoc = lineProgram->getAttribLocation("color");
+
+	glEnableVertexAttribArray(lineColorLoc);
+	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &lineVbo);
+}
+#endif
+
 //====================================================================================================================================
 
 //======================================================= RenderNode =================================================================
@@ -665,9 +791,6 @@ Voxel::UI::RenderNode::RenderNode(const std::string & name)
 	, vao(0)
 	, texture(nullptr)
 	, color(1.0f)
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	, bbVao(0)
-#endif
 {}
 
 Voxel::UI::RenderNode::~RenderNode()
@@ -729,56 +852,4 @@ void Voxel::UI::RenderNode::render()
 		}
 	}
 }
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-void Voxel::UI::RenderNode::createDebugBoundingBoxLine()
-{
-	if (bbVao)
-	{
-		glDeleteVertexArrays(1, &bbVao);
-		bbVao = 0;
-	}
-
-	glGenVertexArrays(1, &bbVao);
-	glBindVertexArray(bbVao);
-
-	auto min = -boundingBox.size * 0.5f;
-	auto max = boundingBox.size * 0.5f;
-
-	std::vector<float> lineVertices =
-	{
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		min.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, max.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	GLuint lineVbo;
-	glGenBuffers(1, &lineVbo);
-	glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lineVertices.size(), &lineVertices.front(), GL_STATIC_DRAW);
-
-	auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
-
-	glEnableVertexAttribArray(lineVertLoc);
-	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
-
-	GLint lineColorLoc = lineProgram->getAttribLocation("color");
-
-	glEnableVertexAttribArray(lineColorLoc);
-	glVertexAttribPointer(lineColorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
-
-	glBindVertexArray(0);
-
-	glDeleteBuffers(1, &lineVbo);
-}
-#endif
 //====================================================================================================================================

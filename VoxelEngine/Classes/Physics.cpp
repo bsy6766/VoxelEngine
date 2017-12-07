@@ -59,7 +59,7 @@ void Voxel::Physics::applyGravity(Player * player, const float delta)
 	player->setFallDistance(fallDistance + player->getFallDistance());
 }
 
-Shape::AABB Voxel::Physics::getIntersectingBoundingBox(const Shape::AABB & A, const Shape::AABB & B)
+Shape::AABB Voxel::Physics::getIntersectingAABB(const Shape::AABB & A, const Shape::AABB & B)
 {
 	// Get min and max
 	auto aMin = A.getMin();
@@ -130,7 +130,7 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 		if (blockBB.doesIntersectsWith(pBB))
 		{
 			// Get intersecting Bounding box
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto intersectingAABB = getIntersectingAABB(pBB, blockBB);
 			// Get size
 			auto iSize = intersectingAABB.getSize();
 
@@ -156,7 +156,7 @@ bool Voxel::Physics::resolveAutoJump(Player * player, const std::vector<Block*>&
 						if (upBlockBB.doesIntersectsWith(upPBB))
 						{
 							// Intersects
-							auto iBB = getIntersectingBoundingBox(upPBB, upBlockBB);
+							auto iBB = getIntersectingAABB(upPBB, upBlockBB);
 							if (iBB.getSize().y > 0)
 							{
 								// Can't intersect
@@ -209,7 +209,7 @@ bool Voxel::Physics::resolvePlayerXAndBlockCollision(Player * player, glm::vec3&
 
 		if (blockBB.doesIntersectsWith(pBB))
 		{
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto intersectingAABB = getIntersectingAABB(pBB, blockBB);
 
 			// intersecting AABB muse not be zero in all axis
 			if (!intersectingAABB.isAnyZero())
@@ -262,7 +262,7 @@ bool Voxel::Physics::resolvePlayerZAndBlockCollision(Player * player, glm::vec3&
 
 		if (blockBB.doesIntersectsWith(pBB))
 		{
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto intersectingAABB = getIntersectingAABB(pBB, blockBB);
 
 			// intersecting AABB muse not be zero in all axis
 			if (!intersectingAABB.isAnyZero())
@@ -545,7 +545,7 @@ void Voxel::Physics::resolvePlayerBottomCollision(Player * player, const std::ve
 		if (blockBB.doesIntersectsWith(pBB))
 		{
 			// intersects with block
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto intersectingAABB = getIntersectingAABB(pBB, blockBB);
 
 			// get y size
 			float sizeY = intersectingAABB.getSize().y;// block i
@@ -610,7 +610,7 @@ void Voxel::Physics::resolvePlayerTopCollision(Player * player, const std::vecto
 		if (blockBB.doesIntersectsWith(pBB))
 		{
 			// intersects with block
-			auto intersectingAABB = getIntersectingBoundingBox(pBB, blockBB);
+			auto intersectingAABB = getIntersectingAABB(pBB, blockBB);
 
 			// get y size
 			float sizeY = intersectingAABB.getSize().y;// block i

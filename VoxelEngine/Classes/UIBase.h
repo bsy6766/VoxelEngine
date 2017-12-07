@@ -151,8 +151,14 @@ namespace Voxel
 			// Action sequence
 			Voxel::UI::Sequence* sequence;
 
+			// update bounding box center
+			void updateBoundingBoxCenter();
+
 			// Get contensize
-			glm::vec2 getContentSize();
+			glm::vec2 getContentSize() const;
+
+			// get parent matrix
+			glm::mat4 getParentMatrix() const;
 
 			// calculate model matrix
 			virtual glm::mat4 getModelMatrix();
@@ -376,7 +382,7 @@ namespace Voxel
 			/**
 			*	Update ui boundary. Checks if ui is out of canvas screen
 			*/
-			virtual void updateBoundary(const glm::vec2& canvasBoundary);
+			virtual void updateBoundary(const Voxel::Shape::Rect& canvasBoundary);
 
 			/**
 			*	Run action.
@@ -389,6 +395,12 @@ namespace Voxel
 
 			// render
 			virtual void render() = 0;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+			// gl
+			GLuint bbVao;
+			void createDebugBoundingBoxLine();
+#endif
 		};
 
 		/**
@@ -413,12 +425,6 @@ namespace Voxel
 			
 			// Color of object
 			glm::vec3 color;
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-			// gl
-			GLuint bbVao;
-			void createDebugBoundingBoxLine();
-#endif
 		public:
 			virtual ~RenderNode();
 

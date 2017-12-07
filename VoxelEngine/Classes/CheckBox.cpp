@@ -451,4 +451,17 @@ void Voxel::UI::CheckBox::renderSelf()
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
 	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
 }

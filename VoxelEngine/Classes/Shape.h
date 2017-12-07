@@ -99,6 +99,21 @@ namespace Voxel
 			*	Check if point is in rect
 			*/
 			bool containsPoint(const glm::vec2& point);
+
+			/**
+			*	Check if this Rect intersects with other Rect.
+			*
+			*	@param [in] other An reference of other Rect to check intersection
+			*	@return true if this Rect intersects other AABB. Else, false.
+			*/
+			bool doesIntersectsWith(const Rect& other) const;
+
+			/**
+			*	Get intersecting Rect between other Rect
+			*	@param other Other Rect to check
+			*	@return An intersecting Rect.
+			*/
+			Rect getIntersectingRect(const Rect& other) const;
 		};
 
 		/**
@@ -176,7 +191,7 @@ namespace Voxel
 			/**
 			*	Check if this AABB intersects with other AABB.
 			*
-			*	@param [int] other An reference of other AABB to check intersection
+			*	@param [in] other An reference of other AABB to check intersection
 			*	@return true if this AABB intersects other AABB. Else, false.
 			*/
 			bool doesIntersectsWith(const AABB& other);

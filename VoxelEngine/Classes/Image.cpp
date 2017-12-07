@@ -6,6 +6,9 @@
 #include "ProgramManager.h"
 #include "Program.h"
 
+// glm
+#include <glm/gtx/transform.hpp>
+
 Voxel::UI::Image::Image(const std::string& name)
 	: RenderNode(name)
 	, imageState(State::IDLE)
@@ -339,7 +342,20 @@ void Voxel::UI::Image::renderSelf()
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
 		lineProgram->use(true);
-		lineProgram->setUniformMat4("modelMat", modelMat);
+
+		auto mat = glm::translate(glm::mat4(1.0f), glm::vec3(position, 0));
+
+		if (pivot.x != 0.0f || pivot.y != 0.0f)
+		{
+			mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
+		}
+
+		if (parent)
+		{
+			mat = getParentMatrix() * mat;
+		}
+
+		lineProgram->setUniformMat4("modelMat", mat);
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
 
 		glBindVertexArray(bbVao);

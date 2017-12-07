@@ -106,7 +106,57 @@ bool Voxel::Shape::Rect::containsPoint(const glm::vec2 & point)
 	return ((min.x <= point.x && point.x <= max.x) && (min.y <= point.y && point.y <= max.y));
 }
 
+bool Voxel::Shape::Rect::doesIntersectsWith(const Rect & other) const
+{
+	auto min = getMin();
+	auto max = getMax();
+	auto oMin = other.getMin();
+	auto oMax = other.getMax();
 
+	//return (min.x <= oMax.x && max.x >= oMin.x) &&
+	//	(min.y <= oMax.y && max.y >= oMin.y) &&
+	//	(min.z <= oMax.z && max.z >= oMin.z);
+	return (min.x < oMax.x && max.x > oMin.x) &&
+		(min.y < oMax.y && max.y > oMin.y);
+}
+
+Voxel::Shape::Rect Voxel::Shape::Rect::getIntersectingRect(const Rect & other) const
+{
+	// Get min and max
+	auto aMin = getMin();
+	auto aMax = getMax();
+
+	auto bMin = other.getMin();
+	auto bMax = other.getMax();
+
+	// Get intersection origin
+	auto iMin = glm::vec2(0);
+	iMin.x = (aMin.x > bMin.x) ? aMin.x : bMin.x;
+	iMin.y = (aMin.y > bMin.y) ? aMin.y : bMin.y;
+
+	// get Size
+	auto iSize = glm::vec2(0);
+
+	if (aMax.x < bMax.x)
+	{
+		iSize.x = aMax.x - iMin.x;
+	}
+	else
+	{
+		iSize.x = bMax.x - iMin.x;
+	}
+
+	if (aMax.y < bMax.y)
+	{
+		iSize.y = aMax.y - iMin.y;
+	}
+	else
+	{
+		iSize.y = bMax.y - iMin.y;
+	}
+
+	return Shape::Rect(iMin + (iSize * 0.5f), iSize);
+}
 
 
 

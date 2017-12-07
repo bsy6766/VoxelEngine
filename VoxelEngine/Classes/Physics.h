@@ -63,7 +63,7 @@ namespace Voxel
 		*	@param [in] B Second bounding box.
 		*	@return A Geometry::AABB of intersection between bounding box A and B.
 		*/
-		Shape::AABB getIntersectingBoundingBox(const Shape::AABB& A, const Shape::AABB& B);
+		Shape::AABB getIntersectingAABB(const Shape::AABB& A, const Shape::AABB& B);
 
 		/**
 		*	Resolves auto jump feature
