@@ -219,14 +219,7 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addChild(testAnimatedImage, 100);
 
 	testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. \nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. \nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
-	//testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting i", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
-	//testText = Voxel::UI::Text::createWithOutline("testText", "ABCD", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
-	//testText = Voxel::UI::Text::create("testText", "Vsync: false", 1, Voxel::UI::Text::ALIGN::LEFT);
-	//testText->setPosition(glm::vec2(5.0f, -281.0f));
 	testText->setPosition(glm::vec2(0.0f, -420.0f));
-	//testText->setPivot(glm::vec2(-0.5f, 0.0f));
-	//testText->setPivot(glm::vec2(0.0f, 0.0f));
-	//testText->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	debugCanvas->addChild(testText, 100);
 
 	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug/debug_button.png");
@@ -239,23 +232,39 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addChild(testDisabledButton, 100);
 
 	auto tempBtn = Voxel::UI::Button::create("tempBtn", "UISpriteSheet", "debug/debug_button.png");
-	tempBtn->setPosition(0, -10.0f);
-	testButton->addChild(tempBtn, 100);
+	tempBtn->setPosition(glm::vec2(275.0f, 265.0f));
+	debugCanvas->addChild(tempBtn, 100);
 	auto tempBtn1 = Voxel::UI::Button::create("tempBtn1", "UISpriteSheet", "debug/debug_button.png");
-	tempBtn1->setPosition(0, -10.0f);
+	tempBtn1->setPosition(0, -20.0f);
 	tempBtn->addChild(tempBtn1, 100);
 	auto tempBtn2 = Voxel::UI::Button::create("tempBtn2", "UISpriteSheet", "debug/debug_button.png");
-	tempBtn2->setPosition(0, -10.0f);
+	tempBtn2->setPosition(0, -20.0f);
 	tempBtn1->addChild(tempBtn2, 100);
+	auto tempBtn3 = Voxel::UI::Button::create("tempBtn3", "UISpriteSheet", "debug/debug_button.png");
+	tempBtn3->setPosition(0, -20.0f);
+	tempBtn2->addChild(tempBtn3, 100);
 
 	testCheckBox = Voxel::UI::CheckBox::create("testCheckBox", "UISpriteSheet", "debug/debug_checkbox.png");
-	testCheckBox->setPosition(250.0f, 265.0f);
+	testCheckBox->setPosition(250.0f, 155.0f);
 	debugCanvas->addChild(testCheckBox, 100);
 
 	testDisabledCheckBox = Voxel::UI::CheckBox::create("testDisabledCheckBox", "UISpriteSheet", "debug/debug_checkbox.png");
-	testDisabledCheckBox->setPosition(300.0f, 265.0f);
+	testDisabledCheckBox->setPosition(300.0f, 155.0f);
 	testDisabledCheckBox->disable();
 	debugCanvas->addChild(testDisabledCheckBox, 100);
+
+	auto tempCB = Voxel::UI::CheckBox::create("tempCB", "UISpriteSheet", "debug/debug_checkbox.png");
+	tempCB->setPosition(350.0f, 155.0f);
+	debugCanvas->addChild(tempCB, 100);
+	auto tempCB1 = Voxel::UI::CheckBox::create("tempCB1", "UISpriteSheet", "debug/debug_checkbox.png");
+	tempCB1->setPosition(0.0f, -15.0f);
+	tempCB->addChild(tempCB1, 100);
+	auto tempBar = Voxel::UI::Image::createFromSpriteSheet("tempCB2", "UISpriteSheet", "debug/debug_hier_bar.png");
+	tempBar->setPosition(0.0f, -15.0f);
+	tempCB1->addChild(tempBar, 100);
+	auto tempCB3 = Voxel::UI::CheckBox::create("tempCB3", "UISpriteSheet", "debug/debug_checkbox.png");
+	tempCB3->setPosition(0.0f, -15.0f);
+	tempBar->addChild(tempCB3, 100);
 
 	const float horY = 400.0f;
 	const float horX = -200.0f;
@@ -596,7 +605,7 @@ void Voxel::DebugConsole::init()
 
 	// ui hierarchy action
 	auto hierBase = Voxel::UI::Image::createFromSpriteSheet("hierBase", "UISpriteSheet", "debug/debug_hier_bar.png");
-	hierBase->setPosition(glm::vec2(400.0f, 180.0f));
+	hierBase->setPosition(glm::vec2(420.0f, 180.0f));
 	auto hierAction1 = Voxel::UI::Sequence::create({ Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.5f, 1.5f)), Voxel::UI::ScaleTo::create(1.0f, glm::vec2(1.0f, 1.0f)) }, true);
 	hierBase->runAction(hierAction1);
 	debugCanvas->addChild(hierBase, 100);

@@ -54,6 +54,9 @@ namespace Voxel
 			*	Update current index based on state
 			*/
 			void updateCurrentIndex();
+
+			// update mouse move
+			bool updateMouseMove(const glm::vec2& mousePosition);
 		public:
 			// Destructor
 			~CheckBox() = default;
