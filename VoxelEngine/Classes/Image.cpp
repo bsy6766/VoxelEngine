@@ -215,56 +215,63 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 
 	auto imageEntry = ss->getImageEntry(textureName);
 
-	auto size = glm::vec2(imageEntry->width, imageEntry->height);
+	if (imageEntry)
+	{
+		auto size = glm::vec2(imageEntry->width, imageEntry->height);
 
-	std::array<float, 12> vertices = { 0.0f };
+		std::array<float, 12> vertices = { 0.0f };
 
-	float widthHalf = size.x * 0.5f;
-	float heightHalf = size.y * 0.5f;
+		float widthHalf = size.x * 0.5f;
+		float heightHalf = size.y * 0.5f;
 
-	// Add vertices from 0 to 4
-	// 0
-	vertices.at(0) = -widthHalf;
-	vertices.at(1) = -heightHalf;
-	vertices.at(2) = 0.0f;
+		// Add vertices from 0 to 4
+		// 0
+		vertices.at(0) = -widthHalf;
+		vertices.at(1) = -heightHalf;
+		vertices.at(2) = 0.0f;
 
-	//1
-	vertices.at(3) = -widthHalf;
-	vertices.at(4) = heightHalf;
-	vertices.at(5) = 0.0f;
+		//1
+		vertices.at(3) = -widthHalf;
+		vertices.at(4) = heightHalf;
+		vertices.at(5) = 0.0f;
 
-	//2
-	vertices.at(6) = widthHalf;
-	vertices.at(7) = -heightHalf;
-	vertices.at(8) = 0.0f;
+		//2
+		vertices.at(6) = widthHalf;
+		vertices.at(7) = -heightHalf;
+		vertices.at(8) = 0.0f;
 
-	//3
-	vertices.at(9) = widthHalf;
-	vertices.at(10) = heightHalf;
-	vertices.at(11) = 0.0f;
+		//3
+		vertices.at(9) = widthHalf;
+		vertices.at(10) = heightHalf;
+		vertices.at(11) = 0.0f;
 
-	auto& uvOrigin = imageEntry->uvOrigin;
-	auto& uvEnd = imageEntry->uvEnd;
+		auto& uvOrigin = imageEntry->uvOrigin;
+		auto& uvEnd = imageEntry->uvEnd;
 
-	std::array<float, 8> uvs = { 0.0f };
+		std::array<float, 8> uvs = { 0.0f };
 
-	uvs.at(0) = uvOrigin.x;
-	uvs.at(1) = uvOrigin.y;
-	uvs.at(2) = uvOrigin.x;
-	uvs.at(3) = uvEnd.y;
-	uvs.at(4) = uvEnd.x;
-	uvs.at(5) = uvOrigin.y;
-	uvs.at(6) = uvEnd.x;
-	uvs.at(7) = uvEnd.y;
+		uvs.at(0) = uvOrigin.x;
+		uvs.at(1) = uvOrigin.y;
+		uvs.at(2) = uvOrigin.x;
+		uvs.at(3) = uvEnd.y;
+		uvs.at(4) = uvEnd.x;
+		uvs.at(5) = uvOrigin.y;
+		uvs.at(6) = uvEnd.x;
+		uvs.at(7) = uvEnd.y;
 
-	boundingBox.center = position;
-	boundingBox.size = size;
+		boundingBox.center = position;
+		boundingBox.size = size;
 
-	contentSize = size;
+		contentSize = size;
 
-	build(vertices, uvs, Quad::indices);
+		build(vertices, uvs, Quad::indices);
 
-	return true;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void Voxel::UI::Image::build(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices)

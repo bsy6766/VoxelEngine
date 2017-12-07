@@ -50,6 +50,30 @@ Texture2D * Voxel::Texture2D::create(const std::string & textureName, GLenum tex
 	}
 }
 
+Texture2D * Voxel::Texture2D::createSpriteSheetTexture(const std::string & textureName, GLenum textureTarget)
+{
+	auto& tm = TextureManager::getInstance();
+
+	if (tm.hasTexture(textureName))
+	{
+		return tm.getTexture(textureName).get();
+	}
+	else
+	{
+		auto newTexture = new Texture2D();
+		if (newTexture->initUISpriteSheetTexture(textureName, textureTarget))
+		{
+			tm.addTexture(textureName, newTexture);
+			return newTexture;
+		}
+		else
+		{
+			delete newTexture;
+			return nullptr;
+		}
+	}
+}
+
 Texture2D * Voxel::Texture2D::createFontTexture(const std::string& textureName, const int width, const int height, GLenum textureTarget)
 {
 	auto& tm = TextureManager::getInstance();
@@ -142,6 +166,31 @@ bool Voxel::Texture2D::init(const std::string & textureName, GLenum textureTarge
 	}
 }
 
+bool Voxel::Texture2D::initUISpriteSheetTexture(const std::string & textureName, GLenum textureTarget)
+{
+	unsigned char* data = loadImage(textureName, this->width, this->height, this->channel);
+
+	if (width == 0 || height == 0 || channel == 0)
+	{
+		throw std::runtime_error("Bad texture file");
+	}
+
+	this->textureTarget = textureTarget;
+
+	if (data)
+	{
+		generate2DUISpriteSheetTexture(width, height, channel, data);
+
+		stbi_image_free(data);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 bool Voxel::Texture2D::initFontTexture(const int width, const int height, GLenum textureTarget)
 {
 	//allocate blank texture.
@@ -211,8 +260,8 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 	glGenTextures(1, &textureObject);
 	glBindTexture(textureTarget, textureObject);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -240,6 +289,44 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 
 	glBindTexture(textureTarget, 0);
 }
+
+void Voxel::Texture2D::generate2DUISpriteSheetTexture(const int width, const int height, const int channel, unsigned char * data)
+{
+	glGenTextures(1, &textureObject);
+	glBindTexture(textureTarget, textureObject);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	switch (static_cast<Channel>(channel))
+	{
+	case Channel::GRAYSCALE:
+		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+		break;
+	case Channel::GRAYSCALE_ALPHA:
+		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data);
+		break;
+	case Channel::RGB:
+		// JPEG
+		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		break;
+	case Channel::RGBA:
+		// PNG
+		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		std::cout << "[Texture2D] Created sprite sheet texture size of (" << width << ", " << height << ") with RGBA channel\n";
+		break;
+	case Channel::NONE:
+	default:
+		break;
+	}
+
+	glBindTexture(textureTarget, 0);
+}
+
+
+
 
 
 unsigned int TextureManager::idCounter = 0;

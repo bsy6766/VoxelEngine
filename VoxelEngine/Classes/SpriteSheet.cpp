@@ -76,7 +76,7 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 
 	std::string textureName = meta.at("image");
 
-	texture = Texture2D::create(textureName, GL_TEXTURE_2D);
+	texture = Texture2D::createSpriteSheetTexture(textureName, GL_TEXTURE_2D);
 
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 

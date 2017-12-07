@@ -65,7 +65,7 @@ Game::Game()
 	, player(nullptr)
 	, prevMouseCursorPos(0)
 	, chunkWorkManager(nullptr)
-	, defaultCanvas(nullptr)
+	, staticCanvas(nullptr)
 	, timeLabel(nullptr)
 	, loadingCanvas(nullptr)
 	, skybox(nullptr)
@@ -241,12 +241,18 @@ void Voxel::Game::initDefaultCanvas()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize(); 
 	
-	defaultCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
+	staticCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
 
 	// Add temporary cross hair
 	auto crossHairImage = UI::Image::createFromSpriteSheet("crossHair", "UISpriteSheet", "cross_hair.png");
+	crossHairImage->setScale(glm::vec2(2.0f));
+	staticCanvas->addChild(crossHairImage, 0);
 
-	defaultCanvas->addChild(crossHairImage, 0);
+	auto temp = Voxel::UI::NinePatchImage::create("tmp", "UISpriteSheet", "game_menu_bg.png", 12, 12, 12, 12, glm::vec2(50.0f, 100.0f));
+	temp->setPosition(100, 0);
+	temp->setScale(3.0f);
+	temp->setDraggable();
+	staticCanvas->addChild(temp, 100);
 
 	// Add time label
 	timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), 2, glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT);
@@ -254,7 +260,7 @@ void Voxel::Game::initDefaultCanvas()
 	timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
 	timeLabel->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
 
-	defaultCanvas->addChild(timeLabel, 0);
+	staticCanvas->addChild(timeLabel, 0);
 
 }
 
@@ -307,7 +313,7 @@ void Voxel::Game::release()
 
 	if (cursor) delete cursor;
 
-	if (defaultCanvas) delete defaultCanvas;
+	if (staticCanvas) delete staticCanvas;
 
 	if (worldMap) delete worldMap;
 
@@ -777,13 +783,13 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		std::cout << "p = " << p + 1 << "\n";
 		*/
 
-		auto curPos = debugConsole->testImage->getPosition();
+		//auto curPos = debugConsole->testImage->getPosition();
 		//debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, glm::vec2(curPos.x + 50.0f, curPos.y)), Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, curPos) }, true));
-		debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.5f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.0f) , Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 1.0f) }, true));
+		//debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.5f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.0f) , Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 1.0f) }, true));
 	}
 	if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-		debugConsole->testImage->setPosition(glm::vec2(0, 0));
+		//debugConsole->testImage->setPosition(glm::vec2(0, 0));
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -807,7 +813,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == 0)
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(1);
-		defaultCanvas->setSize(glm::vec2(1920, 1080));
+		staticCanvas->setSize(glm::vec2(1920, 1080));
 #if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1920, 1080);
 #endif
@@ -817,7 +823,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	{
 		Application::getInstance().getGLView()->setWindowed(1280, 720);
 		Application::getInstance().getGLView()->setWindowPosition(100, 100);
-		defaultCanvas->setSize(glm::vec2(1280, 720));
+		staticCanvas->setSize(glm::vec2(1280, 720));
 #if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1280, 720);
 #endif
@@ -826,7 +832,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	else if (input->getKeyDown(GLFW_KEY_N, true) && input->getMods() == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT))
 	{
 		Application::getInstance().getGLView()->setWindowedFullScreen(0);
-		defaultCanvas->setSize(glm::vec2(1920, 1080));
+		staticCanvas->setSize(glm::vec2(1920, 1080));
 #if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateResolution(1920, 1080);
 #endif
@@ -1948,7 +1954,7 @@ void Voxel::Game::renderUI()
 
 	// --------------------------------- Render UI ------------------------------------------
 	// Render UIs
-	defaultCanvas->render();
+	staticCanvas->render();
 	// --------------------------------------------------------------------------------------
 }
 

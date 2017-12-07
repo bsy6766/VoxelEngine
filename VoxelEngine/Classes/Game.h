@@ -123,7 +123,8 @@ namespace Voxel
 		InputHandler* input;
 
 		// UIs
-		UI::Canvas* defaultCanvas;
+		UI::Canvas* staticCanvas;		// UI that is static. Usually rendered behind dynamic canvas
+		UI::Canvas* dynamicCanvas;		// Canvas with ui that is dynamic.
 		UI::Text* timeLabel;
 
 		// Loading screen

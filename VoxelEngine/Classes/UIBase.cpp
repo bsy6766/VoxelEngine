@@ -159,6 +159,11 @@ float Voxel::UI::TransformNode::getAngle() const
 	return angle;
 }
 
+void Voxel::UI::TransformNode::setScale(const float scale)
+{
+	setScale(glm::vec2(scale));
+}
+
 void Voxel::UI::TransformNode::setScale(const glm::vec2 & scale)
 {
 	this->scale = scale;

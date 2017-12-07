@@ -2,6 +2,7 @@
 #include "Canvas.h"
 #include "Image.h"
 #include "AnimatedImage.h"
+#include "NinePatchImage.h"
 #include "Text.h"
 #include "Button.h"
 #include "CheckBox.h"

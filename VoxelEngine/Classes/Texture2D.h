@@ -60,9 +60,13 @@ namespace Voxel
 
 		// generate opengl texture
 		void generate2DTexture(const int width, const int height, const int channel, unsigned char* data);
+		void generate2DUISpriteSheetTexture(const int width, const int height, const int channel, unsigned char* data);
 
 		// initailize 
 		bool init(const std::string& textureName, GLenum textureTarget);
+
+		// initialize UI sprite sheet texture
+		bool initUISpriteSheetTexture(const std::string& textureName, GLenum textureTarget);
 
 		// initialize font texture
 		bool initFontTexture(const int width, const int height, GLenum textureTarget);
@@ -72,6 +76,10 @@ namespace Voxel
 
 		// create
 		static Texture2D* create(const std::string& textureName, GLenum textureTarget);
+
+		// create UI spritesheet. FILTER with GL_NEAREST and WRAP with REPEAT
+		static Texture2D* createSpriteSheetTexture(const std::string& textureName, GLenum textureTarget);
+
 		// create font texture
 		static Texture2D* createFontTexture(const std::string& textureName, const int width, const int height, GLenum textureTarget);
 

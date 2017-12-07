@@ -227,6 +227,12 @@ namespace Voxel
 			float getAngle() const;
 
 			/**
+			*	Set scale of ui
+			*	@param scale SCale of ui for both x and y axis.
+			*/
+			void setScale(const float scale);
+
+			/**
 			*	Set scale of ui.
 			*	@param scale Scale of ui in x and y axis. Default value is 1.0. Must be positive number.
 			*/
