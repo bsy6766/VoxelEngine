@@ -51,6 +51,9 @@ namespace Voxel
 			*	@param indices Indices of image quad.
 			*/
 			virtual void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+
+			// update mouse move
+			bool updateMouseMove(const glm::vec2& mousePosition);
 		public:
 			// Destructor
 			~Button() = default;
@@ -80,7 +83,7 @@ namespace Voxel
 			/**
 			*	Check if mouse is hovering button
 			*/
-			void updateMouseMove(const glm::vec2& mousePosition) override;
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
 
 			/**
 			*	Check if mouse clicked the button

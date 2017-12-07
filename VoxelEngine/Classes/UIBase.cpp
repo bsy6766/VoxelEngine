@@ -67,6 +67,7 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
 	, needToUpdateModelMat(false)
 	, parent(nullptr)
+	, interaction(0)
 {}
 
 Voxel::UI::TransformNode::~TransformNode()
@@ -101,10 +102,10 @@ float Voxel::UI::TransformNode::getOpacity() const
 
 void Voxel::UI::TransformNode::setPosition(const float x, const float y)
 {
-	this->position.x = x;
-	this->position.y = y;
+	position.x = x;
+	position.y = y;
 
-	this->boundingBox.center = position;
+	boundingBox.center = position;
 
 	needToUpdateModelMat = true;
 }
@@ -112,6 +113,15 @@ void Voxel::UI::TransformNode::setPosition(const float x, const float y)
 void Voxel::UI::TransformNode::setPosition(const glm::vec2 & position)
 {
 	setPosition(position.x, position.y);
+}
+
+void Voxel::UI::TransformNode::addPosition(const glm::vec2 & delta)
+{
+	position += delta;
+
+	boundingBox.center = position;
+
+	needToUpdateModelMat = true;
 }
 
 glm::vec2 Voxel::UI::TransformNode::getPosition() const
@@ -217,6 +227,36 @@ void Voxel::UI::TransformNode::setZorder(const ZOrder & zOrder)
 Voxel::ZOrder Voxel::UI::TransformNode::getZOrder() const
 {
 	return zOrder;
+}
+
+void Voxel::UI::TransformNode::setInteractable()
+{
+	interaction |= InteractionFlag::INTERACTABLE;
+}
+
+void Voxel::UI::TransformNode::setNonInteractable()
+{
+	interaction &= ~(InteractionFlag::INTERACTABLE);
+}
+
+void Voxel::UI::TransformNode::setDraggable()
+{
+	interaction |= InteractionFlag::DRAGGABLE;
+}
+
+void Voxel::UI::TransformNode::setUndraggable()
+{
+	interaction &= ~(InteractionFlag::DRAGGABLE);
+}
+
+bool Voxel::UI::TransformNode::isInteractable() const
+{
+	return interaction & InteractionFlag::INTERACTABLE;
+}
+
+bool Voxel::UI::TransformNode::isDraggable() const
+{
+	return interaction & InteractionFlag::DRAGGABLE;
 }
 
 bool Voxel::UI::TransformNode::addChild(TransformNode * child)
@@ -530,17 +570,75 @@ void Voxel::UI::TransformNode::update(const float delta)
 	}
 }
 
-void Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition)
-{}
+bool Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
+{
+	if (!children.empty())
+	{
+		bool moved = false;
+		for (auto& child : children)
+		{
+			bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+			if (result)
+			{
+				moved = true;
+			}
+		}
+
+		return moved;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 bool Voxel::UI::TransformNode::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
-	return false;
+	if (!children.empty())
+	{
+		bool clicked = false;
+		for (auto& child : children)
+		{
+			bool result = (child.second)->updateMouseClick(mousePosition, button);
+			if (result)
+			{
+				clicked = true;
+			}
+		}
+
+		return clicked;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-	return false;
+	if (!children.empty())
+	{
+		bool clicked = false;
+		for (auto& child : children)
+		{
+			bool result = (child.second)->updateMouseRelease(mousePosition, button);
+			if (result)
+			{
+				clicked = true;
+			}
+		}
+
+		return clicked;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Voxel::UI::TransformNode::updateBoundary(const glm::vec2 & canvasBoundary)
+{
+	
 }
 
 void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)

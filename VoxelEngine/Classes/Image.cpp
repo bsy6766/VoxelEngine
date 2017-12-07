@@ -8,6 +8,7 @@
 
 Voxel::UI::Image::Image(const std::string& name)
 	: RenderNode(name)
+	, imageState(State::IDLE)
 {}
 
 Voxel::UI::Image::~Image()
@@ -54,6 +55,58 @@ Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & n
 	{
 		return nullptr;
 	}
+}
+
+bool Voxel::UI::Image::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
+{
+	if (isDraggable())
+	{
+		if (imageState == State::CLICKED)
+		{
+			addPosition(mouseDelta);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Voxel::UI::Image::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	if (isDraggable())
+	{
+		if (imageState == State::IDLE)
+		{
+			// Check if mouse is in check box
+			if (boundingBox.containsPoint(mousePosition))
+			{
+				imageState = State::CLICKED;
+
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Voxel::UI::Image::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (isDraggable())
+	{
+		if (imageState == State::CLICKED)
+		{
+			// Check if mouse is in check box
+			if (boundingBox.containsPoint(mousePosition))
+			{
+				imageState = State::IDLE;
+
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 bool Voxel::UI::Image::init(const std::string& textureName)

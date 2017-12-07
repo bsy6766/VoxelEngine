@@ -238,6 +238,16 @@ void Voxel::DebugConsole::init()
 	testDisabledButton->disable();
 	debugCanvas->addChild(testDisabledButton, 100);
 
+	auto tempBtn = Voxel::UI::Button::create("tempBtn", "UISpriteSheet", "debug/debug_button.png");
+	tempBtn->setPosition(0, -10.0f);
+	testButton->addChild(tempBtn, 100);
+	auto tempBtn1 = Voxel::UI::Button::create("tempBtn1", "UISpriteSheet", "debug/debug_button.png");
+	tempBtn1->setPosition(0, -10.0f);
+	tempBtn->addChild(tempBtn1, 100);
+	auto tempBtn2 = Voxel::UI::Button::create("tempBtn2", "UISpriteSheet", "debug/debug_button.png");
+	tempBtn2->setPosition(0, -10.0f);
+	tempBtn1->addChild(tempBtn2, 100);
+
 	testCheckBox = Voxel::UI::CheckBox::create("testCheckBox", "UISpriteSheet", "debug/debug_checkbox.png");
 	testCheckBox->setPosition(250.0f, 265.0f);
 	debugCanvas->addChild(testCheckBox, 100);
@@ -604,6 +614,12 @@ void Voxel::DebugConsole::init()
 	auto hierAction3 = Voxel::UI::Sequence::create({ Voxel::UI::RotateTo::create(1.0f, 15.0f), Voxel::UI::RotateTo::create(1.0f, -15.0f) }, true);
 	hierChild2->runAction(hierAction3);
 	hierChild1->addChild(hierChild2, 100);
+
+	// draggable image test
+	auto testDraggableImage = Voxel::UI::Image::createFromSpriteSheet("testDraggableImage", "UISpriteSheet", "debug/debug_draggable_image.png");
+	testDraggableImage->setPosition(glm::vec2(800.0f, 180.0f));
+	testDraggableImage->setDraggable();
+	debugCanvas->addChild(testDraggableImage, 100);
 #endif
 }
 
@@ -2045,9 +2061,9 @@ void Voxel::DebugConsole::update(const float delta)
 	debugCanvas->update(delta);
 }
 
-void Voxel::DebugConsole::updateMouseMove(const glm::vec2 & mousePosition)
+void Voxel::DebugConsole::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
-	debugCanvas->updateMouseMove(mousePosition);
+	debugCanvas->updateMouseMove(mousePosition, mouseDelta);
 }
 
 void Voxel::DebugConsole::updateMouseClick(const glm::vec2 & mousePosition, const int button)

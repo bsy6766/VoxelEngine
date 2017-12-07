@@ -88,6 +88,13 @@ namespace Voxel
 		*/
 		class TransformNode : public Node
 		{
+		public:
+			enum InteractionFlag
+			{
+				NONE = 0,				// Not interactable, not draggable
+				INTERACTABLE = 1,		// Interactable. Getss mouse input feed
+				DRAGGABLE = 2,			// Draggable. Pan around screenspace while clicked.
+			};
 		private:
 			// updates model matrix if it's true
 			bool needToUpdateModelMat;
@@ -104,6 +111,9 @@ namespace Voxel
 
 			// Children
 			Children children;
+
+			// interaction flag
+			unsigned int interaction;
 
 			// Visibility. true if visible. false if invisible and ignores opaicty
 			bool visibility;
@@ -137,7 +147,7 @@ namespace Voxel
 
 			// Bounding box
 			Voxel::Shape::Rect boundingBox;
-
+			
 			// Action sequence
 			Voxel::UI::Sequence* sequence;
 
@@ -188,6 +198,11 @@ namespace Voxel
 			*	@param position New position to set.
 			*/
 			void setPosition(const glm::vec2& position);
+
+			/**
+			*	Add position
+			*/
+			void addPosition(const glm::vec2& delta);
 
 			/**
 			*	Get position of ui
@@ -262,6 +277,36 @@ namespace Voxel
 			ZOrder getZOrder() const;
 
 			/**
+			*	Set ui interactable
+			*/
+			void setInteractable();
+
+			/**
+			*	Set ui non-interactable
+			*/
+			void setNonInteractable();
+
+			/**
+			*	Set ui draggable
+			*/
+			void setDraggable();
+			
+			/**
+			*	Set ui undraggable
+			*/
+			void setUndraggable();
+
+			/**
+			*	Check if ui is interacble
+			*/
+			bool isInteractable() const;
+
+			/**
+			*	Check if ui is draggable
+			*/
+			bool isDraggable() const;
+
+			/**
 			*	Add child to this ui node
 			*	@param child Child node to add.
 			*/
@@ -310,8 +355,9 @@ namespace Voxel
 			/**
 			*	Update mouse movement.
 			*	@param mosuePosition Current position of mouse in screen space
+			*	@param mouseDelta Amount of mouse moved.
 			*/
-			virtual void updateMouseMove(const glm::vec2& mousePosition);
+			virtual bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 
 			/**
 			*	update mouse click
@@ -326,6 +372,11 @@ namespace Voxel
 			*	@param button Released mouse button. 0 = left, 1 = right, 2 = middle
 			*/
 			virtual bool updateMouseRelease(const glm::vec2& mousePosition, const int button);
+
+			/**
+			*	Update ui boundary. Checks if ui is out of canvas screen
+			*/
+			virtual void updateBoundary(const glm::vec2& canvasBoundary);
 
 			/**
 			*	Run action.

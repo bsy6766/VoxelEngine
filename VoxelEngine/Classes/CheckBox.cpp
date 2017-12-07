@@ -35,6 +35,8 @@ Voxel::UI::CheckBox * Voxel::UI::CheckBox::create(const std::string & name, cons
 
 bool Voxel::UI::CheckBox::init(SpriteSheet * ss, const std::string & checkBoxImageFileName)
 {
+	setInteractable();
+
 	texture = ss->getTexture();
 
 	if (texture == nullptr)
@@ -242,13 +244,14 @@ void Voxel::UI::CheckBox::deselect()
 	}
 }
 
-void Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition)
+bool Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
+	if (!isInteractable()) return false;
+
 	// mouse moved
 	if (checkBoxState == State::DISABLED)
 	{
 		// check box is disabled. do nothing
-		return;
 	}
 	else
 	{
@@ -294,10 +297,14 @@ void Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition)
 
 		updateCurrentIndex();
 	}
+
+	return true;
 }
 
 bool Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
+	if (!isInteractable()) return false;
+
 	// Check if mouse is in check box
 	if (boundingBox.containsPoint(mousePosition))
 	{
@@ -334,6 +341,8 @@ bool Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, cons
 
 bool Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
+	if (!isInteractable()) return false;
+
 	// Check if mouse is in check box
 	if (boundingBox.containsPoint(mousePosition))
 	{

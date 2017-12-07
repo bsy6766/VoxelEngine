@@ -18,6 +18,8 @@ Voxel::UI::Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition
 
 	contentSize = size;
 
+	setInteractable();
+
 	updateModelMatrix();
 }
 
@@ -54,16 +56,27 @@ void Voxel::UI::Canvas::update(const float delta)
 	}
 }
 
-void Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition)
+bool Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
+	if (!isInteractable()) return false;
+
+	bool moved = false;
 	for (auto& e : children)
 	{
-		(e.second)->updateMouseMove(mousePosition);
+		bool result = (e.second)->updateMouseMove(mousePosition, mouseDelta);
+		if (result)
+		{
+			moved = true;
+		}
 	}
+
+	return moved;
 }
 
 bool Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
+	if (!isInteractable()) return false;
+
 	bool clicked = false;
 	for (auto& e : children)
 	{
@@ -79,6 +92,8 @@ bool Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const 
 
 bool Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
+	if (!isInteractable()) return false;
+
 	bool released = false;
 	for (auto& e : children)
 	{

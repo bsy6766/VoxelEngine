@@ -89,7 +89,7 @@ namespace Voxel
 			/**
 			*	Check if mouse is hovering button
 			*/
-			void updateMouseMove(const glm::vec2& mousePosition) override;
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
 
 			/**
 			*	Check if mouse clicked the button

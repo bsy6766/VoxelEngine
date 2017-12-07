@@ -17,6 +17,12 @@ namespace Voxel
 		*/
 		class Image : public RenderNode
 		{
+		public:
+			enum class State
+			{
+				IDLE = 0,
+				CLICKED,
+			};
 		private:
 			Image() = delete;
 
@@ -26,6 +32,9 @@ namespace Voxel
 			*	@param imageName Name of image
 			*/
 			Image(const std::string& name);
+
+			// Image state. 
+			State imageState;
 
 			/**
 			*	Initialize image
@@ -69,6 +78,21 @@ namespace Voxel
 			*	@return Image instance if successfully loads image and creates ui. Else, nullptr if anything fails.
 			*/
 			static Image* createFromSpriteSheet(const std::string& name, const std::string& spriteSheetName, const std::string& imageFileName);
+
+			/**
+			*	Check if mouse is hovering button
+			*/
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
+
+			/**
+			*	Check if mouse clicked the button
+			*/
+			bool updateMouseClick(const glm::vec2& mousePosition, const int button) override;
+
+			/**
+			*	Check if mouse released the button
+			*/
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
 
 			/**
 			*	Render self

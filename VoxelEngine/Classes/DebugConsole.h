@@ -106,7 +106,7 @@ namespace Voxel
 		void onFPSUpdate(int fps);
 		
 		void update(const float delta);
-		void updateMouseMove(const glm::vec2& mousePosition);
+		void updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		void updateMouseClick(const glm::vec2& mousePosition, const int button);
 		void updateMouseRelease(const glm::vec2& mousePosition, const int button);
 		void updateResolution(int width, int height);

@@ -995,7 +995,7 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	}
 
 #if V_DEBUG && V_DEBUG_CONSOLE
-	debugConsole->updateMouseMove(cursor->getPosition());
+	debugConsole->updateMouseMove(cursor->getPosition(), glm::vec2(dx, -dy));
 
 	if (debugConsole->isConsoleOpened())
 	{
