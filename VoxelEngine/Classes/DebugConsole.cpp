@@ -549,7 +549,7 @@ void Voxel::DebugConsole::init()
 	testProgRadialCcwActionBg->setPosition(radialX + (radialXGap * 5.0f), radialCcwY);
 	debugCanvas->addChild(testProgRadialCcwActionBg, 100);
 
-	auto testProgRadialCcwAction = Voxel::UI::ProgressTimer::create("testProgRadialCcwAction", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	auto testProgRadialCcwAction = Voxel::UI::ProgressTimer::create("testProgRadialCcwAction", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadialCcwAction->setPercentage(100);
 	auto testProgRadialCcwSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
 	testProgRadialCcwAction->runAction(testProgRadialCcwSeq);
@@ -575,6 +575,35 @@ void Voxel::DebugConsole::init()
 	auto scaleSEq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(2.0f, 2.0f)), Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(0.5f, 0.5f)), Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(1.0f)) }, true);
 	testScaleImage->runAction(scaleSEq);
 	debugCanvas->addChild(testScaleImage, 100);
+
+	// tint image
+	auto testTintImage = Voxel::UI::Image::createFromSpriteSheet("testTintImage", "UISpriteSheet", "debug/debug_square_0.png");
+	testTintImage->setPosition(glm::vec2(-300.0f, 400.0f));
+	testTintImage->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+	auto tintSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::TintTo::create(1.5f, glm::vec3(1.0f, 0.0f, 0.0f)), Voxel::UI::Delay::create(1.0f), Voxel::UI::TintTo::create(1.5f, glm::vec3(0.0f, 1.0f, 0.0f)) , Voxel::UI::Delay::create(1.0f), Voxel::UI::TintTo::create(1.5f, glm::vec3(0.0f, 0.0f, 1.0f)) }, true);
+	testTintImage->runAction(tintSeq);
+	debugCanvas->addChild(testTintImage, 100);
+
+	// ui hierarchy test
+	auto hierBase = Voxel::UI::Image::createFromSpriteSheet("hierBase", "UISpriteSheet", "debug/debug_hier_bar.png");
+	hierBase->setPosition(glm::vec2(400.0f, 180.0f));
+	auto hierAction1 = Voxel::UI::Sequence::create({ Voxel::UI::RotateTo::create(1.0f, 15.0f), Voxel::UI::RotateTo::create(1.0f, -15.0f) }, true);
+	hierBase->runAction(hierAction1);
+	debugCanvas->addChild(hierBase, 100);
+
+	auto hierChild1 = Voxel::UI::Image::createFromSpriteSheet("hierChild1", "UISpriteSheet", "debug/debug_hier_bar.png");
+	hierChild1->setPivot(glm::vec2(-0.5f, 0.0f));
+	hierChild1->setPosition(38.0f, 0.0f);
+	auto hierAction2 = Voxel::UI::Sequence::create({ Voxel::UI::RotateTo::create(1.0f, 15.0f), Voxel::UI::RotateTo::create(1.0f, -15.0f) }, true);
+	hierChild1->runAction(hierAction2);
+	hierBase->addChild(hierChild1, 100);
+
+	auto hierChild2 = Voxel::UI::Image::createFromSpriteSheet("hierChild2", "UISpriteSheet", "debug/debug_hier_bar.png");
+	hierChild2->setPivot(glm::vec2(-0.5f, 0.0f));
+	hierChild2->setPosition(38.0f, 0.0f);
+	auto hierAction3 = Voxel::UI::Sequence::create({ Voxel::UI::RotateTo::create(1.0f, 15.0f), Voxel::UI::RotateTo::create(1.0f, -15.0f) }, true);
+	hierChild2->runAction(hierAction3);
+	hierChild1->addChild(hierChild2, 100);
 #endif
 }
 

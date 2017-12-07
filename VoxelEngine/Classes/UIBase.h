@@ -370,6 +370,17 @@ namespace Voxel
 #endif
 		public:
 			virtual ~RenderNode();
+
+			/**
+			*	Set color. 
+			*	@color Color to apply. Color is multiplied with texture. White by default. [0.0f, 1.0f]
+			*/
+			void setColor(const glm::vec3& color);
+
+			/**
+			*	Get color
+			*/
+			glm::vec3 getColor() const;
 			
 			/**
 			*	Render self. Pure virtual. All UI need to override this to render itself during the ui graph traversal

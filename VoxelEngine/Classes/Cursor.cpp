@@ -205,6 +205,8 @@ void Voxel::UI::Cursor::render()
 			texture->bind();
 
 			program->setUniformMat4("modelMat", uiMat);
+			program->setUniformFloat("opacity", 1.0f);
+			program->setUniformVec3("color", glm::vec3(1.0f));
 
 			glBindVertexArray(vao);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

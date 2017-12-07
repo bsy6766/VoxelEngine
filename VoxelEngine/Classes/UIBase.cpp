@@ -591,6 +591,16 @@ Voxel::UI::RenderNode::~RenderNode()
 #endif
 }
 
+void Voxel::UI::RenderNode::setColor(const glm::vec3 & color)
+{
+	this->color = glm::clamp(color, 0.0f, 1.0f);
+}
+
+glm::vec3 Voxel::UI::RenderNode::getColor() const
+{
+	return color;
+}
+
 void Voxel::UI::RenderNode::render()
 {
 	if (children.empty())

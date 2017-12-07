@@ -6,3 +6,4 @@
 #include "ProgressTo.h"
 #include "Delay.h"
 #include "FadeTo.h"
+#include "TintTo.h"

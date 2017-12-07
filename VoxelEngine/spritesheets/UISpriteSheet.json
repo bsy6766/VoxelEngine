@@ -29,7 +29,7 @@
 },
 {
 	"filename": "cross_hair.png",
-	"frame": {"x":274,"y":143,"w":32,"h":32},
+	"frame": {"x":274,"y":175,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -56,7 +56,7 @@
 },
 {
 	"filename": "debug/debug_anim_frame_2.png",
-	"frame": {"x":98,"y":451,"w":60,"h":60},
+	"frame": {"x":450,"y":213,"w":60,"h":60},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":60,"h":60},
@@ -155,7 +155,7 @@
 },
 {
 	"filename": "debug/debug_checkbox_hovered.png",
-	"frame": {"x":58,"y":453,"w":38,"h":38},
+	"frame": {"x":410,"y":203,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -164,7 +164,7 @@
 },
 {
 	"filename": "debug/debug_checkbox_hoveredSelected.png",
-	"frame": {"x":73,"y":309,"w":38,"h":38},
+	"frame": {"x":58,"y":453,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -173,7 +173,7 @@
 },
 {
 	"filename": "debug/debug_checkbox_selected.png",
-	"frame": {"x":113,"y":309,"w":38,"h":38},
+	"frame": {"x":98,"y":451,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -187,6 +187,15 @@
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
 	"sourceSize": {"w":70,"h":70},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_hier_bar.png",
+	"frame": {"x":208,"y":143,"w":70,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":30},
+	"sourceSize": {"w":70,"h":30},
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
@@ -209,7 +218,7 @@
 },
 {
 	"filename": "debug/debug_progress_hor_bg.png",
-	"frame": {"x":73,"y":349,"w":100,"h":30},
+	"frame": {"x":308,"y":203,"w":100,"h":30},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":30},
@@ -281,7 +290,7 @@
 },
 {
 	"filename": "debug/debug_square_1.png",
-	"frame": {"x":208,"y":143,"w":64,"h":64},
+	"frame": {"x":208,"y":175,"w":64,"h":64},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
@@ -313,6 +322,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:98780a481ef37d2c6f48e0c1d3635396:8e233777e5a62fd4e0e5791e7fd721fb:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:b5ef3e88edbe22b4351e5742ef131036:c529790bb57d80bdacc0a3b494e52f83:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }
