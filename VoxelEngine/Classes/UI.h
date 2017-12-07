@@ -6,3 +6,5 @@
 #include "Button.h"
 #include "CheckBox.h"
 #include "ProgressTimer.h"
+#include "Sequence.h"
+#include "Action.h"

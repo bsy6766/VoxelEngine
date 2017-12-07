@@ -53,6 +53,8 @@ std::string Voxel::UI::Node::getName() const
 
 Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	: Node(name)
+	, visibility(true)
+	, opacity(1.0f)
 	, position(0.0f)
 	, angle(0.0f)
 	, scale(1.0f)
@@ -75,6 +77,26 @@ Voxel::UI::TransformNode::~TransformNode()
 	}
 
 	//std::cout << "~TransformNode()\n";
+}
+
+void Voxel::UI::TransformNode::setVisibility(const bool visibility)
+{
+	this->visibility = visibility;
+}
+
+bool Voxel::UI::TransformNode::getVisibility() const
+{
+	return visibility;
+}
+
+void Voxel::UI::TransformNode::setOpacity(const float opacity)
+{
+	this->opacity = glm::clamp(opacity, 0.0f, 1.0f);
+}
+
+float Voxel::UI::TransformNode::getOpacity() const
+{
+	return opacity;
 }
 
 void Voxel::UI::TransformNode::setPosition(const float x, const float y)
@@ -480,17 +502,22 @@ void Voxel::UI::TransformNode::update(const float delta)
 {
 	if (sequence)
 	{
+		sequence->update(delta);
+
+		if (sequence->isFinished())
+		{
+			delete sequence;
+		}
+
 		needToUpdateModelMat = true;
 	}
 
 
-	/*
 	if (needToUpdateModelMat)
 	{
-	updateModelMatrix();
-	needToUpdateModelMat = false;
+		updateModelMatrix();
+		needToUpdateModelMat = false;
 	}
-	*/
 
 	for (auto& e : children)
 	{
@@ -514,12 +541,13 @@ void Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePositio
 
 void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
 {
-	if (sequence)
+	if (this->sequence)
 	{
 		delete sequence;
 	}
 
 	this->sequence = sequence;
+	this->sequence->setTarget(this);
 }
 
 //====================================================================================================================================
@@ -528,8 +556,6 @@ void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
 
 Voxel::UI::RenderNode::RenderNode(const std::string & name)
 	: TransformNode(name)
-	, visibility(true)
-	, opacity(1.0f)
 	, program(nullptr)
 	, vao(0)
 	, texture(nullptr)
@@ -555,26 +581,6 @@ Voxel::UI::RenderNode::~RenderNode()
 		glDeleteVertexArrays(1, &bbVao);
 	}
 #endif
-}
-
-void Voxel::UI::RenderNode::setVisibility(const bool visibility)
-{
-	this->visibility = visibility;
-}
-
-bool Voxel::UI::RenderNode::getVisibility() const
-{
-	return visibility;
-}
-
-void Voxel::UI::RenderNode::setOpacity(const float opacity)
-{
-	this->opacity = glm::clamp(opacity, 0.0f, 1.0f);
-}
-
-float Voxel::UI::RenderNode::getOpacity() const
-{
-	return opacity;
 }
 
 void Voxel::UI::RenderNode::render()

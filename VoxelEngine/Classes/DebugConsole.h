@@ -19,20 +19,10 @@
 
 // voxel
 #include "Cube.h"
+#include "UI.h"
 
 namespace Voxel
 {
-	namespace UI
-	{
-		class Canvas;
-		class Text;
-		class Image;
-		class AnimatedImage;
-		class Button;
-		class CheckBox;
-		class ProgressTimer;
-	}
-
 	class Player;
 	class Game;
 	class ChunkMap;

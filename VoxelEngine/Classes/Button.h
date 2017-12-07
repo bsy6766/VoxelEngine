@@ -3,6 +3,9 @@
 
 #include "UIBase.h"
 
+// cpp
+#include <array>
+
 namespace Voxel
 {
 	namespace UI

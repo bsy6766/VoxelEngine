@@ -770,15 +770,19 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		}
 		*/
 
+		/*
 		int p = debugConsole->testProgRadial0ccw->getPercentage();
 		debugConsole->testProgRadial0ccw->setPercentage(p + 1);
 		std::cout << "p = " << p + 1 << "\n";
+		*/
+
+		auto curPos = debugConsole->testImage->getPosition();
+		//debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, glm::vec2(curPos.x + 50.0f, curPos.y)), Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, curPos) }, true));
+		debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.5f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.0f) , Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 1.0f) }, true));
 	}
 	if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-		int p = debugConsole->testProgRadial0ccw->getPercentage();
-		debugConsole->testProgRadial0ccw->setPercentage(p - 1);
-		std::cout << "p = " << p - 1 << "\n";
+		debugConsole->testImage->setPosition(glm::vec2(0, 0));
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))

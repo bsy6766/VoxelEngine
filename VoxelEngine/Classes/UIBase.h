@@ -12,15 +12,13 @@
 
 // cpp
 #include <string>
-#include <unordered_map>
 #include <map>
 #include <memory>
-#include <array>
 
 // Voxel
 #include "ZOrder.h"
 #include "Shape.h"
-#include "UIAction.h"
+#include "Sequence.h"
 
 namespace Voxel
 {
@@ -85,6 +83,8 @@ namespace Voxel
 		*	@brief A node that can be transformed. Derived from Node class.
 		*
 		*	TransfromNode has own model mat and can have parent and children.
+		*	Even though TransformNode itself doesn't renders on screen, 
+		*	but derived classes can, that is why it has pure virtual render function, opacity and visibility.
 		*/
 		class TransformNode : public Node
 		{
@@ -104,6 +104,12 @@ namespace Voxel
 
 			// Children
 			Children children;
+
+			// Visibility. true if visible. false if invisible and ignores opaicty
+			bool visibility;
+
+			// Opacity
+			float opacity;
 
 			// Z order of ui
 			ZOrder zOrder;
@@ -146,6 +152,29 @@ namespace Voxel
 		public:
 			// Destructor
 			virtual ~TransformNode();
+
+			/**
+			*	Set visibility
+			*	Setting visibility false will also affect all the children
+			*	@parma visibility true to render this ui. false to not render.
+			*/
+			void setVisibility(const bool visibility);
+
+			/**
+			*1	Get visibility
+			*/
+			bool getVisibility() const;
+
+			/**
+			*	Set opacity
+			*	@param opacity Value of new opacity. Must be 0.0 ~ 1.0
+			*/
+			void setOpacity(const float opacity);
+
+			/**
+			*	Get opacity.
+			*/
+			float getOpacity() const;
 
 			/**
 			*	Set position
@@ -313,7 +342,7 @@ namespace Voxel
 
 		/**
 		*	@class RenderNode
-		*	@brief A node that can be rendered. Derived from TransfomNode
+		*	@brief A node that can be rendered. Derived from TransfomNode. Used by different UI classes.
 		*/
 		class RenderNode : public TransformNode
 		{
@@ -321,12 +350,6 @@ namespace Voxel
 			// Constructor
 			RenderNode() = delete;
 			RenderNode(const std::string& name);
-			
-			// Visibility. true if visible. false if invisible and ignores opaicty
-			bool visibility;
-
-			// Opacity
-			float opacity;
 			
 			// Program ptr
 			Program* program;
@@ -348,29 +371,6 @@ namespace Voxel
 		public:
 			virtual ~RenderNode();
 			
-			/**
-			*	Set visibility
-			*	Setting visibility false will also affect all the children
-			*	@parma visibility true to render this ui. false to not render.
-			*/
-			void setVisibility(const bool visibility);
-
-			/**
-			*1	Get visibility
-			*/
-			bool getVisibility() const;
-
-			/**
-			*	Set opacity
-			*	@param opacity Value of new opacity. Must be 0.0 ~ 1.0
-			*/
-			void setOpacity(const float opacity);
-
-			/**
-			*	Get opacity. 
-			*/
-			float getOpacity() const;
-
 			/**
 			*	Render self. Pure virtual. All UI need to override this to render itself during the ui graph traversal
 			*/

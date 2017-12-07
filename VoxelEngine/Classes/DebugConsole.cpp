@@ -10,7 +10,6 @@
 // voxel
 #include "Utility.h"
 #include "Random.h"
-#include "UI.h"
 #include "Application.h"
 #include "ChunkUtil.h"
 #include "InputHandler.h"
