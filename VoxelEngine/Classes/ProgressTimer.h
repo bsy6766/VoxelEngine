@@ -31,8 +31,8 @@ namespace Voxel
 			ProgressTimer() = delete;
 			ProgressTimer(const std::string& name);
 
-			// percenatge. 0 ~ 100
-			int percentage;
+			// percenatge. 
+			float percentage;
 
 			// current index
 			int currentIndex;
@@ -61,6 +61,7 @@ namespace Voxel
 			*	Background, percentage and type affects index.
 			*/
 			void updateCurrentIndex();
+
 		public:
 			// Desturctor
 			~ProgressTimer() = default;
@@ -72,14 +73,14 @@ namespace Voxel
 
 			/**
 			*	Set percentage.
-			*	@param precentage. Must be 0 ~ 100
+			*	@param precentage Percentage to set. Value less than 0 or greater than 100.0f gets clampped to [0, 100].
 			*/
-			void setPercentage(const int percentage);
+			void setPercentage(const float percentage);
 
 			/**
 			*	Get percentage
 			*/
-			int getPercentage() const;
+			float getPercentage() const;
 
 			/**
 			*	Render self

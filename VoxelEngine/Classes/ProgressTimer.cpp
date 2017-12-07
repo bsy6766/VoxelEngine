@@ -9,7 +9,7 @@
 
 Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
 	: RenderNode(name)
-	, percentage(100)
+	, percentage(100.0f)
 	, currentIndex(0)
 {}
 
@@ -828,43 +828,43 @@ void Voxel::UI::ProgressTimer::updateCurrentIndex()
 	{
 		int addition = 0;
 
-		if (percentage >= 88)
+		if (percentage >= 88.0f)
 		{
 			addition = 4;
 		}
-		else if (percentage < 88 && percentage >= 63)
+		else if (percentage < 88.0f && percentage >= 63.0f)
 		{
 			addition = 3;
 		}
-		else if (percentage < 63 && percentage >= 38)
+		else if (percentage < 63.0f && percentage >= 38.0f)
 		{
 			addition = 2;
 		}
-		else if (percentage < 38 && percentage >= 13)
+		else if (percentage < 38.0f && percentage >= 13.0f)
 		{
 			addition = 1;
 		}
 
-		std::cout << "p = " << percentage << ", a = " << addition;
+		//std::cout << "p = " << percentage << ", a = " << addition;
 
-		currentIndex = (3 * (percentage + addition));
+		currentIndex = (3 * (static_cast<int>(percentage) + addition));
 
-		std::cout << ", c = " << currentIndex << "\n";
+		//std::cout << ", c = " << currentIndex << "\n";
 	}
 	else
 	{
-		currentIndex = (6 * percentage);
+		currentIndex = (6 * static_cast<int>(percentage));
 	}
 }
 
-void Voxel::UI::ProgressTimer::setPercentage(const int percentage)
+void Voxel::UI::ProgressTimer::setPercentage(const float percentage)
 {
-	this->percentage = glm::clamp(percentage, 0, 100);
+	this->percentage = glm::clamp(percentage, 0.0f, 100.0f);
 
 	updateCurrentIndex();
 }
 
-int Voxel::UI::ProgressTimer::getPercentage() const
+float Voxel::UI::ProgressTimer::getPercentage() const
 {
 	return percentage;
 }

@@ -546,8 +546,11 @@ void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
 		delete sequence;
 	}
 
-	this->sequence = sequence;
-	this->sequence->setTarget(this);
+	if (sequence)
+	{
+		this->sequence = sequence;
+		this->sequence->setTarget(this);
+	}
 }
 
 //====================================================================================================================================

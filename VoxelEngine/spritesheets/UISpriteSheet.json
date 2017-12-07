@@ -29,7 +29,7 @@
 },
 {
 	"filename": "cross_hair.png",
-	"frame": {"x":33,"y":279,"w":32,"h":32},
+	"frame": {"x":274,"y":143,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -37,7 +37,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_anim_frame_0.png",
+	"filename": "debug/debug_anim_frame_0.png",
 	"frame": {"x":460,"y":1,"w":50,"h":50},
 	"rotated": false,
 	"trimmed": false,
@@ -46,8 +46,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_anim_frame_1.png",
-	"frame": {"x":242,"y":167,"w":55,"h":55},
+	"filename": "debug/debug_anim_frame_1.png",
+	"frame": {"x":1,"y":453,"w":55,"h":55},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
@@ -55,8 +55,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_anim_frame_2.png",
-	"frame": {"x":140,"y":143,"w":60,"h":60},
+	"filename": "debug/debug_anim_frame_2.png",
+	"frame": {"x":98,"y":451,"w":60,"h":60},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":60,"h":60},
@@ -64,8 +64,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_anim_frame_3.png",
-	"frame": {"x":1,"y":315,"w":66,"h":66},
+	"filename": "debug/debug_anim_frame_3.png",
+	"frame": {"x":74,"y":143,"w":66,"h":66},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":66,"h":66},
@@ -73,7 +73,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_anim_frame_4.png",
+	"filename": "debug/debug_anim_frame_4.png",
 	"frame": {"x":1,"y":137,"w":71,"h":71},
 	"rotated": false,
 	"trimmed": false,
@@ -82,7 +82,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_button_clicked.png",
+	"filename": "debug/debug_button_clicked.png",
 	"frame": {"x":97,"y":43,"w":100,"h":48},
 	"rotated": false,
 	"trimmed": false,
@@ -91,7 +91,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_button_disabled.png",
+	"filename": "debug/debug_button_disabled.png",
 	"frame": {"x":199,"y":43,"w":100,"h":48},
 	"rotated": false,
 	"trimmed": false,
@@ -100,7 +100,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_button_hovered.png",
+	"filename": "debug/debug_button_hovered.png",
 	"frame": {"x":97,"y":93,"w":100,"h":48},
 	"rotated": false,
 	"trimmed": false,
@@ -109,7 +109,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_button_idle.png",
+	"filename": "debug/debug_button_idle.png",
 	"frame": {"x":199,"y":93,"w":100,"h":48},
 	"rotated": false,
 	"trimmed": false,
@@ -118,7 +118,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_clicked.png",
+	"filename": "debug/debug_checkbox_clicked.png",
 	"frame": {"x":460,"y":53,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
@@ -127,7 +127,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_clickedSelected.png",
+	"filename": "debug/debug_checkbox_clickedSelected.png",
 	"frame": {"x":460,"y":93,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
@@ -136,7 +136,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_deselected.png",
+	"filename": "debug/debug_checkbox_deselected.png",
 	"frame": {"x":460,"y":133,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
@@ -145,7 +145,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_disabled.png",
+	"filename": "debug/debug_checkbox_disabled.png",
 	"frame": {"x":460,"y":173,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
@@ -154,8 +154,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_hovered.png",
-	"frame": {"x":202,"y":167,"w":38,"h":38},
+	"filename": "debug/debug_checkbox_hovered.png",
+	"frame": {"x":58,"y":453,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -163,8 +163,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_hoveredSelected.png",
-	"frame": {"x":1,"y":383,"w":38,"h":38},
+	"filename": "debug/debug_checkbox_hoveredSelected.png",
+	"frame": {"x":73,"y":309,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -172,8 +172,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_checkbox_selected.png",
-	"frame": {"x":1,"y":423,"w":38,"h":38},
+	"filename": "debug/debug_checkbox_selected.png",
+	"frame": {"x":113,"y":309,"w":38,"h":38},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
@@ -181,43 +181,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_image.png",
-	"frame": {"x":308,"y":1,"w":150,"h":200},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":150,"h":200},
-	"sourceSize": {"w":150,"h":200},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_hor.png",
-	"frame": {"x":202,"y":143,"w":92,"h":22},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":92,"h":22},
-	"sourceSize": {"w":92,"h":22},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_hor_bg.png",
-	"frame": {"x":67,"y":279,"w":100,"h":30},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":30},
-	"sourceSize": {"w":100,"h":30},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_radial.png",
-	"frame": {"x":165,"y":213,"w":62,"h":62},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":62,"h":62},
-	"sourceSize": {"w":62,"h":62},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_radial_bg.png",
+	"filename": "debug/debug_fade_image.png",
 	"frame": {"x":25,"y":43,"w":70,"h":70},
 	"rotated": false,
 	"trimmed": false,
@@ -226,7 +190,52 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_progress_ver.png",
+	"filename": "debug/debug_image.png",
+	"frame": {"x":308,"y":1,"w":150,"h":200},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":150,"h":200},
+	"sourceSize": {"w":150,"h":200},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_progress_hor.png",
+	"frame": {"x":33,"y":285,"w":92,"h":22},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":92,"h":22},
+	"sourceSize": {"w":92,"h":22},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_progress_hor_bg.png",
+	"frame": {"x":73,"y":349,"w":100,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":30},
+	"sourceSize": {"w":100,"h":30},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_progress_radial.png",
+	"frame": {"x":67,"y":387,"w":62,"h":62},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":62,"h":62},
+	"sourceSize": {"w":62,"h":62},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_progress_radial_bg.png",
+	"frame": {"x":1,"y":315,"w":70,"h":70},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
+	"sourceSize": {"w":70,"h":70},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_progress_ver.png",
 	"frame": {"x":1,"y":43,"w":22,"h":92},
 	"rotated": false,
 	"trimmed": false,
@@ -235,7 +244,7 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_progress_ver_bg.png",
+	"filename": "debug/debug_progress_ver_bg.png",
 	"frame": {"x":1,"y":213,"w":30,"h":100},
 	"rotated": false,
 	"trimmed": false,
@@ -244,8 +253,26 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_square_0.png",
-	"frame": {"x":33,"y":213,"w":64,"h":64},
+	"filename": "debug/debug_rotate_image.png",
+	"frame": {"x":33,"y":213,"w":70,"h":70},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
+	"sourceSize": {"w":70,"h":70},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_scale_image.png",
+	"frame": {"x":105,"y":213,"w":70,"h":70},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
+	"sourceSize": {"w":70,"h":70},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "debug/debug_square_0.png",
+	"frame": {"x":142,"y":143,"w":64,"h":64},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
@@ -253,8 +280,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_square_1.png",
-	"frame": {"x":74,"y":143,"w":64,"h":64},
+	"filename": "debug/debug_square_1.png",
+	"frame": {"x":208,"y":143,"w":64,"h":64},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
@@ -262,8 +289,8 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
-	"filename": "debug_square_2.png",
-	"frame": {"x":99,"y":213,"w":64,"h":64},
+	"filename": "debug/debug_square_2.png",
+	"frame": {"x":1,"y":387,"w":64,"h":64},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
@@ -286,6 +313,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:ff9ce44ace63d294d4e902187cca9689:8a65702e0929a086a0d9ec4ae1534beb:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:98780a481ef37d2c6f48e0c1d3635396:8e233777e5a62fd4e0e5791e7fd721fb:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }

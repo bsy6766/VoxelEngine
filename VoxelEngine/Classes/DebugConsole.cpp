@@ -22,6 +22,7 @@
 #include "Setting.h"
 #include "Calendar.h"
 #include "TreeBuilder.h"
+#include "UIActions.h"
 
 using namespace Voxel;
 
@@ -209,12 +210,12 @@ void Voxel::DebugConsole::init()
 	debugCanvas->print(0);
 
 #if V_DEBUG && V_DEBUG_UI_TEST
-	testImage = Voxel::UI::Image::createFromSpriteSheet("testImage", "UISpriteSheet", "debug_image.png");
-	testImage->setPosition(glm::vec2(200.0f, 100.0f));
+	testImage = Voxel::UI::Image::createFromSpriteSheet("testImage", "UISpriteSheet", "debug/debug_image.png");
+	testImage->setPosition(glm::vec2(-145.0f, 140.0f));
 	debugCanvas->addChild(testImage, 100);
 
-	testAnimatedImage = Voxel::UI::AnimatedImage::create("testAnimImage", "UISpriteSheet", "debug_anim_frame.png", 5, 1.0f, true);
-	testAnimatedImage->setPosition(glm::vec2(-200.0f, 0.0f));
+	testAnimatedImage = Voxel::UI::AnimatedImage::create("testAnimImage", "UISpriteSheet", "debug/debug_anim_frame.png", 5, 1.0f, true);
+	testAnimatedImage->setPosition(glm::vec2(-300.0f, 320.0f));
 	debugCanvas->addChild(testAnimatedImage, 100);
 
 	testText = Voxel::UI::Text::createWithOutline("testText", "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. \nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. \nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", 2, glm::vec3(0.0f), Voxel::UI::Text::ALIGN::CENTER);
@@ -228,199 +229,334 @@ void Voxel::DebugConsole::init()
 	//testText->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	debugCanvas->addChild(testText, 100);
 
-	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug_button.png");
-	testButton->setPosition(glm::vec2(100.0f, 260.0f));
+	testButton = Voxel::UI::Button::create("testButton", "UISpriteSheet", "debug/debug_button.png");
+	testButton->setPosition(glm::vec2(55.0f, 265.0f));
 	debugCanvas->addChild(testButton, 100);
 
-	testDisabledButton = Voxel::UI::Button::create("testDisabledButton", "UISpriteSheet", "debug_button.png");
-	testDisabledButton->setPosition(glm::vec2(100.0f, 200.0f));
+	testDisabledButton = Voxel::UI::Button::create("testDisabledButton", "UISpriteSheet", "debug/debug_button.png");
+	testDisabledButton->setPosition(glm::vec2(165.0f, 265.0f));
 	testDisabledButton->disable();
 	debugCanvas->addChild(testDisabledButton, 100);
 
-	testCheckBox = Voxel::UI::CheckBox::create("testCheckBox", "UISpriteSheet", "debug_checkbox.png");
-	testCheckBox->setPosition(50.0f, 10.0f);
+	testCheckBox = Voxel::UI::CheckBox::create("testCheckBox", "UISpriteSheet", "debug/debug_checkbox.png");
+	testCheckBox->setPosition(250.0f, 265.0f);
 	debugCanvas->addChild(testCheckBox, 100);
-	
-	testDisabledCheckBox = Voxel::UI::CheckBox::create("testDisabledCheckBox", "UISpriteSheet", "debug_checkbox.png");
-	testDisabledCheckBox->setPosition(100.0f, 10.0f);
+
+	testDisabledCheckBox = Voxel::UI::CheckBox::create("testDisabledCheckBox", "UISpriteSheet", "debug/debug_checkbox.png");
+	testDisabledCheckBox->setPosition(300.0f, 265.0f);
 	testDisabledCheckBox->disable();
 	debugCanvas->addChild(testDisabledCheckBox, 100);
 
-	auto testProgHorBar0Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar0", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar0Bg->setPosition(glm::vec2(-100.0f, 400.0f));
+	const float horY = 400.0f;
+	const float horX = -200.0f;
+	const float horGapY = 40.0f;
+
+	// horizontal progress timer 0 percent
+
+	auto testProgHorBar0Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar0Bg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar0Bg->setPosition(glm::vec2(horX, horY));
 	debugCanvas->addChild(testProgHorBar0Bg, 100);
 
-	testProgHorBar0 = Voxel::UI::ProgressTimer::create("testProgHorBar0", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar0 = Voxel::UI::ProgressTimer::create("testProgHorBar0", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgHorBar0->setPercentage(0);
 	testProgHorBar0Bg->addChild(testProgHorBar0, 100);
 
-	auto testProgHorBar50Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar50", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar50Bg->setPosition(glm::vec2(-100.0f, 360.0f));
+	// horizontal progress timer 50 percent
+
+	auto testProgHorBar50Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar50Bg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar50Bg->setPosition(glm::vec2(horX, horY - (horGapY)));
 	debugCanvas->addChild(testProgHorBar50Bg, 100);
 
-	testProgHorBar50 = Voxel::UI::ProgressTimer::create("testProgHorBar50", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar50 = Voxel::UI::ProgressTimer::create("testProgHorBar50", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgHorBar50->setPercentage(50);
 	testProgHorBar50Bg->addChild(testProgHorBar50, 100);
 
-	auto testProgHorBar100Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar100", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar100Bg->setPosition(glm::vec2(-100.0f, 320.0f));
+	// horizontal progress timer 100 percent
+
+	auto testProgHorBar100Bg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar100Bg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar100Bg->setPosition(glm::vec2(horX, horY - (horGapY * 2.0f)));
 	debugCanvas->addChild(testProgHorBar100Bg, 100);
 
-	testProgHorBar100 = Voxel::UI::ProgressTimer::create("testProgHorBar100", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorBar100 = Voxel::UI::ProgressTimer::create("testProgHorBar100", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgHorBar100->setPercentage(100);
 	testProgHorBar100Bg->addChild(testProgHorBar100, 100);
 
-	auto testProgHorBar0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar0ccw", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar0ccwBg->setPosition(glm::vec2(10.0f, 400.0f));
+	// horizontal progress timer action test
+
+	auto testProgHorBarActionBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBarActionBg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBarActionBg->setPosition(glm::vec2(horX, horY - (horGapY * 3.0f)));
+	debugCanvas->addChild(testProgHorBarActionBg, 100);
+
+	auto testProgHorActionBar = Voxel::UI::ProgressTimer::create("testProgHorActionBar", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgHorActionBar->setPercentage(100);
+	auto testProgHorSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100) }, true);
+	testProgHorActionBar->runAction(testProgHorSeq);
+	testProgHorBarActionBg->addChild(testProgHorActionBar, 100);
+
+	const float horXFlip = horX + 110.0f;
+
+	// horizontal ccw progress timer 0 percent
+
+	auto testProgHorBar0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar0ccwBg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar0ccwBg->setPosition(glm::vec2(horXFlip, 400.0f));
 	debugCanvas->addChild(testProgHorBar0ccwBg, 100);
 
-	testProgHorBar0ccw = Voxel::UI::ProgressTimer::create("testProgHorBar0ccw", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar0ccw = Voxel::UI::ProgressTimer::create("testProgHorBar0ccw", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgHorBar0ccw->setPercentage(0);
 	testProgHorBar0ccwBg->addChild(testProgHorBar0ccw, 100);
 
-	auto testProgHorBar50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar50ccw", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar50ccwBg->setPosition(glm::vec2(10.0f, 360.0f));
+	// horizontal ccw progress timer 50 percent
+
+	auto testProgHorBar50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar50ccwBg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar50ccwBg->setPosition(glm::vec2(horXFlip, 360.0f));
 	debugCanvas->addChild(testProgHorBar50ccwBg, 100);
 
-	testProgHorBar50ccw = Voxel::UI::ProgressTimer::create("testProgHorBar50ccw", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar50ccw = Voxel::UI::ProgressTimer::create("testProgHorBar50ccw", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgHorBar50ccw->setPercentage(50);
 	testProgHorBar50ccwBg->addChild(testProgHorBar50ccw, 100);
 
-	auto testProgHorBar100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar100ccw", "UISpriteSheet", "debug_progress_hor_bg.png");
-	testProgHorBar100ccwBg->setPosition(glm::vec2(10.0f, 320.0f));
+	// horizontal ccw progress timer 100 percent
+
+	auto testProgHorBar100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorBar100ccwBg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorBar100ccwBg->setPosition(glm::vec2(horXFlip, 320.0f));
 	debugCanvas->addChild(testProgHorBar100ccwBg, 100);
 
-	testProgHorBar100ccw = Voxel::UI::ProgressTimer::create("testProgHorBar100ccw", "UISpriteSheet", "debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorBar100ccw = Voxel::UI::ProgressTimer::create("testProgHorBar100ccw", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgHorBar100ccw->setPercentage(100);
 	testProgHorBar100ccwBg->addChild(testProgHorBar100ccw, 100);
 
-	auto testProgVerBar0Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar0", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar0Bg->setPosition(glm::vec2(120.0f, 360.0f));
+	// horizontal ccw progress timer action test
+
+	auto testProgHorCcwActionBarBg = Voxel::UI::Image::createFromSpriteSheet("testProgHorCcwActionBarBg", "UISpriteSheet", "debug/debug_progress_hor_bg.png");
+	testProgHorCcwActionBarBg->setPosition(glm::vec2(horXFlip, horY - (horGapY * 3.0f)));
+	debugCanvas->addChild(testProgHorCcwActionBarBg, 100);
+
+	auto testProgHorCcwActionBar = Voxel::UI::ProgressTimer::create("testProgHorCcwActionBar", "UISpriteSheet", "debug/debug_progress_hor.png", Voxel::UI::ProgressTimer::Type::HORIZONTAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgHorCcwActionBar->setPercentage(100);
+	auto testProgHorCcwSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
+	testProgHorCcwActionBar->runAction(testProgHorCcwSeq);
+	testProgHorCcwActionBarBg->addChild(testProgHorCcwActionBar, 100);
+
+	const float verX = horXFlip + 110.0f;
+	const float verXGap = 40.0f;
+	const float verY = 360.0f;
+
+	// vertical progress timer 0 percent
+
+	auto testProgVerBar0Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar0Bg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar0Bg->setPosition(glm::vec2(verX, verY));
 	debugCanvas->addChild(testProgVerBar0Bg, 100);
 
-	testProgVerBar0 = Voxel::UI::ProgressTimer::create("testProgVerBar0", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar0 = Voxel::UI::ProgressTimer::create("testProgVerBar0", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgVerBar0->setPercentage(0);
 	testProgVerBar0Bg->addChild(testProgVerBar0, 100);
 
-	auto testProgVerBar50Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar50", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar50Bg->setPosition(glm::vec2(160.0f, 360.0f));
+	// vertical progress timer 50 percent
+
+	auto testProgVerBar50Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar50Bg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar50Bg->setPosition(glm::vec2(verX + verXGap, verY));
 	debugCanvas->addChild(testProgVerBar50Bg, 100);
 
-	testProgVerBar50 = Voxel::UI::ProgressTimer::create("testProgVerBar50", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar50 = Voxel::UI::ProgressTimer::create("testProgVerBar50", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgVerBar50->setPercentage(50);
 	testProgVerBar50Bg->addChild(testProgVerBar50, 100);
 
-	auto testProgVerBar100Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar100", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar100Bg->setPosition(glm::vec2(200.0f, 360.0f));
+	// vertical progress timer 100 percent
+
+	auto testProgVerBar100Bg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar100Bg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar100Bg->setPosition(glm::vec2(verX + (verXGap * 2.0f), verY));
 	debugCanvas->addChild(testProgVerBar100Bg, 100);
 
-	testProgVerBar100 = Voxel::UI::ProgressTimer::create("testProgVerBar100", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerBar100 = Voxel::UI::ProgressTimer::create("testProgVerBar100", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgVerBar100->setPercentage(100);
 	testProgVerBar100Bg->addChild(testProgVerBar100, 100);
 
-	auto testProgVerBar0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar0ccw", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar0ccwBg->setPosition(glm::vec2(240.0f, 360.0f));
+	// vertical progress timer action test
+
+	auto testProgVerActionBarBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerActionBarBg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerActionBarBg->setPosition(glm::vec2(verX + (verXGap * 3.0f), verY));
+	debugCanvas->addChild(testProgVerActionBarBg, 100);
+
+	auto testProgVerActionBar = Voxel::UI::ProgressTimer::create("testProgVerActionBar", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgVerActionBar->setPercentage(100);
+	auto testProgVerSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
+	testProgVerActionBar->runAction(testProgVerSeq);
+	testProgVerActionBarBg->addChild(testProgVerActionBar, 100);
+
+	// vertical ccw progress timer 0 percent
+
+	auto testProgVerBar0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar0ccwBg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar0ccwBg->setPosition(glm::vec2(verX + (verXGap * 4.0f), verY));
 	debugCanvas->addChild(testProgVerBar0ccwBg, 100);
 
-	testProgVerBar0ccw = Voxel::UI::ProgressTimer::create("testProgVerBar0ccw", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar0ccw = Voxel::UI::ProgressTimer::create("testProgVerBar0ccw", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgVerBar0ccw->setPercentage(0);
 	testProgVerBar0ccwBg->addChild(testProgVerBar0ccw, 100);
 
-	auto testProgVerBar50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar50ccw", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar50ccwBg->setPosition(glm::vec2(280.0f, 360.0f));
+	// vertical ccw progress timer 50 percent
+
+	auto testProgVerBar50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar50ccwBg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar50ccwBg->setPosition(glm::vec2(verX + (verXGap * 5.0f), verY));
 	debugCanvas->addChild(testProgVerBar50ccwBg, 100);
 
-	testProgVerBar50ccw = Voxel::UI::ProgressTimer::create("testProgVerBar50ccw", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar50ccw = Voxel::UI::ProgressTimer::create("testProgVerBar50ccw", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgVerBar50ccw->setPercentage(50);
 	testProgVerBar50ccwBg->addChild(testProgVerBar50ccw, 100);
 
-	auto testProgVerBar100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar100ccw", "UISpriteSheet", "debug_progress_ver_bg.png");
-	testProgVerBar100ccwBg->setPosition(glm::vec2(320.0f, 360.0f));
+	// vertical ccw progress timer 100 percent
+
+	auto testProgVerBar100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerBar100ccwBg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerBar100ccwBg->setPosition(glm::vec2(verX + (verXGap * 6.0f), verY));
 	debugCanvas->addChild(testProgVerBar100ccwBg, 100);
 
-	testProgVerBar100ccw = Voxel::UI::ProgressTimer::create("testProgVerBar100ccw", "UISpriteSheet", "debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerBar100ccw = Voxel::UI::ProgressTimer::create("testProgVerBar100ccw", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgVerBar100ccw->setPercentage(100);
 	testProgVerBar100ccwBg->addChild(testProgVerBar100ccw, 100);
 
-	auto testProgRadial0cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial0cw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial0cwBg->setPosition(400.0f, 400.0f);
+	// vertical ccw progress timer action test
+
+	auto testProgVerCcwActionBarBg = Voxel::UI::Image::createFromSpriteSheet("testProgVerCcwActionBarBg", "UISpriteSheet", "debug/debug_progress_ver_bg.png");
+	testProgVerCcwActionBarBg->setPosition(glm::vec2(verX + (verXGap * 7.0f), verY));
+	debugCanvas->addChild(testProgVerCcwActionBarBg, 100);
+
+	auto testProgVerCcwActionBar = Voxel::UI::ProgressTimer::create("testProgVerActionBar", "UISpriteSheet", "debug/debug_progress_ver.png", Voxel::UI::ProgressTimer::Type::VERTICAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgVerCcwActionBar->setPercentage(100);
+	auto testProgVerCcwSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
+	testProgVerCcwActionBar->runAction(testProgVerCcwSeq);
+	testProgVerCcwActionBarBg->addChild(testProgVerCcwActionBar, 100);
+
+	const float radialY = 400.0f;
+	const float radialX = 400.0f;
+	const float radialXGap = 80.0f;
+
+	// radial progress timer 0 percent
+
+	auto testProgRadial0cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial0cwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial0cwBg->setPosition(radialX, radialY);
 	debugCanvas->addChild(testProgRadial0cwBg, 100);
 
-	testProgRadial0 = Voxel::UI::ProgressTimer::create("testProgRadial0", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial0 = Voxel::UI::ProgressTimer::create("testProgRadial0", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgRadial0->setPercentage(0);
 	testProgRadial0cwBg->addChild(testProgRadial0, 100);
 
-	auto testProgRadial25cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial25cw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial25cwBg->setPosition(480.0f, 400.0f);
+	// radial progress timer 25 percent
+
+	auto testProgRadial25cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial25cwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial25cwBg->setPosition(radialX + radialXGap, radialY);
 	debugCanvas->addChild(testProgRadial25cwBg, 100);
 
-	testProgRadial25 = Voxel::UI::ProgressTimer::create("testProgRadial25", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial25 = Voxel::UI::ProgressTimer::create("testProgRadial25", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgRadial25->setPercentage(25);
 	testProgRadial25cwBg->addChild(testProgRadial25, 100);
 
-	auto testProgRadial50cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial50cw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial50cwBg->setPosition(560.0f, 400.0f);
+	// radial progress timer 50 percent
+
+	auto testProgRadial50cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial50cwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial50cwBg->setPosition(radialX + (radialXGap * 2.0f), radialY);
 	debugCanvas->addChild(testProgRadial50cwBg, 100);
 
-	testProgRadial50 = Voxel::UI::ProgressTimer::create("testProgRadial50", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial50 = Voxel::UI::ProgressTimer::create("testProgRadial50", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgRadial50->setPercentage(50);
 	testProgRadial50cwBg->addChild(testProgRadial50, 100);
 
-	auto testProgRadial75cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial75cw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial75cwBg->setPosition(640.0f, 400.0f);
+	// radial progress timer 75 percent
+
+	auto testProgRadial75cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial75cwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial75cwBg->setPosition(radialX + (radialXGap * 3.0f), radialY);
 	debugCanvas->addChild(testProgRadial75cwBg, 100);
 
-	testProgRadial75 = Voxel::UI::ProgressTimer::create("testProgRadial75", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial75 = Voxel::UI::ProgressTimer::create("testProgRadial75", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgRadial75->setPercentage(75);
 	testProgRadial75cwBg->addChild(testProgRadial75, 100);
 
-	auto testProgRadial100cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial100cw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial100cwBg->setPosition(720.0f, 400.0f);
+	// radial progress timer 100 percent
+
+	auto testProgRadial100cwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial100cwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial100cwBg->setPosition(radialX + (radialXGap * 4.0f), radialY);
 	debugCanvas->addChild(testProgRadial100cwBg, 100);
 
-	testProgRadial100 = Voxel::UI::ProgressTimer::create("testProgRadial100", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadial100 = Voxel::UI::ProgressTimer::create("testProgRadial100", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
 	testProgRadial100->setPercentage(100);
 	testProgRadial100cwBg->addChild(testProgRadial100, 100);
 
-	auto testProgRadial0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial0ccw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial0ccwBg->setPosition(400.0f, 320.0f);
+	// radial progress timer action test
+
+	auto testProgRadialActionBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadialActionBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadialActionBg->setPosition(radialX + (radialXGap * 5.0f), radialY);
+	debugCanvas->addChild(testProgRadialActionBg, 100);
+
+	auto testProgRadialAction = Voxel::UI::ProgressTimer::create("testProgRadialAction", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadialAction->setPercentage(100);
+	auto testProgRadialSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
+	testProgRadialAction->runAction(testProgRadialSeq);
+	testProgRadialActionBg->addChild(testProgRadialAction, 100);
+
+	const float radialCcwY = radialY - 80.0f;
+
+	// radial ccw progress timer 0 percent
+
+	auto testProgRadial0ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial0ccwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial0ccwBg->setPosition(radialX, radialCcwY);
 	debugCanvas->addChild(testProgRadial0ccwBg, 100);
 
-	testProgRadial0ccw = Voxel::UI::ProgressTimer::create("testProgRadial0ccw", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	testProgRadial0ccw = Voxel::UI::ProgressTimer::create("testProgRadial0ccw", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadial0ccw->setPercentage(0);
 	testProgRadial0ccwBg->addChild(testProgRadial0ccw, 100);
 
-	auto testProgRadial25ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial25ccw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial25ccwBg->setPosition(480.0f, 320.0f);
+	// radial ccw progress timer 25 percent
+
+	auto testProgRadial25ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial25ccwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial25ccwBg->setPosition(radialX + radialXGap, radialCcwY);
 	debugCanvas->addChild(testProgRadial25ccwBg, 100);
 
-	auto testProgRadial25ccw = Voxel::UI::ProgressTimer::create("testProgRadial25ccw", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	auto testProgRadial25ccw = Voxel::UI::ProgressTimer::create("testProgRadial25ccw", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadial25ccw->setPercentage(25);
 	testProgRadial25ccwBg->addChild(testProgRadial25ccw, 100);
 
-	auto testProgRadial50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial50ccw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial50ccwBg->setPosition(560.0f, 320.0f);
+	// radial ccw progress timer 50 percent
+
+	auto testProgRadial50ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial50ccwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial50ccwBg->setPosition(radialX + (radialXGap * 2.0f), radialCcwY);
 	debugCanvas->addChild(testProgRadial50ccwBg, 100);
 
-	auto testProgRadial50ccw = Voxel::UI::ProgressTimer::create("testProgRadial50ccw", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	auto testProgRadial50ccw = Voxel::UI::ProgressTimer::create("testProgRadial50ccw", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadial50ccw->setPercentage(50);
 	testProgRadial50ccwBg->addChild(testProgRadial50ccw, 100);
 
-	auto testProgRadial75ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial75ccw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial75ccwBg->setPosition(640.0f, 320.0f);
+	// radial ccw progress timer 75 percent
+
+	auto testProgRadial75ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial75ccwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial75ccwBg->setPosition(radialX + (radialXGap * 3.0f), radialCcwY);
 	debugCanvas->addChild(testProgRadial75ccwBg, 100);
 
-	auto testProgRadial75ccw = Voxel::UI::ProgressTimer::create("testProgRadial75ccw", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	auto testProgRadial75ccw = Voxel::UI::ProgressTimer::create("testProgRadial75ccw", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadial75ccw->setPercentage(75);
 	testProgRadial75ccwBg->addChild(testProgRadial75ccw, 100);
 
-	auto testProgRadial100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial100ccw", "UISpriteSheet", "debug_progress_radial_bg.png");
-	testProgRadial100ccwBg->setPosition(720.0f, 320.0f);
+	// radial ccw progress timer 100 percent
+
+	auto testProgRadial100ccwBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadial100ccwBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadial100ccwBg->setPosition(radialX + (radialXGap * 4.0f), radialCcwY);
 	debugCanvas->addChild(testProgRadial100ccwBg, 100);
 
-	auto testProgRadial100ccw = Voxel::UI::ProgressTimer::create("testProgRadial100ccw", "UISpriteSheet", "debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
+	auto testProgRadial100ccw = Voxel::UI::ProgressTimer::create("testProgRadial100ccw", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::COUNTER_CLOCK_WISE);
 	testProgRadial100ccw->setPercentage(100);
 	testProgRadial100ccwBg->addChild(testProgRadial100ccw, 100);
+
+	// radial ccw progress timer action test
+
+	auto testProgRadialCcwActionBg = Voxel::UI::Image::createFromSpriteSheet("testProgRadialCcwActionBg", "UISpriteSheet", "debug/debug_progress_radial_bg.png");
+	testProgRadialCcwActionBg->setPosition(radialX + (radialXGap * 5.0f), radialCcwY);
+	debugCanvas->addChild(testProgRadialCcwActionBg, 100);
+
+	auto testProgRadialCcwAction = Voxel::UI::ProgressTimer::create("testProgRadialCcwAction", "UISpriteSheet", "debug/debug_progress_radial.png", Voxel::UI::ProgressTimer::Type::RADIAL, Voxel::UI::ProgressTimer::Direction::CLOCK_WISE);
+	testProgRadialCcwAction->setPercentage(100);
+	auto testProgRadialCcwSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::ProgressTo::create(1.0f, 100.0f) }, true);
+	testProgRadialCcwAction->runAction(testProgRadialCcwSeq);
+	testProgRadialCcwActionBg->addChild(testProgRadialCcwAction, 100);
+
+	// rotate image
+
 #endif
 }
 
