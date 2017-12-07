@@ -122,20 +122,23 @@ glm::vec2 Voxel::UI::TransformNode::getPosition() const
 void Voxel::UI::TransformNode::setAngle(const float angle)
 {
 	float newAngle = angle;
-	if (newAngle < 0.0f)
+
+	/*
+	if (newAngle > 360.0f)
 	{
-		while (newAngle < 0.0f)
-		{
-			newAngle += 360.0f;
-		}
-	}
-	else if (newAngle >= 360.0f)
-	{
-		while (newAngle < 360.0f)
+		while (newAngle > 360.0f)
 		{
 			newAngle -= 360.0f;
 		}
 	}
+	else if (newAngle <= -360.0f)
+	{
+		while (newAngle <= -360.0f)
+		{
+			newAngle += 360.0f;
+		}
+	}
+	*/
 
 	this->angle = newAngle;
 
@@ -464,7 +467,9 @@ glm::vec2 Voxel::UI::TransformNode::getContentSize()
 
 glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
 {
-	auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
+	//auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
+	auto mat = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::radians(angle), glm::vec3(0.0f, 0.0f, -1.0f));
+
 	if (pivot.x != 0.0f || pivot.y != 0.0f)
 	{
 		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));

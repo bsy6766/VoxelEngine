@@ -556,7 +556,25 @@ void Voxel::DebugConsole::init()
 	testProgRadialCcwActionBg->addChild(testProgRadialCcwAction, 100);
 
 	// rotate image
+	auto testRotateImage = Voxel::UI::Image::createFromSpriteSheet("testRotateImage", "UISpriteSheet", "debug/debug_rotate_image.png");
+	testRotateImage->setPosition(55.0f, 180.0f);
+	auto rotateSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::RotateTo::create(1.5f, 360.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::RotateTo::create(1.5f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::RotateTo::create(1.5f, -360.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::RotateTo::create(1.5f, 0.0f) }, true);
+	testRotateImage->runAction(rotateSeq);
+	debugCanvas->addChild(testRotateImage, 100);
 
+	// fade image
+	auto testFadeImage = Voxel::UI::Image::createFromSpriteSheet("testFadeImage", "UISpriteSheet", "debug/debug_fade_image.png");
+	testFadeImage->setPosition(165.0f, 180.0f);
+	auto fadeSeq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.5f, 0.5f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.5f, 0.0f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.5f, 1.0f)}, true);
+	testFadeImage->runAction(fadeSeq);
+	debugCanvas->addChild(testFadeImage, 100);
+
+	// scale image
+	auto testScaleImage = Voxel::UI::Image::createFromSpriteSheet("testFadeImage", "UISpriteSheet", "debug/debug_scale_image.png");
+	testScaleImage->setPosition(110.0f, 60.0f);
+	auto scaleSEq = Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(2.0f, 2.0f)), Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(0.5f, 0.5f)), Voxel::UI::Delay::create(1.0f), Voxel::UI::ScaleTo::create(1.5f, glm::vec2(1.0f)) }, true);
+	testScaleImage->runAction(scaleSEq);
+	debugCanvas->addChild(testScaleImage, 100);
 #endif
 }
 

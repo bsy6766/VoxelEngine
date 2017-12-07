@@ -10,6 +10,7 @@
 Voxel::UI::ProgressTo::ProgressTo()
 	: Action()
 	, percentage(0)
+	, target(nullptr)
 {}
 
 bool Voxel::UI::ProgressTo::init(const float duration, const float percentage)

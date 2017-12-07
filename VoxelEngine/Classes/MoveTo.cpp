@@ -47,20 +47,4 @@ void Voxel::UI::MoveTo::setTarget(TransformNode * target)
 
 void Voxel::UI::MoveTo::update(const float delta)
 {
-	elapsedTime += delta;
-	//std::cout << "MoveTo: " << elapsedTime << " / " << duration << "\n";
-
-	if (elapsedTime >= duration)
-	{
-		//std::cout << "MoveTo done. dest: (" << destination.x << ", " << destination.y << ")\n";
-		target->setPosition(destination);
-	}
-	else
-	{
-		auto curPos = target->getPosition();
-
-		target->setPosition(curPos + ((destination - curPos) * (delta / (duration - (elapsedTime - delta)))));
-
-		//std::cout << "MoveTo: (" << (curPos + movedDist).x << ", " << (curPos + movedDist).y << ")\n";
-	}
 }

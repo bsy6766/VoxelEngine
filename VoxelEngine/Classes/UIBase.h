@@ -117,7 +117,7 @@ namespace Voxel
 			// Position
 			glm::vec2 position;
 
-			// Rotation
+			// Rotation in z axis. range [-360.0f, 360.0f]
 			float angle;
 
 			// Scale
