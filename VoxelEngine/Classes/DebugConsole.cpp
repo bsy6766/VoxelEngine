@@ -584,7 +584,7 @@ void Voxel::DebugConsole::init()
 	testTintImage->runAction(tintSeq);
 	debugCanvas->addChild(testTintImage, 100);
 
-	// ui hierarchy test
+	// ui hierarchy action
 	auto hierBase = Voxel::UI::Image::createFromSpriteSheet("hierBase", "UISpriteSheet", "debug/debug_hier_bar.png");
 	hierBase->setPosition(glm::vec2(400.0f, 180.0f));
 	auto hierAction1 = Voxel::UI::Sequence::create({ Voxel::UI::RotateTo::create(1.0f, 15.0f), Voxel::UI::RotateTo::create(1.0f, -15.0f) }, true);
