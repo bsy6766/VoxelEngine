@@ -85,12 +85,12 @@ namespace Voxel
 			/**
 			*	Check if mouse clicked the button
 			*/
-			void updateMouseClick(const glm::vec2& mousePosition, const int button) override;
+			bool updateMouseClick(const glm::vec2& mousePosition, const int button) override;
 
 			/**
 			*	Check if mouse released the button
 			*/
-			void updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
 
 			/**
 			*	Render self

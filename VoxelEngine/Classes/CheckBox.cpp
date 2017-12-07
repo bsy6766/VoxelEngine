@@ -296,18 +296,18 @@ void Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition)
 	}
 }
 
-void Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
-	// mouse clicked
-	if (checkBoxState == State::DISABLED)
+	// Check if mouse is in check box
+	if (boundingBox.containsPoint(mousePosition))
 	{
-		// check box is disabled. do nothing
-		return;
-	}
-	else
-	{
-		// Check if mouse is in check box
-		if (boundingBox.containsPoint(mousePosition))
+		// mouse clicked
+		if (checkBoxState == State::DISABLED)
+		{
+			// check box is disabled. do nothing
+			return true;
+		}
+		else
 		{
 			// Clicked the check box
 			if (checkBoxState == State::HOVERED)
@@ -320,24 +320,30 @@ void Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, cons
 				// was hovering selected box. click
 				checkBoxState = State::CLICKED_SELECTED;
 			}
+
+			return true;
 		}
 
 		updateCurrentIndex();
 	}
-}
-
-void Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
-{
-	// mouse release
-	if (checkBoxState == State::DISABLED)
-	{
-		// check box is disabled. do nothing
-		return;
-	}
 	else
 	{
-		// Check if mouse is in check box
-		if (boundingBox.containsPoint(mousePosition))
+		return false;
+	}
+}
+
+bool Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	// Check if mouse is in check box
+	if (boundingBox.containsPoint(mousePosition))
+	{
+		// mouse release
+		if (checkBoxState == State::DISABLED)
+		{
+			// check box is disabled. do nothing
+			return true;
+		}
+		else
 		{
 			// Released in the check box
 			if (checkBoxState == State::CLICKED)
@@ -350,9 +356,15 @@ void Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, co
 				// was clikcing selected. deslect
 				checkBoxState = State::DESELECTED;
 			}
-		}
 
-		updateCurrentIndex();
+			updateCurrentIndex();
+
+			return true;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 

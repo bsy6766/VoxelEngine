@@ -531,17 +531,16 @@ void Voxel::UI::TransformNode::update(const float delta)
 }
 
 void Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition)
-{
+{}
 
+bool Voxel::UI::TransformNode::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+{
+	return false;
 }
 
-void Voxel::UI::TransformNode::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-
-}
-
-void Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
-{
+	return false;
 }
 
 void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)

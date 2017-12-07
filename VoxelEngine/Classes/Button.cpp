@@ -192,41 +192,51 @@ void Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
 	}
 }
 
-void Voxel::UI::Button::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::Button::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
 	if (button == GLFW_MOUSE_BUTTON_1)
 	{
-		if (buttonState == State::DISABLED)
+		if (boundingBox.containsPoint(mousePosition))
 		{
-			return;
-		}
-		else
-		{
-			if (buttonState == State::HOVERED)
+			if (buttonState == State::DISABLED)
 			{
-				if (boundingBox.containsPoint(mousePosition))
+				return true;
+			}
+			else
+			{
+				if (buttonState == State::HOVERED)
 				{
 					buttonState = State::CLICKED;
 					currentIndex = 12;
 				}
-			}
-		}
-	}
-}
 
-void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
-{
-	if (button == GLFW_MOUSE_BUTTON_1)
-	{
-		if (buttonState == State::DISABLED)
-		{
-			return;
+				return true;
+			}
 		}
 		else
 		{
-			if (buttonState == State::CLICKED)
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_1)
+	{
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			if (buttonState == State::DISABLED)
 			{
-				if (boundingBox.containsPoint(mousePosition))
+				return true;
+			}
+			else
+			{
+				if (buttonState == State::CLICKED)
 				{
 					buttonState = State::IDLE;
 					currentIndex = 0;
@@ -234,8 +244,18 @@ void Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, cons
 					// button clicked!
 					std::cout << "Button " << name << " clicked\n";
 				}
+
+				return true;
 			}
 		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 

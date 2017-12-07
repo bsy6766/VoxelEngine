@@ -318,14 +318,14 @@ namespace Voxel
 			*	@param mousePosition Current position of mouse in screen space
 			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
 			*/
-			virtual void updateMouseClick(const glm::vec2& mousePosition, const int button);
+			virtual bool updateMouseClick(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	update mouse release
 			*	@param mousePosition Current position of mouse in screen space
 			*	@param button Released mouse button. 0 = left, 1 = right, 2 = middle
 			*/
-			virtual void updateMouseRelease(const glm::vec2& mousePosition, const int button);
+			virtual bool updateMouseRelease(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	Run action.

@@ -84,15 +84,17 @@ namespace Voxel
 			*	update mouse click
 			*	@param mousePosition Current position of mouse in screen space
 			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
+			*	@return true if mouse clicked on ui. Else, false.
 			*/
-			void updateMouseClick(const glm::vec2& mousePosition, const int button);
+			bool updateMouseClick(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	update mouse released
 			*	@param mousePosition Current position of mouse in screen space
 			*	@param button Release mouse button. 0 = left, 1 = right, 2 = middle
+			*	@return true if mouse released on ui. Else, false.
 			*/
-			void updateMouseRelease(const glm::vec2& mousePosition, const int button);
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	Render all UI

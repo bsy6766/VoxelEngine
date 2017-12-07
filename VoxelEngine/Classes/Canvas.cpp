@@ -62,20 +62,34 @@ void Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition)
 	}
 }
 
-void Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const int button)
 {
+	bool clicked = false;
 	for (auto& e : children)
 	{
-		(e.second)->updateMouseClick(mousePosition, button);
+		bool result = (e.second)->updateMouseClick(mousePosition, button);
+		if (result)
+		{
+			clicked = true;
+		}
 	}
+
+	return clicked;
 }
 
-void Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
+	bool released = false;
 	for (auto& e : children)
 	{
-		(e.second)->updateMouseRelease(mousePosition, button);
+		bool result = (e.second)->updateMouseRelease(mousePosition, button);
+		if (result)
+		{
+			released = true;
+		}
 	}
+
+	return released;
 }
 
 void Voxel::UI::Canvas::render()
