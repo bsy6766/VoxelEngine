@@ -250,6 +250,47 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../sprites/ui/game_menu_controls_button_clicked.png</key>
+            <key type="filename">../sprites/ui/game_menu_controls_button_disabled.png</key>
+            <key type="filename">../sprites/ui/game_menu_controls_button_hovered.png</key>
+            <key type="filename">../sprites/ui/game_menu_controls_button_idle.png</key>
+            <key type="filename">../sprites/ui/game_menu_exit_game_button_clicked.png</key>
+            <key type="filename">../sprites/ui/game_menu_exit_game_button_disabled.png</key>
+            <key type="filename">../sprites/ui/game_menu_exit_game_button_hovered.png</key>
+            <key type="filename">../sprites/ui/game_menu_exit_game_button_idle.png</key>
+            <key type="filename">../sprites/ui/game_menu_option_button_clicked.png</key>
+            <key type="filename">../sprites/ui/game_menu_option_button_disabled.png</key>
+            <key type="filename">../sprites/ui/game_menu_option_button_hovered.png</key>
+            <key type="filename">../sprites/ui/game_menu_option_button_idle.png</key>
+            <key type="filename">../sprites/ui/game_menu_return_to_game_button_clicked.png</key>
+            <key type="filename">../sprites/ui/game_menu_return_to_game_button_disabled.png</key>
+            <key type="filename">../sprites/ui/game_menu_return_to_game_button_hovered.png</key>
+            <key type="filename">../sprites/ui/game_menu_return_to_game_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>18,3,35,6</rect>
+                <key>scale9Paddings</key>
+                <rect>18,3,35,6</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../sprites/ui/game_menu_label.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>44,4,87,9</rect>
+                <key>scale9Paddings</key>
+                <rect>44,4,87,9</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../sprites/ui/loading_label.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
