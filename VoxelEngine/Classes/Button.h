@@ -1,10 +1,13 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "UIBase.h"
-
 // cpp
 #include <array>
+#include <functional>
+
+// voxel
+#include "UIBase.h"
+#include "SpriteSheet.h"
 
 namespace Voxel
 {
@@ -38,6 +41,9 @@ namespace Voxel
 
 			// gl
 			unsigned int currentIndex;
+
+			// On button clicked callback
+			std::function<void()> onButtonClicked;
 
 			/**
 			*	Initialize button
@@ -79,6 +85,12 @@ namespace Voxel
 			*	Disable button
 			*/
 			void disable();
+
+			/**
+			*	Set callback function
+			*	@param func A std::function of function
+			*/
+			void setOnButtonClickCallbackFunc(const std::function<void()>& func);
 
 			/**
 			*	Check if mouse is hovering button

@@ -184,6 +184,11 @@ void Voxel::UI::Cursor::setVisibility(const bool visibility)
 	visible = visibility;
 }
 
+bool Voxel::UI::Cursor::isVisible() const
+{
+	return visible;
+}
+
 glm::vec2 Voxel::UI::Cursor::getPosition() const
 {
 	return position;

@@ -1,6 +1,8 @@
 #ifndef PROGRESS_TIMER_H
 #define PROGRESS_TIMER_H
 
+// voxel
+#include "SpriteSheet.h"
 #include "UIBase.h"
 
 namespace Voxel

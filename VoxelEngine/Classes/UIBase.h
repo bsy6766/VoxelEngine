@@ -26,7 +26,6 @@ namespace Voxel
 	class Texture2D;
 	class Font;
 	class Program;
-	class SpriteSheet;
 
 	namespace UI
 	{
@@ -34,11 +33,6 @@ namespace Voxel
 		class Node;
 		class TransformNode;
 		class RenderNode;
-		class Image;
-		class AnimatedImage;
-		class Text;
-		class Button;
-		class ProgressTimer;
 
 		typedef std::map<ZOrder, std::unique_ptr<TransformNode>, ZOrderComp> Children;
 
@@ -152,7 +146,7 @@ namespace Voxel
 			Voxel::UI::Sequence* sequence;
 
 			// update bounding box center
-			void updateBoundingBoxCenter();
+			void updateBoundingBox();
 
 			// Get contensize
 			glm::vec2 getContentSize() const;

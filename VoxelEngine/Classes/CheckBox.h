@@ -1,7 +1,9 @@
 #ifndef CHECK_BOX_H
 #define CHECK_BOX_H
 
+// voxel
 #include "UIBase.h"
+#include "SpriteSheet.h"
 
 namespace Voxel
 {

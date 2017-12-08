@@ -1,7 +1,9 @@
 #ifndef	ANIMATED_IMAGE_H
 #define ANIMATED_IMAGE_H
 
+// voxel
 #include "UIBase.h"
+#include "SpriteSheet.h"
 
 namespace Voxel
 {

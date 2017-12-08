@@ -1,7 +1,6 @@
 #include "Image.h"
 
 // voxel
-#include "SpriteSheet.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
@@ -45,6 +44,32 @@ Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & n
 		auto newImage = new Image(name);
 
 		if (newImage->initFromSpriteSheet(ss, imageFileName))
+		{
+			return newImage;
+		}
+		else
+		{
+			delete newImage;
+			return nullptr;
+		}
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & name, const std::string & spriteSheetName, const std::string & imageFileName, const glm::vec2 & size)
+{
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	auto ss = ssm.getSpriteSheet(spriteSheetName);
+
+	if (ss)
+	{
+		auto newImage = new Image(name);
+
+		if (newImage->initFromSpriteSheet(ss, imageFileName, size))
 		{
 			return newImage;
 		}
@@ -217,54 +242,7 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 
 	if (imageEntry)
 	{
-		auto size = glm::vec2(imageEntry->width, imageEntry->height);
-
-		std::array<float, 12> vertices = { 0.0f };
-
-		float widthHalf = size.x * 0.5f;
-		float heightHalf = size.y * 0.5f;
-
-		// Add vertices from 0 to 4
-		// 0
-		vertices.at(0) = -widthHalf;
-		vertices.at(1) = -heightHalf;
-		vertices.at(2) = 0.0f;
-
-		//1
-		vertices.at(3) = -widthHalf;
-		vertices.at(4) = heightHalf;
-		vertices.at(5) = 0.0f;
-
-		//2
-		vertices.at(6) = widthHalf;
-		vertices.at(7) = -heightHalf;
-		vertices.at(8) = 0.0f;
-
-		//3
-		vertices.at(9) = widthHalf;
-		vertices.at(10) = heightHalf;
-		vertices.at(11) = 0.0f;
-
-		auto& uvOrigin = imageEntry->uvOrigin;
-		auto& uvEnd = imageEntry->uvEnd;
-
-		std::array<float, 8> uvs = { 0.0f };
-
-		uvs.at(0) = uvOrigin.x;
-		uvs.at(1) = uvOrigin.y;
-		uvs.at(2) = uvOrigin.x;
-		uvs.at(3) = uvEnd.y;
-		uvs.at(4) = uvEnd.x;
-		uvs.at(5) = uvOrigin.y;
-		uvs.at(6) = uvEnd.x;
-		uvs.at(7) = uvEnd.y;
-
-		boundingBox.center = position;
-		boundingBox.size = size;
-
-		contentSize = size;
-
-		build(vertices, uvs, Quad::indices);
+		initImage(imageEntry, glm::vec2(imageEntry->width, imageEntry->height));
 
 		return true;
 	}
@@ -272,6 +250,81 @@ bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet* ss, const std::string& t
 	{
 		return false;
 	}
+}
+
+bool Voxel::UI::Image::initFromSpriteSheet(SpriteSheet * ss, const std::string & textureName, const glm::vec2 & size)
+{
+	texture = ss->getTexture();
+
+	if (texture == nullptr)
+	{
+		return false;
+	}
+
+	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+	auto imageEntry = ss->getImageEntry(textureName);
+
+	if (imageEntry)
+	{
+		initImage(imageEntry, size);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Voxel::UI::Image::initImage(const ImageEntry * ie, const glm::vec2 & size)
+{
+	std::array<float, 12> vertices = { 0.0f };
+
+	float widthHalf = size.x * 0.5f;
+	float heightHalf = size.y * 0.5f;
+
+	// Add vertices from 0 to 4
+	// 0
+	vertices.at(0) = -widthHalf;
+	vertices.at(1) = -heightHalf;
+	vertices.at(2) = 0.0f;
+
+	//1
+	vertices.at(3) = -widthHalf;
+	vertices.at(4) = heightHalf;
+	vertices.at(5) = 0.0f;
+
+	//2
+	vertices.at(6) = widthHalf;
+	vertices.at(7) = -heightHalf;
+	vertices.at(8) = 0.0f;
+
+	//3
+	vertices.at(9) = widthHalf;
+	vertices.at(10) = heightHalf;
+	vertices.at(11) = 0.0f;
+
+	auto& uvOrigin = ie->uvOrigin;
+	auto& uvEnd = ie->uvEnd;
+
+	std::array<float, 8> uvs = { 0.0f };
+
+	uvs.at(0) = uvOrigin.x;
+	uvs.at(1) = uvOrigin.y;
+	uvs.at(2) = uvOrigin.x;
+	uvs.at(3) = uvEnd.y;
+	uvs.at(4) = uvEnd.x;
+	uvs.at(5) = uvOrigin.y;
+	uvs.at(6) = uvEnd.x;
+	uvs.at(7) = uvEnd.y;
+
+	boundingBox.center = position;
+	boundingBox.size = size;
+
+	contentSize = size;
+
+	build(vertices, uvs, Quad::indices);
 }
 
 void Voxel::UI::Image::build(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices)
@@ -331,7 +384,7 @@ void Voxel::UI::Image::renderSelf()
 	if (program == nullptr) return;
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
 

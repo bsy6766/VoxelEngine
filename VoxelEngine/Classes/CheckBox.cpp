@@ -1,12 +1,14 @@
 #include "CheckBox.h"
 
 // voxel
-#include "SpriteSheet.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
 #include "InputHandler.h"
+
+// glm
+#include <glm/gtx/transform.hpp>
 
 Voxel::UI::CheckBox::CheckBox(const std::string& name)
 	: RenderNode(name)
@@ -440,8 +442,9 @@ void Voxel::UI::CheckBox::renderSelf()
 	if (program == nullptr) return;
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
+	program->setUniformVec3("color", color);
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();

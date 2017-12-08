@@ -91,6 +91,7 @@ void Voxel::Application::initMainCamera()
 void Voxel::Application::initGame()
 {
 	game = new Game();
+	game->init();
 	game->createNew("New World");
 }
 

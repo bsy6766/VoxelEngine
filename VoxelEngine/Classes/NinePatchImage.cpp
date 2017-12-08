@@ -1,10 +1,12 @@
 #include "NinePatchImage.h"
 
 // voxel
-#include "SpriteSheet.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
+
+// glm
+#include <glm/gtx/transform.hpp>
 
 Voxel::UI::NinePatchImage::NinePatchImage(const std::string& name)
 	: RenderNode(name)
@@ -261,7 +263,7 @@ void Voxel::UI::NinePatchImage::renderSelf()
 	if (program == nullptr) return;
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
 

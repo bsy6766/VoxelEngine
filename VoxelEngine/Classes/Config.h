@@ -45,6 +45,15 @@
 #endif
 
 /**
+*	@def V_DEBUG_DRAW_UI_BOUNDING_BOX
+*	If enabled, draws UI bounding box
+*/
+#ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
+#endif
+
+
+/**
 *	@def V_DEBUG_CHUNK_BORDER_LINE
 *	If enabled, can render chunk border debug line in ChunkMap.
 */
@@ -107,15 +116,6 @@
 #ifndef V_DEBUG_COUNT_DRAW_CALLS
 #define V_DEBUG_COUNT_DRAW_CALLS 1
 #endif
-
-/**
-*	@def V_DEBUG_DRAW_UI_BOUNDING_BOX
-*	If enabled, draws UI bounding box
-*/
-#ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
-#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
-#endif
-
 #endif
 // Sub debug defiens ends
 

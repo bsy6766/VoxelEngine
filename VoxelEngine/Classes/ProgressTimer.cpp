@@ -1,11 +1,13 @@
 #include "ProgressTimer.h"
 
 // voxel
-#include "SpriteSheet.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
+
+// glm
+#include <glm/gtx/transform.hpp>
 
 Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
 	: RenderNode(name)
@@ -876,7 +878,7 @@ void Voxel::UI::ProgressTimer::renderSelf()
 	if (program == nullptr) return;
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
 

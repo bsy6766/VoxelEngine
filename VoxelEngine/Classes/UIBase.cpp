@@ -210,7 +210,7 @@ glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 	return coordinateOrigin;
 }
 
-void Voxel::UI::TransformNode::updateBoundingBoxCenter()
+void Voxel::UI::TransformNode::updateBoundingBox()
 {
 	auto screenPos = glm::vec2(getParentMatrix() * glm::vec4(position, 1.0f, 1.0f));
 	auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
@@ -382,6 +382,7 @@ bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel:
 
 		// New child added. Update model matrix based on parent's model matrix
 		child->updateModelMatrix();
+		child->updateBoundingBox();
 
 		return true;
 	}
@@ -581,7 +582,7 @@ glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
 		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
 	}
 
-	return glm::scale(mat, glm::vec3(scale, 1));
+	return mat;
 }
 
 void Voxel::UI::TransformNode::updateModelMatrix()
@@ -627,7 +628,7 @@ void Voxel::UI::TransformNode::update(const float delta)
 	if (needToUpdateModelMat)
 	{
 		updateModelMatrix();
-		updateBoundingBoxCenter();
+		updateBoundingBox();
 		needToUpdateModelMat = false;
 	}
 

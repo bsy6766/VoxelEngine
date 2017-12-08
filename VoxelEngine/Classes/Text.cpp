@@ -12,6 +12,9 @@
 #include "Program.h"
 #include "Texture2D.h"
 
+// glm
+#include <glm/gtx/transform.hpp>
+
 Voxel::UI::Text::Text(const std::string& name)
 	: RenderNode(name)
 	, text("")
@@ -744,7 +747,7 @@ void Voxel::UI::Text::renderSelf()
 	texture->bind();
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
 

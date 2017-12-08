@@ -1,17 +1,20 @@
 #include "Button.h"
 
 // voxel
-#include "SpriteSheet.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
 #include "InputHandler.h"
 
+// glm
+#include <glm/gtx/transform.hpp>
+
 Voxel::UI::Button::Button(const std::string & name)
 	: RenderNode(name)
 	, buttonState(State::IDLE)
 	, currentIndex(0)
+	, onButtonClicked(nullptr)
 {}
 
 Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std::string & spriteSheetName, const std::string & buttonImageFileName)
@@ -201,6 +204,11 @@ bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
 	return false;
 }
 
+void Voxel::UI::Button::setOnButtonClickCallbackFunc(const std::function<void()>& func)
+{
+	onButtonClicked = func;
+}
+
 bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
 	if (children.empty())
@@ -298,7 +306,10 @@ bool Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, cons
 					released = true;
 
 					// button clicked!
-					std::cout << "Button " << name << " clicked\n";
+					if (onButtonClicked)
+					{
+						onButtonClicked();
+					}
 				}
 				// else, disabled or not hovering
 			}
@@ -321,7 +332,7 @@ void Voxel::UI::Button::renderSelf()
 	if (program == nullptr) return;
 
 	program->use(true);
-	program->setUniformMat4("modelMat", modelMat);
+	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
 

@@ -101,7 +101,7 @@ namespace Voxel
 
 		void render();
 
-		void toggleDubugOutputs();
+		void toggleVisibility();
 
 		void onFPSUpdate(int fps);
 		

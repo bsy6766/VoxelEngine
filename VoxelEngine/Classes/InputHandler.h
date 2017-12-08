@@ -32,6 +32,8 @@ namespace Voxel
 			JUMP,
 			SNEAK,
 			TOGGLE_WORLD_MAP,	
+			TOGGLE_GAME_MENU,
+			GLOBAL_ESCAPE,			// escape key. Cancel action, close ui.
 
 			// Debug
 			MOVE_UP,

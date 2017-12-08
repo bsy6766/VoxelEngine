@@ -32,6 +32,7 @@ namespace Voxel
 	class Physics;
 	class Setting;
 	class WorldMap;
+	class GameMenu;
 
 	namespace UI
 	{
@@ -53,12 +54,6 @@ namespace Voxel
 			TIME,
 		};
 	public:
-		enum class CursorState
-		{
-			HIDDEN = 0,
-			SHOWN,
-		};
-
 		enum class LoadingState
 		{
 			INITIALIZING = 0,
@@ -77,15 +72,15 @@ namespace Voxel
 
 		enum class GameState
 		{
-			IDLE = 0,		// Renders world
+			IDLE = 0,				// Renders world
 			VIEWING_WORLD_MAP,		// Renders world map
+			VIEWING_GAME_MENU,		// Renders game menu on top of world. 
 		};
 	private:		
 		// For camera movement
 		glm::vec3 getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance);
 
 		// States
-		CursorState cursorState;
 		LoadingState loadingState;
 		ReloadState reloadState;
 		GameState gameState;
@@ -127,6 +122,9 @@ namespace Voxel
 		UI::Canvas* dynamicCanvas;		// Canvas with ui that is dynamic.
 		UI::Text* timeLabel;
 
+		// Game menu
+		GameMenu* gameMenu;
+
 		// Loading screen
 		UI::Canvas* loadingCanvas;
 
@@ -138,9 +136,6 @@ namespace Voxel
 
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
-
-		// Initialize all sub system and instances
-		void init();
 
 		// Releasea ll sub system and instances.
 		void release();
@@ -174,6 +169,9 @@ namespace Voxel
 
 		// Initialize cursor
 		void initCursor();
+
+		// Initialize game menu UI
+		void initGameMenu();
 
 		// Initailize sky box and fog
 		void initSkyBox();
@@ -242,6 +240,9 @@ namespace Voxel
 		// Destructor
 		~Game();
 
+		// Initialize all sub system and instances
+		void init();
+
 		// create new. 
 		void createNew(const std::string& worldName);
 		
@@ -266,6 +267,9 @@ namespace Voxel
 		*	@param mode Cursor mode to set. true to enable, false to disable.
 		*/
 		void toggleCursorMode(const bool mode);
+
+		// Game menu call back
+		void onReturnToGameClicked();
 
 		/**
 		*	Set fog mode.

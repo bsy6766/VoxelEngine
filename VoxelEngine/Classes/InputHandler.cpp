@@ -18,8 +18,8 @@ InputHandler::InputHandler()
 	, mouseScrollValue(0)
 {
 	// Initialize default key map
-	defaultKeyBindMap = 
-	{ 
+	defaultKeyBindMap =
+	{
 		{ KEY_INPUT::MOVE_FOWARD, GLFW_KEY_W },
 		{ KEY_INPUT::MOVE_BACKWARD	, GLFW_KEY_S },
 		{ KEY_INPUT::MOVE_LEFT, GLFW_KEY_A },
@@ -27,6 +27,8 @@ InputHandler::InputHandler()
 		{ KEY_INPUT::JUMP, GLFW_KEY_SPACE },
 		{ KEY_INPUT::SNEAK, GLFW_KEY_LEFT_SHIFT },
 		{ KEY_INPUT::TOGGLE_WORLD_MAP, GLFW_KEY_M },
+		{ KEY_INPUT::TOGGLE_GAME_MENU, GLFW_KEY_ESCAPE },
+		{ KEY_INPUT::GLOBAL_ESCAPE, GLFW_KEY_ESCAPE },
 		// Debug.
 		{ KEY_INPUT::MOVE_UP, GLFW_KEY_SPACE },
 		{ KEY_INPUT::MOVE_DOWN, GLFW_KEY_LEFT_SHIFT },

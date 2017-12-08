@@ -91,6 +91,9 @@ namespace Voxel
 			*/
 			void setVisibility(const bool visibility);
 
+			// check if cursor is visible
+			bool isVisible() const;
+
 			/**
 			*	Get current position of cursor in screen space
 			*/

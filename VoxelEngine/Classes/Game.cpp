@@ -33,6 +33,7 @@
 #include "UI.h"
 #include "UIActions.h"
 #include "Cursor.h"
+#include "GameMenu.h"
 #include "FontManager.h"
 
 #include "ProgramManager.h"
@@ -66,13 +67,13 @@ Game::Game()
 	, prevMouseCursorPos(0)
 	, chunkWorkManager(nullptr)
 	, staticCanvas(nullptr)
+	, dynamicCanvas(nullptr)
 	, timeLabel(nullptr)
 	, loadingCanvas(nullptr)
 	, skybox(nullptr)
 	, calendar(nullptr)
 	, settingPtr(nullptr)
 	, worldMap(nullptr)
-	, cursorState(CursorState::HIDDEN)
 	, loadingState(LoadingState::INITIALIZING)
 	, reloadState(ReloadState::NONE)
 	, gameState(GameState::IDLE)
@@ -87,8 +88,6 @@ Game::Game()
 #endif
 #endif
 {
-	// init instances
-	init();
 	// After creation, set cursor to center
 	input->setCursorToCenter();
 	prevMouseCursorPos = input->getMousePosition();
@@ -190,6 +189,10 @@ void Voxel::Game::initSpriteSheets()
 	ssm.addSpriteSheet("UISpriteSheet.json");
 	ssm.addSpriteSheet("CursorSpriteSheet.json");
 	ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
+
+#if V_DEBUG
+	ssm.addSpriteSheet("DebugSpriteSheet.json");
+#endif
 }
 
 void Voxel::Game::initRandoms()
@@ -212,6 +215,8 @@ void Voxel::Game::initUI()
 	initDefaultCanvas();
 
 	initLoadingScreen();
+
+	initGameMenu();
 }
 
 void Voxel::Game::initLoadingScreen()
@@ -248,11 +253,13 @@ void Voxel::Game::initDefaultCanvas()
 	crossHairImage->setScale(glm::vec2(2.0f));
 	staticCanvas->addChild(crossHairImage, 0);
 
+	/*
 	auto temp = Voxel::UI::NinePatchImage::create("tmp", "UISpriteSheet", "game_menu_bg.png", 12, 12, 12, 12, glm::vec2(50.0f, 100.0f));
 	temp->setPosition(100, 0);
 	temp->setScale(3.0f);
 	temp->setDraggable();
 	staticCanvas->addChild(temp, 100);
+	*/
 
 	// Add time label
 	timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), 2, glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT);
@@ -268,6 +275,12 @@ void Voxel::Game::initCursor()
 {
 	// cursor
 	cursor = UI::Cursor::create();
+}
+
+void Voxel::Game::initGameMenu()
+{
+	// game menu
+	gameMenu = new GameMenu();
 }
 
 void Voxel::Game::initSkyBox()
@@ -314,6 +327,8 @@ void Voxel::Game::release()
 	if (cursor) delete cursor;
 
 	if (staticCanvas) delete staticCanvas;
+	if (dynamicCanvas) delete dynamicCanvas;
+	if (gameMenu) delete gameMenu;
 
 	if (worldMap) delete worldMap;
 
@@ -650,48 +665,48 @@ glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::v
 
 void Voxel::Game::updateKeyboardInput(const float delta)
 {
-	if (input->getKeyDown(GLFW_KEY_ESCAPE, true))
-	{
 #if V_DEBUG && V_DEBUG_CONSOLE
+	// Handle Escape key. 
+	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::GLOBAL_ESCAPE, true))
+	{
+		// check if debug console is opened
 		if (debugConsole->isConsoleOpened())
 		{
+			// opened. close it
 			debugConsole->closeConsole();
 			toggleCursorMode(false);
+
+			// end key update
+			return;
 		}
-		else
-#endif
-		{
-			if (gameState == GameState::VIEWING_WORLD_MAP)
-			{
-				closeWorldMap();
-			}
-			else
-			{
-				Application::getInstance().getGLView()->close();
-			}
-		}
-		return;
 	}
 
-#if V_DEBUG && V_DEBUG_CONSOLE
+	// F3
 	if (input->getKeyDown(GLFW_KEY_F3, true))
 	{
-		debugConsole->toggleDubugOutputs();
+		// togle debug console visibility
+		debugConsole->toggleVisibility();
 		return;
 	}
 
+	// ~
 	if (input->getKeyDown(GLFW_KEY_GRAVE_ACCENT, true))
 	{
+		// check if console is opened
 		if (debugConsole->isConsoleOpened())
 		{
+			// close it
 			debugConsole->closeConsole();
 			toggleCursorMode(false);
 		}
 		else
 		{
+			// open it
 			debugConsole->openConsole();
 			toggleCursorMode(true);
 		}
+
+		// end key update
 		return;
 	}
 
@@ -702,94 +717,58 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 #endif
+	// If reach here, console is not enabled or nothing to do with debug console
 
-	if (gameState == GameState::IDLE)
+	// Handle escape key first
+	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::GLOBAL_ESCAPE, true))
 	{
-		if (input->getKeyDown(GLFW_KEY_LEFT_ALT, true))
+		if (gameState == GameState::IDLE)
 		{
-			toggleCursorMode(true);
+			// idle
 		}
-		else if (input->getKeyUp(GLFW_KEY_LEFT_ALT, true))
+		else if (gameState == GameState::VIEWING_WORLD_MAP)
 		{
-			toggleCursorMode(false);
+			// was viewing world map.
+			closeWorldMap();
+
+			// end key update
+			return;
+		}
+		else if (gameState == GameState::VIEWING_GAME_MENU)
+		{
+			if (gameMenu->isOpened())
+			{
+				gameMenu->close();
+				gameState = GameState::IDLE;
+				toggleCursorMode(false);
+
+				// end key update
+				return;
+			}
 		}
 	}
 
-	if (input->getKeyDown(GLFW_KEY_1, true))
+	// Handle game menu next
+	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::TOGGLE_GAME_MENU, true))
 	{
-		cursor->setCursorType(UI::Cursor::CursorType::POINTER);
-	}
-	else if (input->getKeyDown(GLFW_KEY_2, true))
-	{
-		cursor->setCursorType(UI::Cursor::CursorType::FINGER);
+		if (gameState == GameState::IDLE)
+		{
+			if (gameMenu->isClosed())
+			{
+				gameMenu->open();
+				gameState = GameState::VIEWING_GAME_MENU;
+				toggleCursorMode(true);
+
+				// end key update
+				return;
+			}
+		}
 	}
 
+	// handle input.
+	
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
-		/*
-		auto testPos = glm::ivec3(-24, -40, -1);
-		auto testLocal = glm::ivec3(0);
-		auto testChunk = glm::ivec3(0);
-		chunkMap->blockWorldCoordinateToLocalAndChunkSectionCoordinate(testPos, testLocal, testChunk);
-		std::cout << "testPos: " << Utility::Log::vec3ToStr(testPos) << std::endl;
-		std::cout << "testLocal: " << Utility::Log::vec3ToStr(testLocal) << std::endl;
-		std::cout << "testChunk: " << Utility::Log::vec3ToStr(testChunk) << std::endl;
-		*/
-
-		/*
-		std::vector<Block*> collidableBlocks;
-		//chunkMap->queryBottomCollidableBlocksInY(player->getNextPosition(), collidableBlocks);
-		chunkMap->queryTopCollidableBlocksInY(player->getPosition(), collidableBlocks);
-
-		std::cout << "Queried " << collidableBlocks.size() << " blocks\n";
-		for (auto block : collidableBlocks)
-		{
-			std::cout << "Block pos = " << Utility::Log::vec3ToStr(block->getWorldCoordinate()) << std::endl;
-		}
-		*/
-
-		/*
-		auto result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(-200.5f, 100.0f, 200.7f));
-		std::cout << Utility::Log::vec3ToStr(result) << "\n";
-		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, 200.7f));
-		std::cout << Utility::Log::vec3ToStr(result) << "\n";
-		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(-200.5f, 100.0f, -200.7f));
-		std::cout << Utility::Log::vec3ToStr(result) << "\n";
-		result = chunkMap->playerPosToBlockWorldCoordinate(glm::vec3(200.5f, 100.0f, -200.7f));
-		std::cout << Utility::Log::vec3ToStr(result) << "\n";
-		*/
-
-		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getScreenSize()) << "\n";
-		//std::cout << "window size = " << Utility::Log::vec2ToStr(Application::getInstance().getGLView()->getGLFWWindowSize()) << "\n";
-
-		/*
-		std::vector<glm::vec2> points;
-		points.push_back(glm::vec2(-100, -100));
-		points.push_back(glm::vec2(-100, 100));
-		points.push_back(glm::vec2(100, 100));
-		points.push_back(glm::vec2(100, -100));
-
-		auto triangles = EarClip::earClipPolygon(points);
-
-		for (auto& e : triangles)
-		{
-			std::cout << Utility::Log::vec2ToStr(e) << "\n";
-		}
-		*/
-
-		/*
-		int p = debugConsole->testProgRadial0ccw->getPercentage();
-		debugConsole->testProgRadial0ccw->setPercentage(p + 1);
-		std::cout << "p = " << p + 1 << "\n";
-		*/
-
-		//auto curPos = debugConsole->testImage->getPosition();
-		//debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, glm::vec2(curPos.x + 50.0f, curPos.y)), Voxel::UI::Delay::create(1.0f), Voxel::UI::MoveTo::create(1.0f, curPos) }, true));
-		//debugConsole->testImage->runAction(Voxel::UI::Sequence::create({ Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.5f), Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 0.0f) , Voxel::UI::Delay::create(1.0f), Voxel::UI::FadeTo::create(1.0f, 1.0f) }, true));
-	}
-	if (input->getKeyDown(GLFW_KEY_Y, true))
-	{
-		//debugConsole->testImage->setPosition(glm::vec2(0, 0));
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -927,7 +906,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 		return;
 	}
 #endif
-	if (cursorState == CursorState::HIDDEN)
+	if (!cursor->isVisible())
 	{
 		if (input->getKeyDown(InputHandler::KEY_INPUT::MOVE_FOWARD))
 		{
@@ -994,13 +973,20 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	prevMouseCursorPos.y = curMousePos.y;
 
 	// Check if cursor is visible
-	if (cursorState == CursorState::SHOWN)
+	if (cursor->isVisible())
 	{
 		// Update cursor position only if it's visible
 		cursor->addPosition(glm::vec2(dx, -dy));
 	}
 
+	// Update UI
+	if (gameMenu->isOpened())
+	{
+		gameMenu->updateMouseMove(cursor->getPosition());
+	}
+
 #if V_DEBUG && V_DEBUG_CONSOLE
+	// update debug console
 	debugConsole->updateMouseMove(cursor->getPosition(), glm::vec2(dx, -dy));
 
 	if (debugConsole->isConsoleOpened())
@@ -1070,7 +1056,6 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 
 void Voxel::Game::updateMouseClickInput()
 {
-#if V_DEBUG && V_DEBUG_CONSOLE
 	int button = -1;
 	bool clicked = false;
 
@@ -1105,6 +1090,7 @@ void Voxel::Game::updateMouseClickInput()
 		clicked = false;
 	}
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 	if (button != -1)
 	{
 		if (clicked)
@@ -1124,18 +1110,32 @@ void Voxel::Game::updateMouseClickInput()
 	}
 #endif
 
-	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+	if (cursor->isVisible())
 	{
-		//auto mp = input->getMousePosition();
-		//std::cout << "g mp = " << mp.x << ", " << mp.y << "\n";
-
-		//auto cursorWorldPos = cursor->getWorldPosition();
-
-		//std::cout << "cursor wp: " << Utility::Log::vec3ToStr(cursorWorldPos) << "\n";
+		// cursor is vibile
+		if (gameState == GameState::VIEWING_WORLD_MAP)
+		{
+			worldMap->updateMouseClick(button, clicked, cursor->getPosition());
+		}
+		else if (gameState == GameState::VIEWING_GAME_MENU)
+		{
+			// Update UI
+			if (gameMenu->isOpened())
+			{
+				if (clicked)
+				{
+					gameMenu->updateMouseClick(cursor->getPosition(), button);
+				}
+				else
+				{
+					gameMenu->updateMouseReleased(cursor->getPosition(), button);
+				}
+			}
+		}
 	}
-
-	if (cursorState == CursorState::HIDDEN)
+	else
 	{
+		// cursor is hidden.
 		if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 		{
 			if (player->isLookingAtBlock())
@@ -1154,29 +1154,6 @@ void Voxel::Game::updateMouseClickInput()
 				auto blockPos = player->getLookingBlock()->getWorldCoordinate();
 				chunkMap->placeBlockFromFace(blockPos, Block::BLOCK_ID::GRASS, player->getLookingFace(), chunkWorkManager);
 				updatePlayerRaycast();
-			}
-		}
-	}
-	else if (cursorState == CursorState::SHOWN)
-	{
-		if (gameState == GameState::VIEWING_WORLD_MAP)
-		{
-			if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
-			{
-				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_1, true, cursor->getPosition());
-			}
-			else if(input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
-			{
-				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_1, false, cursor->getPosition());
-			}
-
-			if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
-			{
-				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_2, true, cursor->getPosition());
-			}
-			else if (input->getMouseUp(GLFW_MOUSE_BUTTON_2, true))
-			{
-				worldMap->updateMouseClick(GLFW_MOUSE_BUTTON_2, false, cursor->getPosition());
 			}
 		}
 	}
@@ -1683,14 +1660,19 @@ void Voxel::Game::toggleCursorMode(const bool mode)
 {
 	if (mode)
 	{
-		cursorState = CursorState::SHOWN;
 		cursor->setVisibility(true);
 	}
 	else
 	{
-		cursorState = CursorState::HIDDEN;
 		cursor->setVisibility(false);
 	}
+}
+
+void Voxel::Game::onReturnToGameClicked()
+{
+	gameMenu->close();
+	gameState = GameState::IDLE;
+	toggleCursorMode(false);
 }
 
 void Voxel::Game::refreshChunkMap()
@@ -1763,6 +1745,11 @@ void Voxel::Game::renderGame(const float delta)
 	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
 		renderWorldMap(delta);
+	}
+	else if (gameState == GameState::VIEWING_GAME_MENU)
+	{
+		renderWorld(delta);
+		renderUI();
 	}
 
 	// Clear depth buffer and render above current buffer
@@ -1955,6 +1942,11 @@ void Voxel::Game::renderUI()
 	// --------------------------------- Render UI ------------------------------------------
 	// Render UIs
 	staticCanvas->render();
+
+	if (gameMenu->isOpened())
+	{
+		gameMenu->render();
+	}
 	// --------------------------------------------------------------------------------------
 }
 
@@ -1985,7 +1977,7 @@ void Voxel::Game::initDebugConsole()
 
 	// Debug. This creates all the debug UI components
 	debugConsole = new DebugConsole();
-	debugConsole->toggleDubugOutputs();
+	debugConsole->toggleVisibility();
 
 	// for debugging
 	debugConsole->player = player;

@@ -3,6 +3,7 @@
 
 // voxel
 #include "UIBase.h"
+#include "SpriteSheet.h"
 
 // cpp
 #include <array>

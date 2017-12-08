@@ -3,6 +3,9 @@
 
 #include "UIBase.h"
 
+// voxel
+#include "SpriteSheet.h"
+
 namespace Voxel
 {
 	namespace UI
@@ -52,6 +55,20 @@ namespace Voxel
 			bool initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName);
 
 			/**
+			*	Initialize image from sprite sheet with size
+			*	@param ss SpriteSheet instance.
+			*	@param textureName Name of image texture file
+			*	@param size Size of image in pixel. Image will be scaled.
+			*	@return true if successfully creates ui image. Else, false.
+			*/
+			bool initFromSpriteSheet(SpriteSheet* ss, const std::string& textureName, const glm::vec2& size);
+
+			/**
+			*	
+			*/
+			void initImage(const ImageEntry* ie, const glm::vec2& size);
+
+			/**
 			*	Build image.
 			*	Initialize vao.
 			*	@param vertices Vertices of image quad. Single image has 12 vertices.
@@ -78,6 +95,15 @@ namespace Voxel
 			*	@return Image instance if successfully loads image and creates ui. Else, nullptr if anything fails.
 			*/
 			static Image* createFromSpriteSheet(const std::string& name, const std::string& spriteSheetName, const std::string& imageFileName);
+
+			/**
+			*	Creates image from sprite sheet with specific size
+			*	@param spriteSheetName Name of image file.
+			*	@param imageFileName Name of image file.
+			*	@param size Size of image in pixel. Image will be scaled.
+			*	@return Image instance if successfully loads image and creates ui. Else, nullptr if anything fails.
+			*/
+			static Image* createFromSpriteSheet(const std::string& name, const std::string& spriteSheetName, const std::string& imageFileName, const glm::vec2& size);
 
 			/**
 			*	Check if mouse is hovering button
