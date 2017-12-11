@@ -75,7 +75,10 @@ namespace Voxel
 	class SpriteSheetManager
 	{
 	private:
+		// default constructor
 		SpriteSheetManager() = default;
+
+		// destructor
 		~SpriteSheetManager();
 
 		// Delete copy, move, assign operators
@@ -84,18 +87,52 @@ namespace Voxel
 		SpriteSheetManager& operator=(SpriteSheetManager const&) = delete;  // Copy assign
 		SpriteSheetManager& operator=(SpriteSheetManager &&) = delete;      // Move assign
 
+		// map of sprite sheets with name by key. Since we don't query sprite sheet a lot, string key is fine.
 		std::unordered_map<std::string, SpriteSheet*> spriteSheetMap;
 
-		std::string trimFileExtention(const std::string& fileName);
 	public:
+		// Get singleton instance
 		static SpriteSheetManager& getInstance()
 		{
 			static SpriteSheetManager instance;
 			return instance;
 		}
 
+		/**
+		*	Add sprite sheet. Spritesheets are stored in map with key of string equal to file name without extention.
+		*	For example, ss1.json file will be stored with string key of 'ss1'.
+		*	@param jsonFileName Json file name for sprite sheet.
+		*	@return true if successfully adds sprite sheet. Else, false.
+		*/
 		bool addSpriteSheet(const std::string& jsonFileName);
-		SpriteSheet* getSpriteSheet(const std::string& jsonFileName);
+		
+		/**
+		*	Remove sprite sheet by key. Key equals to sprite sheet name without .json extention.
+		*	@param key String key for spritesheet.
+		*	@return true if successfully removes sprite shset. Else, false.
+		*/
+		bool removeSpriteSheetByKey(const std::string& key);
+
+		/**
+		*	Remove sprite sheet by file name.
+		*	@param jsonFileName File name of sprite sheet to remove.
+		*	@return true if successfully removes sprite shset. Else, false.
+		*/
+		bool removeSpriteSheetByName(const std::string& jsonFileName);
+
+		/**
+		*	Get sprite sheet by key
+		*	@param key String key for spritesheet.
+		*	@return SpriteSheet instance if sprite sheet exists. Else, nullptr.
+		*/
+		SpriteSheet* getSpriteSheetByKey(const std::string& key);
+
+		/**
+		*	Get sprite sheet by file name
+		*	@param key File name of spritesheet.
+		*	@return SpriteSheet instance if sprite sheet exists. Else, nullptr.
+		*/
+		SpriteSheet* getSpriteSheetByName(const std::string& jsonFileName);
 		
 		void releaseAll();
 	};

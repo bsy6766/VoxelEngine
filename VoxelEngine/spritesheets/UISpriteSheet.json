@@ -1,33 +1,6 @@
 {"frames": [
 
 {
-	"filename": "1x1.png",
-	"frame": {"x":500,"y":1,"w":1,"h":1},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
-	"sourceSize": {"w":1,"h":1},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "1x1_green.png",
-	"frame": {"x":503,"y":1,"w":1,"h":1},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
-	"sourceSize": {"w":1,"h":1},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "2x2.png",
-	"frame": {"x":496,"y":1,"w":2,"h":2},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":2},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
 	"filename": "cross_hair.png",
 	"frame": {"x":474,"y":1,"w":20,"h":20},
 	"rotated": false,
@@ -214,6 +187,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:595579571dc05624ee36b878e3a465cc:7a1d5f5d6a1a669aff23bc56a94929a7:213f3128208e84dc9ab60c37a8ec5190$"
+	"smartupdate": "$TexturePacker:SmartUpdate:9ee071098b42af78b0428524ff672970:3b854ee4fadde593a5367b8a5f40a4e5:213f3128208e84dc9ab60c37a8ec5190$"
 }
 }

@@ -23,7 +23,7 @@ Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std
 
 	auto& ssm = SpriteSheetManager::getInstance();
 
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
+	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
 	if (ss)
 	{

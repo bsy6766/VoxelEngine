@@ -21,7 +21,7 @@ Voxel::UI::ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & 
 
 	auto& ssm = SpriteSheetManager::getInstance();
 
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
+	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
 	if (ss)
 	{

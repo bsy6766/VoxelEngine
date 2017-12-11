@@ -18,7 +18,7 @@ Voxel::UI::Image::~Image()
 	//std::cout << "~Image()\n";
 }
 
-Voxel::UI::Image * Voxel::UI::Image::create(const std::string & name, std::string & imageFileName)
+Voxel::UI::Image * Voxel::UI::Image::create(const std::string & name, const std::string & imageFileName)
 {
 	auto newImage = new Image(name);
 
@@ -37,7 +37,7 @@ Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & n
 {
 	auto& ssm = SpriteSheetManager::getInstance();
 
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
+	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
 	if (ss)
 	{
@@ -63,7 +63,7 @@ Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & n
 {
 	auto& ssm = SpriteSheetManager::getInstance();
 
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
+	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
 	if (ss)
 	{

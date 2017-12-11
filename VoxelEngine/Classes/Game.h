@@ -279,33 +279,28 @@ namespace Voxel
 
 		/**
 		*	Root function for all rendering
-		*	@param delta Elapsed time on current frame.
 		*/
-		void render(const float delta);
+		void render();
 
 		/**
 		*	Renders game based on game state
-		*	@param delta Elapsed time on current frame.
 		*/
-		void renderGame(const float delta);
+		void renderGame();
 
 		/**
 		*	Renders the world. Chunk map, player, etc.
-		*	@param delta Elapsed time on current frame.
 		*/
-		void renderWorld(const float delta);
+		void renderWorld();
 
 		/**
 		*	Renders world map
-		*	@param delta Elapsed time on current frame.
 		*/
-		void renderWorldMap(const float delta);
+		void renderWorldMap();
 
 		/**
 		*	Renders loading screen
-		*	@param delta Elapsed time on current frame.
 		*/
-		void renderLoadingScreen(const float delta);
+		void renderLoadingScreen();
 
 		/**
 		*	Renders UI

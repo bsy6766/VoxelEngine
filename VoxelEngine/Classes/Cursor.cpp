@@ -34,7 +34,7 @@ Voxel::UI::Cursor::~Cursor()
 bool Voxel::UI::Cursor::init()
 {
 	// Initialize cursors
-	auto ss = SpriteSheetManager::getInstance().getSpriteSheet("CursorSpriteSheet");
+	auto ss = SpriteSheetManager::getInstance().getSpriteSheetByKey("CursorSpriteSheet");
 
 	// pointer
 	this->texture = ss->getTexture();
@@ -143,7 +143,7 @@ void Voxel::UI::Cursor::updateBoundary()
 
 void Voxel::UI::Cursor::setCursorType(const CursorType cursorType)
 {
-	auto ss = SpriteSheetManager::getInstance().getSpriteSheet("CursorSpriteSheet");
+	auto ss = SpriteSheetManager::getInstance().getSpriteSheetByKey("CursorSpriteSheet");
 
 	const ImageEntry* imageEntry = nullptr;
 

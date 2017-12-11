@@ -2,6 +2,7 @@
 
 // voxel
 #include "Application.h"
+#include "Utility.h"
 
 // cpp
 #include <fstream>
@@ -129,20 +130,23 @@ Voxel::SpriteSheetManager::~SpriteSheetManager()
 	releaseAll();
 }
 
-std::string Voxel::SpriteSheetManager::trimFileExtention(const std::string & fileName)
-{
-	return fileName.substr(0, fileName.find_last_of('.'));
-}
-
 bool Voxel::SpriteSheetManager::addSpriteSheet(const std::string & jsonFileName)
 {
-	auto fileName = trimFileExtention(jsonFileName);
+	std::string fileName;
+	std::string ext = "";
+
+	Utility::String::fileNameToNameAndExt(jsonFileName, fileName, ext);
+
+	if (ext.empty())
+	{
+		ext = ".json";
+	}
 	
 	auto find_it = spriteSheetMap.find(fileName);
 
 	if (find_it == spriteSheetMap.end())
 	{
-		auto ss = SpriteSheet::create(jsonFileName);
+		auto ss = SpriteSheet::create(fileName + ext);
 		if (ss)
 		{
 			spriteSheetMap.emplace(fileName, ss);
@@ -159,9 +163,36 @@ bool Voxel::SpriteSheetManager::addSpriteSheet(const std::string & jsonFileName)
 	}
 }
 
-SpriteSheet * Voxel::SpriteSheetManager::getSpriteSheet(const std::string & jsonFileName)
+bool Voxel::SpriteSheetManager::removeSpriteSheetByKey(const std::string & key)
 {
-	auto find_it = spriteSheetMap.find(trimFileExtention(jsonFileName));
+	auto find_it = spriteSheetMap.find(key);
+
+	if (find_it == spriteSheetMap.end())
+	{
+		return false;
+	}
+	else
+	{
+		if (find_it->second)
+		{
+			delete (find_it->second);
+		}
+
+		spriteSheetMap.erase(key);
+
+		return true;
+	}
+}
+
+bool Voxel::SpriteSheetManager::removeSpriteSheetByName(const std::string & jsonFileName)
+{
+	return removeSpriteSheetByKey(Utility::String::removeFileExtFromFileName(jsonFileName));
+}
+
+SpriteSheet * Voxel::SpriteSheetManager::getSpriteSheetByKey(const std::string & key)
+{
+	auto find_it = spriteSheetMap.find(key);
+
 	if (find_it == spriteSheetMap.end())
 	{
 		return nullptr;
@@ -170,6 +201,11 @@ SpriteSheet * Voxel::SpriteSheetManager::getSpriteSheet(const std::string & json
 	{
 		return find_it->second;
 	}
+}
+
+SpriteSheet * Voxel::SpriteSheetManager::getSpriteSheetByName(const std::string & jsonFileName)
+{
+	return getSpriteSheetByKey(Utility::String::removeFileExtFromFileName(jsonFileName));
 }
 
 void Voxel::SpriteSheetManager::releaseAll()

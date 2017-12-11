@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.3.1</string>
         <key>fileName</key>
-        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/spritesheets/UISpriteSheet.tps</string>
+        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/SpriteSheets/MenuSceneUISpriteSheet.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -36,7 +36,7 @@
         <key>dataFormat</key>
         <string>json-array</string>
         <key>textureFileName</key>
-        <filename>../textures/UISpriteSheet.png</filename>
+        <filename>../Textures/MenuSceneUISpriteSheet.png</filename>
         <key>flipPVR</key>
         <false/>
         <key>pvrCompressionQuality</key>
@@ -150,7 +150,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>UISpriteSheet.json</filename>
+                <filename>MenuSceneUISpriteSheet.json</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -177,7 +177,7 @@
             <key>scale</key>
             <double>1</double>
             <key>scaleMode</key>
-            <enum type="ScaleMode">Fast</enum>
+            <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
             <uint>1</uint>
             <key>trimThreshold</key>
@@ -193,94 +193,42 @@
             <key>defaultPivotPoint</key>
             <point_f>0.5,0.5</point_f>
             <key>writePivotPoints</key>
-            <true/>
+            <false/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">../Sprites/ui/GameScene/cross_hair.png</key>
+            <key type="filename">../Sprites/ui/MenuScene/play_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/MenuScene/play_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/MenuScene/play_button_idle.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>5,5,10,10</rect>
+                <rect>29,8,57,15</rect>
                 <key>scale9Paddings</key>
-                <rect>5,5,10,10</rect>
+                <rect>29,8,57,15</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_bg.png</key>
+            <key type="filename">../Sprites/ui/MenuScene/play_button_disabled.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>11,11,22,22</rect>
+                <rect>1,1,1,1</rect>
                 <key>scale9Paddings</key>
-                <rect>11,11,22,22</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_clicked.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_disabled.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_hovered.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_idle.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_clicked.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_disabled.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_hovered.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_idle.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_option_button_clicked.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_option_button_disabled.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_option_button_hovered.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_option_button_idle.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_clicked.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_disabled.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_hovered.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_idle.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>18,3,35,6</rect>
-                <key>scale9Paddings</key>
-                <rect>18,3,35,6</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_label.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>44,4,87,9</rect>
-                <key>scale9Paddings</key>
-                <rect>44,4,87,9</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">../Sprites/ui/GameScene/loading_label.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>76,10,153,20</rect>
-                <key>scale9Paddings</key>
-                <rect>76,10,153,20</rect>
+                <rect>1,1,1,1</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
         </map>
         <key>fileList</key>
         <array>
-            <filename>../Sprites/ui/GameScene</filename>
+            <filename>../Sprites/ui/MenuScene</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

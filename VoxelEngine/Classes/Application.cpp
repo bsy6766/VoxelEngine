@@ -6,21 +6,22 @@
 #include <direct.h>
 
 // voxel
-#include "Game.h"
+#include "Director.h"
 #include "Camera.h"
 #include "InputHandler.h"
 #include "DataTree.h"
 #include "Setting.h"
 #include "FileSystem.h"
 #include "Utility.h"
+#include "MenuScene.h"
 
 using std::cout;
 using std::endl;
 using namespace Voxel;
 
 Application::Application()
-	: game(nullptr)
-	, glView(nullptr)
+	: glView(nullptr)
+	, director(nullptr)
 	, internalSetting(nullptr)
 	, needToSkipFrame(true)
 {
@@ -61,7 +62,8 @@ void Application::init()
 	initGLView();
 
 	initMainCamera();
-	initGame();
+
+	initDirector();
 }
 
 void Voxel::Application::initGLView()
@@ -88,11 +90,13 @@ void Voxel::Application::initMainCamera()
 	Camera::mainCamera = Camera::create(glm::vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
 }
 
-void Voxel::Application::initGame()
+void Voxel::Application::initDirector()
 {
-	game = new Game();
-	game->init();
-	game->createNew("New World");
+	//game = new Game();
+	//game->init();
+	//game->createNew("New World");
+	director = new Director();
+	director->runScene(Voxel::Director::SceneName::MENU_SCENE);
 }
 
 void Voxel::Application::initInternalSettings()
@@ -143,13 +147,13 @@ void Application::run()
 		{
 			input.update();
 
-			game->update(delta);
+			director->update(delta);
 		}
 
 		// Wipe input data for current frame
 		input.postUpdate();
 
-		game->render(delta);
+		director->render();
 
 		glView->render();
 	}
@@ -172,9 +176,9 @@ GLView * Voxel::Application::getGLView()
 	return glView;
 }
 
-Game * Voxel::Application::getGame()
+Director * Voxel::Application::getDirector()
 {
-	return this->game;
+	return director;
 }
 
 std::string Voxel::Application::getWorkingDirectory()
@@ -193,9 +197,9 @@ void Voxel::Application::cleanUp()
 		Camera::mainCamera = nullptr;
 	}
 
-	if (game)
+	if (director)
 	{
-		delete game;
+		delete director;
 	}
 
 	if (glView)

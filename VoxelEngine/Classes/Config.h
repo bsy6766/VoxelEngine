@@ -21,6 +21,15 @@
 #if V_DEBUG
 
 /**
+*	@def V_DEBUG_EDITOR
+*	If enabled, can use editor. Only for development. Editor is not incldued in the main game.
+*/
+#ifndef V_DEBUG_EDITOR
+#define V_DEBUG_EDITOR 1
+#endif
+
+
+/**
 *	@def V_DEBUG_CAMERA_MODE
 *	If enabled, can toggle between normal view and camera view
 */

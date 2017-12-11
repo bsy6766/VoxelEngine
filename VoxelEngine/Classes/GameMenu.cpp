@@ -2,6 +2,7 @@
 
 // voxel
 #include "Application.h"
+#include "Director.h"
 #include "Game.h"
 
 // cpp
@@ -47,7 +48,7 @@ void Voxel::GameMenu::init()
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY);
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&Game::onReturnToGameClicked, Application::getInstance().getGame()));
+	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&Game::onReturnToGameClicked, Application::getInstance().getDirector()->getCurrentScene<Game>()));
 	gameMenu->addChild(returnToGameBtn);
 
 	auto optionBtn = Voxel::UI::Button::create("oBtn", ss, "game_menu_option_button.png");

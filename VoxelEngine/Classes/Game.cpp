@@ -227,7 +227,7 @@ void Voxel::Game::initLoadingScreen()
 	loadingCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
 
 	// Add bg
-	auto bg = UI::Image::createFromSpriteSheet("bg", "UISpriteSheet", "1x1.png");
+	auto bg = UI::Image::createFromSpriteSheet("bg", "GlobalSpriteSheet", "1x1_black.png");
 	bg->setPosition(glm::vec2(0.0f));
 	bg->setScale(resolution);
 
@@ -1718,37 +1718,37 @@ void Voxel::Game::rebuildWorld()
 	reloadState = ReloadState::WORLD;
 }
 
-void Game::render(const float delta)
+void Game::render()
 {
 	if (loadingState == LoadingState::INITIALIZING || loadingState == LoadingState::RELOADING)
 	{
-		renderLoadingScreen(delta);
+		renderLoadingScreen();
 	}
 	else if (loadingState == LoadingState::FADING)
 	{
-		renderLoadingScreen(delta);
-		renderGame(delta);
+		renderLoadingScreen();
+		renderGame();
 	}
 	else
 	{
-		renderGame(delta);
+		renderGame();
 	}
 }
 
-void Voxel::Game::renderGame(const float delta)
+void Voxel::Game::renderGame()
 {
 	if (gameState == GameState::IDLE)
 	{
-		renderWorld(delta);
+		renderWorld();
 		renderUI();
 	}
 	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
-		renderWorldMap(delta);
+		renderWorldMap();
 	}
 	else if (gameState == GameState::VIEWING_GAME_MENU)
 	{
-		renderWorld(delta);
+		renderWorld();
 		renderUI();
 	}
 
@@ -1764,7 +1764,7 @@ void Voxel::Game::renderGame(const float delta)
 	cursor->render();
 }
 
-void Voxel::Game::renderWorld(const float delta)
+void Voxel::Game::renderWorld()
 {
 	// Render world.
 
@@ -1895,7 +1895,7 @@ void Voxel::Game::renderWorld(const float delta)
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::renderWorldMap(const float delta)
+void Voxel::Game::renderWorldMap()
 {
 	// ---------------------------- Render world Map ----------------------------------------
 	glm::mat4 viewMat = worldMap->getViewMatrix();
@@ -1924,7 +1924,7 @@ void Voxel::Game::renderWorldMap(const float delta)
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::renderLoadingScreen(const float delta)
+void Voxel::Game::renderLoadingScreen()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);

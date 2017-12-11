@@ -11,6 +11,7 @@
 #include "Utility.h"
 #include "Random.h"
 #include "Application.h"
+#include "Director.h"
 #include "ChunkUtil.h"
 #include "InputHandler.h"
 #include "Player.h"
@@ -76,7 +77,7 @@ void Voxel::DebugConsole::init()
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 	this->settingPtr = &Setting::getInstance();
 
-	commandInputField = UI::Image::createFromSpriteSheet("cmdInputField", "UISpriteSheet", "2x2.png");
+	commandInputField = UI::Image::createFromSpriteSheet("cmdInputField", "GlobalSpriteSheet", "2x2_black.png");
 	commandInputField->setPivot(glm::vec2(0, -0.5f));
 	commandInputField->setCoordinateOrigin(glm::vec2(0, -0.5f));
 	commandInputField->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
@@ -85,7 +86,7 @@ void Voxel::DebugConsole::init()
 
 	debugCanvas->addChild(commandInputField, 0);
 
-	commandHistoryBg = UI::Image::createFromSpriteSheet("cmdHistoryBg", "UISpriteSheet", "2x2.png");
+	commandHistoryBg = UI::Image::createFromSpriteSheet("cmdHistoryBg", "GlobalSpriteSheet", "2x2_black.png");
 	commandHistoryBg->setCoordinateOrigin(glm::vec2(0, -0.5f));
 	commandHistoryBg->setPivot(glm::vec2(0, -0.5f));
 	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 85.0f));
@@ -734,7 +735,11 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 								std::cout << "Fail.\n";
 							}
 							closeConsole();
-							Application::getInstance().getGame()->toggleCursorMode(false);
+							Game* game = Application::getInstance().getDirector()->getCurrentScene<Game>();
+							if (game)
+							{
+								game->toggleCursorMode(false);
+							}
 							return;
 						}
 					}

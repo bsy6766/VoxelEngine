@@ -86,7 +86,7 @@ namespace Voxel
 			*	@param imageFileName Name of image file.
 			*	@return Image instance if successfully loads image and creates ui. Else, nullptr if anything fails.
 			*/
-			static Image* create(const std::string& name, std::string& imageFileName);
+			static Image* create(const std::string& name, const std::string& imageFileName);
 
 			/**
 			*	Creates image from sprite sheet.

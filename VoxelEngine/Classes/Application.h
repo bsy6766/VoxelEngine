@@ -12,8 +12,8 @@
 namespace Voxel
 {
 	// Foward
-	class Game;
 	class DataTree;
+	class Director;
 
 	class Application
 	{
@@ -24,25 +24,34 @@ namespace Voxel
 		Application& operator=(Application const&) = delete;  // Copy assign
 		Application& operator=(Application &&) = delete;      // Move assign
 	private:
-		// Consturctor and Destructor. 
+		// Consturctor
 		Application();
+
+		// Destructor
 		~Application();
 
 		// OpenGL
 		GLView* glView;
 
-		// Initialize functions
+		// Initialize GLView (OpenGL and GLEW)
 		void initGLView();
+
+		// Initialize main camera
 		void initMainCamera();
-		void initGame();
+
+		// Initailzie game
+		void initDirector();
+
+		// Initialize internal settings
 		void initInternalSettings();
 
 		// Path to working directory
 		std::string workingDirectory;
+		
+		// Director
+		Director* director;
 
-		// game
-		Game* game;
-
+		// Set true to skip next frame.
 		bool needToSkipFrame;
 
 		// internal setting
@@ -72,8 +81,8 @@ namespace Voxel
 		// Get OpenGL
 		GLView* getGLView();
 
-		// Get game
-		Game* getGame();
+		// Get director
+		Director* getDirector();
 
 		// Get working directory
 		std::string getWorkingDirectory();

@@ -22,7 +22,7 @@ Voxel::UI::CheckBox * Voxel::UI::CheckBox::create(const std::string & name, cons
 
 	auto& ssm = SpriteSheetManager::getInstance();
 
-	auto ss = ssm.getSpriteSheet(spriteSheetName);
+	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
 	if (ss)
 	{
