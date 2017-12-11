@@ -47,6 +47,15 @@ namespace Voxel
 			IDLE = 0,			// update and renders current scene if there is current scene
 			TRANSITIONING,		// Transition between current scene and next scene
 		};
+
+		enum class FadeState
+		{
+			READY = 0,
+			FADE_IN,
+			DELAY,
+			FADE_OUT,
+			FINISHED
+		};
 	private:
 		// scene
 		Scene* currentScene;
@@ -54,6 +63,9 @@ namespace Voxel
 		
 		// State
 		State state;
+
+		// Fade state
+		FadeState fadeState;
 
 		// Transition attribs
 		float duration;

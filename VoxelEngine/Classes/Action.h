@@ -13,7 +13,9 @@ namespace Voxel
 
 		/**
 		*	@class Action
-		*	@brief Base class for all actions and sequence.
+		*	@brief An action for UI. Can apply various actions such as movement, rotation, fade and more to ui object.
+		*
+		*	Action is base class for all other ui action classes including decorator like sequence, repeat, etc.
 		*/
 		class Action
 		{
@@ -21,31 +23,36 @@ namespace Voxel
 			// Constructor
 			Action();
 
-			// duration of action
+			// Total duration of this action
 			float duration;
 
-			// elapsed time
+			// Elapsed time for this action
 			float elapsedTime;
-
 		public:
-			// Destructor
+			// Default destructor.
 			virtual ~Action() = default;
 
-			// Check if action is done
-			bool isDone();
+			// Check if action is done. Action is done if time is up (elapsedTime >= duration)
+			virtual bool isDone() const;
 
-			// Get exceeded time 
-			float getExceededTime();
+			// Get exceeded time.
+			float getExceededTime() const ;
 
-			// set target. Derived class override this
-			virtual void setTarget(TransformNode* target);
-			
-			// reset
+			// Get duration
+			float getDuration() const;
+
+			// Get elapsedTime
+			float getElapsedTime() const;
+
+			// Reset action
 			void reset();
 
-			// Update action
+			// set target. Derived classes override this
+			virtual void setTarget(TransformNode* target);
+
+			// Update action. All derived actions must override
 			virtual void update(const float delta) = 0;
-		};		
+		};	
 	}
 }
 

@@ -17,6 +17,7 @@
 #include "Application.h"
 #include "Utility.h"
 #include "Canvas.h"
+#include "UIActions.h"
 
 // glm
 #include <glm/gtx/transform.hpp>
@@ -62,7 +63,6 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	, coordinateOrigin(0.0f)
 	, contentSize(0.0f)
 	, modelMat(1.0f)
-	, sequence(nullptr)
 	, zOrder()
 	, boundingBox(glm::vec2(0.0), glm::vec2(0.0f))
 	, needToUpdateModelMat(false)
@@ -75,10 +75,15 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 
 Voxel::UI::TransformNode::~TransformNode()
 {
-	if (sequence)
+	for (auto action : actions)
 	{
-		delete sequence;
+		if (action)
+		{
+			delete action;
+		}
 	}
+
+	actions.clear();
 
 	//std::cout << "~TransformNode()\n";
 }
@@ -532,6 +537,19 @@ void Voxel::UI::TransformNode::getAllChildrenInVector(std::vector<TransformNode*
 	}
 }
 
+void Voxel::UI::TransformNode::stopAllActions()
+{
+	for (auto action : actions)
+	{
+		if (action)
+		{
+			delete action;
+		}
+	}
+
+	actions.clear();
+}
+
 void Voxel::UI::TransformNode::print(const int tab)
 {
 	for (int i = 0; i < tab; i++)
@@ -612,13 +630,21 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 
 void Voxel::UI::TransformNode::update(const float delta)
 {
-	if (sequence)
+	if (!actions.empty())
 	{
-		sequence->update(delta);
-
-		if (sequence->isFinished())
+		auto it = actions.begin();
+		for (; it != actions.end();)
 		{
-			delete sequence;
+			if ((*it)->isDone())
+			{
+				delete (*it);
+				it = actions.erase(it);
+			}
+			else
+			{
+				(*it)->update(delta);
+				++it;
+			}
 		}
 
 		needToUpdateModelMat = true;
@@ -660,14 +686,14 @@ bool Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition, 
 	}
 }
 
-bool Voxel::UI::TransformNode::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::TransformNode::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
 	if (!children.empty())
 	{
 		bool clicked = false;
 		for (auto& child : children)
 		{
-			bool result = (child.second)->updateMouseClick(mousePosition, button);
+			bool result = (child.second)->updateMousePress(mousePosition, button);
 			if (result)
 			{
 				clicked = true;
@@ -721,17 +747,12 @@ void Voxel::UI::TransformNode::updateBoundary(const Voxel::Shape::Rect& canvasBo
 	}
 }
 
-void Voxel::UI::TransformNode::runAction(Voxel::UI::Sequence * sequence)
+void Voxel::UI::TransformNode::runAction(Voxel::UI::Action * action)
 {
-	if (this->sequence)
+	if (action)
 	{
-		delete sequence;
-	}
-
-	if (sequence)
-	{
-		this->sequence = sequence;
-		this->sequence->setTarget(this);
+		actions.push_back(action);
+		actions.back()->setTarget(this);
 	}
 }
 

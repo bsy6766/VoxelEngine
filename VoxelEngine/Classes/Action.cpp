@@ -5,21 +5,21 @@
 
 // cpp
 #include <iostream>
-#include "Delay.h"
 
 Voxel::UI::Action::Action()
 	: duration(0.0f)
 	, elapsedTime(0.0f)
-{}
+{
+}
 
-bool Voxel::UI::Action::isDone()
+bool Voxel::UI::Action::isDone() const
 {
 	return elapsedTime >= duration;
 }
 
-float Voxel::UI::Action::getExceededTime()
+float Voxel::UI::Action::getExceededTime() const
 {
-	if (isDone())
+	if (elapsedTime >= duration)
 	{
 		return elapsedTime - duration;
 	}
@@ -29,12 +29,22 @@ float Voxel::UI::Action::getExceededTime()
 	}
 }
 
-void Voxel::UI::Action::setTarget(TransformNode * target)
+float Voxel::UI::Action::getDuration() const
 {
-	// does nothing
+	return duration;
+}
+
+float Voxel::UI::Action::getElapsedTime() const
+{
+	return elapsedTime;
 }
 
 void Voxel::UI::Action::reset()
 {
-	elapsedTime = 0.0;
+	elapsedTime = 0.0f;
+}
+
+void Voxel::UI::Action::setTarget(TransformNode * target)
+{
+	// does nothing
 }

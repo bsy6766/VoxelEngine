@@ -352,7 +352,7 @@ bool Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition, const
 	}
 }
 
-bool Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::CheckBox::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
 	bool clicked = false;
 
@@ -388,7 +388,7 @@ bool Voxel::UI::CheckBox::updateMouseClick(const glm::vec2 & mousePosition, cons
 	if (!clicked)
 	{
 		// button was not clicked. check if there is another button in children that might possibly clicked
-		clicked = Voxel::UI::TransformNode::updateMouseClick(mousePosition, button);
+		clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
 	}
 
 	return clicked;

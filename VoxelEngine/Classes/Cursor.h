@@ -61,6 +61,9 @@ namespace Voxel
 
 			// Initailize all cursors
 			bool init();
+
+			// check ursor boundary
+			void checkBoundary();
 		public:
 			// Destructor
 			~Cursor();
@@ -73,6 +76,12 @@ namespace Voxel
 			*	@param distance Amount of distance to add to cursor's position
 			*/
 			void addPosition(const glm::vec2& distance);
+
+			/**
+			*	Set position 
+			*	@param position New cursor position
+			*/
+			void setPosition(const glm::vec2& position);
 
 			/**
 			*	Updates boundary. Call this whenever window size changes.

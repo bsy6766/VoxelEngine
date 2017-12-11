@@ -92,9 +92,6 @@ void Voxel::Application::initMainCamera()
 
 void Voxel::Application::initDirector()
 {
-	//game = new Game();
-	//game->init();
-	//game->createNew("New World");
 	director = new Director();
 	director->runScene(Voxel::Director::SceneName::MENU_SCENE);
 }

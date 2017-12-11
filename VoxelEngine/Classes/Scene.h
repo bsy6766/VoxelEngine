@@ -26,6 +26,9 @@ namespace Voxel
 		// Called when scene enters.
 		virtual void onEnter() = 0;
 
+		// Callsed when scene enter finished
+		virtual void onEnterFinished() = 0;
+
 		// Called when scene exits. This is called before the destructor of derived class.
 		virtual void onExit() = 0;
 

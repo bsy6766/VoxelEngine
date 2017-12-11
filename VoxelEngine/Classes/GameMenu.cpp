@@ -3,7 +3,7 @@
 // voxel
 #include "Application.h"
 #include "Director.h"
-#include "Game.h"
+#include "GameScene.h"
 
 // cpp
 #include <functional>
@@ -12,9 +12,7 @@ Voxel::GameMenu::GameMenu()
 	: canvas(nullptr)
 	, gameMenu(nullptr)
 	, menuState(STATE::CLOSED)
-{
-	init();
-}
+{}
 
 Voxel::GameMenu::~GameMenu()
 {
@@ -24,7 +22,7 @@ Voxel::GameMenu::~GameMenu()
 	}
 }
 
-void Voxel::GameMenu::init()
+void Voxel::GameMenu::init(GameScene* gameScenePtr)
 {
 	// init all game menu ui
 	auto screenSize = Application::getInstance().getGLView()->getScreenSize();
@@ -48,7 +46,7 @@ void Voxel::GameMenu::init()
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY);
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&Game::onReturnToGameClicked, Application::getInstance().getDirector()->getCurrentScene<Game>()));
+	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&GameScene::onReturnToGameClicked, gameScenePtr));
 	gameMenu->addChild(returnToGameBtn);
 
 	auto optionBtn = Voxel::UI::Button::create("oBtn", ss, "game_menu_option_button.png");
@@ -129,9 +127,9 @@ void Voxel::GameMenu::updateMouseMove(const glm::vec2 & mousePosition)
 	canvas->updateMouseMove(mousePosition, glm::vec2(0.0f));
 }
 
-void Voxel::GameMenu::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+void Voxel::GameMenu::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	canvas->updateMouseClick(mousePosition, button);
+	canvas->updateMousePress(mousePosition, button);
 }
 
 void Voxel::GameMenu::updateMouseReleased(const glm::vec2 & mousePosition, const int button)

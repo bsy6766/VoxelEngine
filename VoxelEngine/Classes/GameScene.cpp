@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "GameScene.h"
 
 // cpp
 #include <algorithm>
@@ -58,7 +58,7 @@
 
 using namespace Voxel;
 
-Game::Game()
+GameScene::GameScene()
 	: world(nullptr)
 	, chunkMap(nullptr)
 	, chunkMeshGenerator(nullptr)
@@ -94,7 +94,7 @@ Game::Game()
 	//Camera::mainCamera->initDebugFrustumLines();
 }
 
-Game::~Game()
+GameScene::~GameScene()
 {
 	// Stop running mesh building before releasing
 	chunkWorkManager->stop();
@@ -112,7 +112,7 @@ Game::~Game()
 	FontManager::getInstance().clear();
 }
 
-void Voxel::Game::init()
+void Voxel::GameScene::init()
 {
 	// Init random first
 	initRandoms();
@@ -182,12 +182,22 @@ void Voxel::Game::init()
 	//debugConsole->updateResolution(1920, 1080);
 }
 
-void Voxel::Game::initSpriteSheets()
+void Voxel::GameScene::onEnter()
+{}
+
+void Voxel::GameScene::onEnterFinished()
+{
+	createNew("New world");
+}
+
+void Voxel::GameScene::onExit()
+{}
+
+void Voxel::GameScene::initSpriteSheets()
 {
 	auto& ssm = SpriteSheetManager::getInstance();
 
 	ssm.addSpriteSheet("UISpriteSheet.json");
-	ssm.addSpriteSheet("CursorSpriteSheet.json");
 	ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
 
 #if V_DEBUG
@@ -195,7 +205,7 @@ void Voxel::Game::initSpriteSheets()
 #endif
 }
 
-void Voxel::Game::initRandoms()
+void Voxel::GameScene::initRandoms()
 {
 	globalSeed = "ENGINE";
 	Utility::Random::setSeed(globalSeed);
@@ -205,7 +215,7 @@ void Voxel::Game::initRandoms()
 	rand.init(globalSeed);
 }
 
-void Voxel::Game::initUI()
+void Voxel::GameScene::initUI()
 {
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
 	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
@@ -219,7 +229,7 @@ void Voxel::Game::initUI()
 	initGameMenu();
 }
 
-void Voxel::Game::initLoadingScreen()
+void Voxel::GameScene::initLoadingScreen()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 	
@@ -242,7 +252,7 @@ void Voxel::Game::initLoadingScreen()
 	loadingCanvas->addChild(loadingLabel, 1);
 }
 
-void Voxel::Game::initDefaultCanvas()
+void Voxel::GameScene::initDefaultCanvas()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize(); 
 	
@@ -271,31 +281,32 @@ void Voxel::Game::initDefaultCanvas()
 
 }
 
-void Voxel::Game::initCursor()
+void Voxel::GameScene::initCursor()
 {
 	// cursor
 	cursor = UI::Cursor::create();
 }
 
-void Voxel::Game::initGameMenu()
+void Voxel::GameScene::initGameMenu()
 {
 	// game menu
 	gameMenu = new GameMenu();
+	gameMenu->init(this);
 }
 
-void Voxel::Game::initSkyBox()
+void Voxel::GameScene::initSkyBox()
 {
 	skybox = new Skybox();
 	// Always set skybox with max render distance
 	skybox->init(settingPtr->getRenderDistance());
 }
 
-void Voxel::Game::initWorldMap()
+void Voxel::GameScene::initWorldMap()
 {
 	worldMap->buildMesh(world);
 }
 
-void Voxel::Game::initMeshBuilderThread()
+void Voxel::GameScene::initMeshBuilderThread()
 {
 	// run first, create thread later
 	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
@@ -305,7 +316,7 @@ void Voxel::Game::initMeshBuilderThread()
 	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, world, concurentThreadsSupported);
 }
 
-void Voxel::Game::release()
+void Voxel::GameScene::release()
 {
 	std::cout << "[World] Releasing all instances\n";
 
@@ -335,7 +346,7 @@ void Voxel::Game::release()
 	if (world) delete world;
 }
 
-void Voxel::Game::createNew(const std::string & worldName)
+void Voxel::GameScene::createNew(const std::string & worldName)
 {
 	auto start = Utility::Time::now();
 	// Create folder
@@ -371,7 +382,7 @@ void Voxel::Game::createNew(const std::string & worldName)
 	std::cout << "New world creation took " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Game::createPlayer()
+void GameScene::createPlayer()
 {
 	// For now, set 0 to 0. Todo: Make topY() function that finds hieghts y that player can stand.
 	player->init();
@@ -386,7 +397,7 @@ void Game::createPlayer()
 	Camera::mainCamera->setSpeed(100.0f);
 }
 
-void Game::createChunkMap()
+void GameScene::createChunkMap()
 {
 	// Debug: measure time
 	auto start = Utility::Time::now();
@@ -421,7 +432,7 @@ void Game::createChunkMap()
 	std::cout << "[ChunkMap] ElapsedTime: " << Utility::Time::toMilliSecondString(start, end) << std::endl;
 }
 
-void Voxel::Game::createWorld()
+void Voxel::GameScene::createWorld()
 {
 	world->setTemperature(0.5f, 1.5f);
 	world->setMoisture(0.5f, 1.5f);
@@ -438,7 +449,7 @@ void Voxel::Game::createWorld()
 	std::cout << "Placing player to starting region #: " << world->getCurrentRegion()->getID() << ", at (" << pp.x << ", " << pp.z << ")\n";
 }
 
-void Voxel::Game::teleportPlayer(const glm::vec3 & position)
+void Voxel::GameScene::teleportPlayer(const glm::vec3 & position)
 {
 	std::cout << "Teleporint to " << Utility::Log::vec3ToStr(position) << "\n";
 
@@ -462,7 +473,7 @@ void Voxel::Game::teleportPlayer(const glm::vec3 & position)
 	skipUpdate = true;
 }
 
-void Game::update(const float delta)
+void GameScene::update(const float delta)
 {
 	if (loadingState == LoadingState::INITIALIZING)
 	{
@@ -644,7 +655,7 @@ void Game::update(const float delta)
 	}
 }
 
-glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
+glm::vec3 Voxel::GameScene::getMovedDistByKeyInput(const float angleMod, const glm::vec3 axis, float distance)
 {
 	float angle = 0;
 	if (axis.y == 1.0f)
@@ -663,7 +674,7 @@ glm::vec3 Voxel::Game::getMovedDistByKeyInput(const float angleMod, const glm::v
 	return movedDist;
 }
 
-void Voxel::Game::updateKeyboardInput(const float delta)
+void Voxel::GameScene::updateKeyboardInput(const float delta)
 {
 #if V_DEBUG && V_DEBUG_CONSOLE
 	// Handle Escape key. 
@@ -960,7 +971,7 @@ void Voxel::Game::updateKeyboardInput(const float delta)
 	}
 }
 
-void Voxel::Game::updateMouseMoveInput(const float delta)
+void Voxel::GameScene::updateMouseMoveInput(const float delta)
 {
 	// Get current mouse pos
 	auto curMousePos = input->getMousePosition();
@@ -1054,7 +1065,7 @@ void Voxel::Game::updateMouseMoveInput(const float delta)
 	}
 }
 
-void Voxel::Game::updateMouseClickInput()
+void Voxel::GameScene::updateMouseClickInput()
 {
 	int button = -1;
 	bool clicked = false;
@@ -1095,7 +1106,7 @@ void Voxel::Game::updateMouseClickInput()
 	{
 		if (clicked)
 		{
-			debugConsole->updateMouseClick(cursor->getPosition(), button);
+			debugConsole->updateMousePress(cursor->getPosition(), button);
 		}
 		else
 		{
@@ -1124,7 +1135,7 @@ void Voxel::Game::updateMouseClickInput()
 			{
 				if (clicked)
 				{
-					gameMenu->updateMouseClick(cursor->getPosition(), button);
+					gameMenu->updateMousePress(cursor->getPosition(), button);
 				}
 				else
 				{
@@ -1159,7 +1170,7 @@ void Voxel::Game::updateMouseClickInput()
 	}
 }
 
-void Voxel::Game::updateMouseScrollInput(const float delta)
+void Voxel::GameScene::updateMouseScrollInput(const float delta)
 {
 	auto mouseScroll = input->getMouseScrollValue();
 	if (gameState == GameState::IDLE)
@@ -1187,7 +1198,7 @@ void Voxel::Game::updateMouseScrollInput(const float delta)
 	}
 }
 
-void Voxel::Game::updateControllerInput(const float delta)
+void Voxel::GameScene::updateControllerInput(const float delta)
 {
 	if (input->hasController())
 	{
@@ -1258,7 +1269,7 @@ void Voxel::Game::updateControllerInput(const float delta)
 	}
 }
 
-void Voxel::Game::updatePhysics(const float delta)
+void Voxel::GameScene::updatePhysics(const float delta)
 {
 	// Don't update if player is flying
 	if (player->isFlying()) return;
@@ -1373,7 +1384,7 @@ void Voxel::Game::updatePhysics(const float delta)
 	//std::cout << "Player vs blocks collision resolution took: " << Utility::Time::toMicroSecondString(start, end) << std::endl;
 }
 
-void Voxel::Game::updateChunks()
+void Voxel::GameScene::updateChunks()
 {
 	// Update chunk.
 	// Based on player position, check if player moved to new chunk
@@ -1410,7 +1421,7 @@ void Voxel::Game::updateChunks()
 #endif
 }
 
-void Voxel::Game::updatePlayerRaycast()
+void Voxel::GameScene::updatePlayerRaycast()
 {
 	auto result = chunkMap->raycastBlock(player->getEyePosition(), player->getDirection(), player->getRange());
 	player->setLookingBlock(result.block, result.face);
@@ -1429,7 +1440,7 @@ void Voxel::Game::updatePlayerRaycast()
 #endif
 }
 
-void Voxel::Game::updatePlayerCameraCollision()
+void Voxel::GameScene::updatePlayerCameraCollision()
 {
 	// auto start = Utility::Time::now();
 
@@ -1598,14 +1609,14 @@ void Voxel::Game::updatePlayerCameraCollision()
 	//std::cout << "t: " << Utility::Time::toMicroSecondString(start, end) << "\n";
 }
 
-void Voxel::Game::openWorldMap()
+void Voxel::GameScene::openWorldMap()
 {
 	std::cout << "[Game] Opening world map\n";
 	gameState = GameState::VIEWING_WORLD_MAP;
 	toggleCursorMode(true);
 }
 
-void Voxel::Game::closeWorldMap()
+void Voxel::GameScene::closeWorldMap()
 {
 	std::cout << "[Game] Closing world map\n";
 	gameState = GameState::IDLE;
@@ -1615,7 +1626,7 @@ void Voxel::Game::closeWorldMap()
 	worldMap->updateModelMatrix();
 }
 
-void Voxel::Game::replacePlayerToTopY()
+void Voxel::GameScene::replacePlayerToTopY()
 {
 	auto playerPosition = player->getPosition();
 	if (playerPosition.y == -1)
@@ -1628,7 +1639,7 @@ void Voxel::Game::replacePlayerToTopY()
 	player->setPosition(playerPosition, false);
 }
 
-void Voxel::Game::checkUnloadedChunks()
+void Voxel::GameScene::checkUnloadedChunks()
 {
 	// Iterate until queue is empty
 	while (true)
@@ -1656,7 +1667,7 @@ void Voxel::Game::checkUnloadedChunks()
 	}
 }
 
-void Voxel::Game::toggleCursorMode(const bool mode)
+void Voxel::GameScene::toggleCursorMode(const bool mode)
 {
 	if (mode)
 	{
@@ -1668,14 +1679,14 @@ void Voxel::Game::toggleCursorMode(const bool mode)
 	}
 }
 
-void Voxel::Game::onReturnToGameClicked()
+void Voxel::GameScene::onReturnToGameClicked()
 {
 	gameMenu->close();
 	gameState = GameState::IDLE;
 	toggleCursorMode(false);
 }
 
-void Voxel::Game::refreshChunkMap()
+void Voxel::GameScene::refreshChunkMap()
 {
 	std::cout << "Refreshing all chunk meshes" << std::endl;
 
@@ -1689,7 +1700,7 @@ void Voxel::Game::refreshChunkMap()
 	reloadState = ReloadState::CHUNK_MESH;
 }
 
-void Voxel::Game::rebuildChunkMap()
+void Voxel::GameScene::rebuildChunkMap()
 {
 	// First, we need to clear chunk work manager. Then, wait till it clears all the work. Once it's done, it will wait for main thread to clear chunk map.
 	std::cout << "Rebuilding chunk map\n";
@@ -1704,7 +1715,7 @@ void Voxel::Game::rebuildChunkMap()
 	reloadState = ReloadState::CHUNK_MAP;
 }
 
-void Voxel::Game::rebuildWorld()
+void Voxel::GameScene::rebuildWorld()
 {
 	std::cout << "Rebuiling the world\n";
 
@@ -1718,7 +1729,7 @@ void Voxel::Game::rebuildWorld()
 	reloadState = ReloadState::WORLD;
 }
 
-void Game::render()
+void GameScene::render()
 {
 	if (loadingState == LoadingState::INITIALIZING || loadingState == LoadingState::RELOADING)
 	{
@@ -1735,7 +1746,7 @@ void Game::render()
 	}
 }
 
-void Voxel::Game::renderGame()
+void Voxel::GameScene::renderGame()
 {
 	if (gameState == GameState::IDLE)
 	{
@@ -1764,7 +1775,7 @@ void Voxel::Game::renderGame()
 	cursor->render();
 }
 
-void Voxel::Game::renderWorld()
+void Voxel::GameScene::renderWorld()
 {
 	// Render world.
 
@@ -1895,7 +1906,7 @@ void Voxel::Game::renderWorld()
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::renderWorldMap()
+void Voxel::GameScene::renderWorldMap()
 {
 	// ---------------------------- Render world Map ----------------------------------------
 	glm::mat4 viewMat = worldMap->getViewMatrix();
@@ -1924,7 +1935,7 @@ void Voxel::Game::renderWorldMap()
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::renderLoadingScreen()
+void Voxel::GameScene::renderLoadingScreen()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
@@ -1933,7 +1944,7 @@ void Voxel::Game::renderLoadingScreen()
 	loadingCanvas->render();
 }
 
-void Voxel::Game::renderUI()
+void Voxel::GameScene::renderUI()
 {
 	// Clear depth buffer and render above current buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -1950,7 +1961,7 @@ void Voxel::Game::renderUI()
 	// --------------------------------------------------------------------------------------
 }
 
-void Voxel::Game::setFogEnabled(const bool enabled)
+void Voxel::GameScene::setFogEnabled(const bool enabled)
 {
 	skybox->setFogEnabled(enabled);
 
@@ -1971,7 +1982,7 @@ void Voxel::Game::setFogEnabled(const bool enabled)
 }
 
 #if V_DEBUG && V_DEBUG_CONSOLE
-void Voxel::Game::initDebugConsole()
+void Voxel::GameScene::initDebugConsole()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 
@@ -1987,12 +1998,12 @@ void Voxel::Game::initDebugConsole()
 	debugConsole->calendar = calendar;
 }
 
-void Voxel::Game::releaseDebugConsole()
+void Voxel::GameScene::releaseDebugConsole()
 {
 	if (debugConsole) delete debugConsole;
 }
 
-void Voxel::Game::renderDebugConsole()
+void Voxel::GameScene::renderDebugConsole()
 {
 	debugConsole->render();
 	//debugConsole->updateDrawCallsAndVerticesSize();

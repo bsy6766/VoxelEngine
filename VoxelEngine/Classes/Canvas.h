@@ -86,7 +86,7 @@ namespace Voxel
 			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
 			*	@return true if mouse clicked on ui. Else, false.
 			*/
-			bool updateMouseClick(const glm::vec2& mousePosition, const int button) override;
+			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
 
 			/**
 			*	update mouse released

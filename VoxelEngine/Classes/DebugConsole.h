@@ -24,7 +24,7 @@
 namespace Voxel
 {
 	class Player;
-	class Game;
+	class GameScene;
 	class ChunkMap;
 	class World;
 	class Setting;
@@ -84,7 +84,7 @@ namespace Voxel
 
 		// instances for debug
 		Player* player;
-		Game* game;
+		GameScene* game;
 		World* world;
 		ChunkMap* chunkMap;
 		Setting* settingPtr;
@@ -107,7 +107,7 @@ namespace Voxel
 		
 		void update(const float delta);
 		void updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
-		void updateMouseClick(const glm::vec2& mousePosition, const int button);
+		void updateMousePress(const glm::vec2& mousePosition, const int button);
 		void updateMouseRelease(const glm::vec2& mousePosition, const int button);
 		void updateResolution(int width, int height);
 		void updateVsync(bool vsync);

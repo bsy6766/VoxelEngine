@@ -15,7 +15,7 @@
 #include "ChunkUtil.h"
 #include "InputHandler.h"
 #include "Player.h"
-#include "Game.h"
+#include "GameScene.h"
 #include "World.h"
 #include "Region.h"
 #include "Camera.h"
@@ -735,7 +735,7 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 								std::cout << "Fail.\n";
 							}
 							closeConsole();
-							Game* game = Application::getInstance().getDirector()->getCurrentScene<Game>();
+							GameScene* game = Application::getInstance().getDirector()->getCurrentScene<GameScene>();
 							if (game)
 							{
 								game->toggleCursorMode(false);
@@ -2082,9 +2082,9 @@ void Voxel::DebugConsole::updateMouseMove(const glm::vec2 & mousePosition, const
 	debugCanvas->updateMouseMove(mousePosition, mouseDelta);
 }
 
-void Voxel::DebugConsole::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+void Voxel::DebugConsole::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	debugCanvas->updateMouseClick(mousePosition, button);
+	debugCanvas->updateMousePress(mousePosition, button);
 }
 
 void Voxel::DebugConsole::updateMouseRelease(const glm::vec2 & mousePosition, const int button)

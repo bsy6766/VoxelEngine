@@ -73,14 +73,14 @@ bool Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition, const g
 	return moved;
 }
 
-bool Voxel::UI::Canvas::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::Canvas::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
 	if (!isInteractable()) return false;
 
 	bool clicked = false;
 	for (auto& e : children)
 	{
-		bool result = (e.second)->updateMouseClick(mousePosition, button);
+		bool result = (e.second)->updateMousePress(mousePosition, button);
 		if (result)
 		{
 			clicked = true;

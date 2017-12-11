@@ -6,6 +6,9 @@
 
 namespace Voxel
 {
+	// foward declaration
+	class GameScene;
+
 	class GameMenu
 	{
 	private:
@@ -35,9 +38,6 @@ namespace Voxel
 		// state
 		STATE menuState;
 
-		// initialize all uis
-		void init();
-
 		// reset game menu. Return to front page. Called when game menu gets closed
 		void reset();
 
@@ -51,6 +51,9 @@ namespace Voxel
 
 		// Destructor
 		~GameMenu();
+
+		// initialize all uis
+		void init(GameScene* gameScenePtr);
 
 		// Opens game menu
 		void open();
@@ -68,7 +71,7 @@ namespace Voxel
 		void updateMouseMove(const glm::vec2& mousePosition);
 
 		// update mouse click on game menu
-		void updateMouseClick(const glm::vec2& mousePosition, const int button);
+		void updateMousePress(const glm::vec2& mousePosition, const int button);
 
 		// update mouse release on game menu
 		void updateMouseReleased(const glm::vec2& mousePosition, const int button);

@@ -12,7 +12,6 @@
 #include "Biome.h"
 #include "Application.h"
 #include "HeightMap.h"
-#include "Game.h"
 #include "World.h"
 #include "Region.h"
 

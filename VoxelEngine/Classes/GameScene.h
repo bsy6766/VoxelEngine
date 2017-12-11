@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef GAME_SCENE_H
+#define GAME_SCENE_H
 
 // cpp
 #include <string>
@@ -14,7 +14,8 @@
 #include <GLFW\glfw3.h>
 
 // Voxel
-#include <Config.h>
+#include "Config.h"
+#include "Scene.h"
 
 namespace Voxel
 {
@@ -45,7 +46,7 @@ namespace Voxel
 	*	@class Game
 	*	@brief A game. Manages everything that is in the game (World, player, input, etc)
 	*/
-	class Game
+	class GameScene : public Scene
 	{
 	private:
 		enum class UI_Z_ORDER : int
@@ -235,22 +236,22 @@ namespace Voxel
 		void checkUnloadedChunks();
 	public:
 		// Constructor
-		Game();
+		GameScene();
 
 		// Destructor
-		~Game();
+		~GameScene();
 
 		// Initialize all sub system and instances
-		void init();
+		void init() override;
+		void onEnter() override;
+		void onEnterFinished() override;
+		void onExit() override;
 
 		// create new. 
 		void createNew(const std::string& worldName);
 		
 		// teleport player
 		void teleportPlayer(const glm::vec3& position);
-
-		// Updates (tick) the world.
-		void update(const float delta);
 
 		// refresh chunk map. Release all meshes and rebuild mesh only.
 		void refreshChunkMap();
@@ -277,10 +278,11 @@ namespace Voxel
 		*/
 		void setFogEnabled(const bool enabled);
 
-		/**
-		*	Root function for all rendering
-		*/
-		void render();
+		// Update game
+		void update(const float delta) override;
+
+		// render game
+		void render() override;
 
 		/**
 		*	Renders game based on game state

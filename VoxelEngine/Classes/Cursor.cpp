@@ -98,21 +98,8 @@ bool Voxel::UI::Cursor::init()
 	return true;
 }
 
-Voxel::UI::Cursor * Voxel::UI::Cursor::create()
+void Voxel::UI::Cursor::checkBoundary()
 {
-	Cursor* newCursor = new Cursor();
-	if (newCursor->init())
-	{
-		return newCursor;
-	}
-
-	delete newCursor;
-	return nullptr;
-}
-
-void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
-{
-	this->position += distance;
 
 	if (this->position.x > maxScreenBoundary.x)
 	{
@@ -131,6 +118,32 @@ void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
 	{
 		this->position.y = minScreenBoundary.y;
 	}
+}
+
+Voxel::UI::Cursor * Voxel::UI::Cursor::create()
+{
+	Cursor* newCursor = new Cursor();
+	if (newCursor->init())
+	{
+		return newCursor;
+	}
+
+	delete newCursor;
+	return nullptr;
+}
+
+void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
+{
+	this->position += distance;
+
+	checkBoundary();
+}
+
+void Voxel::UI::Cursor::setPosition(const glm::vec2 & position)
+{
+	this->position = position;
+
+	checkBoundary();
 }
 
 void Voxel::UI::Cursor::updateBoundary()

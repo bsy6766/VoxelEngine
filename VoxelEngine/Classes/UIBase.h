@@ -14,11 +14,11 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <list>
 
 // Voxel
 #include "ZOrder.h"
 #include "Shape.h"
-#include "Sequence.h"
 
 namespace Voxel
 {
@@ -33,6 +33,7 @@ namespace Voxel
 		class Node;
 		class TransformNode;
 		class RenderNode;
+		class Action;
 
 		typedef std::map<ZOrder, std::unique_ptr<TransformNode>, ZOrderComp> Children;
 
@@ -143,7 +144,7 @@ namespace Voxel
 			Voxel::Shape::Rect boundingBox;
 			
 			// Action sequence
-			Voxel::UI::Sequence* sequence;
+			std::list<Voxel::UI::Action*> actions;
 
 			// update bounding box center
 			void updateBoundingBox();
@@ -370,7 +371,7 @@ namespace Voxel
 			*	@param mousePosition Current position of mouse in screen space
 			*	@param button Clciked mouse button. 0 = left, 1 = right, 2 = middle
 			*/
-			virtual bool updateMouseClick(const glm::vec2& mousePosition, const int button);
+			virtual bool updateMousePress(const glm::vec2& mousePosition, const int button);
 
 			/**
 			*	update mouse release
@@ -387,7 +388,12 @@ namespace Voxel
 			/**
 			*	Run action.
 			*/
-			void runAction(Voxel::UI::Sequence* sequence);
+			void runAction(Voxel::UI::Action* action);
+
+			/**
+			*	Stops all actions and release it
+			*/
+			void stopAllActions();
 
 			// Debug print
 			virtual void print(const int tab);

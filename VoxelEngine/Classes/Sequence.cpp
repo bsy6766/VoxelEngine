@@ -8,27 +8,18 @@
 #include <iostream>
 
 Voxel::UI::Sequence::Sequence()
-	: repeating(false)
-	, sequenceState(State::RUNNING)
-	, currenActionIndex(-1)
+	: Action()
+	, first(nullptr)
+	, second(nullptr)
 {}
 
-Voxel::UI::Sequence::~Sequence()
-{
-	for (auto action : actions)
-	{
-		delete action;
-	}
-}
-
-bool Voxel::UI::Sequence::init(Action * action, const bool repeat)
+bool Voxel::UI::Sequence::init(Action * action)
 {
 	if (action)
 	{
-		actions.push_back(action);
+		first = action;
 
-		this->repeating = repeat;
-		this->currenActionIndex = 0;
+		this->duration = first->getDuration();
 
 		return true;
 	}
@@ -38,51 +29,64 @@ bool Voxel::UI::Sequence::init(Action * action, const bool repeat)
 	}
 }
 
-Voxel::UI::Sequence * Voxel::UI::Sequence::create(Action * action, const bool repeat)
+bool Voxel::UI::Sequence::init(Action * first, Action * second)
 {
-	auto newSeq = new Sequence();
+	if (first && second)
+	{
+		this->first = first;
+		this->second = second;
+
+		this->duration = this->first->getDuration() + this->second->getDuration();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::Sequence::init(const std::initializer_list<Action*>& actions)
+{
+	auto it = actions.begin();
+	auto prev = *it;
+	auto size = actions.size();
 	
-	if (newSeq->init(action, repeat))
+	for (unsigned int i = 1; i < (size - 1); ++i)
 	{
-		return newSeq;
+		it = std::next(it);
+		prev = create(prev, *it);
 	}
-	else
+
+	first = prev;
+	second = *std::next(it);
+
+	for (auto action : actions)
 	{
-		delete newSeq;
-		return nullptr;
+		this->duration += action->getDuration();
 	}
+
+	return true;
 }
 
-bool Voxel::UI::Sequence::init(const std::initializer_list<Action*>& actions, const bool repeat)
+Voxel::UI::Sequence::~Sequence()
 {
-	if (actions.size() > 0)
+	if (first)
 	{
-		for (auto action : actions)
-		{
-			if (action == nullptr)
-			{
-				return false;
-			}
-
-			this->actions.push_back(action);
-		}
-
-		this->repeating = repeat;
-		this->currenActionIndex = 0;
-
-		return true;
+		delete first;
 	}
-	else
+
+	if (second)
 	{
-		return false;
+		delete second;
 	}
 }
 
-Voxel::UI::Sequence * Voxel::UI::Sequence::create(const std::initializer_list<Action*>& actions, const bool repeat)
+Voxel::UI::Sequence * Voxel::UI::Sequence::create(Action * action)
 {
 	auto newSeq = new Sequence();
 
-	if (newSeq->init(actions, repeat))
+	if (newSeq->init(action))
 	{
 		return newSeq;
 	}
@@ -93,118 +97,108 @@ Voxel::UI::Sequence * Voxel::UI::Sequence::create(const std::initializer_list<Ac
 	}
 }
 
-void Voxel::UI::Sequence::repeat()
+Voxel::UI::Sequence * Voxel::UI::Sequence::create(Action * first, Action * second)
 {
-	repeating = true;
-}
+	auto newSeq = new Sequence();
 
-bool Voxel::UI::Sequence::isRepeating() const
-{
-	return repeating;
-}
-
-void Voxel::UI::Sequence::stop()
-{
-	sequenceState = State::STOPPED;
-}
-
-bool Voxel::UI::Sequence::isFinished()
-{
-	return sequenceState == State::FINISHED;
-}
-
-void Voxel::UI::Sequence::start()
-{
-	sequenceState = State::RUNNING;
-	this->currenActionIndex = 0;
-}
-
-void Voxel::UI::Sequence::pause()
-{
-	if (sequenceState == State::RUNNING)
+	if (newSeq->init(first, second))
 	{
-		sequenceState = State::PAUSED;
+		return newSeq;
+	}
+	else
+	{
+		delete newSeq;
+		return nullptr;
 	}
 }
 
-void Voxel::UI::Sequence::resume()
+Voxel::UI::Sequence * Voxel::UI::Sequence::create(const std::initializer_list<Action*>& actions)
 {
-	if (sequenceState == State::PAUSED)
+	auto size = actions.size();
+
+	if (size == 0)
 	{
-		sequenceState = State::RUNNING;
+		return nullptr;
+	}
+	else
+	{
+		if (size == 1)
+		{
+			return create(*actions.begin());
+		}
+		else if (size == 2)
+		{
+			return create(*actions.begin(), *(std::prev(actions.end())));
+		}
+		else
+		{
+			auto newSeq = new Sequence();
+
+			if (newSeq->init(actions))
+			{
+				return newSeq;
+			}
+			else
+			{
+				delete newSeq;
+				return nullptr;
+			}
+		}
+	}
+}
+
+bool Voxel::UI::Sequence::isDone() const
+{
+	return (first ? first->isDone() : true) && (second ? second->isDone() : true);
+}
+
+void Voxel::UI::Sequence::setTarget(TransformNode * target)
+{
+	if (first)
+	{
+		first->setTarget(target);
+	}
+
+	if (second)
+	{
+		second->setTarget(target);
 	}
 }
 
 void Voxel::UI::Sequence::update(const float delta)
 {
-	if (sequenceState == State::STOPPED)
+	elapsedTime += delta;
+
+	if (first)
 	{
-		return;
-	}
-	else
-	{
-		if (sequenceState == State::PAUSED)
+		if (first->isDone())
 		{
-			return;
+			if (second->isDone())
+			{
+				return;
+			}
+			else
+			{
+				second->update(delta);
+			}
 		}
 		else
 		{
-			if (sequenceState == State::RUNNING)
+			first->update(delta);
+
+			if (first->isDone())
 			{
-				//std::cout << "seq running. ci = " << currenActionIndex << ", size = " << actions.size() << "\n";
-				actions.at(currenActionIndex)->update(delta);
-
-				if (actions.at(currenActionIndex)->isDone())
+				if (second)
 				{
-					currenActionIndex++;
-					//std::cout << "next action\n";
+					auto t = first->getExceededTime();
 
-					if (currenActionIndex >= (int)actions.size())
-					{
-						//std::cout << "end if seq\n";
-						if (repeating)
-						{
-							//std::cout << "repeat\n";
-							currenActionIndex = 0;
-
-							for (auto action : actions)
-							{
-								action->reset();
-							}
-
-							float exceededTime = actions.at(currenActionIndex)->getExceededTime();
-							
-							if (exceededTime > 0.0f)
-							{
-								actions.at(currenActionIndex)->update(delta);
-							}
-						}
-						else
-						{
-							sequenceState = State::FINISHED;
-						}
-					}
-					else
-					{
-						float exceededTime = actions.at(currenActionIndex)->getExceededTime();
-
-						if (exceededTime > 0.0f)
-						{
-							actions.at(currenActionIndex)->update(delta);
-						}
-					}
+					second->update(t);
 				}
 			}
 		}
 	}
-}
-
-void Voxel::UI::Sequence::setTarget(TransformNode * target)
-{
-	for (auto action : actions)
+	else
 	{
-		action->setTarget(target);
+		return;
 	}
 }
-
-

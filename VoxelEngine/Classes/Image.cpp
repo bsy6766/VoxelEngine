@@ -116,7 +116,7 @@ bool Voxel::UI::Image::updateMouseMove(const glm::vec2 & mousePosition, const gl
 	return false;
 }
 
-bool Voxel::UI::Image::updateMouseClick(const glm::vec2 & mousePosition, const int button)
+bool Voxel::UI::Image::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
 	if (isDraggable())
 	{
@@ -136,14 +136,14 @@ bool Voxel::UI::Image::updateMouseClick(const glm::vec2 & mousePosition, const i
 	if (boundingBox.containsPoint(mousePosition))
 	{
 		// mouse in image. Check if there was any child that was clicked.
-		Voxel::UI::TransformNode::updateMouseClick(mousePosition, button);
+		Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
 		// No matter the result, it's click on this image, so return true.
 		return true;
 	}
 	else
 	{
 		// didn't click image. Check children
-		return Voxel::UI::TransformNode::updateMouseClick(mousePosition, button);
+		return Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
 	}
 }
 
