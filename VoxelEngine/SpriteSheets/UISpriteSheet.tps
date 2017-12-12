@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.3.1</string>
         <key>fileName</key>
-        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/spritesheets/UISpriteSheet.tps</string>
+        <string>C:/Users/bsy67/Desktop/Dev/VoxelEngine/VoxelEngine/SpriteSheets/UISpriteSheet.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -197,6 +197,19 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">../Sprites/ui/GameScene/bar.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>1,1,1,1</rect>
+                <key>scale9Paddings</key>
+                <rect>1,1,1,1</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/ui/GameScene/cross_hair.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -223,10 +236,6 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_clicked.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_disabled.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_hovered.png</key>
-            <key type="filename">../Sprites/ui/GameScene/game_menu_controls_button_idle.png</key>
             <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_clicked.png</key>
             <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_disabled.png</key>
             <key type="filename">../Sprites/ui/GameScene/game_menu_exit_game_button_hovered.png</key>
@@ -239,6 +248,25 @@
             <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_disabled.png</key>
             <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_hovered.png</key>
             <key type="filename">../Sprites/ui/GameScene/game_menu_return_to_game_button_idle.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_audio_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_audio_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_audio_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_audio_button_idle.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_controls_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_controls_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_controls_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_controls_button_idle.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_gameplay_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_gameplay_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_gameplay_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_gameplay_button_idle.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_video_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_video_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/GameScene/option_video_button_idle.png</key>
+            <key type="filename">../Sprites/ui/GameScene/return_to_menu_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/GameScene/return_to_menu_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/GameScene/return_to_menu_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/GameScene/return_to_menu_button_idle.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -274,6 +302,32 @@
                 <rect>76,10,153,20</rect>
                 <key>scale9Paddings</key>
                 <rect>76,10,153,20</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/GameScene/option_video_button_clicked.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>6,1,12,3</rect>
+                <key>scale9Paddings</key>
+                <rect>6,1,12,3</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/GameScene/options_label.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,3,31,5</rect>
+                <key>scale9Paddings</key>
+                <rect>16,3,31,5</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
