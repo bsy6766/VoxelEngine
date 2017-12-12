@@ -60,51 +60,72 @@ bool Voxel::UI::Canvas::updateMouseMove(const glm::vec2 & mousePosition, const g
 {
 	if (!isInteractable()) return false;
 
-	bool moved = false;
-	for (auto& e : children)
+	if (visibility)
 	{
-		bool result = (e.second)->updateMouseMove(mousePosition, mouseDelta);
-		if (result)
+		bool moved = false;
+		for (auto& e : children)
 		{
-			moved = true;
+			bool result = (e.second)->updateMouseMove(mousePosition, mouseDelta);
+			if (result)
+			{
+				moved = true;
+			}
 		}
-	}
 
-	return moved;
+		return moved;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Voxel::UI::Canvas::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
 	if (!isInteractable()) return false;
 
-	bool clicked = false;
-	for (auto& e : children)
+	if (visibility)
 	{
-		bool result = (e.second)->updateMousePress(mousePosition, button);
-		if (result)
+		bool clicked = false;
+		for (auto& e : children)
 		{
-			clicked = true;
+			bool result = (e.second)->updateMousePress(mousePosition, button);
+			if (result)
+			{
+				clicked = true;
+			}
 		}
-	}
 
-	return clicked;
+		return clicked;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Voxel::UI::Canvas::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
 	if (!isInteractable()) return false;
 
-	bool released = false;
-	for (auto& e : children)
+	if (visibility)
 	{
-		bool result = (e.second)->updateMouseRelease(mousePosition, button);
-		if (result)
+		bool released = false;
+		for (auto& e : children)
 		{
-			released = true;
+			bool result = (e.second)->updateMouseRelease(mousePosition, button);
+			if (result)
+			{
+				released = true;
+			}
 		}
-	}
 
-	return released;
+		return released;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void Voxel::UI::Canvas::render()

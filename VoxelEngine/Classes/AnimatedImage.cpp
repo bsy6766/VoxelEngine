@@ -244,7 +244,6 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 void Voxel::UI::AnimatedImage::renderSelf()
 {
 	if (texture == nullptr) return;
-	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);

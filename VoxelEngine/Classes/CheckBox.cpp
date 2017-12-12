@@ -306,139 +306,157 @@ bool Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition)
 
 bool Voxel::UI::CheckBox::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
-	if (children.empty())
+	if (visibility)
 	{
-		return updateMouseMove(mousePosition);
-	}
-	else
-	{
-		bool childHovered = false;
-
-		// first check if there was mouse move event on children
-		for (auto& child : children)
+		if (children.empty())
 		{
-			bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
-			if (result)
-			{
-				childHovered = true;
-			}
-		}
-
-		// check if there was event
-		if (childHovered)
-		{
-			// mouse hovered child.
-			if (checkBoxState == State::HOVERED || checkBoxState == State::CLICKED)
-			{
-				// was hovering or clicking, set back to deselected
-				checkBoxState = State::DESELECTED;
-			}
-			else if (checkBoxState == State::HOVERED_SELECTED || checkBoxState == State::CLICKED_SELECTED)
-			{
-				// was hovering or clicked selected, set back to selected
-				checkBoxState = State::SELECTED;
-			}
+			return updateMouseMove(mousePosition);
 		}
 		else
 		{
-			// mouse did not hovered child. update self.
-			childHovered = updateMouseMove(mousePosition);
+			bool childHovered = false;
+
+			// first check if there was mouse move event on children
+			for (auto& child : children)
+			{
+				bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					childHovered = true;
+				}
+			}
+
+			// check if there was event
+			if (childHovered)
+			{
+				// mouse hovered child.
+				if (checkBoxState == State::HOVERED || checkBoxState == State::CLICKED)
+				{
+					// was hovering or clicking, set back to deselected
+					checkBoxState = State::DESELECTED;
+				}
+				else if (checkBoxState == State::HOVERED_SELECTED || checkBoxState == State::CLICKED_SELECTED)
+				{
+					// was hovering or clicked selected, set back to selected
+					checkBoxState = State::SELECTED;
+				}
+			}
+			else
+			{
+				// mouse did not hovered child. update self.
+				childHovered = updateMouseMove(mousePosition);
+			}
+
+			// update index
+			updateCurrentIndex();
+
+			return childHovered;
 		}
-
-		// update index
-		updateCurrentIndex();
-
-		return childHovered;
 	}
+
+	return false;
 }
 
 bool Voxel::UI::CheckBox::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	bool clicked = false;
-
-	// check if button is interacble
-	if (isInteractable())
+	if (visibility)
 	{
-		// it's interactable
-		if (button == GLFW_MOUSE_BUTTON_1)
-		{
-			// clicked with left mouse button
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				// mouse clicked
-				if (checkBoxState == State::HOVERED)
-				{
-					// Was hovering check box. click
-					checkBoxState = State::CLICKED;
-					clicked = true;
-				}
-				else if (checkBoxState == State::HOVERED_SELECTED)
-				{
-					// was hovering selected box. click
-					checkBoxState = State::CLICKED_SELECTED;
-					clicked = true;
-				}
-				// Else, do nothing
+		bool clicked = false;
 
-				updateCurrentIndex();
+		// check if button is interacble
+		if (isInteractable())
+		{
+			// it's interactable
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				// clicked with left mouse button
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					// mouse clicked
+					if (checkBoxState == State::HOVERED)
+					{
+						// Was hovering check box. click
+						checkBoxState = State::CLICKED;
+						clicked = true;
+					}
+					else if (checkBoxState == State::HOVERED_SELECTED)
+					{
+						// was hovering selected box. click
+						checkBoxState = State::CLICKED_SELECTED;
+						clicked = true;
+					}
+					// Else, do nothing
+
+					updateCurrentIndex();
+				}
 			}
 		}
-	}
 
-	if (!clicked)
+		if (!clicked)
+		{
+			// button was not clicked. check if there is another button in children that might possibly clicked
+			clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return clicked;
+	}
+	else
 	{
-		// button was not clicked. check if there is another button in children that might possibly clicked
-		clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		return false;
 	}
-
-	return clicked;
 }
 
 bool Voxel::UI::CheckBox::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-	bool released = false;
-
-	// check if button is interacble
-	if (isInteractable())
+	if (visibility)
 	{
-		// it's interactable
-		if (button == GLFW_MOUSE_BUTTON_1)
-		{
-			// clicked with left mouse button
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				// mouse clicked
-				if (checkBoxState == State::CLICKED)
-				{
-					// was clicking. select
-					checkBoxState = State::SELECTED;
-					released = true;
-				}
-				else if (checkBoxState == State::CLICKED_SELECTED)
-				{
-					// was clikcing selected. deslect
-					checkBoxState = State::DESELECTED;
-					released = true;
-				}
+		bool released = false;
 
-				updateCurrentIndex();
+		// check if button is interacble
+		if (isInteractable())
+		{
+			// it's interactable
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				// clicked with left mouse button
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					// mouse clicked
+					if (checkBoxState == State::CLICKED)
+					{
+						// was clicking. select
+						checkBoxState = State::SELECTED;
+						released = true;
+					}
+					else if (checkBoxState == State::CLICKED_SELECTED)
+					{
+						// was clikcing selected. deslect
+						checkBoxState = State::DESELECTED;
+						released = true;
+					}
+
+					updateCurrentIndex();
+				}
 			}
 		}
-	}
 
-	if (!released)
+		if (!released)
+		{
+			// button was not clicked. check if there is another button in children that might possibly clicked
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
+	}
+	else
 	{
-		// button was not clicked. check if there is another button in children that might possibly clicked
-		released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		return false;
 	}
-
-	return released;
 }
 
 void Voxel::UI::CheckBox::renderSelf()
 {
 	if (texture == nullptr) return;
-	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);

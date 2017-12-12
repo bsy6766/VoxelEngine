@@ -380,7 +380,6 @@ void Voxel::UI::Image::renderSelf()
 {
 	// only render self
 	if (texture == nullptr) return;
-	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);

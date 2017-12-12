@@ -737,7 +737,6 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 void Voxel::UI::Text::renderSelf()
 {
 	if (indicesSize == 0) return;
-	if (!visibility) return;
 	if (text.empty()) return;
 	if (font == nullptr) return;
 	if (vao == 0) return;

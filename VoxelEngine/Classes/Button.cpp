@@ -211,124 +211,144 @@ void Voxel::UI::Button::setOnButtonClickCallbackFunc(const std::function<void()>
 
 bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
-	if (children.empty())
+	if (visibility)
 	{
-		return updateMouseMove(mousePosition);
-	}
-	else
-	{
-		bool childHovered = false;
-
-		// first check if there was mouse move event on children
-		for (auto& child : children)
+		if (children.empty())
 		{
-			bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
-			if (result)
-			{
-				childHovered = true;
-			}
-		}
-
-		// check if there was event
-		if (childHovered)
-		{
-			// Mouse hvoers child. 
-			if (buttonState == State::HOVERED || buttonState == State::CLICKED)
-			{
-				// Hovered or clicked. Set back to idle
-				buttonState = State::IDLE;
-				currentIndex = 0;
-			}
+			return updateMouseMove(mousePosition);
 		}
 		else
 		{
-			// There was no mouse move event on child
-			childHovered = updateMouseMove(mousePosition);
-		}
+			bool childHovered = false;
 
-		return childHovered;
+			// first check if there was mouse move event on children
+			for (auto& child : children)
+			{
+				bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					childHovered = true;
+				}
+			}
+
+			// check if there was event
+			if (childHovered)
+			{
+				// Mouse hvoers child. 
+				if (buttonState == State::HOVERED || buttonState == State::CLICKED)
+				{
+					// Hovered or clicked. Set back to idle
+					buttonState = State::IDLE;
+					currentIndex = 0;
+				}
+			}
+			else
+			{
+				// There was no mouse move event on child
+				childHovered = updateMouseMove(mousePosition);
+			}
+
+			return childHovered;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 
 bool Voxel::UI::Button::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	bool clicked = false;
-
-	// check if button is interacble
-	if (isInteractable())
+	if (visibility)
 	{
-		// it's interactable
-		if (button == GLFW_MOUSE_BUTTON_1)
+		bool clicked = false;
+
+		// check if button is interacble
+		if (isInteractable())
 		{
-			// clicked with left mouse button
-			if (boundingBox.containsPoint(mousePosition))
+			// it's interactable
+			if (button == GLFW_MOUSE_BUTTON_1)
 			{
-				// mouse is in bounding box
-				if (buttonState == State::HOVERED)
+				// clicked with left mouse button
+				if (boundingBox.containsPoint(mousePosition))
 				{
-					// was hovering. click
-					buttonState = State::CLICKED;
-					currentIndex = 12;
-					clicked = true;
+					// mouse is in bounding box
+					if (buttonState == State::HOVERED)
+					{
+						// was hovering. click
+						buttonState = State::CLICKED;
+						currentIndex = 12;
+						clicked = true;
+					}
+					// else, disabled or not hovering
 				}
-				// else, disabled or not hovering
 			}
 		}
-	}
-	
-	if (!clicked)
-	{
-		// button was not clicked. check if there is another button in children that might possibly clicked
-		clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
-	}
 
-	return clicked;
+		if (!clicked)
+		{
+			// button was not clicked. check if there is another button in children that might possibly clicked
+			clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return clicked;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-	bool released = false;
-
-	// check if button is interacble
-	if (isInteractable())
+	if (visibility)
 	{
-		// it's interactable
-		if (button == GLFW_MOUSE_BUTTON_1)
-		{
-			// clicked with left mouse button
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				// mouse is in bounding box
-				if (buttonState == State::CLICKED)
-				{
-					buttonState = State::IDLE;
-					currentIndex = 0;
-					released = true;
+		bool released = false;
 
-					// button clicked!
-					if (onButtonClicked)
+		// check if button is interacble
+		if (isInteractable())
+		{
+			// it's interactable
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				// clicked with left mouse button
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					// mouse is in bounding box
+					if (buttonState == State::CLICKED)
 					{
-						onButtonClicked();
+						buttonState = State::IDLE;
+						currentIndex = 0;
+						released = true;
+
+						// button clicked!
+						if (onButtonClicked)
+						{
+							onButtonClicked();
+						}
 					}
+					// else, disabled or not hovering
 				}
-				// else, disabled or not hovering
 			}
 		}
-	}
 
-	if (!released)
+		if (!released)
+		{
+			// button was not clicked. check if there is another button in children that might possibly released
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
+	}
+	else
 	{
-		// button was not clicked. check if there is another button in children that might possibly released
-		released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		return false;
 	}
-
-	return released;
 }
 
 void Voxel::UI::Button::renderSelf()
 {
 	if (texture == nullptr) return;
-	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);

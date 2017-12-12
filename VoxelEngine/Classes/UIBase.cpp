@@ -650,7 +650,6 @@ void Voxel::UI::TransformNode::update(const float delta)
 		needToUpdateModelMat = true;
 	}
 
-
 	if (needToUpdateModelMat)
 	{
 		updateModelMatrix();
@@ -666,68 +665,71 @@ void Voxel::UI::TransformNode::update(const float delta)
 
 bool Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
-	if (!children.empty())
+	if (visibility)
 	{
-		bool moved = false;
-		for (auto& child : children)
+		if (!children.empty())
 		{
-			bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
-			if (result)
+			bool moved = false;
+			for (auto& child : children)
 			{
-				moved = true;
+				bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					moved = true;
+				}
 			}
-		}
 
-		return moved;
+			return moved;
+		}
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
 bool Voxel::UI::TransformNode::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	if (!children.empty())
+	if (visibility)
 	{
-		bool clicked = false;
-		for (auto& child : children)
+		if (!children.empty())
 		{
-			bool result = (child.second)->updateMousePress(mousePosition, button);
-			if (result)
+			bool clicked = false;
+			for (auto& child : children)
 			{
-				clicked = true;
+				bool result = (child.second)->updateMousePress(mousePosition, button);
+				if (result)
+				{
+					clicked = true;
+				}
 			}
-		}
 
-		return clicked;
+			return clicked;
+		}
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
 bool Voxel::UI::TransformNode::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-	if (!children.empty())
+	if (visibility)
 	{
-		bool clicked = false;
-		for (auto& child : children)
+		if (!children.empty())
 		{
-			bool result = (child.second)->updateMouseRelease(mousePosition, button);
-			if (result)
+			bool clicked = false;
+			for (auto& child : children)
 			{
-				clicked = true;
+				bool result = (child.second)->updateMouseRelease(mousePosition, button);
+				if (result)
+				{
+					clicked = true;
+				}
 			}
-		}
 
-		return clicked;
+			return clicked;
+		}
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
 void Voxel::UI::TransformNode::updateBoundary(const Voxel::Shape::Rect& canvasBoundary)
@@ -852,30 +854,36 @@ void Voxel::UI::RenderNode::render()
 {
 	if (children.empty())
 	{
-		renderSelf();
+		if (visibility)
+		{
+			renderSelf();
+		}
 	}
 	else
 	{
-		auto children_it = children.begin();
-		auto beginZOrder = ((children_it)->first).getGlobalZOrder();
-
-		if (beginZOrder < 0)
+		if (visibility)
 		{
-			// has negative ordered children
-			for (; ((children_it)->first).getGlobalZOrder() < 0; children_it++)
+			auto children_it = children.begin();
+			auto beginZOrder = ((children_it)->first).getGlobalZOrder();
+
+			if (beginZOrder < 0)
+			{
+				// has negative ordered children
+				for (; ((children_it)->first).getGlobalZOrder() < 0; children_it++)
+				{
+					((children_it)->second)->render();
+				}
+			}
+			// else, doesn't have negative ordered children
+
+			// Render self
+			renderSelf();
+
+			// Render positive 
+			for (; children_it != children.end(); children_it++)
 			{
 				((children_it)->second)->render();
 			}
-		}
-		// else, doesn't have negative ordered children
-
-		// Render self
-		renderSelf();
-
-		// Render positive 
-		for (; children_it != children.end(); children_it++)
-		{
-			((children_it)->second)->render();
 		}
 	}
 }

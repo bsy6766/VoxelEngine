@@ -874,7 +874,6 @@ float Voxel::UI::ProgressTimer::getPercentage() const
 void Voxel::UI::ProgressTimer::renderSelf()
 {
 	if (texture == nullptr) return;
-	if (!visibility) return;
 	if (program == nullptr) return;
 
 	program->use(true);
