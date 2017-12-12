@@ -40,22 +40,30 @@ namespace Voxel
 			MOVE_DOWN,
 		};
 	protected:
+		// Constructor
 		InputHandler();
+		// Destructor
 		~InputHandler();
 
 		// Mouse
 		double curX;
 		double curY;
-		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonMap;
-		std::unordered_map<int/*GLFW Mouse button*/, int> mouseButtonTickMap;
+		double prevX;
+		double prevY;
+		glm::vec2 prevMousePos;
+		glm::vec2 curMousePos;
+
+
+		std::unordered_map<int/*GLFW Mouse button*/, int/*Button state*/> mouseButtonMap;
+		std::unordered_map<int/*GLFW Mouse button*/, int/*Button state*/> mouseButtonTickMap;
 
 		// Mouse scroll
 		int mouseScrollValue;
 
 		// Keyboard map that saves input state
-		std::unordered_map<int/*GLFW Key*/, int> keyMap;
+		std::unordered_map<int/*GLFW Key*/, int/*Button state*/> keyMap;
 		// Keyboard map that saves input state for only single frame
-		std::unordered_map<int/*GLFW Key*/, int> keyTickMap;
+		std::unordered_map<int/*GLFW Key*/, int/*Button state*/> keyTickMap;
 
 		// Default key setting
 		std::unordered_map<KEY_INPUT, int/*GLFW key*/> defaultKeyBindMap;
