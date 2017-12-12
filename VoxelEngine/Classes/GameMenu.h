@@ -25,6 +25,12 @@ namespace Voxel
 			GAME_MENU_BG,
 			GAME_MENU_LABEL,
 			GAME_MENU_BUTTON,
+			OPTIONS_MENU_BG,
+			OPTIONS_MENU_LABEL,
+			OPTIONS_MENU_BUTTON,
+			VIDEOS_MENU_BG,
+			VIDEOS_MENU_LABEL,
+			VIDEOS_MENU_BUTTON,
 		};
 	private:
 		// UI canvas
@@ -45,6 +51,7 @@ namespace Voxel
 		void onOptionClicked();
 		void onControlsClicked();
 		void onExitGameClicked();
+		void onRetrunToMenuClicked();
 	public:
 		// Constructor
 		GameMenu();
@@ -54,6 +61,8 @@ namespace Voxel
 
 		// initialize all uis
 		void init(GameScene* gameScenePtr);
+		void initGameMenu(GameScene* gameScenePtr);
+		void initOptionMenu(GameScene * gameScenePtr);
 
 		// Opens game menu
 		void open();
