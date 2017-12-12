@@ -1707,6 +1707,8 @@ bool Voxel::ChunkMap::isChunkOnEdge(const glm::ivec2 & chunkXZ)
 
 int Voxel::ChunkMap::findVisibleChunk(const int renderDistance)
 {
+	//auto start = Utility::Time::now();
+
 	// Count number of visible chunk for debug
 	int count = 0;
 
@@ -1753,6 +1755,10 @@ int Voxel::ChunkMap::findVisibleChunk(const int renderDistance)
 			}
 		}
 	}
+
+	//auto end = Utility::Time::now();
+	//std::cout << "t = " << Utility::Time::toMicroSecondString(start, end) << "\n";
+	// 100000 ns (0.1 ms)
 
 	return count;
 }

@@ -204,6 +204,7 @@ void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & playerVP)
 
 bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 {
+	//auto start = Utility::Time::now();
 	//std::cout << "Frustum culling chunk at (" << chunk->getPosition().x << ", " << chunk->getPosition().z << ")\n";
 
 	/*
@@ -254,17 +255,20 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 
 	const float chunkHalf = Constant::CHUNK_BORDER_SIZE * 0.5f;
 
-	std::vector<int> visibleChunkSection;
+	//std::vector<int> visibleChunkSection;
 
 	std::vector<glm::vec3> chunkBorderPoints(8, glm::vec3(0));
 
 	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
 	{
 		auto chunkSection = chunk->getChunkSectionAtY(i);
+
 		if (chunkSection == nullptr)
 		{
+			// Skip if chunk section is null
 			continue;
 		}
+
 		//std::cout << "checking chunk section at y: " << i << std::endl;
 
 		auto chunkSectionWorldPos = chunkSection->getWorldPosition();
@@ -306,29 +310,41 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 		chunkBorderPoints.at(7).y = chunkSectionMax.y;
 		chunkBorderPoints.at(7).z = chunkSectionMax.z;
 
-		bool sectionResult = true;
+		bool inPlane = true;
+
+		// iterate through planes and check if 8 points of chunk section is in plane
 		for (auto& plane : planes)
 		{
-			int out = 0;
+			// counter
+			int outCounter = 0;
 
+			// iterate 8 points
 			for (auto& point : chunkBorderPoints)
 			{
+				// check 
 				if (plane.distanceToPoint(point) < 0)
 				{
-					out++;
+					// is out of plane
+					outCounter++;
 				}
 			}
 
-			if (out == 8)
+			if (outCounter == 8)
 			{
-				sectionResult = false;
+				// All 8 points are out of plane. Stop plane iteration and check next chunk section.
+				inPlane = false;
 				break;
+			}
+			else
+			{
+				continue;
 			}
 		}
 
-		if (sectionResult)
+		if (inPlane)
 		{
-			visibleChunkSection.push_back(i);
+			// This section is visible. 
+			//visibleChunkSection.push_back(i);
 
 			// Todo: I'm just returning true when there is at least 1 chunk section visible from player. 
 			// To findout which chunk is visible, don't return and use the vector that contains y level of chunk sections
@@ -336,8 +352,21 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 
 			return true;
 		}
+		else
+		{
+			// This sections is not visible. Check next.
+			continue;
+		}
 	}
 
+	// None is visible
+	return false;
+
+	//auto end = Utility::Time::now();
+	//std::cout << "fc = " << Utility::Time::toNanoSecondSTring(start, end) << std::endl;
+	// avg 900 ns
+
+	/*
 	if (visibleChunkSection.empty())
 	{
 		return false;
@@ -346,6 +375,7 @@ bool Voxel::Frustum::isChunkBorderInFrustum(Chunk * chunk)
 	{
 		return true;
 	}
+	*/
 }
 
 void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
