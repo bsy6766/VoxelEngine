@@ -14,8 +14,7 @@ out vec4 fragNormal;
 
 void main()
 {
-	vec4 finalPos = projMat * viewMat * modelMat * vec4(vert, 1);
-	gl_Position = finalPos;
+	gl_Position = projMat * viewMat * modelMat * vec4(vert, 1);
 	worldCoord = modelMat * vec4(vert, 1);
 	vertColor = color;
 	fragNormal = modelMat * vec4(normal, 1);
