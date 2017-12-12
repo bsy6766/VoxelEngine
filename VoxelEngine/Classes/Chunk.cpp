@@ -9,7 +9,6 @@
 // voxel
 #include "ChunkSection.h"
 #include "ChunkMesh.h"
-#include "ChunkUtil.h"
 #include "Utility.h"
 #include "HeightMap.h"
 #include "ProgramManager.h"
@@ -28,6 +27,13 @@ Chunk::Chunk()
 	, timestamp(0)
 {
 	chunkMesh = new ChunkMesh();
+
+	// Just in case, init chunksections to nullptr
+	for (unsigned int i = 0; i < chunkSections.size(); ++i)
+	{
+		chunkSections[i] = nullptr;
+	}
+
 	generated.store(false);
 	smoothed.store(false);
 	structureAdded.store(false);
@@ -63,9 +69,7 @@ Chunk::~Chunk()
 			delete chunkSection;
 		}
 	}
-
-	chunkSections.clear();
-
+	
 	if (chunkMesh)
 	{
 		delete chunkMesh;
@@ -132,9 +136,7 @@ bool Chunk::init(const int x, const int z)
 
 	boundingBox.center = min + (size * 0.5f);
 	boundingBox.size = size;
-
-	chunkSections = std::vector<ChunkSection*>(Constant::TOTAL_CHUNK_SECTION_PER_CHUNK, nullptr);
-
+	
 	//std::cout << "[Chunk] BorderXZ: min(" << border.min.x << ", " << border.min.z << "), max(" << border.max.x << ", " << border.max.z << ")\n";
 
 	//auto end = Utility::Time::now();
@@ -168,6 +170,11 @@ bool Voxel::Chunk::generate()
 
 void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 {
+	// Note: Switched chunkSections to std::array because chunkSections will be always have fixed size.
+	/*
+
+	// std::vector version. std::array can't be empty
+
 	if (chunkSections.empty())
 	{
 		// Chunk sections are empty. Fill new.
@@ -195,43 +202,46 @@ void Voxel::Chunk::generateChunkSections(const int minY, const int maxY)
 			}
 		}
 	}
+	*/
+
+	/*
+	// std::vector version. std::array have fixed size
+	// chunk section was generated before. Check size.
+	if (chunkSections.size() == Constant::TOTAL_CHUNK_SECTION_PER_CHUNK)
+	{
+	}
 	else
 	{
-		// chunk section was generated before. Check size.
-		if (chunkSections.size() == Constant::TOTAL_CHUNK_SECTION_PER_CHUNK)
+		throw std::runtime_error("Invalid size of chunksection: " + std::to_string(chunkSections.size()));
+	}
+	*/
+
+	// Iterate through chunk sections and initailize.
+	for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
+	{
+		if (i > maxY || i < minY)
 		{
-			// valid. add new only to empty chunk sections
-			for (int i = 0; i < Constant::TOTAL_CHUNK_SECTION_PER_CHUNK; i++)
-			{
-				if (i > maxY || i < minY)
-				{
-					// out of bound. skip.
-					continue;
-				}
-				else
-				{
-					//std::cout << "++ chunksection: " << i << std::endl;
-					// Check if chunk section is empty
-					if (chunkSections.at(i) == nullptr)
-					{
-						auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
-						if (newChucnkSection)
-						{
-							// add new.
-							chunkSections.at(i) = newChucnkSection;
-						}
-						else
-						{
-							throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
-						}
-					}
-					// else, chunk section exists. skip
-				}
-			}
+			// out of bound. skip.
+			continue;
 		}
 		else
 		{
-			throw std::runtime_error("Invalid size of chunksection: " + std::to_string(chunkSections.size()));
+			//std::cout << "++ chunksection: " << i << std::endl;
+			// Check if chunk section is empty
+			if (chunkSections.at(i) == nullptr)
+			{
+				auto newChucnkSection = ChunkSection::createEmpty(position.x, i, position.z, worldPosition);
+				if (newChucnkSection)
+				{
+					// add new.
+					chunkSections.at(i) = newChucnkSection;
+				}
+				else
+				{
+					throw std::runtime_error("Failed to create chunk section at (" + std::to_string(position.x) + ", " + std::to_string(i) + ", " + std::to_string(position.z) + ")");
+				}
+			}
+			// else, chunk section exists. skip
 		}
 	}
 }

@@ -12,10 +12,6 @@ using namespace Voxel;
 
 Block::Block()
 	:  worldCoordinate(0)
-	//, worldPosition(0)
-	//, localPosition(0)
-	//, localCoordinate(0)
-	//, color(Color::WHITE)
 	, r(0)
 	, g(0)
 	, b(0)
@@ -233,7 +229,7 @@ glm::vec3 Voxel::Block::getMeshPosition()
 
 Block::BLOCK_ID Voxel::Block::getBlockID()
 {
-	return this->id;
+	return id;
 }
 
 void Voxel::Block::setBlockID(const BLOCK_ID blockID)

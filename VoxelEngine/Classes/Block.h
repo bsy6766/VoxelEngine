@@ -45,17 +45,20 @@ namespace Voxel
 	protected:
 		Block();
 
-		// Position of block in the world.
+		// Position of block in the world. Takes 12 bytes (4 bytes * 3 int)
 		glm::ivec3 worldCoordinate;
 
-		// Color. Instead of vec3(12 bytes), we store value in 0~255 scale, which only needs 3bytes total
+		// Color. Instead of vec3(12 bytes), we store value in 0~255 scale, which only needs 3 bytes total
 		unsigned char r;
 		unsigned char g;
 		unsigned char b;
 
-		// ID
+		// ID. 1 byte.
 		BLOCK_ID id;
 
+		/**
+		*	Initialize block. 
+		*/
 		bool init(const glm::ivec3& position, const glm::ivec3& chunkSectionPosition);
 	public:
 		virtual ~Block();
@@ -83,6 +86,7 @@ namespace Voxel
 
 		// Set color of block (0 ~ 255)
 		void setColorRGB(const unsigned char r, const unsigned char g, const unsigned char b);
+
 		// Set color with glm::uvec3 (0 ~ 255)
 		void setColorU3(const glm::uvec3& color);
 
@@ -92,12 +96,16 @@ namespace Voxel
 
 		// Get world coordinate
 		glm::ivec3 getWorldCoordinate();
+
 		// Get world position
 		glm::vec3 getWorldPosition();
+
 		// Get local coordinate
 		glm::ivec3 getLocalCoordinate();
+
 		// Get local position
 		glm::vec3 getLocalPosition();
+
 		// Get mesh position (For mesh generating)
 		glm::vec3 getMeshPosition();
 

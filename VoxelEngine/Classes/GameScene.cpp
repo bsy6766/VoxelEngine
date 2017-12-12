@@ -780,6 +780,24 @@ void Voxel::GameScene::updateKeyboardInput(const float delta)
 	
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
+		Block* testBlock = Block::create(glm::ivec3(100, 101, 102), glm::ivec3(200, 201, 203));
+		std::cout << "testBlock size = " << sizeof(testBlock) << ", " << sizeof(*testBlock) << std::endl;
+		std::cout << "id size = " << sizeof(testBlock->getBlockID()) << std::endl;
+
+		delete testBlock;
+
+		std::vector<Block*> vec;
+		vec.resize(4096, nullptr);
+		std::array<Block*, 4096> arr;
+
+		std::cout << "vec = " << sizeof(vec) << ", arr = " << sizeof(arr) << "\n";
+
+		ChunkSection* cs = ChunkSection::createEmpty(0, 0, 0, glm::vec3(0, 1, 2));
+		std::cout << "cs size = " << sizeof(cs) << ", " << sizeof(*cs) << std::endl;
+
+		delete cs;
+
+		std::cout << "ivec3 = " << sizeof(glm::ivec3) << std::endl;
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))
