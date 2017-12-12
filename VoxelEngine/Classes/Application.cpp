@@ -14,6 +14,7 @@
 #include "FileSystem.h"
 #include "Utility.h"
 #include "MenuScene.h"
+#include "Cursor.h"
 
 using std::cout;
 using std::endl;
@@ -64,6 +65,10 @@ void Application::init()
 	initMainCamera();
 
 	initDirector();
+
+	// init cursor
+	auto cursor	= &Cursor::getInstance();
+	cursor->init();
 }
 
 void Voxel::Application::initGLView()
@@ -193,6 +198,9 @@ void Voxel::Application::cleanUp()
 		delete Camera::mainCamera;
 		Camera::mainCamera = nullptr;
 	}
+
+	// Release cursor
+	Cursor::getInstance().release();
 
 	if (director)
 	{

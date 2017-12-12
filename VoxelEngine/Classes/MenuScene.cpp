@@ -16,7 +16,6 @@ Voxel::MenuScene::MenuScene()
 	, curHoveringButtonIndex(-1)
 	, cursor(nullptr)
 	, input(nullptr)
-	, prevCursorPos(0.0f)
 	, exiting(false)
 {}
 
@@ -25,11 +24,6 @@ Voxel::MenuScene::~MenuScene()
 	if (canvas)
 	{
 		delete canvas;
-	}
-
-	if (cursor)
-	{
-		delete cursor;
 	}
 }
 
@@ -85,7 +79,7 @@ void Voxel::MenuScene::init()
 	}
 
 	// cursor
-	cursor = UI::Cursor::create();
+	cursor = &Voxel::Cursor::getInstance();
 	cursor->setVisibility(true);
 	cursor->setPosition(glm::vec2(0.0f));
 

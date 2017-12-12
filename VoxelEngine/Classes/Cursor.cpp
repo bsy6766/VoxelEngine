@@ -11,27 +11,19 @@
 #include "Program.h"
 #include "Camera.h"
 
-Voxel::UI::Cursor::Cursor()
+Voxel::Cursor::Cursor()
 	: vao(0)
 	, visible(false)
 	, position(0)
 {
 }
 
-Voxel::UI::Cursor::~Cursor()
+Voxel::Cursor::~Cursor()
 {
-	if (uvbo)
-	{
-		glDeleteBuffers(1, &uvbo);
-	}
-
-	if (vao)
-	{
-		glDeleteVertexArrays(1, &vao);
-	}
+	release();
 }
 
-bool Voxel::UI::Cursor::init()
+bool Voxel::Cursor::init()
 {
 	// Initialize cursors
 	auto ss = SpriteSheetManager::getInstance().getSpriteSheetByKey("CursorSpriteSheet");
@@ -63,6 +55,8 @@ bool Voxel::UI::Cursor::init()
 	};
 
 	pivot = glm::vec2(-15.0f / 16.0f, 15.0f / 16.0f) * 0.5f;
+
+	release();
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -98,7 +92,22 @@ bool Voxel::UI::Cursor::init()
 	return true;
 }
 
-void Voxel::UI::Cursor::checkBoundary()
+void Voxel::Cursor::release()
+{
+	if (uvbo)
+	{
+		glDeleteBuffers(1, &uvbo);
+		uvbo = 0;
+	}
+
+	if (vao)
+	{
+		glDeleteVertexArrays(1, &vao);
+		vao = 0;
+	}
+}
+
+void Voxel::Cursor::checkBoundary()
 {
 
 	if (this->position.x > maxScreenBoundary.x)
@@ -120,33 +129,21 @@ void Voxel::UI::Cursor::checkBoundary()
 	}
 }
 
-Voxel::UI::Cursor * Voxel::UI::Cursor::create()
-{
-	Cursor* newCursor = new Cursor();
-	if (newCursor->init())
-	{
-		return newCursor;
-	}
-
-	delete newCursor;
-	return nullptr;
-}
-
-void Voxel::UI::Cursor::addPosition(const glm::vec2 & distance)
+void Voxel::Cursor::addPosition(const glm::vec2 & distance)
 {
 	this->position += distance;
 
 	checkBoundary();
 }
 
-void Voxel::UI::Cursor::setPosition(const glm::vec2 & position)
+void Voxel::Cursor::setPosition(const glm::vec2 & position)
 {
 	this->position = position;
 
 	checkBoundary();
 }
 
-void Voxel::UI::Cursor::updateBoundary()
+void Voxel::Cursor::updateBoundary()
 {
 	auto size = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 
@@ -154,7 +151,7 @@ void Voxel::UI::Cursor::updateBoundary()
 	maxScreenBoundary = size * 0.5f;
 }
 
-void Voxel::UI::Cursor::setCursorType(const CursorType cursorType)
+void Voxel::Cursor::setCursorType(const CursorType cursorType)
 {
 	auto ss = SpriteSheetManager::getInstance().getSpriteSheetByKey("CursorSpriteSheet");
 
@@ -192,22 +189,22 @@ void Voxel::UI::Cursor::setCursorType(const CursorType cursorType)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * uv.size(), &uv.front());
 }
 
-void Voxel::UI::Cursor::setVisibility(const bool visibility)
+void Voxel::Cursor::setVisibility(const bool visibility)
 {
 	visible = visibility;
 }
 
-bool Voxel::UI::Cursor::isVisible() const
+bool Voxel::Cursor::isVisible() const
 {
 	return visible;
 }
 
-glm::vec2 Voxel::UI::Cursor::getPosition() const
+glm::vec2 Voxel::Cursor::getPosition() const
 {
 	return position;
 }
 
-void Voxel::UI::Cursor::render()
+void Voxel::Cursor::render()
 {
 	if (visible)
 	{

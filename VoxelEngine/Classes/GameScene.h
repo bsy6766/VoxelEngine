@@ -34,12 +34,12 @@ namespace Voxel
 	class Setting;
 	class WorldMap;
 	class GameMenu;
+		class Cursor;
 
 	namespace UI
 	{
 		class Canvas;
 		class Text;
-		class Cursor;
 	}
 
 	/**
@@ -130,7 +130,7 @@ namespace Voxel
 		UI::Canvas* loadingCanvas;
 
 		// cursor
-		UI::Cursor* cursor;
+		Cursor* cursor;
 		
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
@@ -164,10 +164,7 @@ namespace Voxel
 
 		// Initialize default UI canvas
 		void initDefaultCanvas();
-
-		// Initialize cursor
-		void initCursor();
-
+		
 		// Initialize game menu UI
 		void initGameMenu();
 

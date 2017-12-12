@@ -60,6 +60,7 @@ using namespace Voxel;
 
 GameScene::GameScene()
 	: world(nullptr)
+	, cursor(&Voxel::Cursor::getInstance())
 	, chunkMap(nullptr)
 	, chunkMeshGenerator(nullptr)
 	, input(&InputHandler::getInstance())
@@ -217,9 +218,7 @@ void Voxel::GameScene::initUI()
 {
 	FontManager::getInstance().addFont("Pixel.ttf", 10);
 	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
-
-	initCursor();
-
+	
 	initDefaultCanvas();
 
 	initLoadingScreen();
@@ -279,12 +278,6 @@ void Voxel::GameScene::initDefaultCanvas()
 
 }
 
-void Voxel::GameScene::initCursor()
-{
-	// cursor
-	cursor = UI::Cursor::create();
-}
-
 void Voxel::GameScene::initGameMenu()
 {
 	// game menu
@@ -332,9 +325,7 @@ void Voxel::GameScene::release()
 
 	if (skybox) delete skybox;
 	if (calendar) delete calendar;
-
-	if (cursor) delete cursor;
-
+	
 	if (staticCanvas) delete staticCanvas;
 	if (dynamicCanvas) delete dynamicCanvas;
 	if (gameMenu) delete gameMenu;

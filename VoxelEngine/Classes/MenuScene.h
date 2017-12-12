@@ -11,10 +11,7 @@
 namespace Voxel
 {
 	// foward declaration
-	namespace UI
-	{
-		class Cursor;
-	}
+	class Cursor;
 	class InputHandler;
 
 	class MenuScene : public Scene
@@ -42,8 +39,7 @@ namespace Voxel
 		int curHoveringButtonIndex;
 
 		// cursor
-		UI::Cursor* cursor;
-		glm::vec2 prevCursorPos;
+		Cursor* cursor;
 
 		// input handler instance
 		InputHandler* input;
