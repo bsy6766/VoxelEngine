@@ -147,6 +147,8 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 void Voxel::MenuScene::updateMouseMoveInput()
 {
+	if (exiting) return;
+
 	// Get current mouse pos
 	auto curMousePos = input->getMousePosition();
 
@@ -159,8 +161,6 @@ void Voxel::MenuScene::updateMouseMoveInput()
 
 	// Update cursor position only if it's visible
 	cursor->addPosition(glm::vec2(dx, -dy));
-
-	if (exiting) return;
 
 	auto cursorPos = cursor->getPosition();
 
