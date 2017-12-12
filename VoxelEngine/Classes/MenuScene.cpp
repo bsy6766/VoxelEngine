@@ -149,24 +149,15 @@ void Voxel::MenuScene::updateMouseMoveInput()
 {
 	if (exiting) return;
 
-	// Get current mouse pos
-	auto curMousePos = input->getMousePosition();
+	auto mouseMovedDist = input->getMouseMovedDistance();
 
-	// Calculate how far did cursor moved
-	float dx = curMousePos.x - prevCursorPos.x;
-	float dy = curMousePos.y - prevCursorPos.y;
-	// Store cursor position
-	prevCursorPos.x = curMousePos.x;
-	prevCursorPos.y = curMousePos.y;
-
-	// Update cursor position only if it's visible
-	cursor->addPosition(glm::vec2(dx, -dy));
+	cursor->addPosition(glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
 
 	auto cursorPos = cursor->getPosition();
 
-	canvas->updateMouseMove(cursorPos, glm::vec2(dx, -dy));
+	canvas->updateMouseMove(cursorPos, glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
 
-	if (dx != 0.0f || dy != 0.0f)
+	if (mouseMovedDist.x != 0.0f || mouseMovedDist.y != 0.0f)
 	{
 
 		unsigned int index = 0;

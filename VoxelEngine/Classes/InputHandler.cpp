@@ -10,9 +10,9 @@
 using namespace Voxel;
 
 InputHandler::InputHandler()
-	: curX(0)
-	, curY(0)
-	, controllerManager(ControllerManager::getInstance())
+	: controllerManager(ControllerManager::getInstance())
+	, curMousePos(0.0f)
+	, prevMousePos(0.0f)
 	, mods(0)
 	, bufferEnabled(false)
 	, mouseScrollValue(0)
@@ -50,6 +50,7 @@ void Voxel::InputHandler::postUpdate()
 	mouseButtonTickMap.clear();
 	keyTickMap.clear();
 	mouseScrollValue = 0;
+	prevMousePos = curMousePos;
 }
 
 
@@ -140,8 +141,9 @@ int Voxel::InputHandler::getKeyFromUserKeyBind(const KEY_INPUT keyInput)
 
 void InputHandler::updateMousePosition(double x, double y)
 {
-	curX = x;
-	curY = y;
+	prevMousePos = curMousePos;
+	curMousePos.x = static_cast<float>(x);
+	curMousePos.y = static_cast<float>(y);
 }
 
 void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
@@ -198,15 +200,19 @@ void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
-void Voxel::InputHandler::getMousePosition(double & x, double & y)
+glm::vec2 Voxel::InputHandler::getMousePosition() const
 {
-	x = curX;
-	y = curY;
+	return curMousePos;
 }
 
-glm::vec2 Voxel::InputHandler::getMousePosition()
+glm::vec2 Voxel::InputHandler::getPreviousMousePosition() const
 {
-	return glm::vec2(curX, curY);
+	return prevMousePos;
+}
+
+glm::vec2 Voxel::InputHandler::getMouseMovedDistance() const
+{
+	return curMousePos - prevMousePos;
 }
 
 bool InputHandler::getKeyDown(int key, const bool tick)
@@ -420,8 +426,7 @@ int Voxel::InputHandler::getMouseScrollValue()
 
 void Voxel::InputHandler::setCursorToCenter()
 {
-	curX = 0;
-	curY = 0;
+	prevMousePos = curMousePos = glm::vec2(0.0f);
 }
 
 void Voxel::InputHandler::setBufferMode(const float enabled)

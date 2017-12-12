@@ -131,10 +131,7 @@ namespace Voxel
 
 		// cursor
 		UI::Cursor* cursor;
-
-		// Mouse pos. InputHandler only keep tracks mouse pos when it moves
-		glm::vec2 prevMouseCursorPos;
-
+		
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
 

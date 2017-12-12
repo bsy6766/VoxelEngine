@@ -46,15 +46,12 @@ namespace Voxel
 		~InputHandler();
 
 		// Mouse
-		double curX;
-		double curY;
-		double prevX;
-		double prevY;
 		glm::vec2 prevMousePos;
 		glm::vec2 curMousePos;
 
-
+		// Stores mouse button state on map
 		std::unordered_map<int/*GLFW Mouse button*/, int/*Button state*/> mouseButtonMap;
+		// Stores mouse button state for each frame.
 		std::unordered_map<int/*GLFW Mouse button*/, int/*Button state*/> mouseButtonTickMap;
 
 		// Mouse scroll
@@ -116,10 +113,14 @@ namespace Voxel
 		static void onControllerConnected(ControllerID id);
 		static void onControllerDisconnected(ControllerID id);
 
-		// InputHandler functions. 
-		// Get mouse position. Pass x, y as reference
-		void getMousePosition(double& x, double& y);
-		glm::vec2 getMousePosition();
+		// Get current mouse position
+		glm::vec2 getMousePosition() const;
+
+		// Get previous mouse position
+		glm::vec2 getPreviousMousePosition() const;
+
+		// Get mouse moved distance
+		glm::vec2 getMouseMovedDistance() const;
 
 		/**
 		*	Checks if key is down

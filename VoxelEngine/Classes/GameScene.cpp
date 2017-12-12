@@ -64,7 +64,6 @@ GameScene::GameScene()
 	, chunkMeshGenerator(nullptr)
 	, input(&InputHandler::getInstance())
 	, player(nullptr)
-	, prevMouseCursorPos(0)
 	, chunkWorkManager(nullptr)
 	, staticCanvas(nullptr)
 	, dynamicCanvas(nullptr)
@@ -90,7 +89,6 @@ GameScene::GameScene()
 {
 	// After creation, set cursor to center
 	input->setCursorToCenter();
-	prevMouseCursorPos = input->getMousePosition();
 	//Camera::mainCamera->initDebugFrustumLines();
 }
 
@@ -991,21 +989,13 @@ void Voxel::GameScene::updateKeyboardInput(const float delta)
 
 void Voxel::GameScene::updateMouseMoveInput(const float delta)
 {
-	// Get current mouse pos
-	auto curMousePos = input->getMousePosition();
-
-	// Calculate how far did cursor moved
-	float dx = curMousePos.x - prevMouseCursorPos.x;
-	float dy = curMousePos.y - prevMouseCursorPos.y;
-	// Store cursor position
-	prevMouseCursorPos.x = curMousePos.x;
-	prevMouseCursorPos.y = curMousePos.y;
+	auto mouseMovedDist = input->getMouseMovedDistance();
 
 	// Check if cursor is visible
 	if (cursor->isVisible())
 	{
 		// Update cursor position only if it's visible
-		cursor->addPosition(glm::vec2(dx, -dy));
+		cursor->addPosition(glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
 	}
 
 	// Update UI
@@ -1016,7 +1006,7 @@ void Voxel::GameScene::updateMouseMoveInput(const float delta)
 
 #if V_DEBUG && V_DEBUG_CONSOLE
 	// update debug console
-	debugConsole->updateMouseMove(cursor->getPosition(), glm::vec2(dx, -dy));
+	debugConsole->updateMouseMove(cursor->getPosition(), glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
 
 	if (debugConsole->isConsoleOpened())
 	{
@@ -1039,14 +1029,14 @@ void Voxel::GameScene::updateMouseMoveInput(const float delta)
 #if V_DEBUG && V_DEBUG_CAMERA_MODE
 	if (cameraControlMode)
 	{
-		if (dx != 0)
+		if (mouseMovedDist.x != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(0, dx * newDelta * 15.0f, 0));
+			Camera::mainCamera->addAngle(vec3(0, mouseMovedDist.x * newDelta * 15.0f, 0));
 		}
 
-		if (dy != 0)
+		if (mouseMovedDist.y != 0)
 		{
-			Camera::mainCamera->addAngle(vec3(dy * newDelta * 15.0f, 0, 0));
+			Camera::mainCamera->addAngle(vec3(mouseMovedDist.y * newDelta * 15.0f, 0, 0));
 		}
 
 		return;
@@ -1055,28 +1045,28 @@ void Voxel::GameScene::updateMouseMoveInput(const float delta)
 
 	if (gameState == GameState::IDLE)
 	{
-		if (dx != 0.0)
+		if (mouseMovedDist.x != 0.0)
 		{
-			player->addRotationY(newDelta * dx);
+			player->addRotationY(newDelta * mouseMovedDist.x);
 		}
 
-		if (dy != 0.0)
+		if (mouseMovedDist.y != 0.0)
 		{
-			player->addRotationX(newDelta * -dy);
+			player->addRotationX(newDelta * -mouseMovedDist.y);
 		}
 	}
 	else if (gameState == GameState::VIEWING_WORLD_MAP)
 	{
 		glm::vec2 delta(0.0f);
 
-		if (dx != 0)
+		if (mouseMovedDist.x != 0)
 		{
-			delta.x = newDelta * static_cast<float>(dx);
+			delta.x = newDelta * static_cast<float>(mouseMovedDist.x);
 		}
 
-		if (dy != 0)
+		if (mouseMovedDist.y != 0)
 		{
-			delta.y = newDelta * static_cast<float>(dy);
+			delta.y = newDelta * static_cast<float>(mouseMovedDist.y);
 		}
 
 		worldMap->updateMouseMove(delta, cursor->getPosition());
