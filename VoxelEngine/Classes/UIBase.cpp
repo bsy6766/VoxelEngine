@@ -75,6 +75,8 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 
 Voxel::UI::TransformNode::~TransformNode()
 {
+	std::cout << "~TransformNode() " << name << "\n";
+
 	for (auto action : actions)
 	{
 		if (action)
@@ -85,7 +87,13 @@ Voxel::UI::TransformNode::~TransformNode()
 
 	actions.clear();
 
-	//std::cout << "~TransformNode()\n";
+	for (auto& e : children)
+	{
+		if (e.second)
+		{
+			delete e.second;
+		}
+	}
 }
 
 void Voxel::UI::TransformNode::setVisibility(const bool visibility)
@@ -381,7 +389,7 @@ bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel:
 	}
 	else
 	{
-		children.insert(std::make_pair(zOrder, std::unique_ptr<Voxel::UI::TransformNode>(child)));
+		children.insert(std::make_pair(zOrder, child));
 
 		child->parent = this;
 
@@ -391,6 +399,22 @@ bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel:
 
 		return true;
 	}
+}
+
+bool Voxel::UI::TransformNode::removeChild(const std::string & name)
+{
+	for (auto& e : children)
+	{
+		if ((e.second)->name == name)
+		{
+			delete (e.second);
+			children.erase(e.first);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Voxel::UI::TransformNode::getNextZOrder(Voxel::ZOrder & curZOrder)
@@ -475,7 +499,7 @@ TransformNode * Voxel::UI::TransformNode::getChild(const std::string & name)
 	{
 		if ((e.second)->name == name)
 		{
-			return (e.second).get();
+			return (e.second);
 		}
 	}
 
@@ -503,22 +527,22 @@ void Voxel::UI::TransformNode::getAllChildrenInVector(std::vector<TransformNode*
 			{
 				if ((e.second)->hasChildren())
 				{
-					(e.second)->getAllChildrenInVector(negativesOrder, (e.second).get());
+					(e.second)->getAllChildrenInVector(negativesOrder, (e.second));
 				}
 				else
 				{
-					negativesOrder.push_back((e.second).get());
+					negativesOrder.push_back((e.second));
 				}
 			}
 			else
 			{
 				if ((e.second)->hasChildren())
 				{
-					(e.second)->getAllChildrenInVector(positiveOrder, (e.second).get());
+					(e.second)->getAllChildrenInVector(positiveOrder, (e.second));
 				}
 				else
 				{
-					positiveOrder.push_back((e.second).get());
+					positiveOrder.push_back((e.second));
 				}
 			}
 		}
@@ -828,7 +852,9 @@ Voxel::UI::RenderNode::~RenderNode()
 	if (vao)
 	{
 		// Delte array
+		std::cout << "vao = " << vao << "\n";
 		glDeleteVertexArrays(1, &vao);
+		vao = 0;
 	}
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX

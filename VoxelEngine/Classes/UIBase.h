@@ -13,7 +13,6 @@
 // cpp
 #include <string>
 #include <map>
-#include <memory>
 #include <list>
 
 // Voxel
@@ -35,7 +34,7 @@ namespace Voxel
 		class RenderNode;
 		class Action;
 
-		typedef std::map<ZOrder, std::unique_ptr<TransformNode>, ZOrderComp> Children;
+		typedef std::map<ZOrder, TransformNode*, ZOrderComp> Children;
 
 		/**
 		*	@class Node
@@ -332,6 +331,11 @@ namespace Voxel
 			*	@param zOrder Z order to set.
 			*/
 			bool addChild(TransformNode* child, ZOrder& zOrder);
+
+			/**
+			*	Remove child by name. For debug purpose
+			*/
+			bool removeChild(const std::string& name);
 
 			/**
 			*	Get child by name. This isn't efficient way since it uses string key.
