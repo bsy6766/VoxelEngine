@@ -50,10 +50,12 @@ namespace Voxel
 		// File button
 		Voxel::UI::Button* fileBtn;
 		Voxel::UI::Button* editBtn;
+		Voxel::UI::Button* returnToMainMenuBtn;
+		Voxel::UI::Button* exitGameBtn;
 		// Files drop down
 		Voxel::UI::NinePatchImage* fileDropDownBg;
-		// Files drop down buttons
-		std::array<Voxel::UI::Button*, MAX_FILE_DROP_DOWN_BUTTON> fileDropDownButtons;
+		// New create window
+		Voxel::UI::NinePatchImage* newCreateWindow;
 
 		bool menuBarDropDowned;
 
@@ -73,6 +75,10 @@ namespace Voxel
 		void onEditButtonClicked();
 		void onReturnToMainMenuButtonClicked();
 		void onExitButtonClicked();
+		void onNewButtonClicked();
+		void onNewCreateButtonClicked();
+		void onNewCancelButtonClicked();
+
 	public:
 		Editor();
 		~Editor();
