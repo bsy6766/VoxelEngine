@@ -141,7 +141,8 @@ int Voxel::InputHandler::getKeyFromUserKeyBind(const KEY_INPUT keyInput)
 
 void InputHandler::updateMousePosition(double x, double y)
 {
-	prevMousePos = curMousePos;
+	//std::cout << "update mouse pos (" << x << ", " << y << ")\n";
+	//prevMousePos = curMousePos;
 	curMousePos.x = static_cast<float>(x);
 	curMousePos.y = static_cast<float>(y);
 }
@@ -427,6 +428,7 @@ int Voxel::InputHandler::getMouseScrollValue()
 void Voxel::InputHandler::setCursorToCenter()
 {
 	prevMousePos = curMousePos = glm::vec2(0.0f);
+	Application::getInstance().getGLView()->setCursorPos(0, 0);
 }
 
 void Voxel::InputHandler::setBufferMode(const float enabled)
