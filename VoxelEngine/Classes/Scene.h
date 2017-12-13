@@ -32,6 +32,9 @@ namespace Voxel
 		// Called when scene exits. This is called before the destructor of derived class.
 		virtual void onExit() = 0;
 
+		// Callsed when scene exit finished
+		virtual void onExitFinished() = 0;
+
 		// Updates scene
 		virtual void update(const float delta) = 0;
 
