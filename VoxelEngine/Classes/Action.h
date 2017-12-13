@@ -45,9 +45,9 @@ namespace Voxel
 			float getElapsedTime() const;
 
 			// Reset action
-			void reset();
+			virtual void reset();
 
-			// set target. Derived classes override this
+			// set target. Derived classes override this to set their own target. Some actions doesn't have target so it's up to derived class to update. Base class setTarget does nothing.
 			virtual void setTarget(TransformNode* target);
 
 			// Update action. All derived actions must override

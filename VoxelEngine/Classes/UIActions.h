@@ -1,5 +1,6 @@
-#include "Sequence.h"
 #include "Action.h"
+#include "Sequence.h"
+#include "Repeat.h"
 #include "MoveTo.h"
 #include "RotateTo.h"
 #include "ScaleTo.h"
@@ -7,3 +8,4 @@
 #include "Delay.h"
 #include "FadeTo.h"
 #include "TintTo.h"
+#include "Visibility.h"

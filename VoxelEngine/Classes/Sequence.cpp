@@ -13,6 +13,19 @@ Voxel::UI::Sequence::Sequence()
 	, second(nullptr)
 {}
 
+Voxel::UI::Sequence::~Sequence()
+{
+	if (first)
+	{
+		delete first;
+	}
+
+	if (second)
+	{
+		delete second;
+	}
+}
+
 bool Voxel::UI::Sequence::init(Action * action)
 {
 	if (action)
@@ -67,19 +80,6 @@ bool Voxel::UI::Sequence::init(const std::initializer_list<Action*>& actions)
 	}
 
 	return true;
-}
-
-Voxel::UI::Sequence::~Sequence()
-{
-	if (first)
-	{
-		delete first;
-	}
-
-	if (second)
-	{
-		delete second;
-	}
 }
 
 Voxel::UI::Sequence * Voxel::UI::Sequence::create(Action * action)
@@ -150,6 +150,19 @@ Voxel::UI::Sequence * Voxel::UI::Sequence::create(const std::initializer_list<Ac
 bool Voxel::UI::Sequence::isDone() const
 {
 	return (first ? first->isDone() : true) && (second ? second->isDone() : true);
+}
+
+void Voxel::UI::Sequence::reset()
+{
+	if (first)
+	{
+		first->reset();
+	}
+
+	if (second)
+	{
+		second->reset();
+	}
 }
 
 void Voxel::UI::Sequence::setTarget(TransformNode * target)

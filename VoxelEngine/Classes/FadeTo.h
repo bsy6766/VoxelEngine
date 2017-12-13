@@ -10,39 +10,7 @@ namespace Voxel
 	{
 		// forward declaration
 		class TransformNode;
-
-		class FadeTo2 : public Action
-		{
-		private:
-			// Constructor
-			FadeTo2();
-
-			// opacity
-			float opacity;
-
-			// target. Need TransformNode at least.
-			TransformNode* target;
-
-			// init
-			bool init(const float duration, const float opacity);
-		public:
-			// Destructor
-			~FadeTo2() = default;
-
-			/**
-			*	Creates FadeTo action
-			*	@param duration Duration of action
-			*	@param opacity Opacity to change
-			*/
-			static FadeTo2* create(const float duration, const float opacity);
-
-			// override
-			void setTarget(TransformNode* target) override;
-
-			// overrides
-			void update(const float delta) override;
-		};
-
+		
 		/**
 		*	@class FadeTo
 		*	@brief Change ui's opacity

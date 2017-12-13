@@ -59,6 +59,9 @@ namespace Voxel
 			// Check if sequence is done
 			bool isDone() const override;
 
+			// reset
+			void reset() override;
+
 			// Set target to both actions
 			void setTarget(TransformNode* target) override;
 
