@@ -1,9 +1,6 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
-// voxel
-#include "Texture2D.h"
-
 // gl
 #include <GL\glew.h>
 
@@ -12,6 +9,9 @@
 
 namespace Voxel
 {
+	// foward delcaration
+	class Texture2D;
+
 	/**
 	*	@class Cursor
 	*	@brief Textured cursor. Can switch to different cursors. Renders in screen space
@@ -46,6 +46,7 @@ namespace Voxel
 	private:
 		// Constructor
 		Cursor();
+
 		// Destructor
 		~Cursor();
 
@@ -61,12 +62,10 @@ namespace Voxel
 		// size is fixed to 32 x 32
 		const glm::vec2 size = glm::vec2(32.0f, 32.0f);
 
-		// lock. If cursor is locked, user only can move cursor in the window. If cursor unlocked, 
-
 		// gl
 		GLuint vao;
 		GLuint uvbo;
-
+		
 		// visibility
 		bool visible;
 

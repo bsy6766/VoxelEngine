@@ -6,6 +6,7 @@
 // voxel
 #include "Application.h"
 #include "SpriteSheet.h"
+#include "Texture2D.h"
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
@@ -15,8 +16,7 @@ Voxel::Cursor::Cursor()
 	: vao(0)
 	, visible(false)
 	, position(0)
-{
-}
+{}
 
 Voxel::Cursor::~Cursor()
 {
@@ -131,14 +131,23 @@ void Voxel::Cursor::checkBoundary()
 
 void Voxel::Cursor::addPosition(const glm::vec2 & distance)
 {
-	this->position += distance;
+	position.x += distance.x;
+	position.y -= distance.y;
+
+	/*
+	if (distance.x != 0 || distance.y != 0)
+	{
+		std::cout << "Cursor moved (" << distance.x << ", " << distance.y << ")\n";
+	}
+	*/
 
 	checkBoundary();
 }
 
 void Voxel::Cursor::setPosition(const glm::vec2 & position)
 {
-	this->position = position;
+	this->position.x = position.x;
+	this->position.y = -position.y;
 
 	checkBoundary();
 }
@@ -224,6 +233,7 @@ void Voxel::Cursor::render()
 			program->setUniformVec3("color", glm::vec3(1.0f));
 
 			glBindVertexArray(vao);
+
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 	}
