@@ -59,7 +59,8 @@
 using namespace Voxel;
 
 GameScene::GameScene()
-	: world(nullptr)
+	: Scene()
+	, world(nullptr)
 	, cursor(&Voxel::Cursor::getInstance())
 	, chunkMap(nullptr)
 	, chunkMeshGenerator(nullptr)
@@ -87,18 +88,10 @@ GameScene::GameScene()
 	, cameraControlMode(false)
 #endif
 #endif
-{
-	// After creation, set cursor to center
-	input->setCursorToCenter();
-	cursor->setPosition(glm::vec2(0.0f));
-	cursor->setVisibility(false);
-	//Camera::mainCamera->initDebugFrustumLines();
-}
+{}
 
 GameScene::~GameScene()
-{
-	release();
-}
+{}
 
 void Voxel::GameScene::init()
 {
@@ -171,7 +164,12 @@ void Voxel::GameScene::init()
 }
 
 void Voxel::GameScene::onEnter()
-{}
+{
+	// After creation, set cursor to center
+	input->setCursorToCenter();
+	cursor->setPosition(glm::vec2(0.0f));
+	cursor->setVisibility(false);
+}
 
 void Voxel::GameScene::onEnterFinished()
 {

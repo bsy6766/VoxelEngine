@@ -135,9 +135,6 @@ namespace Voxel
 		// Set this to true to skip update. Input update still works because some inputs needs to skip update.
 		bool skipUpdate;
 
-		// Releasea ll sub system and instances.
-		void release();
-
 		// Initialize sprite sheets
 		void initSpriteSheets();
 
@@ -244,6 +241,7 @@ namespace Voxel
 		void onEnterFinished() override;
 		void onExit() override;
 		void onExitFinished() override;
+		void release() override;
 
 		// create new. 
 		void createNew(const std::string& worldName);

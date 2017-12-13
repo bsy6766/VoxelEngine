@@ -12,27 +12,15 @@
 #include <functional>
 
 Voxel::MenuScene::MenuScene()
-	: canvas(nullptr)
+	: Scene()
+	, canvas(nullptr)
 	, curHoveringButtonIndex(-1)
 	, cursor(nullptr)
 	, input(nullptr)
-	, exiting(false)
 {}
 
 Voxel::MenuScene::~MenuScene()
-{
-	if (canvas)
-	{
-		delete canvas;
-	}
-
-	auto& sm = SpriteSheetManager::getInstance();
-
-	sm.removeSpriteSheetByKey("MenuSceneUISpriteSheet");
-
-	std::cout << "MenuScene released spritesheet\n";
-	sm.print(false);
-}
+{}
 
 void Voxel::MenuScene::init()
 {
@@ -95,6 +83,21 @@ void Voxel::MenuScene::init()
 	TextureManager::getInstance().print();
 }
 
+void Voxel::MenuScene::release()
+{
+	if (canvas)
+	{
+		delete canvas;
+	}
+
+	auto& sm = SpriteSheetManager::getInstance();
+
+	sm.removeSpriteSheetByKey("MenuSceneUISpriteSheet");
+
+	std::cout << "MenuScene released spritesheet\n";
+	sm.print(false);
+}
+
 void Voxel::MenuScene::onEnter()
 {
 	cursor->setVisibility(true);
@@ -104,17 +107,13 @@ void Voxel::MenuScene::onEnter()
 }
 
 void Voxel::MenuScene::onEnterFinished()
-{
-}
+{}
 
 void Voxel::MenuScene::onExit()
-{
-	exiting = true;
-}
+{}
 
 void Voxel::MenuScene::onExitFinished()
-{
-}
+{}
 
 void Voxel::MenuScene::update(const float delta)
 {
@@ -144,8 +143,6 @@ void Voxel::MenuScene::update(const float delta)
 
 void Voxel::MenuScene::updateKeyboardInput()
 {
-	if (exiting) return;
-
 	if (input->getKeyDown(Voxel::InputHandler::KEY_INPUT::GLOBAL_ESCAPE, true))
 	{
 		Application::getInstance().getGLView()->close();
@@ -155,8 +152,6 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 void Voxel::MenuScene::updateMouseMoveInput()
 {
-	if (exiting) return;
-
 	auto mouseMovedDist = input->getMouseMovedDistance();
 	
 	auto cursorPos = cursor->getPosition();
@@ -203,8 +198,6 @@ void Voxel::MenuScene::updateMouseMoveInput()
 
 void Voxel::MenuScene::updateMouseClickInput()
 {
-	if (exiting) return;
-
 	if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 	{
 		canvas->updateMousePress(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
@@ -227,8 +220,6 @@ void Voxel::MenuScene::updateMouseClickInput()
 
 void Voxel::MenuScene::updateMouseScrollInput()
 {
-	if (exiting) return;
-
 	auto mouseScroll = input->getMouseScrollValue();
 
 	bool changed = false;
@@ -264,15 +255,11 @@ void Voxel::MenuScene::updateMouseScrollInput()
 }
 
 void Voxel::MenuScene::updateControllerInput(const float delta)
-{
-	if (exiting) return;
-}
+{}
 
 void Voxel::MenuScene::onPlayClicked()
 {
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::GAME_SCENE, 1.5f);
-
-	exiting = true;
 }
 
 void Voxel::MenuScene::onExitGameClicked()

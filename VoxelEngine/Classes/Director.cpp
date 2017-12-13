@@ -27,12 +27,16 @@ Voxel::Director::~Director()
 	if (currentScene)
 	{
 		currentScene->onExit();
+		currentScene->onExitFinished();
+		currentScene->release();
 		delete currentScene;
 	}
 
 	if (nextScene)
 	{
 		nextScene->onExit();
+		nextScene->onExitFinished();
+		nextScene->release();
 		delete nextScene;
 	}
 
@@ -102,6 +106,7 @@ void Voxel::Director::runScene(const SceneName sceneName)
 	{
 		currentScene->onExit();
 		currentScene->onExitFinished();
+		currentScene->release();
 		delete currentScene;
 	}
 
@@ -151,14 +156,6 @@ void Voxel::Director::update(const float delta)
 		{
 			currentScene->update(delta);
 		}
-
-		if (InputHandler::getInstance().getKeyDown(GLFW_KEY_H, true))
-		{
-			currentScene->onExit();
-			currentScene->onExitFinished();
-			delete currentScene;
-			currentScene = nullptr;
-		}
 	}
 	else
 	{
@@ -200,6 +197,7 @@ void Voxel::Director::update(const float delta)
 			elapsedTime -= delta;
 			
 			// release current scene
+			currentScene->release();
 			delete currentScene;
 
 			// swap scene
@@ -216,7 +214,6 @@ void Voxel::Director::update(const float delta)
 			if (elapsedTime >= duration)
 			{
 				// finished.
-				std::cout << "Finished: " << elapsedTime << "\n";
 
 				// current scene (next scene) finished enter
 				currentScene->onEnterFinished();
@@ -259,28 +256,27 @@ void Voxel::Director::render()
 				// on second half, update next scene
 				fadeImage->setOpacity(1.0f - ((elapsedTime - halfDuration) / halfDuration));
 			}
-
-			if (currentScene)
-			{
-				currentScene->render();
-			}
-
-			if (canvas)
-			{
-				// Clear depth buffer and render above current buffer
-				glClear(GL_DEPTH_BUFFER_BIT);
-				glDepthFunc(GL_ALWAYS);
-
-				canvas->render();
-			}
 		}
 		// else, done.
 	}
-	else
+
+	if (currentScene)
 	{
-		if (currentScene)
+		currentScene->render();
+	}
+}
+
+void Voxel::Director::renderFade()
+{
+	if (state == State::TRANSITIONING)
+	{
+		if (canvas)
 		{
-			currentScene->render();
+			// Clear depth buffer and render above current buffer
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glDepthFunc(GL_ALWAYS);
+
+			canvas->render();
 		}
 	}
 }

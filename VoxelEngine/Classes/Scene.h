@@ -40,6 +40,9 @@ namespace Voxel
 
 		// Renders scene
 		virtual void render() = 0;
+
+		// Release scene. This is called after onExitFinished and before destructor
+		virtual void release() = 0;
 	};
 }
 

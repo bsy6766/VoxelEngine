@@ -192,6 +192,9 @@ void Application::run()
 		// render cursor
 		cursor->render();
 
+		// render fade
+		director->renderFade();
+
 		// Swap buffer and poll events. All glfw events are called here.
 		glView->render();
 

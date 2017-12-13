@@ -123,6 +123,7 @@ namespace Voxel
 
 		// Render current scene
 		void render();
+		void renderFade();
 	};
 
 }

@@ -43,10 +43,7 @@ namespace Voxel
 
 		// input handler instance
 		InputHandler* input;
-
-		// exiting flag. All inputs are ignored if this is true. Becomes true on onExit
-		bool exiting;
-
+		
 		// temp
 		Voxel::UI::Image* bg;
 
@@ -94,6 +91,7 @@ namespace Voxel
 		void onExitFinished() override;
 		void update(const float delta) override;
 		void render() override;
+		void release() override;
 	};
 }
 
