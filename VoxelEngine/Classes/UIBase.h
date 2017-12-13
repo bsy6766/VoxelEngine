@@ -145,6 +145,9 @@ namespace Voxel
 			// Action sequence
 			std::list<Voxel::UI::Action*> actions;
 
+			// Action pause. 
+			bool actionPaused;
+
 			// update bounding box center
 			void updateBoundingBox();
 
@@ -364,6 +367,13 @@ namespace Voxel
 			virtual void update(const float delta);
 
 			/**
+			*	Update keyboard update
+			*	Some ui like inputfield need to update the text as user types in.
+			*	@param str A string of buffer that is stacked up in inputhandler
+			*/
+			virtual bool updateKeyboardInput(const std::string& str);
+
+			/**
 			*	Update mouse movement.
 			*	@param mosuePosition Current position of mouse in screen space
 			*	@param mouseDelta Amount of mouse moved.
@@ -393,6 +403,21 @@ namespace Voxel
 			*	Run action.
 			*/
 			void runAction(Voxel::UI::Action* action);
+
+			/**
+			*	Pause action
+			*/
+			void pauseAction();
+
+			/**
+			*	Resume action
+			*/
+			void resumeAction();
+
+			/**
+			*	Restart action
+			*/
+			void restartAllActions();
 
 			/**
 			*	Stops all actions and release it

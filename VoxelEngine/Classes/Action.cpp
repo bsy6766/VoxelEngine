@@ -14,7 +14,15 @@ Voxel::UI::Action::Action()
 
 bool Voxel::UI::Action::isDone() const
 {
-	return elapsedTime >= duration;
+	if (duration == 0.0f)
+	{
+		// instant
+		return elapsedTime > 0.0f;
+	}
+	else
+	{
+		return elapsedTime >= duration;
+	}
 }
 
 float Voxel::UI::Action::getExceededTime() const
@@ -37,6 +45,11 @@ float Voxel::UI::Action::getDuration() const
 float Voxel::UI::Action::getElapsedTime() const
 {
 	return elapsedTime;
+}
+
+bool Voxel::UI::Action::isInstant() const
+{
+	return duration == 0.0f;
 }
 
 void Voxel::UI::Action::reset()

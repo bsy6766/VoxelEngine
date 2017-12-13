@@ -59,6 +59,9 @@ namespace Voxel
 			// Check if sequence is done
 			bool isDone() const override;
 
+			// Get exceeded time
+			float getExceededTime() const override;
+
 			// reset
 			void reset() override;
 

@@ -1,6 +1,7 @@
 #include "Action.h"
 #include "Sequence.h"
 #include "Repeat.h"
+#include "RepeatForever.h"
 #include "MoveTo.h"
 #include "RotateTo.h"
 #include "ScaleTo.h"

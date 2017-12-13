@@ -152,6 +152,25 @@ bool Voxel::UI::Sequence::isDone() const
 	return (first ? first->isDone() : true) && (second ? second->isDone() : true);
 }
 
+float Voxel::UI::Sequence::getExceededTime() const
+{
+	if (first)
+	{
+		if (second)
+		{
+			return second->getExceededTime();
+		}
+		else
+		{
+			return first->getExceededTime();
+		}
+	}
+	else
+	{
+		return 0.0f;
+	}
+}
+
 void Voxel::UI::Sequence::reset()
 {
 	if (first)
@@ -163,6 +182,8 @@ void Voxel::UI::Sequence::reset()
 	{
 		second->reset();
 	}
+
+	elapsedTime = 0.0f;
 }
 
 void Voxel::UI::Sequence::setTarget(TransformNode * target)
@@ -186,32 +207,46 @@ void Voxel::UI::Sequence::update(const float delta)
 	{
 		if (first->isDone())
 		{
-			if (second->isDone())
+			// First is done. check second
+			if (second)
 			{
-				return;
-			}
-			else
-			{
-				second->update(delta);
+				// Second exists.
+				if (second->isDone())
+				{
+					// all finished
+					return;
+				}
+				else
+				{
+					// update second
+					second->update(delta);
+				}
 			}
 		}
 		else
 		{
+			// first is instant action. update
 			first->update(delta);
-
+			
 			if (first->isDone())
 			{
+				// check second
 				if (second)
 				{
-					auto t = first->getExceededTime();
-
-					second->update(t);
+					// second exists
+					if (second->isDone())
+					{
+						// second is done
+						return;
+					}
+					else
+					{
+						// second is not done
+						second->update(delta + first->getExceededTime());
+					}
 				}
 			}
 		}
 	}
-	else
-	{
-		return;
-	}
+	// Else, do nothing
 }

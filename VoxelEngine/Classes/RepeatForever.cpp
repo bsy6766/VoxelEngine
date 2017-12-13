@@ -22,6 +22,7 @@ bool Voxel::UI::RepeatForever::init(Action * action)
 	if (action)
 	{
 		this->action = action;
+		return true;
 	}
 
 	return false;

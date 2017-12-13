@@ -36,13 +36,16 @@ namespace Voxel
 			virtual bool isDone() const;
 
 			// Get exceeded time.
-			float getExceededTime() const ;
+			virtual float getExceededTime() const;
 
 			// Get duration
 			float getDuration() const;
 
 			// Get elapsedTime
 			float getElapsedTime() const;
+
+			// Check if istance (duration == 0 seconds)
+			bool isInstant() const;
 
 			// Reset action
 			virtual void reset();

@@ -68,6 +68,7 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	, needToUpdateModelMat(false)
 	, parent(nullptr)
 	, interaction(0)
+	, actionPaused(false)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	, bbVao(0)
 #endif
@@ -654,24 +655,27 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 
 void Voxel::UI::TransformNode::update(const float delta)
 {
-	if (!actions.empty())
+	if (!actionPaused)
 	{
-		auto it = actions.begin();
-		for (; it != actions.end();)
+		if (!actions.empty())
 		{
-			if ((*it)->isDone())
+			auto it = actions.begin();
+			for (; it != actions.end();)
 			{
-				delete (*it);
-				it = actions.erase(it);
+				if ((*it)->isDone())
+				{
+					delete (*it);
+					it = actions.erase(it);
+				}
+				else
+				{
+					(*it)->update(delta);
+					++it;
+				}
 			}
-			else
-			{
-				(*it)->update(delta);
-				++it;
-			}
-		}
 
-		needToUpdateModelMat = true;
+			needToUpdateModelMat = true;
+		}
 	}
 
 	if (needToUpdateModelMat)
@@ -685,6 +689,29 @@ void Voxel::UI::TransformNode::update(const float delta)
 	{
 		(e.second)->update(delta);
 	}
+}
+
+bool Voxel::UI::TransformNode::updateKeyboardInput(const std::string & str)
+{
+	if (visibility)
+	{
+		if (!children.empty())
+		{
+			bool moved = false;
+			for (auto& child : children)
+			{
+				bool result = (child.second)->updateKeyboardInput(str);
+				if (result)
+				{
+					moved = true;
+				}
+			}
+
+			return moved;
+		}
+	}
+
+	return false;
 }
 
 bool Voxel::UI::TransformNode::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
@@ -779,6 +806,27 @@ void Voxel::UI::TransformNode::runAction(Voxel::UI::Action * action)
 	{
 		actions.push_back(action);
 		actions.back()->setTarget(this);
+	}
+}
+
+void Voxel::UI::TransformNode::pauseAction()
+{
+	actionPaused = true;
+}
+
+void Voxel::UI::TransformNode::resumeAction()
+{
+	actionPaused = false;
+}
+
+void Voxel::UI::TransformNode::restartAllActions()
+{
+	for (auto action : actions)
+	{
+		if (action)
+		{
+			action->reset();
+		}
 	}
 }
 
