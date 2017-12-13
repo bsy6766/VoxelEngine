@@ -208,16 +208,6 @@ void Voxel::MenuScene::updateMouseClickInput()
 	{
 		canvas->updateMouseRelease(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
 	}
-	
-	if (input->getKeyDown(GLFW_KEY_T, true))
-	{
-		//Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);
-
-		GLint curAvailableMemoryInKB = 0;
-		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &curAvailableMemoryInKB);
-
-		std::cout << "GPU currently available memory: " << curAvailableMemoryInKB << " kb\n";
-	}
 }
 
 void Voxel::MenuScene::updateMouseScrollInput()
