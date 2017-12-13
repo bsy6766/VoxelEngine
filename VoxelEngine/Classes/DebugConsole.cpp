@@ -70,6 +70,8 @@ DebugConsole::~DebugConsole()
 	{
 		delete debugCanvas;
 	}
+
+	GLView::onFPSCounted = nullptr;
 }
 
 void Voxel::DebugConsole::init()
