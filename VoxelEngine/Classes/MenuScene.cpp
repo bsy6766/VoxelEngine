@@ -25,6 +25,13 @@ Voxel::MenuScene::~MenuScene()
 	{
 		delete canvas;
 	}
+
+	auto& sm = SpriteSheetManager::getInstance();
+
+	sm.removeSpriteSheetByKey("MenuSceneUISpriteSheet");
+
+	std::cout << "MenuScene released spritesheet\n";
+	sm.print(false);
 }
 
 void Voxel::MenuScene::init()
@@ -54,7 +61,7 @@ void Voxel::MenuScene::init()
 	buttonBg->setColor(glm::vec3(0.0f));
 	buttonBg->setOpacity(0.0f);
 	canvas->addChild(buttonBg);
-
+	
 	const float btnY = 300.0f;
 	float offset = 50.0f;
 
@@ -80,26 +87,33 @@ void Voxel::MenuScene::init()
 
 	// cursor
 	cursor = &Voxel::Cursor::getInstance();
-	cursor->setVisibility(true);
-	cursor->setPosition(glm::vec2(0.0f));
 
 	// input
 	input = &InputHandler::getInstance();
+
+	sm.print(false);
+	TextureManager::getInstance().print();
 }
 
 void Voxel::MenuScene::onEnter()
-{}
+{
+	cursor->setVisibility(true);
+	cursor->setPosition(glm::vec2(0.0f));
+
+	input->setCursorToCenter();
+}
 
 void Voxel::MenuScene::onEnterFinished()
-{}
+{
+}
 
 void Voxel::MenuScene::onExit()
 {
-	auto& sm = SpriteSheetManager::getInstance();
-
-	sm.removeSpriteSheetByKey("MenuSceneUISpriteSheet");
-
 	exiting = true;
+}
+
+void Voxel::MenuScene::onExitFinished()
+{
 }
 
 void Voxel::MenuScene::update(const float delta)
@@ -144,9 +158,7 @@ void Voxel::MenuScene::updateMouseMoveInput()
 	if (exiting) return;
 
 	auto mouseMovedDist = input->getMouseMovedDistance();
-
-	cursor->addPosition(glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
-
+	
 	auto cursorPos = cursor->getPosition();
 
 	canvas->updateMouseMove(cursorPos, glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
@@ -200,6 +212,16 @@ void Voxel::MenuScene::updateMouseClickInput()
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
 		canvas->updateMouseRelease(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
+	}
+	
+	if (input->getKeyDown(GLFW_KEY_T, true))
+	{
+		//Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);
+
+		GLint curAvailableMemoryInKB = 0;
+		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &curAvailableMemoryInKB);
+
+		std::cout << "GPU currently available memory: " << curAvailableMemoryInKB << " kb\n";
 	}
 }
 
@@ -266,10 +288,5 @@ void Voxel::MenuScene::render()
 	if (canvas)
 	{
 		canvas->render();
-	}
-
-	if (cursor)
-	{
-		cursor->render();
 	}
 }

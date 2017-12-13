@@ -34,7 +34,6 @@
 #include "UIActions.h"
 #include "Cursor.h"
 #include "GameMenu.h"
-#include "FontManager.h"
 
 #include "ProgramManager.h"
 #include "Program.h"
@@ -49,6 +48,7 @@
 
 #include "Application.h"
 #include "GLView.h"
+#include "Director.h"
 
 #include "DebugConsole.h"
 
@@ -90,25 +90,14 @@ GameScene::GameScene()
 {
 	// After creation, set cursor to center
 	input->setCursorToCenter();
+	cursor->setPosition(glm::vec2(0.0f));
+	cursor->setVisibility(false);
 	//Camera::mainCamera->initDebugFrustumLines();
 }
 
 GameScene::~GameScene()
 {
-	// Stop running mesh building before releasing
-	chunkWorkManager->stop();
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	chunkWorkManager->joinThread();
-
-	// Release all instances
 	release();
-
-#if V_DEBUG && V_DEBUG_CONSOLE
-	releaseDebugConsole();
-#endif
-
-	// Release fonts
-	FontManager::getInstance().clear();
 }
 
 void Voxel::GameScene::init()
@@ -190,14 +179,23 @@ void Voxel::GameScene::onEnterFinished()
 }
 
 void Voxel::GameScene::onExit()
-{}
+{
+	// Stop running mesh building before releasing
+	chunkWorkManager->stop();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	chunkWorkManager->joinThread();
+}
+
+void Voxel::GameScene::onExitFinished()
+{
+}
 
 void Voxel::GameScene::initSpriteSheets()
 {
 	auto& ssm = SpriteSheetManager::getInstance();
 
 	ssm.addSpriteSheet("UISpriteSheet.json");
-	ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
+	//ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
 
 #if V_DEBUG
 	ssm.addSpriteSheet("DebugSpriteSheet.json");
@@ -215,11 +213,8 @@ void Voxel::GameScene::initRandoms()
 }
 
 void Voxel::GameScene::initUI()
-{
-	FontManager::getInstance().addFont("Pixel.ttf", 10);
-	FontManager::getInstance().addFont("Pixel.ttf", 10, 2);
-	
-	initDefaultCanvas();
+{	
+	initCanvases();
 
 	initLoadingScreen();
 
@@ -249,24 +244,16 @@ void Voxel::GameScene::initLoadingScreen()
 	loadingCanvas->addChild(loadingLabel, 1);
 }
 
-void Voxel::GameScene::initDefaultCanvas()
+void Voxel::GameScene::initCanvases()
 {
 	auto resolution = Application::getInstance().getGLView()->getScreenSize(); 
 	
 	staticCanvas = new Voxel::UI::Canvas(resolution, glm::vec2(0));
 
-	// Add temporary cross hair
+	// Add cross hair
 	auto crossHairImage = UI::Image::createFromSpriteSheet("crossHair", "UISpriteSheet", "cross_hair.png");
 	crossHairImage->setScale(glm::vec2(2.0f));
 	staticCanvas->addChild(crossHairImage, 0);
-
-	/*
-	auto temp = Voxel::UI::NinePatchImage::create("tmp", "UISpriteSheet", "game_menu_bg.png", 12, 12, 12, 12, glm::vec2(50.0f, 100.0f));
-	temp->setPosition(100, 0);
-	temp->setScale(3.0f);
-	temp->setDraggable();
-	staticCanvas->addChild(temp, 100);
-	*/
 
 	// Add time label
 	timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), 2, glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT);
@@ -275,7 +262,6 @@ void Voxel::GameScene::initDefaultCanvas()
 	timeLabel->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
 
 	staticCanvas->addChild(timeLabel, 0);
-
 }
 
 void Voxel::GameScene::initGameMenu()
@@ -307,32 +293,91 @@ void Voxel::GameScene::initMeshBuilderThread()
 	chunkWorkManager->createThreads(chunkMap, chunkMeshGenerator, world, concurentThreadsSupported);
 }
 
+void Voxel::GameScene::releaseSpriteSheets()
+{
+	auto& ssm = SpriteSheetManager::getInstance();
+
+	ssm.removeSpriteSheetByKey("UISpriteSheet");
+	//ssm.removeSpriteSheetByKey("EnvironmentSpriteSheet");
+
+#if V_DEBUG
+	ssm.removeSpriteSheetByKey("DebugSpriteSheet");
+#endif
+
+	std::cout << "GameScene released spritesheet\n";
+	ssm.print(false);
+	TextureManager::getInstance().print();
+}
+
 void Voxel::GameScene::release()
 {
 	std::cout << "[World] Releasing all instances\n";
-
-	SpriteSheetManager::getInstance().releaseAll();
-	TextureManager::getInstance().releaseAll();
-
+	
 	// delete everything
+
+	// Release UIs
+
+	// Release world map
+	if (worldMap)
+	{
+		delete worldMap;
+		worldMap = nullptr;
+	}
+
+	// release game menu
+	if (gameMenu)
+	{
+		delete gameMenu;
+		gameMenu = nullptr;
+	}
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+	if (debugConsole)
+	{
+		delete debugConsole;
+		debugConsole = nullptr;
+	}
+#endif
+	// release loading screen
+	if (loadingCanvas)
+	{
+		delete loadingCanvas;
+		loadingCanvas = nullptr;
+	}
+	// Release static canvas
+	if (staticCanvas)
+	{
+		delete staticCanvas;
+		staticCanvas = nullptr;
+	}
+
+	// Release chunk map. Releases all chunk mesh
 	if (chunkMap) delete chunkMap;
+	// Release chunk mesh generator. Nothing special.
 	if (chunkMeshGenerator) delete chunkMeshGenerator;
+	// Release chunk work manager. Worker thread should already joined on onExit().
 	if (chunkWorkManager) delete chunkWorkManager;
 
+	// Delete physics. 
 	if (physics) delete physics;
 
+	// Release player. Possible vao release if some debugs are enabled
 	if (player)	delete player;
 
+	// Release skybox.
 	if (skybox) delete skybox;
+
+	// Release calendar
 	if (calendar) delete calendar;
-	
-	if (staticCanvas) delete staticCanvas;
-	if (dynamicCanvas) delete dynamicCanvas;
-	if (gameMenu) delete gameMenu;
 
-	if (worldMap) delete worldMap;
-
+	// Release world
 	if (world) delete world;
+
+	//if (dynamicCanvas) delete dynamicCanvas;
+
+
+	// Release sprite sheet
+	releaseSpriteSheets();
 }
 
 void Voxel::GameScene::createNew(const std::string & worldName)
@@ -635,7 +680,7 @@ void GameScene::update(const float delta)
 		skybox->update(delta);
 		skybox->updateColor(calendar->getHour(), calendar->getMinutes(), calendar->getSeconds());
 
-		timeLabel->setText(calendar->getTimeInStr(false));
+		//timeLabel->setText(calendar->getTimeInStr(false));
 
 #if V_DEBUG && V_DEBUG_CONSOLE
 		debugConsole->updateChunkNumbers(totalVisible, chunkMap->getActiveChunksCount(), chunkMap->getSize(), chunkWorkManager->getDebugOutput());
@@ -765,28 +810,25 @@ void Voxel::GameScene::updateKeyboardInput(const float delta)
 		}
 	}
 
-	// handle input.
+	// handle input. 
 	
 	if(input->getKeyDown(GLFW_KEY_T, true))
 	{
-		Block* testBlock = Block::create(glm::ivec3(100, 101, 102), glm::ivec3(200, 201, 203));
-		std::cout << "testBlock size = " << sizeof(testBlock) << ", " << sizeof(*testBlock) << std::endl;
-		std::cout << "id size = " << sizeof(testBlock->getBlockID()) << std::endl;
+		/*
+		staticCanvas->removeChild("timeLabel");
 
-		delete testBlock;
+		timeLabel = UI::Text::createWithOutline("timeLabel", calendar->getTimeInStr(false), 2, glm::vec4(0, 0, 0, 1), UI::Text::ALIGN::LEFT);
+		timeLabel->setPosition(-200.0f, -5.0f);
+		timeLabel->setPivot(glm::vec2(-0.5f, 0.5f));
+		timeLabel->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
+		staticCanvas->addChild(timeLabel);
+		*/
 
-		std::vector<Block*> vec;
-		vec.resize(4096, nullptr);
-		std::array<Block*, 4096> arr;
-
-		std::cout << "vec = " << sizeof(vec) << ", arr = " << sizeof(arr) << "\n";
-
-		ChunkSection* cs = ChunkSection::createEmpty(0, 0, 0, glm::vec3(0, 1, 2));
-		std::cout << "cs size = " << sizeof(cs) << ", " << sizeof(*cs) << std::endl;
-
-		delete cs;
-
-		std::cout << "ivec3 = " << sizeof(glm::ivec3) << std::endl;
+		if (staticCanvas)
+		{
+			delete staticCanvas;
+			staticCanvas = nullptr;
+		}
 	}
 		
 	if (input->getKeyDown(GLFW_KEY_P, true))
@@ -981,13 +1023,6 @@ void Voxel::GameScene::updateKeyboardInput(const float delta)
 void Voxel::GameScene::updateMouseMoveInput(const float delta)
 {
 	auto mouseMovedDist = input->getMouseMovedDistance();
-
-	// Check if cursor is visible
-	if (cursor->isVisible())
-	{
-		// Update cursor position only if it's visible
-		cursor->addPosition(glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
-	}
 
 	// Update UI
 	if (gameMenu->isOpened())
@@ -1685,6 +1720,12 @@ void Voxel::GameScene::onReturnToGameClicked()
 	toggleCursorMode(false);
 }
 
+void Voxel::GameScene::onExitToMainMenuSceneClicked()
+{
+	cursor->setVisibility(false);
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);
+}
+
 void Voxel::GameScene::refreshChunkMap()
 {
 	std::cout << "Refreshing all chunk meshes" << std::endl;
@@ -1762,16 +1803,13 @@ void Voxel::GameScene::renderGame()
 		renderUI();
 	}
 
+#if V_DEBUG && V_DEBUG_CONSOLE
 	// Clear depth buffer and render above current buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_ALWAYS);
 
-#if V_DEBUG && V_DEBUG_CONSOLE
 	renderDebugConsole();
 #endif
-
-	// Render cursor. Cursor has highest Z Order among other UIs. Must be always visible.
-	cursor->render();
 }
 
 void Voxel::GameScene::renderWorld()
@@ -1907,40 +1945,46 @@ void Voxel::GameScene::renderWorld()
 
 void Voxel::GameScene::renderWorldMap()
 {
-	// ---------------------------- Render world Map ----------------------------------------
-	glm::mat4 viewMat = worldMap->getViewMatrix();
+	if (worldMap)
+	{
+		// ---------------------------- Render world Map ----------------------------------------
+		glm::mat4 viewMat = worldMap->getViewMatrix();
 
 #if V_DEBUG && V_DEBUG_CAMERA_MODE
-	if (cameraMode)
-	{
-		viewMat = Camera::mainCamera->getViewMat();
-	}
+		if (cameraMode)
+		{
+			viewMat = Camera::mainCamera->getViewMat();
+		}
 #endif
 
-	worldMap->updateWithCamViewMatrix(viewMat);
+		worldMap->updateWithCamViewMatrix(viewMat);
 
-	worldMap->render();
-	// --------------------------------------------------------------------------------------
-	
-	// ------------------------------ Render Lines ------------------------------------------
-	auto lineProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
-	lineProgram->use(true);
+		worldMap->render();
+		// --------------------------------------------------------------------------------------
 
-	lineProgram->setUniformMat4("viewMat", viewMat);
-	lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		// ------------------------------ Render Lines ------------------------------------------
+		auto lineProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
 
-	worldMap->renderCenterLine();
-	worldMap->renderRay();
-	// --------------------------------------------------------------------------------------
+		lineProgram->setUniformMat4("viewMat", viewMat);
+		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+
+		worldMap->renderCenterLine();
+		worldMap->renderRay();
+		// --------------------------------------------------------------------------------------
+	}
 }
 
 void Voxel::GameScene::renderLoadingScreen()
 {
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glDepthFunc(GL_ALWAYS);
+	if (loadingCanvas)
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glDepthFunc(GL_ALWAYS);
 
-	// Render UIs
-	loadingCanvas->render();
+		// Render UIs
+		loadingCanvas->render();
+	}
 }
 
 void Voxel::GameScene::renderUI()
@@ -1951,9 +1995,12 @@ void Voxel::GameScene::renderUI()
 
 	// --------------------------------- Render UI ------------------------------------------
 	// Render UIs
-	staticCanvas->render();
+	if (staticCanvas)
+	{
+		staticCanvas->render();
+	}
 
-	if (gameMenu->isOpened())
+	if (gameMenu && gameMenu->isOpened())
 	{
 		gameMenu->render();
 	}
@@ -1995,11 +2042,6 @@ void Voxel::GameScene::initDebugConsole()
 	debugConsole->chunkMap = chunkMap;
 	debugConsole->world = world;
 	debugConsole->calendar = calendar;
-}
-
-void Voxel::GameScene::releaseDebugConsole()
-{
-	if (debugConsole) delete debugConsole;
 }
 
 void Voxel::GameScene::renderDebugConsole()

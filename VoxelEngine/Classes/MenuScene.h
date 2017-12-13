@@ -90,7 +90,8 @@ namespace Voxel
 		void init() override;
 		void onEnter() override;
 		void onEnterFinished() override;
-		void onExit() override;
+		void onExit() override; 
+		void onExitFinished() override;
 		void update(const float delta) override;
 		void render() override;
 	};

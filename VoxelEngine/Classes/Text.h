@@ -71,9 +71,9 @@ namespace Voxel
 
 			/**
 			*	Builds mesh and loads.
-			*	@param update true if it's building mesh for updating text. false if it's newly
+			*	@param reallocate true if it needs to reallocate buffer. Else, false.
 			*/
-			bool buildMesh(const bool update);
+			bool buildMesh(const bool reallocate);
 
 			/**
 			*	Load buffers.
@@ -81,9 +81,9 @@ namespace Voxel
 			*	@param color Text colors.
 			*	@param uvs Texture coordinates for each character
 			*	@param indices Indices for rendering
-			*	@param update true if it needs to reallocate buffer. Else, false.
+			*	@param reallocate true if it needs to reallocate buffer. Else, false.
 			*/
-			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool update);
+			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool reallocate);
 
 			/**
 			*	Computes the origin point for each line

@@ -42,7 +42,7 @@ void Voxel::GameMenu::initGameMenu(GameScene * gameScenePtr)
 	const float btnYOffset = 34.0f;
 	const float btnY = -63.0f;
 
-	gameMenu = Voxel::UI::NinePatchImage::create("gm", ss, "game_menu_bg.png", 12.0f, 12.0f, 12.0f, 12.0f, glm::vec2(75.0f, 70.0f));
+	gameMenu = Voxel::UI::NinePatchImage::create("gm", ss, "game_menu_bg.png", 12.0f, 12.0f, 12.0f, 12.0f, glm::vec2(85.0f, 95.0f));
 	gameMenu->setScale(2.0f);
 	canvas->addChild(gameMenu, Z_ORDER::GAME_MENU_BG);
 
@@ -57,7 +57,7 @@ void Voxel::GameMenu::initGameMenu(GameScene * gameScenePtr)
 	bar->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	gameMenu->addChild(bar);
 
-	auto returnToGameBtn = Voxel::UI::Button::create("rtgBtn", ss, "game_menu_return_to_game_button.png");
+	auto returnToGameBtn = Voxel::UI::Button::create("rtgBtn", ss, "return_to_game_button.png");
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY);
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
@@ -71,9 +71,16 @@ void Voxel::GameMenu::initGameMenu(GameScene * gameScenePtr)
 	optionBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onOptionClicked, this));
 	gameMenu->addChild(optionBtn);
 
+	auto exitToMainMenuScene = Voxel::UI::Button::create("etmBtn", ss, "exit_to_main_menu_button.png");
+	exitToMainMenuScene->setScale(2.0f);
+	exitToMainMenuScene->setPosition(0.0f, btnY - (btnYOffset * 2.5f));
+	exitToMainMenuScene->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
+	exitToMainMenuScene->setOnButtonClickCallbackFunc(std::bind(&GameScene::onExitToMainMenuSceneClicked, gameScenePtr));
+	gameMenu->addChild(exitToMainMenuScene);
+
 	auto exitGameBtn = Voxel::UI::Button::create("exitGameBtn", ss, "game_menu_exit_game_button.png");
 	exitGameBtn->setScale(2.0f);
-	exitGameBtn->setPosition(0.0f, btnY - (btnYOffset * 2.5f));
+	exitGameBtn->setPosition(0.0f, btnY - (btnYOffset * 4.0f));
 	exitGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	exitGameBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onExitGameClicked, this));
 	gameMenu->addChild(exitGameBtn);
@@ -87,7 +94,7 @@ void Voxel::GameMenu::initOptionMenu(GameScene * gameScenePtr)
 	const float btnYOffset = 34.0f;
 	const float btnY = -63.0f;
 
-	optionsMenu = Voxel::UI::NinePatchImage::create("gm", ss, "game_menu_bg.png", 12.0f, 12.0f, 12.0f, 12.0f, glm::vec2(75.0f, 121.0f));
+	optionsMenu = Voxel::UI::NinePatchImage::create("gm", ss, "game_menu_bg.png", 12.0f, 12.0f, 12.0f, 12.0f, glm::vec2(85.0f, 121.0f));
 	optionsMenu->setScale(2.0f);
 	canvas->addChild(optionsMenu, Z_ORDER::OPTIONS_MENU_BG); 
 	
@@ -134,7 +141,7 @@ void Voxel::GameMenu::initOptionMenu(GameScene * gameScenePtr)
 	returnToMenuBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onRetrunToMenuClicked, this));
 	optionsMenu->addChild(returnToMenuBtn);
 
-	auto returnToGameBtn = Voxel::UI::Button::create("rtgBtn", ss, "game_menu_return_to_game_button.png");
+	auto returnToGameBtn = Voxel::UI::Button::create("rtgBtn", ss, "return_to_game_button.png");
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY - (btnYOffset * 5.5f));
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));

@@ -52,7 +52,8 @@ namespace Voxel
 		{
 			READY = 0,
 			FADE_IN,
-			DELAY,
+			FADE_IN_FINISHED,
+			SWAP_SCENE,
 			FADE_OUT,
 			FINISHED
 		};
@@ -113,6 +114,9 @@ namespace Voxel
 
 		// Replace scene with transition. If scene is transitioing, rejects.
 		void replaceScene(const SceneName sceneName, const float duration, const glm::vec3& fadeColor = glm::vec3(0.0f));
+
+		// pop current scene
+		void popScene();
 		
 		// Update current scene
 		void update(const float delta);

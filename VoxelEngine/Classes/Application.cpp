@@ -15,6 +15,7 @@
 #include "Utility.h"
 #include "MenuScene.h"
 #include "Cursor.h"
+#include "FontManager.h"
 
 using std::cout;
 using std::endl;
@@ -58,16 +59,22 @@ Application::~Application()
 
 void Application::init()
 {
+	std::cout << "[Application] Initializing application\n";
 	initInternalSettings();
 
 	initGLView();
 
 	initMainCamera();
 
+	auto& fm = FontManager::getInstance();
+
+	fm.addFont("Pixel.ttf", 10);
+	fm.addFont("Pixel.ttf", 10, 2);
+
 	initDirector();
 
 	// init cursor
-	auto cursor	= &Cursor::getInstance();
+	cursor	= &Cursor::getInstance();
 	cursor->init();
 }
 
@@ -125,41 +132,74 @@ void Voxel::Application::initInternalSettings()
 
 void Application::run()
 {
+	// get input handler
 	auto& input = InputHandler::getInstance();
+	// reset mouse position
 	input.setCursorToCenter();
+	// init controller manager
 	input.initControllerManager();
+	// update. This updates controller manager and detects controllers
 	input.update();
 
+	// Reset time
 	glView->resetTime();
 	
+	// Iterate while GLView is running
 	while (glView->isRunning())
 	{
-		glView->clearBufferBit();
+		// Clear screen and depth test
+		glView->clearRender();
 
+		// Update time and fps
 		glView->updateTime();
 		glView->updateFPS();
 		
-		float delta = static_cast<float>(glView->getElaspedTime());
-		
+		// Check if need to skip frame
 		if (needToSkipFrame)
 		{
+			// Skip. Doesn't update game.
 			needToSkipFrame = false;
 		}
 		else
 		{
+			// Not skipping frame. Update game.
+			
+			// Update input handler
+			// Note: this only updates controllers.
 			input.update();
 
-			director->update(delta);
+			// Update cursor pos
+			if (cursor->isVisible())
+			{
+				cursor->addPosition(input.getMouseMovedDistance());
+				//cursor->setPosition(input.getMousePosition());
+			}
+
+			// Update director
+			director->update(static_cast<float>(glView->getElaspedTime()));
 		}
 
 		// Wipe input data for current frame
 		input.postUpdate();
 
+		// Render director
 		director->render();
 
-		glView->render();
-	}
+		// Clear depth buffer and render above current buffer
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glDepthFunc(GL_ALWAYS);
 
+		// render cursor
+		cursor->render();
+
+		// Swap buffer and poll events. All glfw events are called here.
+		glView->render();
+
+		// loop finished
+	}
+	// Main while loop ends
+	
+	// Clean up everything.
 	cleanUp();
 }
 
@@ -202,10 +242,26 @@ void Voxel::Application::cleanUp()
 	// Release cursor
 	Cursor::getInstance().release();
 
+	// Release fonts
+	FontManager::getInstance().clear();
+
+	// Release director
 	if (director)
 	{
+		// This release current scene and next scene.
+		// These scenes should release their own sprite sheets.
 		delete director;
 	}
+
+	// Release spritesheet. SpriteSheets that are used for each scene should be relased at this point. Release remaining.
+	SpriteSheetManager::getInstance().releaseAll();
+
+	// Release texture. SpriteSheet releases texture too. Release remainig.
+	TextureManager::getInstance().releaseAll();
+
+	// debug print
+	SpriteSheetManager::getInstance().print(true);
+	TextureManager::getInstance().print();
 
 	if (glView)
 	{

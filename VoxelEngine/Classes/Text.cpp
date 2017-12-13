@@ -161,26 +161,35 @@ glm::vec3 Voxel::UI::Text::getOutlineColor() const
 
 void Voxel::UI::Text::clear()
 {
+	// Must bind vertex array to 0. If it's bind to other, it might deleter other buffer(?). This fixes bug.
+	glBindVertexArray(0);
+
 	// Delte buffers
 	if (vbo)
+	{
 		glDeleteBuffers(1, &vbo);
+		vbo = 0;
+	}
+
 	if (cbo)
+	{
 		glDeleteBuffers(1, &cbo);
-	if (ibo)
-		glDeleteBuffers(1, &ibo);
+		cbo = 0;
+	}
+
 	if (uvbo)
+	{
 		glDeleteBuffers(1, &uvbo);
+		ibo = 0;
+	}
 
-	vbo = 0;
-	cbo = 0;
-	ibo = 0;
-	uvbo = 0;
-
-	// Delte array
-	if (vao)
-		glDeleteVertexArrays(1, &vao);
-
-	vao = 0;
+	if (ibo)
+	{
+		glDeleteBuffers(1, &ibo);
+		uvbo = 0;
+	}
+	
+	// vao is released on RenderNode
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	if (bbVao)
@@ -192,7 +201,7 @@ void Voxel::UI::Text::clear()
 #endif
 }
 
-bool Voxel::UI::Text::buildMesh(const bool update)
+bool Voxel::UI::Text::buildMesh(const bool reallocate)
 {
 	// Check font
 	if (font)
@@ -459,7 +468,7 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 		updateModelMatrix();
 
 		// load buffer
-		loadBuffers(vertices, colors, uvVertices, indices, update);
+		loadBuffers(vertices, colors, uvVertices, indices, reallocate);
 
 		return true;
 	}
@@ -470,76 +479,142 @@ bool Voxel::UI::Text::buildMesh(const bool update)
 	}
 }
 
-void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool update)
+void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool reallocate)
 {
 	auto textSize = text.size();
 
-	if (update)
+	if (reallocate)
 	{
 		// reallocate buffer
-		clear();
+		//clear();
 
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		// check program
+		if (program == nullptr)
+		{
+			// assign
+			program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXT_SHADER);
+		}
 
-		program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXT_SHADER);
+		// Get vert location
 		GLint vertLoc = program->getAttribLocation("vert");
 
-		glGenBuffers(1, &vbo);
+		// if vao is 0, gen.
+		if (vao == 0)
+		{
+			glGenVertexArrays(1, &vao);
+			std::cout << "Text() " << name << ", vao = " << vao << "\n";
+		}
+
+		// bind
+		glBindVertexArray(vao);
+
+		// if vbo is 0, gen
+		if (vbo == 0)
+		{
+			glGenBuffers(1, &vbo);
+			std::cout << "Text() " << name << ", vbo = " << vbo << "\n";
+		}
+
+		// bind
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 		// Allocate empty buffer for max length. 12 vertices(4 vec3) per char * max length
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 12, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
-
+		// enable location
 		glEnableVertexAttribArray(vertLoc);
+		// set
 		glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+		// get color location
 		GLint colorLoc = program->getAttribLocation("color");
 
-		glGenBuffers(1, &cbo);
+		// if cbo is 0, gen
+		if (cbo == 0)
+		{
+			glGenBuffers(1, &cbo);
+			std::cout << "Text() " << name << ", cbo = " << cbo << "\n";
+		}
+
+		// bind
 		glBindBuffer(GL_ARRAY_BUFFER, cbo);
 
 		// Allocate empty buffer for max length. 12 vertices(4 vec3) per char * max length
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 12, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * colors.size(), &colors.front());
-
+		// enable location
 		glEnableVertexAttribArray(colorLoc);
+		// set
 		glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+		// get uvVert location
 		GLint uvVertLoc = program->getAttribLocation("uvVert");
 
-		glGenBuffers(1, &uvbo);
+		// if uvbo is 0, gen
+		if (uvbo == 0)
+		{
+			glGenBuffers(1, &uvbo);
+			std::cout << "Text() " << name << ", uvbo = " << uvbo << "\n";
+		}
+
+		// bind
 		glBindBuffer(GL_ARRAY_BUFFER, uvbo);
 
 		// Allocate empty buffer for max length. 8 verticies (4 vec2) per char * max len
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * textSize * 8, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * uvs.size(), &uvs.front());
-
+		// enable
 		glEnableVertexAttribArray(uvVertLoc);
+		// set
 		glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-		glGenBuffers(1, &ibo);
+		// if ibo is 0, gen
+		if (ibo == 0)
+		{
+			glGenBuffers(1, &ibo);
+			std::cout << "Text() " << name << ", ibo = " << ibo << "\n";
+		}
+
+		// bind
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
 		// Allocate empty buffer for max length. 6 indices ( 2 tri) per char * max len
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * textSize * 8, nullptr, GL_DYNAMIC_DRAW);
 		// fill buffer
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned int) * indices.size(), &indices.front());
+		// indices don't have to enable and set.
 
+		// get size
 		indicesSize = indices.size();
 
+		// unbind
 		glBindVertexArray(0);
+
+		/*
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &cbo);
+		glDeleteBuffers(1, &uvbo);
+		glDeleteBuffers(1, &ibo);
+
+		vbo = 0;
+		cbo = 0;
+		ibo = 0;
+		uvbo = 0;
+		*/
 	}
 	else
 	{
 		// No need to reallocate buffer.
 
+		// bind vao
 		glBindVertexArray(vao);
+
+		// bind vbo
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		// update data
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * vertices.size(), &vertices.front());
 
 		glBindBuffer(GL_ARRAY_BUFFER, cbo);
@@ -551,6 +626,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(float) * indices.size(), &indices.front());
 
+		// update size
 		indicesSize = indices.size();
 
 		glBindVertexArray(0);

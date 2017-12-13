@@ -14,6 +14,7 @@ namespace Voxel
 	// Foward
 	class DataTree;
 	class Director;
+	class Cursor;
 
 	class Application
 	{
@@ -50,6 +51,9 @@ namespace Voxel
 		
 		// Director
 		Director* director;
+
+		// cursor. Cursor is part of system not scene.
+		Cursor* cursor;
 
 		// Set true to skip next frame.
 		bool needToSkipFrame;

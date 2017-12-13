@@ -144,6 +144,9 @@ namespace Voxel
 		// Mesh builder thread
 		void initMeshBuilderThread();
 
+		// release sprite sheets
+		void releaseSpriteSheets();
+
 		// Create/Load/unload player
 		void createPlayer();
 
@@ -163,7 +166,7 @@ namespace Voxel
 		void initLoadingScreen();
 
 		// Initialize default UI canvas
-		void initDefaultCanvas();
+		void initCanvases();
 		
 		// Initialize game menu UI
 		void initGameMenu();
@@ -240,6 +243,7 @@ namespace Voxel
 		void onEnter() override;
 		void onEnterFinished() override;
 		void onExit() override;
+		void onExitFinished() override;
 
 		// create new. 
 		void createNew(const std::string& worldName);
@@ -265,6 +269,7 @@ namespace Voxel
 
 		// Game menu call back
 		void onReturnToGameClicked();
+		void onExitToMainMenuSceneClicked();
 
 		/**
 		*	Set fog mode.
@@ -309,7 +314,6 @@ namespace Voxel
 		// Debug console
 		DebugConsole* debugConsole;
 		void initDebugConsole();
-		void releaseDebugConsole();
 		void renderDebugConsole();
 #endif
 #if V_DEBUG_CAMERA_MODE

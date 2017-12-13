@@ -6,6 +6,9 @@
 #include "Application.h"
 #include "SpriteSheet.h"
 
+// temp
+#include "InputHandler.h"
+
 Voxel::Director::Director()
 	: currentScene(nullptr)
 	, nextScene(nullptr)
@@ -23,11 +26,13 @@ Voxel::Director::~Director()
 {
 	if (currentScene)
 	{
+		currentScene->onExit();
 		delete currentScene;
 	}
 
 	if (nextScene)
 	{
+		nextScene->onExit();
 		delete nextScene;
 	}
 
@@ -95,10 +100,14 @@ void Voxel::Director::runScene(const SceneName sceneName)
 {
 	if (currentScene)
 	{
+		currentScene->onExit();
+		currentScene->onExitFinished();
 		delete currentScene;
 	}
 
 	currentScene = createScene(sceneName);
+	currentScene->onEnter();
+	currentScene->onEnterFinished();
 }
 
 void Voxel::Director::replaceScene(const SceneName sceneName, const float duration, const glm::vec3 & fadeColor)
@@ -122,13 +131,16 @@ void Voxel::Director::replaceScene(const SceneName sceneName, const float durati
 			this->elapsedTime = 0.0f;
 
 			currentScene->onExit();
-			nextScene->onEnter();
 
 			canvas->setVisibility(true);
 
 			fadeImage->setColor(fadeColor);
 		}
 	}
+}
+
+void Voxel::Director::popScene()
+{
 }
 
 void Voxel::Director::update(const float delta)
@@ -139,74 +151,91 @@ void Voxel::Director::update(const float delta)
 		{
 			currentScene->update(delta);
 		}
+
+		if (InputHandler::getInstance().getKeyDown(GLFW_KEY_H, true))
+		{
+			currentScene->onExit();
+			currentScene->onExitFinished();
+			delete currentScene;
+			currentScene = nullptr;
+		}
 	}
 	else
 	{
 		// transitioing
-		if (nextScene == nullptr)
-		{
-			state = State::IDLE;
-			fadeState = FadeState::FINISHED;
+		elapsedTime += delta;
 
-			duration = 0.0f;
-			elapsedTime = 0.0f;
-		}
-		else
+		if (fadeState == FadeState::FADE_IN)
 		{
-			elapsedTime += delta;
+			// Fade effect fades in
 
-			if (elapsedTime <= duration)
+			if (elapsedTime >= (duration * 0.5f))
 			{
-				if (fadeState == FadeState::FADE_IN)
-				{
-					// on first half, update current scene
-					if (currentScene)
-					{
-						currentScene->update(delta);
-					}
-
-					//std::cout << "fade_in: " << elapsedTime << "\n";
-
-					if (elapsedTime >= (duration * 0.5f))
-					{
-						fadeImage->setOpacity(1.0f);
-						fadeState = FadeState::DELAY;
-						//std::cout << "Finished.\n";
-					}
-				}
-				else if (fadeState == FadeState::DELAY)
-				{
-					//std::cout << "delay: " << elapsedTime << "\n";
-					if (elapsedTime >= ((duration * 0.5f) + 0.2f))
-					{
-						elapsedTime -= 0.2f;
-						fadeState = FadeState::FADE_OUT;
-						//std::cout << "Finished.\n";
-					}
-				}
-				else if (fadeState == FadeState::FADE_OUT)
-				{
-					//std::cout << "Fade_out: " << elapsedTime << "\n";
-					// on second half, update next scene
-					nextScene->update(delta);
-				}
+				// Fade in finished. Set opacity to 1
+				fadeImage->setOpacity(1.0f);
+				// update state
+				fadeState = FadeState::FADE_IN_FINISHED;
 			}
-			else
+		}
+		else if (fadeState == FadeState::FADE_IN_FINISHED)
+		{
+			// Fade in is finished. Give 0.2 seconds delay.
+			if (elapsedTime >= ((duration * 0.5f) + 0.2f))
 			{
-				// finished
-				delete currentScene;
+				// Delay finished. 
+				elapsedTime -= 0.2f;
+				// Update state
+				fadeState = FadeState::SWAP_SCENE;
 
-				currentScene = nextScene;
-				nextScene = nullptr;
+				// current scene finished exit
+				currentScene->onExitFinished();
 
+				// next scene enters
+				nextScene->onEnter();
+			}
+		}
+		else if (fadeState == FadeState::SWAP_SCENE)
+		{
+			// revert
+			elapsedTime -= delta;
+			
+			// release current scene
+			delete currentScene;
+
+			// swap scene
+			currentScene = nextScene;
+
+			// set back to nullptr
+			nextScene = nullptr;
+
+			// update state
+			fadeState = FadeState::FADE_OUT;
+		}
+		else if (fadeState == FadeState::FADE_OUT)
+		{
+			if (elapsedTime >= duration)
+			{
+				// finished.
+				std::cout << "Finished: " << elapsedTime << "\n";
+
+				// current scene (next scene) finished enter
 				currentScene->onEnterFinished();
 
+				// update states
 				state = State::IDLE;
+				fadeState = FadeState::FINISHED;
 
+				// reset values
 				duration = 0.0f;
 				elapsedTime = 0.0f;
 
+				// hide canvas
 				canvas->setVisibility(false);
+			}
+
+			if (currentScene)
+			{
+				currentScene->update(delta);
 			}
 		}
 	}
@@ -214,59 +243,44 @@ void Voxel::Director::update(const float delta)
 
 void Voxel::Director::render()
 {
-	if (elapsedTime <= duration)
-	{
-		if (elapsedTime <= (duration * 0.5f))
-		{
-			// on first half, render current scene
-			if (currentScene)
-			{
-				currentScene->render();
-			}
-		}
-		else
-		{
-			// on second half, update next scene
-			if (nextScene)
-			{
-				nextScene->render();
-			}
-		}
-	}
-
 	if (state == State::TRANSITIONING)
 	{
 		if (elapsedTime <= duration)
 		{
 			const float halfDuration = duration * 0.5f;
 
-
 			if (fadeState == FadeState::FADE_IN)
 			{
 				// on first half, update current scene
-				float ratio = elapsedTime / halfDuration;
-				//std::cout << "r = " << ratio << "\n";
-				fadeImage->setOpacity(ratio);
-			}
-			else if (fadeState == FadeState::DELAY)
-			{
+				fadeImage->setOpacity(elapsedTime / halfDuration);
 			}
 			else if (fadeState == FadeState::FADE_OUT)
 			{
 				// on second half, update next scene
-				float ratio = ((elapsedTime - halfDuration) / halfDuration);
-				//std::cout << "r = " << 1.0f - ratio << "\n";
-
-				fadeImage->setOpacity(1.0f - ratio);
+				fadeImage->setOpacity(1.0f - ((elapsedTime - halfDuration) / halfDuration));
 			}
 
-			//std::cout << "opacity = " << fadeImage->getOpacity() << "\n";
+			if (currentScene)
+			{
+				currentScene->render();
+			}
+
+			if (canvas)
+			{
+				// Clear depth buffer and render above current buffer
+				glClear(GL_DEPTH_BUFFER_BIT);
+				glDepthFunc(GL_ALWAYS);
+
+				canvas->render();
+			}
 		}
 		// else, done.
-
-		if (canvas)
+	}
+	else
+	{
+		if (currentScene)
 		{
-			canvas->render();
+			currentScene->render();
 		}
 	}
 }
