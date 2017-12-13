@@ -1,0 +1,93 @@
+{"frames": [
+
+{
+	"filename": "edit_button_clicked.png",
+	"frame": {"x":1,"y":1,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "edit_button_disabled.png",
+	"frame": {"x":47,"y":1,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "edit_button_hovered.png",
+	"frame": {"x":1,"y":27,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "edit_button_idle.png",
+	"frame": {"x":47,"y":27,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "file_button_clicked.png",
+	"frame": {"x":1,"y":53,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "file_button_disabled.png",
+	"frame": {"x":1,"y":79,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "file_button_hovered.png",
+	"frame": {"x":47,"y":53,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "file_button_idle.png",
+	"frame": {"x":47,"y":79,"w":44,"h":24},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":44,"h":24},
+	"sourceSize": {"w":44,"h":24},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
+	"filename": "menu_bar.png",
+	"frame": {"x":93,"y":1,"w":1,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":30},
+	"sourceSize": {"w":1,"h":30},
+	"pivot": {"x":0.5,"y":0.5}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "EditorUISpriteSheet.png",
+	"format": "RGBA8888",
+	"size": {"w":128,"h":128},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:39d04fcc7da3eac78e393def539e26d3:d5d6560be926e646fcdb003fe379cc30:3ff2141a17e298830840454e3dfecba9$"
+}
+}
