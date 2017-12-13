@@ -105,9 +105,10 @@ namespace Voxel
 		bool isRunning();
 
 		/**
-		*	Clear OpenGL color and depth buffer bits
+		*	Clear rendering setting to initial state.
+		*	Need to call this before the rendering loop starts.
 		*/
-		void clearBufferBit();
+		void clearRender();
 
 		/**
 		*	Render to screen.	

@@ -94,7 +94,7 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
 	//Set the color info
 	glfwWindowHint(GLFW_DEPTH_BITS, 24);
@@ -230,9 +230,22 @@ void Voxel::GLView::initGLEW()
 	std::cout << "[GLView] GPU vendor: " << GPUVendor << std::endl;
 	std::cout << "[GLView] GPU renderer: " << GPURenderer << std::endl;
 
+	if (GLEW_NVX_gpu_memory_info)
+	{
+		GLint totalMemoryInKB = 0;
+		glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &totalMemoryInKB);
+
+		std::cout << "[GLView] GPU total memory: " << totalMemoryInKB / 1000 << " mb\n";
+
+		GLint curAvailableMemoryInKB = 0;
+		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &curAvailableMemoryInKB);
+
+		std::cout << "[GLView] GPU currently available memory: " << curAvailableMemoryInKB << " kb\n";
+	}
+
 	//@warning Hardcorded
-	if (!GLEW_VERSION_4_3) {
-		throw std::runtime_error("OpenGL 4.3 API is not available");
+	if (!GLEW_VERSION_4_5) {
+		throw std::runtime_error("OpenGL 4.5 API is not available");
 	}
 }
 
@@ -299,7 +312,7 @@ bool Voxel::GLView::isRunning()
 	return !glfwWindowShouldClose(window);
 }
 
-void Voxel::GLView::clearBufferBit()
+void Voxel::GLView::clearRender()
 {
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
