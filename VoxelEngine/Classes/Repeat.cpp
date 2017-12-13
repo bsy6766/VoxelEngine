@@ -25,6 +25,7 @@ bool Voxel::UI::Repeat::init(Action * action, const unsigned int repeat)
 	{
 		this->action = action;
 		this->repeat = repeat;
+		return true;
 	}
 	
 	return false;
@@ -52,7 +53,7 @@ unsigned int Voxel::UI::Repeat::getRepeat() const
 
 bool Voxel::UI::Repeat::isDone() const
 {
-	return (currentRepeat >= repeat && action->isDone());
+	return (currentRepeat >= repeat);
 }
 
 void Voxel::UI::Repeat::reset()
@@ -79,12 +80,15 @@ void Voxel::UI::Repeat::update(const float delta)
 
 		if (action->isDone())
 		{
-			float t = action->getExceededTime();
-			action->reset();
-
-			action->update(t);
-
 			currentRepeat++;
+
+			if (!this->isDone())
+			{
+				float t = action->getExceededTime();
+				action->reset();
+
+				action->update(t);
+			}
 		}
 	}
 }
