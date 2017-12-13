@@ -1,0 +1,12 @@
+VoxelEngine/lib/old
+VoxelEngine/include/boost
+VoxelEngine/saves
+VoxelEngine/Release
+VoxelEngine/Debug
+Debug
+Release
+*.zip
+Screenshots
+Todo
+Design
+Researches
