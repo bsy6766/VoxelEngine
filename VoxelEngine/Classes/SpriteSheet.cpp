@@ -17,6 +17,11 @@ Voxel::SpriteSheet::SpriteSheet()
 
 Voxel::SpriteSheet::~SpriteSheet()
 {
+	if (texture)
+	{
+		TextureManager::getInstance().removeTexture(texture->getName());
+	}
+
 	imageEntryMap.clear();
 }
 
@@ -52,6 +57,27 @@ const ImageEntry* Voxel::SpriteSheet::getImageEntry(const std::string & imageNam
 Texture2D * Voxel::SpriteSheet::getTexture()
 {
 	return texture;
+}
+
+void Voxel::SpriteSheet::print()
+{
+	if (texture)
+	{
+		std::cout << "Texture: " << texture->getName() << "\n";
+	}
+	else
+	{
+		std::cout << "Texture: nullptr\n";
+	}
+
+	std::cout << "Images...\n";
+
+	for (auto& ie : imageEntryMap)
+	{
+		std::cout << "Name: " << ie.first << "\n";
+		std::cout << "Size: (" << (ie.second).width << ", " << (ie.second).height << ")\n";
+		std::cout << "Texture coordinate: " << Utility::Log::vec2ToStr((ie.second).uvOrigin) << ", " << Utility::Log::vec2ToStr((ie.second).uvEnd) << std::endl;
+	}
 }
 
 bool Voxel::SpriteSheet::init(const std::string & dataFileName)
@@ -127,7 +153,7 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 
 Voxel::SpriteSheetManager::~SpriteSheetManager()
 {
-	releaseAll();
+	// Sprite sheets are released in Application manually in cleanUp();
 }
 
 bool Voxel::SpriteSheetManager::addSpriteSheet(const std::string & jsonFileName)
@@ -178,7 +204,7 @@ bool Voxel::SpriteSheetManager::removeSpriteSheetByKey(const std::string & key)
 			delete (find_it->second);
 		}
 
-		spriteSheetMap.erase(key);
+		spriteSheetMap.erase(find_it);
 
 		return true;
 	}
@@ -219,4 +245,22 @@ void Voxel::SpriteSheetManager::releaseAll()
 	}
 
 	spriteSheetMap.clear();
+}
+
+void Voxel::SpriteSheetManager::print(const bool detail)
+{
+	std::cout << "[SpriteSheetManager] All SpriteSheet info\n";
+	std::cout << "[SpriteSheetManager] SpriteSheet count: " << spriteSheetMap.size() << std::endl;
+
+	for (auto& ss : spriteSheetMap)
+	{
+		if (ss.second)
+		{
+			std::cout << "Spritesheet: " << ss.first << std::endl;
+			if (detail)
+			{
+				(ss.second)->print();
+			}
+		}
+	}
 }

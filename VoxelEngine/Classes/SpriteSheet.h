@@ -65,6 +65,9 @@ namespace Voxel
 
 		// get texture
 		Texture2D* getTexture();
+
+		// debug print
+		void print();
 	};
 
 
@@ -134,7 +137,11 @@ namespace Voxel
 		*/
 		SpriteSheet* getSpriteSheetByName(const std::string& jsonFileName);
 		
+		// Release all spritesheet with texture
 		void releaseAll();
+
+		// debug print
+		void print(const bool detail);
 	};
 }
 
