@@ -7,6 +7,7 @@
 #include "Application.h"
 #include "ProgramManager.h"
 #include "Program.h"
+#include "Utility.h"
 
 using namespace Voxel;
 
@@ -18,7 +19,6 @@ Texture2D::Texture2D()
 	, width(0)
 	, height(0)
 	, channel(0)
-	, id(-1)
 {}
 
 Texture2D::~Texture2D()
@@ -30,16 +30,19 @@ Texture2D * Voxel::Texture2D::create(const std::string & textureName, GLenum tex
 {
 	auto& tm = TextureManager::getInstance();
 
-	if (tm.hasTexture(textureName))
+	std::string rawName = Utility::String::removeFileExtFromFileName(textureName);
+
+	if (tm.hasTexture(rawName))
 	{
-		return tm.getTexture(textureName).get();
+		return tm.getTexture(rawName).get();
 	}
 	else
 	{
 		auto newTexture = new Texture2D();
 		if (newTexture->init(textureName, textureTarget))
 		{
-			tm.addTexture(textureName, newTexture);
+			newTexture->name = rawName;
+			tm.addTexture(rawName, newTexture);
 			return newTexture;
 		}
 		else
@@ -54,15 +57,18 @@ Texture2D * Voxel::Texture2D::createSpriteSheetTexture(const std::string & textu
 {
 	auto& tm = TextureManager::getInstance();
 
-	if (tm.hasTexture(textureName))
+	std::string rawName = Utility::String::removeFileExtFromFileName(textureName);
+
+	if (tm.hasTexture(rawName))
 	{
-		return tm.getTexture(textureName).get();
+		return tm.getTexture(rawName).get();
 	}
 	else
 	{
 		auto newTexture = new Texture2D();
 		if (newTexture->initUISpriteSheetTexture(textureName, textureTarget))
 		{
+			newTexture->name = rawName;
 			tm.addTexture(textureName, newTexture);
 			return newTexture;
 		}
@@ -77,7 +83,7 @@ Texture2D * Voxel::Texture2D::createSpriteSheetTexture(const std::string & textu
 Texture2D * Voxel::Texture2D::createFontTexture(const std::string& textureName, const int width, const int height, GLenum textureTarget)
 {
 	auto& tm = TextureManager::getInstance();
-
+	
 	if (tm.hasTexture(textureName))
 	{
 		return tm.getTexture(textureName).get();
@@ -87,6 +93,7 @@ Texture2D * Voxel::Texture2D::createFontTexture(const std::string& textureName, 
 		auto newTexture = new Texture2D();
 		if (newTexture->initFontTexture(width, height, textureTarget))
 		{
+			newTexture->name = textureName;
 			tm.addTexture(textureName, newTexture);
 			return newTexture;
 		}
@@ -114,9 +121,9 @@ void Voxel::Texture2D::setLocationOnProgram(const GLint textureLocation)
 	this->textureLocation = textureLocation;
 }
 
-unsigned int Voxel::Texture2D::getID()
+std::string Voxel::Texture2D::getName() const
 {
-	return id;
+	return name;
 }
 
 void Voxel::Texture2D::activate(GLenum textureUnit)
@@ -328,28 +335,19 @@ void Voxel::Texture2D::generate2DUISpriteSheetTexture(const int width, const int
 
 
 
-
-unsigned int TextureManager::idCounter = 0;
-
 Voxel::TextureManager::~TextureManager()
 {
 	releaseAll();
 }
 
-std::string Voxel::TextureManager::removeFileExtention(std::string fileName)
-{
-	size_t lastindex = fileName.find_last_of(".");
-	return fileName.substr(0, lastindex);
-}
-
 bool Voxel::TextureManager::hasTexture(const std::string & textureName)
 {
-	return texturesMap.find(removeFileExtention(textureName)) != texturesMap.end();
+	return texturesMap.find(Utility::String::removeFileExtFromFileName(textureName)) != texturesMap.end();
 }
 
 bool Voxel::TextureManager::addTexture(const std::string & textureName, Texture2D * texture)
 {
-	std::string rawName = removeFileExtention(textureName);
+	std::string rawName = Utility::String::removeFileExtFromFileName(textureName);
 
 	if (hasTexture(rawName))
 	{
@@ -357,17 +355,29 @@ bool Voxel::TextureManager::addTexture(const std::string & textureName, Texture2
 	}
 	else
 	{
-		texture->id = idCounter + 1;
-		idCounter++;
-
-		texturesMap.emplace(textureName, std::shared_ptr<Texture2D>(texture));
+		texturesMap.emplace(rawName, std::shared_ptr<Texture2D>(texture));
 		return true;
+	}
+}
+
+bool Voxel::TextureManager::removeTexture(const std::string & textureName)
+{
+	std::string rawName = Utility::String::removeFileExtFromFileName(textureName);
+
+	if (hasTexture(rawName))
+	{
+		texturesMap.erase(rawName);
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
 std::shared_ptr<Texture2D> Voxel::TextureManager::getTexture(const std::string & textureName)
 {
-	std::string rawName = removeFileExtention(textureName);
+	std::string rawName = Utility::String::removeFileExtFromFileName(textureName);
 
 	if (hasTexture(rawName))
 	{
@@ -381,11 +391,14 @@ std::shared_ptr<Texture2D> Voxel::TextureManager::getTexture(const std::string &
 
 void Voxel::TextureManager::print()
 {
+	std::cout << "[TextureManager] All texture info\n";
+	std::cout << "[TextureManager] SpriteSheet count: " << texturesMap.size() << std::endl;
+
 	for (auto& e : texturesMap)
 	{
 		if (e.second)
 		{
-			std::cout << "Texture name: " << removeFileExtention(e.first) << std::endl;
+			std::cout << "Texture name: " << (e.second)->getName() << std::endl;
 			std::cout << "Reference count: " << e.second.use_count() << std::endl;
 			e.second->print();
 		}

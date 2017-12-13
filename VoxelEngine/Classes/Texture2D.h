@@ -38,9 +38,9 @@ namespace Voxel
 		// Constructor
 		Texture2D();
 
-		// texture number id
-		unsigned int id;
-
+		// name
+		std::string name;
+		
 		// opengl
 		GLuint textureObject;
 		GLenum textureTarget;
@@ -55,6 +55,7 @@ namespace Voxel
 
 		// load image file
 		unsigned char* loadImage(const std::string& textureFilePath, int& width, int& height, int& channel);
+
 		// flip the image file vertically
 		void flipImage(unsigned char* data);
 
@@ -91,7 +92,7 @@ namespace Voxel
 		void setLocationOnProgram(const GLint textureLocation);
 
 		// get texture id
-		unsigned int getID();
+		std::string getName() const;
 
 		// activate texture
 		void activate(GLenum textureUnit);
@@ -116,10 +117,7 @@ namespace Voxel
 
 		// destructor. releases all textures
 		~TextureManager();
-
-		// static id counter
-		static unsigned int idCounter;
-
+		
 		// Delete copy, move, assign operators
 		TextureManager(TextureManager const&) = delete;             // Copy construct
 		TextureManager(TextureManager&&) = delete;                  // Move construct
@@ -129,8 +127,6 @@ namespace Voxel
 		// stores all texture
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> texturesMap;
 
-		// Remove file extention from file name
-		std::string removeFileExtention(std::string fileName);
 	public:
 		static TextureManager& getInstance()
 		{
@@ -143,6 +139,9 @@ namespace Voxel
 		
 		// add texture
 		bool addTexture(const std::string& textureName, Texture2D* texture);
+
+		// remove texture
+		bool removeTexture(const std::string& textureName);
 
 		// get texture
 		std::shared_ptr<Texture2D> getTexture(const std::string& textureName);
