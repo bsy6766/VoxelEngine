@@ -41,7 +41,7 @@ namespace Voxel
 		bool resolvePlayerZAndBlockCollision(Player* player, glm::vec3& resolvingPos, const glm::vec3& movedDist, const std::vector<Block*>& collidableBlocks);
 	public:
 		Physics();
-		~Physics();
+		~Physics() = default;
 
 		/**
 		*	

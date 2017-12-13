@@ -19,12 +19,8 @@ const float Physics::Gravity = 9.80665f;
 const float Physics::GravityModifier = 3.0f;
 
 Voxel::Physics::Physics()
-{
-}
-
-Voxel::Physics::~Physics()
-{
-}
+	: playerJumpForce(0.0f)
+{}
 
 void Voxel::Physics::applyGravity(Player * player, const float delta)
 {
