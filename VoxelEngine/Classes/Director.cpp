@@ -1,13 +1,11 @@
 #include "Director.h"
 
 // voxel
-#include "MenuScene.h"
-#include "GameScene.h"
 #include "Application.h"
 #include "SpriteSheet.h"
-
-// temp
-#include "InputHandler.h"
+#include "MenuScene.h"
+#include "GameScene.h"
+#include "Editor.h"
 
 Voxel::Director::Director()
 	: currentScene(nullptr)
@@ -64,13 +62,15 @@ Voxel::Scene * Voxel::Director::createScene(const SceneName sceneName)
 		break;
 	case Voxel::Director::SceneName::GAME_SCENE:
 	{
-		GameScene* newGameScene = new GameScene();
-		newGameScene->init();
-		//newGameScene->createNew("New world");
-		newScene = newGameScene;
+		newScene = new GameScene();
+		newScene->init();
 	}
 		break;
 	case Voxel::Director::SceneName::EDITOR_SCENE:
+	{
+		newScene = new Editor();
+		newScene->init();
+	}
 		break;
 	case Voxel::Director::SceneName::NONE:
 	default:
@@ -133,13 +133,14 @@ void Voxel::Director::replaceScene(const SceneName sceneName, const float durati
 			fadeState = FadeState::FADE_IN;
 
 			this->duration = duration;
-			this->elapsedTime = 0.0f;
+			elapsedTime = 0.0f;
 
 			currentScene->onExit();
 
 			canvas->setVisibility(true);
 
 			fadeImage->setColor(fadeColor);
+			fadeImage->setOpacity(0.0f);
 		}
 	}
 }
@@ -164,7 +165,10 @@ void Voxel::Director::update(const float delta)
 
 		if (fadeState == FadeState::FADE_IN)
 		{
+			const float halfDuration = duration * 0.5f;
+
 			// Fade effect fades in
+			fadeImage->setOpacity(elapsedTime / halfDuration);
 
 			if (elapsedTime >= (duration * 0.5f))
 			{
@@ -211,6 +215,10 @@ void Voxel::Director::update(const float delta)
 		}
 		else if (fadeState == FadeState::FADE_OUT)
 		{
+			const float halfDuration = duration * 0.5f;
+
+			fadeImage->setOpacity(1.0f - ((elapsedTime - halfDuration) / halfDuration));
+
 			if (elapsedTime >= duration)
 			{
 				// finished.
@@ -240,26 +248,6 @@ void Voxel::Director::update(const float delta)
 
 void Voxel::Director::render()
 {
-	if (state == State::TRANSITIONING)
-	{
-		if (elapsedTime <= duration)
-		{
-			const float halfDuration = duration * 0.5f;
-
-			if (fadeState == FadeState::FADE_IN)
-			{
-				// on first half, update current scene
-				fadeImage->setOpacity(elapsedTime / halfDuration);
-			}
-			else if (fadeState == FadeState::FADE_OUT)
-			{
-				// on second half, update next scene
-				fadeImage->setOpacity(1.0f - ((elapsedTime - halfDuration) / halfDuration));
-			}
-		}
-		// else, done.
-	}
-
 	if (currentScene)
 	{
 		currentScene->render();
@@ -275,7 +263,7 @@ void Voxel::Director::renderFade()
 			// Clear depth buffer and render above current buffer
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glDepthFunc(GL_ALWAYS);
-
+			
 			canvas->render();
 		}
 	}

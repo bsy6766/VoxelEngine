@@ -95,6 +95,8 @@ GameScene::~GameScene()
 
 void Voxel::GameScene::init()
 {
+	Application::getInstance().getGLView()->setClearColor(glm::vec3(0.0f));
+	
 	// Init random first
 	initRandoms();
 

@@ -26,7 +26,7 @@ void Voxel::MenuScene::init()
 {
 	// Initialize menu scene
 	auto rs = Application::getInstance().getGLView()->getScreenSize();
-
+	
 	canvas = new Voxel::UI::Canvas(rs, glm::vec2(0.0f));
 
 	const auto ss = "MenuSceneUISpriteSheet";
@@ -58,6 +58,7 @@ void Voxel::MenuScene::init()
 	buttons.at(ButtonIndex::PLAY)->setOnButtonClickCallbackFunc(std::bind(&Voxel::MenuScene::onPlayClicked, this));
 #if V_DEBUG && V_DEBUG_EDITOR
 	buttons.at(ButtonIndex::EDITOR) = Voxel::UI::Button::create("eBtn", ss, "editor_button.png");
+	buttons.at(ButtonIndex::EDITOR)->setOnButtonClickCallbackFunc(std::bind(&Voxel::MenuScene::onEditorClicked, this));
 #endif
 	buttons.at(ButtonIndex::OPTIONS) = Voxel::UI::Button::create("oBtn", ss, "options_button.png");
 	buttons.at(ButtonIndex::CREDITS) = Voxel::UI::Button::create("cBtn", ss, "credits_button.png");
@@ -104,6 +105,8 @@ void Voxel::MenuScene::onEnter()
 	cursor->setPosition(glm::vec2(0.0f));
 
 	input->setCursorToCenter();
+
+	Application::getInstance().getGLView()->setClearColor(glm::vec3(0.0f));
 }
 
 void Voxel::MenuScene::onEnterFinished()
@@ -160,7 +163,6 @@ void Voxel::MenuScene::updateMouseMoveInput()
 
 	if (mouseMovedDist.x != 0.0f || mouseMovedDist.y != 0.0f)
 	{
-
 		unsigned int index = 0;
 
 		for (auto btn : buttons)
@@ -277,3 +279,10 @@ void Voxel::MenuScene::render()
 		canvas->render();
 	}
 }
+
+#if V_DEBUG && V_DEBUG_EDITOR
+void Voxel::MenuScene::onEditorClicked()
+{
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::EDITOR_SCENE, 1.5f);
+}
+#endif

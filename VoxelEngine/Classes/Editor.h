@@ -47,19 +47,32 @@ namespace Voxel
 	private:
 		// canvas
 		Voxel::UI::Canvas* canvas;
-		// Menu bar buttons
-		std::array<Voxel::UI::Button*, MAX_MENU_BAR_BUTTON> menuBarButtons;
+		// File button
+		Voxel::UI::Button* fileBtn;
+		Voxel::UI::Button* editBtn;
 		// Files drop down
-		Voxel::UI::Image* fileDropDownBg;
+		Voxel::UI::NinePatchImage* fileDropDownBg;
 		// Files drop down buttons
 		std::array<Voxel::UI::Button*, MAX_FILE_DROP_DOWN_BUTTON> fileDropDownButtons;
+
+		bool menuBarDropDowned;
 
 		// inputhandler
 		InputHandler* input;
 
+		// cursor
+		Cursor* cursor;
+
+		// update mouse
 		void updateMouseMove();
 		void updateMouseClick();
 		void updateMouseScroll();
+
+		// callback
+		void onFileButtonClicked();
+		void onEditButtonClicked();
+		void onReturnToMainMenuButtonClicked();
+		void onExitButtonClicked();
 	public:
 		Editor();
 		~Editor();

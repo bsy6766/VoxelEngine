@@ -76,6 +76,9 @@ namespace Voxel
 		// callbacks
 		void onPlayClicked();
 		void onExitGameClicked();
+#if V_DEBUG && V_DEBUG_EDITOR
+		void onEditorClicked();
+#endif
 	public:
 		// Constructor
 		MenuScene();
