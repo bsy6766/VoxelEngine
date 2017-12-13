@@ -4,6 +4,7 @@
 #include "Application.h"
 #include "Utility.h"
 #include "Texture2D.h"
+#include "Utility.h"
 
 using namespace Voxel;
 
@@ -155,11 +156,11 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	texAtlasWidth = static_cast<float>(pow2Width);
 	texAtlasHeight = static_cast<float>(pow2Height);
 
-	std::string textureName = fontName + "_" + std::to_string(fontSize);
+	std::string textureName = Utility::String::removeFileExtFromFileName(fontName) + "_" + std::to_string(fontSize);
 
 	if (outlineSize != 0)
 	{
-		textureName += "Outlined";
+		textureName += "_Outlined";
 	}
 
 	texture = Texture2D::createFontTexture(textureName, pow2Width, pow2Height, GL_TEXTURE_2D);
