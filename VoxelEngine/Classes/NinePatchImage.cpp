@@ -224,7 +224,7 @@ void Voxel::UI::NinePatchImage::build(const std::array<float, 48>& vertices, con
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_NINE_PATH_IMAGE_BOUNDING_BOX
 	createDebugBoundingBoxLine();
 #endif
 }
@@ -274,4 +274,17 @@ void Voxel::UI::NinePatchImage::renderSelf()
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, 54, GL_UNSIGNED_INT, 0);
 	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_NINE_PATH_IMAGE_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
 }

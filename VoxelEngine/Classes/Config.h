@@ -55,11 +55,91 @@
 
 /**
 *	@def V_DEBUG_DRAW_UI_BOUNDING_BOX
-*	If enabled, draws UI bounding box
+*	If enabled, draws UI bounding box. Need to enable each ui bounding boxe configs.
 */
 #ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
-#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 1
 #endif
+
+#if V_DEBUG_DRAW_UI_BOUNDING_BOX
+
+	/**
+	*	@def V_DEBUG_DRAW_IMAGE_BOUNDING_BOX
+	*	If enabled, draws Image UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_IMAGE_BOUNDING_BOX
+	#define V_DEBUG_DRAW_IMAGE_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_ANIMATED_IMAGE_BOUNDING_BOX
+	*	If enabled, draws animated image UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_ANIMATED_IMAGE_BOUNDING_BOX
+	#define V_DEBUG_DRAW_ANIMATED_IMAGE_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_NINE_PATH_IMAGE_BOUNDING_BOX
+	*	If enabled, draws nine patch UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_NINE_PATH_IMAGE_BOUNDING_BOX
+	#define V_DEBUG_DRAW_NINE_PATH_IMAGE_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+	*	If enabled, draws Text UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+	#define V_DEBUG_DRAW_TEXT_BOUNDING_BOX 1
+	#endif
+
+	#if V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+
+		/**
+		*	@def V_DEBUG_DRAW_TEXT_LINE_DIVIDER
+		*	If enabled, draws debug line between texts lines.
+		*/
+		#ifndef V_DEBUG_DRAW_TEXT_LINE_DIVIDER
+		#define V_DEBUG_DRAW_TEXT_LINE_DIVIDER 1
+		#endif
+
+		/**
+		*	@def V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER
+		*	If enabled, draws debug line between each character in text.
+		*/
+		#ifndef V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER
+		#define V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER 1
+		#endif
+
+	#endif //V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+
+	/**
+	*	@def V_DEBUG_DRAW_BUTTON_BOUNDING_BOX
+	*	If enabled, draws Button UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_BUTTON_BOUNDING_BOX
+	#define V_DEBUG_DRAW_BUTTON_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_CHECKBOX_BOUNDING_BOX
+	*	If enabled, draws Checkbox UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_CHECKBOX_BOUNDING_BOX
+	#define V_DEBUG_DRAW_CHECKBOX_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX
+	*	If enabled, draws ProgressTimer UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX
+	#define V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX 0
+	#endif
+
+#endif // V_DEBUG_DRAW_UI_BOUNDING_BOX
 
 
 /**

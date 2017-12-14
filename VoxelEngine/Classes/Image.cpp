@@ -371,7 +371,7 @@ void Voxel::UI::Image::build(const std::array<float, 12>& vertices, const std::a
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_IMAGE_BOUNDING_BOX
 	createDebugBoundingBoxLine();
 #endif
 }
@@ -396,7 +396,7 @@ void Voxel::UI::Image::renderSelf()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_IMAGE_BOUNDING_BOX
 	if (bbVao)
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);

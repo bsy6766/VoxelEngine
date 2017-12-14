@@ -819,7 +819,7 @@ void Voxel::UI::ProgressTimer::build(const std::vector<float>& vertices, const s
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX
 	createDebugBoundingBoxLine();
 #endif
 }
@@ -889,6 +889,19 @@ void Voxel::UI::ProgressTimer::renderSelf()
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, currentIndex, GL_UNSIGNED_INT, 0);
 	}
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX
+	if (bbVao)
+	{
+		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
+		lineProgram->use(true);
+		lineProgram->setUniformMat4("modelMat", modelMat);
+		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+
+		glBindVertexArray(bbVao);
+		glDrawArrays(GL_LINES, 0, 8);
+	}
+#endif
 }
 
 //====================================================================================================================================

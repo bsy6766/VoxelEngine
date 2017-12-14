@@ -161,7 +161,7 @@ void Voxel::UI::CheckBox::build(const std::vector<float>& vertices, const std::v
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_CHECKBOX_BOUNDING_BOX
 	createDebugBoundingBoxLine();
 #endif
 }
@@ -473,7 +473,7 @@ void Voxel::UI::CheckBox::renderSelf()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_CHECKBOX_BOUNDING_BOX
 	if (bbVao)
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);

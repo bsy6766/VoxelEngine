@@ -158,9 +158,6 @@ void Voxel::UI::AnimatedImage::build(const std::vector<float>& vertices, const s
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-#endif
 }
 
 void Voxel::UI::AnimatedImage::start()
@@ -200,42 +197,56 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 	// If animation is paused, don't update
 	if (paused) return;
 
-
+	// update time
 	elapsedTime += delta;
 
 	bool updated = false;
 
+	// loop until elapsed time is less than interval
 	while (elapsedTime >= interval)
 	{
+		// subtract
 		elapsedTime -= interval;
 
+		// increment frame index
 		currentFrameIndex++;
+		// Add index (Each quad takes 6 indices)
 		currentIndex += 6;
 
+		// mark as true
 		updated = true;
 
+		// check frame index
 		if (currentFrameIndex >= frameSize)
 		{
+			// animation finished
 			if (repeat)
 			{
+				// repeat animation. Reset indices.
 				currentFrameIndex = 0;
 				currentIndex = 0;
 			}
 			else
 			{
+				// This animated image doesn't repeat. Stop
 				stopped = true;
+				// Revert index
 				currentIndex -= 6;
 
+				// Revert flag
 				updated = false;
 			}
 		}
 	}
 
+	// Check if frame was changed
 	if (updated)
 	{
+		// Frame changed. Update bounding box size
 		boundingBox.size = frameSizes.at(currentFrameIndex);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_ANIMATED_IMAGE_BOUNDING_BOX
+		// If debug, ui bounding box and animated image bounding box is enabled, create debug boudning box line
 		createDebugBoundingBoxLine();
 #endif
 	}
@@ -260,7 +271,7 @@ void Voxel::UI::AnimatedImage::renderSelf()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_ANIMATED_IMAGE_BOUNDING_BOX
 	if (bbVao)
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);

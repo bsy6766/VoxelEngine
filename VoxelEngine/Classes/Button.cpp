@@ -153,7 +153,7 @@ void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vec
 	glDeleteBuffers(1, &uvbo);
 	glDeleteBuffers(1, &ibo);
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_BUTTON_BOUNDING_BOX
 	createDebugBoundingBoxLine();
 #endif
 }
@@ -168,6 +168,11 @@ void Voxel::UI::Button::disable()
 {
 	buttonState = State::DISABLED;
 	currentIndex = 18;
+}
+
+void Voxel::UI::Button::setOnButtonClickCallbackFunc(const std::function<void()>& func)
+{
+	onButtonClicked = func;
 }
 
 bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
@@ -202,11 +207,6 @@ bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
 	// else, not interactable
 
 	return false;
-}
-
-void Voxel::UI::Button::setOnButtonClickCallbackFunc(const std::function<void()>& func)
-{
-	onButtonClicked = func;
 }
 
 bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
@@ -365,7 +365,7 @@ void Voxel::UI::Button::renderSelf()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(currentIndex * sizeof(GLuint)));
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_BUTTON_BOUNDING_BOX
 	if (bbVao)
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
