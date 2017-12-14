@@ -434,6 +434,11 @@ void Voxel::InputHandler::setCursorToCenter()
 void Voxel::InputHandler::setBufferMode(const float enabled)
 {
 	bufferEnabled = enabled;
+
+	if (!enabled)
+	{
+		this->buffer.clear();
+	}
 }
 
 std::string Voxel::InputHandler::getBuffer()
