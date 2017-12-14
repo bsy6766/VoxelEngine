@@ -83,10 +83,6 @@ Voxel::Scene * Voxel::Director::createScene(const SceneName sceneName)
 
 void Voxel::Director::initFadeImage()
 {
-	auto& sm = SpriteSheetManager::getInstance();
-	sm.addSpriteSheet("GlobalSpriteSheet.json");
-	sm.addSpriteSheet("CursorSpriteSheet.json");
-
 	canvas = new Voxel::UI::Canvas(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0.0f));
 
 	fadeImage = Voxel::UI::Image::createFromSpriteSheet("fadeImage", "GlobalSpriteSheet", "1x1_white.png");

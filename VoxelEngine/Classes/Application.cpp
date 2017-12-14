@@ -66,10 +66,9 @@ void Application::init()
 
 	initMainCamera();
 
-	auto& fm = FontManager::getInstance();
+	initFonts();
 
-	fm.addFont("Pixel.ttf", 10);
-	fm.addFont("Pixel.ttf", 10, 2);
+	initSpriteSheets();
 
 	initDirector();
 
@@ -128,6 +127,26 @@ void Voxel::Application::initInternalSettings()
 	{
 		std::cout << "[Application] Failed to load internal setting\n";
 	}
+}
+
+void Voxel::Application::initFonts()
+{
+	auto& fm = FontManager::getInstance();
+
+	fm.addFont("Pixel.ttf", 10);
+	fm.addFont("Pixel.ttf", 10, 2);
+}
+
+void Voxel::Application::initSpriteSheets()
+{
+	auto& sm = SpriteSheetManager::getInstance();
+
+	sm.addSpriteSheet("GlobalSpriteSheet.json");
+	sm.addSpriteSheet("CursorSpriteSheet.json");
+
+#if V_DEBUG
+	sm.addSpriteSheet("DebugSpriteSheet.json");
+#endif
 }
 
 void Application::run()

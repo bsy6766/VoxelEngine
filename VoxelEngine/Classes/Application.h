@@ -4,10 +4,9 @@
 // cpp
 #include <string>
 
+// voxel
 #include "GLView.h"
-
-//#define GLM_FORCE_DEGREES
-//#define GLM_PRECISION_MEDIUMP_FLOAT
+#include "Config.h"
 
 namespace Voxel
 {
@@ -45,6 +44,12 @@ namespace Voxel
 
 		// Initialize internal settings
 		void initInternalSettings();
+
+		// Init fonts
+		void initFonts();
+
+		// Init sprite sheet
+		void initSpriteSheets();
 
 		// Path to working directory
 		std::string workingDirectory;
