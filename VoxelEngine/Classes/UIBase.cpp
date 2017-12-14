@@ -226,9 +226,14 @@ glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 
 void Voxel::UI::TransformNode::updateBoundingBox()
 {
+	updateBoundingBox(getParentMatrix());
+}
+
+void Voxel::UI::TransformNode::updateBoundingBox(const glm::mat4 & parentMatrix)
+{
 	// todo: optimize? Also fix bounding box for rotating object, especially nested uis.
 
-	auto screenPos = glm::vec2(getParentMatrix() * glm::vec4(position, 1.0f, 1.0f));
+	auto screenPos = glm::vec2(parentMatrix * glm::vec4(position, 1.0f, 1.0f));
 	auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
 
 	auto rotPos = glm::vec2(0);
@@ -697,12 +702,11 @@ glm::vec2 Voxel::UI::TransformNode::getContentSize() const
 
 glm::mat4 Voxel::UI::TransformNode::getParentMatrix() const
 {
-	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * scale * getCoordinateOrigin(), 0.0f));
+	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * parent->getScale() * getCoordinateOrigin(), 0.0f));
 }
 
 glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
 {
-	//auto mat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0, 0, 1)), glm::vec3(position, 0));
 	auto mat = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0)), glm::radians(angle), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	if (pivot.x != 0.0f || pivot.y != 0.0f)
@@ -724,6 +728,23 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 	{
 		modelMat = getModelMatrix();
 	}
+
+	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	// Check if this node has children
+	if (hasChildren())
+	{
+		// Update model matrix for children as well
+		for (auto& e : children)
+		{
+			(e.second)->updateModelMatrix();
+		}
+	}
+}
+
+void Voxel::UI::TransformNode::updateModelMatrix(const glm::mat4 & parentMatrix)
+{
+	modelMat = parentMatrix * getModelMatrix();
 
 	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 

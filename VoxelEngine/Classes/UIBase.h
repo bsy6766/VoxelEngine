@@ -153,12 +153,6 @@ namespace Voxel
 
 			// calculate model matrix
 			virtual glm::mat4 getModelMatrix();
-
-			// Updates model matrix based on parent's matrix
-			virtual void updateModelMatrix();
-
-			// update bounding box center
-			virtual void updateBoundingBox();
 		public:
 			// Destructor
 			virtual ~TransformNode();
@@ -389,6 +383,34 @@ namespace Voxel
 			*	@param delta Elapsed time for current frame
 			*/
 			virtual void update(const float delta);
+
+			/**
+			*	Updates model matrix.
+			*	This will update model marix based on ui's tranformation and parent's matrix.
+			*	This function will update model matrix itself and all children aswell and it's called whenever transformation (translation, rotation, scale, pivot, etc) changes on self or any parents to root parent.
+			*/
+			virtual void updateModelMatrix();
+
+			/**
+			*	Update model matrix with parent matrix
+			*	This will update model matrix with given parent matrix instead of actual parent.
+			*	This is useful when trying to treat ui as child of other ui without actually adding it as child.
+			*/
+			virtual void updateModelMatrix(const glm::mat4& parentMatrix);
+
+			/**
+			*	Updates bounding box
+			*	This will update the bounding box to screen space, not node space.
+			*	This function will only update bounding box itself but children. Also it's called whenever transformation (translation, rotation, scale, pivot, etc) changes on self or any parents to root parent.
+			*/
+			virtual void updateBoundingBox();
+
+			/**
+			*	Update bounding box with parent matrix
+			*	this will update bounding box with given parent matrix instead of actual parent.
+			*	This is usefull when trying to tread ui ad child of ther ui without actually adding it as child
+			*/
+			virtual void updateBoundingBox(const glm::mat4& parentMatrix);
 
 			/**
 			*	Update keyboard update
