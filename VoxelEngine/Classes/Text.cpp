@@ -27,6 +27,10 @@ Voxel::UI::Text::Text(const std::string& name)
 	, cbo(0)
 	, uvbo(0)
 	, ibo(0)
+	, textSize(0)
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+	, lineIndicesSize(0)
+#endif
 {}
 
 Voxel::UI::Text::~Text()
@@ -107,7 +111,8 @@ void Voxel::UI::Text::setText(const std::string & text)
 	if (text.empty())
 	{
 		// It's empty. Clear the text.
-		clear();
+		//clear();
+		this->text = text;
 	}
 	else
 	{
@@ -117,7 +122,7 @@ void Voxel::UI::Text::setText(const std::string & text)
 			bool update = false;
 
 			// Check if new text is longer than current text. if so, we have to reallocate the buffer. Else, do nothing
-			if (text.size() > this->text.size())
+			if (text.size() > textSize)
 			{
 				// new text is larger than current text
 				update = true;
@@ -180,18 +185,18 @@ void Voxel::UI::Text::clear()
 	if (uvbo)
 	{
 		glDeleteBuffers(1, &uvbo);
-		ibo = 0;
+		uvbo = 0;
 	}
 
 	if (ibo)
 	{
 		glDeleteBuffers(1, &ibo);
-		uvbo = 0;
+		ibo = 0;
 	}
 	
 	// vao is released on RenderNode
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
 	if (bbVao)
 	{
 		// Delte array
@@ -201,11 +206,125 @@ void Voxel::UI::Text::clear()
 #endif
 }
 
+void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
+{
+	// Iterate per line. Find the maximum width and height
+	for (auto& line : lines)
+	{
+		lineSizes.push_back(LineSize());
+
+		int totalWidth = 0;
+		int maxBearingY = 0;
+		int maxBotY = 0;
+
+		unsigned int len = line.size();
+		for (unsigned int i = 0; i < len; i++)
+		{
+			const char c = line[i];
+			Glyph* glyph = font->getCharGlyph(c);
+
+			// Advance value is the distance between pen position of each character in horizontal layout
+			// Advance includes bearing x + width + extra space for next character.
+			// We don't have to add extra space for last char because line ends.
+			if (i == (len - 1))
+			{
+				totalWidth += (glyph->bearingX + glyph->width);
+			}
+			else
+			{
+				totalWidth += glyph->advance;
+			}
+
+			// Find max bearing Y. BearingY is the upper height of character from pen position.
+			if (maxBearingY < glyph->bearingY)
+			{
+				maxBearingY = glyph->bearingY;
+			}
+
+			// Find max botY. BotY is my defined value, which is the lower height of character from pen position
+			if (maxBotY < glyph->botY)
+			{
+				maxBotY = glyph->botY;
+			}
+		}
+
+		// Make max width and height even number because this is UI(?)
+		// Note: The reason why I added this is because when pen position x had decimal points due to width being odd number, entire text rendering becaome weird (extended in x axis. slightly)
+		// This fixed the issue.
+		if (totalWidth % 2 == 1)
+		{
+			totalWidth++;
+		}
+
+		// total width is sum of glyph's advance, which includes extra space for next character. Remove it
+		maxWidth = glm::max(totalWidth, maxWidth);
+
+		if (line.empty())
+		{
+			line = " ";
+			// quick hack here. Add whitespace to emptyline to treat as line
+			lineSizes.back().width = 0;
+			lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
+			lineSizes.back().maxBotY = 0;
+		}
+		else
+		{
+			lineSizes.back().width = totalWidth;
+			lineSizes.back().maxBearingY = maxBearingY;
+			lineSizes.back().maxBotY = maxBotY;
+		}
+	}
+}
+
+void Voxel::UI::Text::computePenPositions(const std::vector<LineSize>& lineSizes, std::vector<glm::vec2>& penPositions, const float yAdvance)
+{
+	// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
+	float curY = boundingBox.size.y * 0.5f;
+
+	//curY -= lineSizes.front().maxBearingY;
+	curY -= font->getSize();
+
+	// Iterate line sizes to find out each line's pen position from origin
+	for (auto lineSize : lineSizes)
+	{
+		glm::vec2 penPos = glm::vec2(0);
+		if (align == ALIGN::LEFT)
+		{
+			// Align text to left. x is always the most left pos of longest line
+			penPos.x = static_cast<float>(boundingBox.size.x) * -0.5f;
+		}
+		else if (align == ALIGN::RIGHT)
+		{
+			// Aling text to right.
+			penPos.x = (static_cast<float>(boundingBox.size.x) * 0.5f) - static_cast<float>(lineSize.width);
+		}
+		else // center
+		{
+			// Aling text to center.
+			penPos.x = static_cast<float>(lineSize.width) * -0.5f;
+		}
+
+		// Y works same for same
+		//penPos.y = curY - lineSize.maxBearingY;
+		penPos.y = curY;
+		//penPos.y = curY - lineSpace;
+		// add pen position
+		penPositions.push_back(penPos);
+		// Update y to next line
+		// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
+		curY -= yAdvance;
+		// As I said, customizing for MunroSmall
+		//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
+	}
+}
+
 bool Voxel::UI::Text::buildMesh(const bool reallocate)
 {
 	// Check font
 	if (font)
 	{
+		// Step 0. Prepare ------------
+
 		// Check text
 		if (text.empty())
 		{
@@ -215,12 +334,19 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		// set texture
 		texture = font->getTexture();
 
+		linePositions.clear();
+		characterPositions.clear();
+
+		// Step 0 done.
+
+
+
+		// Step 1. Split text by new line ------------
+
 		// Split text label by line
 		std::vector<std::string> split;
-
 		// Turn the string into a stream.
 		std::stringstream ss(text);
-
 		// token (line)
 		std::string tok;
 
@@ -230,157 +356,70 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 			split.push_back(tok);
 		}
 
-		// local struct. Defines line size
-		struct LineSize
-		{
-			// Width of line
-			int width;
-			// max bearing of line
-			int maxBearingY;
-			// max bot of line
-			int maxBotY;
-		};
+		// Step 1 done.
+
+
+
+
+		// Step 2. Compute line sizes, max width and total height ------------
 
 		// This is where we store each line's size so we can properly reposition all character based on align type
 		std::vector<LineSize> lineSizes;
 
 		int maxWidth = 0;
-		int totalHeight = 0;
 
+		// Compute line sizes
+		computeLineSizes(split, lineSizes, maxWidth);
+
+		// get outline size
 		const float outlineSize = static_cast<float>(font->getOutlineSize());
-
-		int lineGap = 0;
-		int lineGapHeight = 0 + static_cast<int>(outlineSize);
-		int lineSpace = font->getLineSpace();
-
-		// Iterate per line. Find the maximum width and height
-		for (auto& line : split)
-		{
-			lineSizes.push_back(LineSize());
-
-			int totalWidth = 0;
-			int maxBearingY = 0;
-			int maxBotY = 0;
-
-			unsigned int len = line.size();
-			for (unsigned int i = 0; i < len; i++)
-			{
-				const char c = line[i];
-				Glyph* glyph = font->getCharGlyph(c);
-
-				// Advance value is the distance between pen position of each character in horizontal layout
-				// Advance includes bearing x + width + extra space for next character.
-				// We don't have to add extra space for last char because line ends.
-				if (i == (len - 1))
-				{
-					totalWidth += (glyph->bearingX + glyph->width);
-				}
-				else
-				{
-					totalWidth += glyph->advance;
-				}
-
-				// Find max bearing Y. BearingY is the upper height of character from pen position.
-				if (maxBearingY < glyph->bearingY)
-				{
-					maxBearingY = glyph->bearingY;
-				}
-
-				// Find max botY. BotY is my defined value, which is the lower height of character from pen position
-				if (maxBotY < glyph->botY)
-				{
-					maxBotY = glyph->botY;
-				}
-			}
-
-			// Make max width and height even number because this is UI(?)
-			// Note: The reason why I added this is because when pen position x had decimal points due to width being odd number, entire text rendering becaome weird (extended in x axis. slightly)
-			// This fixed the issue.
-			if (totalWidth % 2 == 1)
-			{
-				totalWidth++;
-			}
-
-			// total width is sum of glyph's advance, which includes extra space for next character. Remove it
-			maxWidth = glm::max(totalWidth, maxWidth);
-
-			if (line.empty())
-			{
-				line = " ";
-				// quick hack here. Add whitespace to emptyline to treat as line
-				lineSizes.back().width = 0;
-				lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
-				lineSizes.back().maxBotY = 0;
-			}
-			else
-			{
-				lineSizes.back().width = totalWidth;
-				lineSizes.back().maxBearingY = maxBearingY;
-				lineSizes.back().maxBotY = maxBotY;
-			}
-		}
-
-		auto lineSize = split.size() - 1;
-		totalHeight = (lineSize * lineSpace) + font->getSize();
-		lineGap = lineSize * lineGapHeight;
+		// get line space
+		const int lineSpace = font->getLineSpace();
+		// count line. Exclude last line
+		const int lineCount = split.size() - 1;
+		// compute total height
+		int totalHeight = (lineCount * lineSpace) + font->getSize();
 
 		/*
 		if (totalHeight % 2 == 1)
 		{
-		totalHeight++;
+			totalHeight++;
 		}
 		*/
 
+		// Step 2 done.
+
+
+
+		// Step 3. Compute text bounding box and content size ------------
+
+		int lineGapHeight = static_cast<int>(outlineSize);
+		int lineGap = lineCount * lineGapHeight;
+
 		// Set size of Text object. Ignore last line's line gap
-		auto boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, static_cast<float>(totalHeight + (lineGap)) * -0.5f);
-		auto boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, static_cast<float>(totalHeight + (lineGap)) * 0.5f);
+		const float h = static_cast<float>(totalHeight + lineGap);
+		auto boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, h * -0.5f);
+		auto boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, h * 0.5f);
 
 		boundingBox.center = position;
-		boundingBox.size = glm::vec2(boxMax.x - boxMin.x, boxMax.y - boxMin.y);
+		boundingBox.size = glm::vec2(maxWidth, h);
 
 		contentSize = boundingBox.size;
+
+		// Step 3 done.
+
+
+
+		// Step 4. Compute pen positions ------------
 
 		// Pen position. Also called as origin or base line in y pos.
 		std::vector<glm::vec2> penPositions;
 
-		// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
-		float curY = boxMax.y;
+		computePenPositions(lineSizes, penPositions, static_cast<float>(lineSpace + lineGapHeight));
 
-		//curY -= lineSizes.front().maxBearingY;
-		curY -= font->getSize();
+		// Step 4 done.
 
-		// Iterate line sizes to find out each line's pen position from origin
-		for (auto lineSize : lineSizes)
-		{
-			glm::vec2 penPos = glm::vec2(0);
-			if (align == ALIGN::LEFT)
-			{
-				// Align text to left. x is always the most left pos of longest line
-				penPos.x = static_cast<float>(maxWidth) * -0.5f;
-			}
-			else if (align == ALIGN::RIGHT)
-			{
-				// Aling text to right.
-				penPos.x = (static_cast<float>(maxWidth) * 0.5f) - static_cast<float>(lineSize.width);
-			}
-			else // center
-			{
-				// Aling text to center.
-				penPos.x = static_cast<float>(lineSize.width) * -0.5f;
-			}
 
-			// Y works same for same
-			//penPos.y = curY - lineSize.maxBearingY;
-			penPos.y = curY;
-			//penPos.y = curY - lineSpace;
-			// add pen position
-			penPositions.push_back(penPos);
-			// Update y to next line
-			// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
-			curY -= (lineSpace + lineGapHeight);
-			// As I said, customizing for MunroSmall
-			//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
-		}
 
 		// We have pen position for each line. Iterate line and build vertices based on 
 		int penPosIndex = 0;
@@ -392,6 +431,8 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		std::vector<float> uvVertices;
 		unsigned int indicesIndex = 0;
 
+		textSize = 0;	// Doesn't include escaped keys like new line
+
 		for (auto& line : split)
 		{
 			if (line != " ")
@@ -401,6 +442,9 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 				float curX = penPositions.at(penPosIndex).x;
 
 				unsigned int len = line.size();
+
+				textSize += len;
+
 				for (unsigned int i = 0; i < len; i++)
 				{
 					// Build quad for each character
@@ -464,11 +508,16 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 			penPosIndex++;
 		}
+		
+		// load buffer
+		loadBuffers(vertices, colors, uvVertices, indices, reallocate);
 
 		updateModelMatrix();
 
-		// load buffer
-		loadBuffers(vertices, colors, uvVertices, indices, reallocate);
+		if (parent)
+		{
+			updateBoundingBox();
+		}
 
 		return true;
 	}
@@ -481,8 +530,6 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool reallocate)
 {
-	auto textSize = text.size();
-
 	if (reallocate)
 	{
 		// reallocate buffer
@@ -592,18 +639,6 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 
 		// unbind
 		glBindVertexArray(0);
-
-		/*
-		glDeleteBuffers(1, &vbo);
-		glDeleteBuffers(1, &cbo);
-		glDeleteBuffers(1, &uvbo);
-		glDeleteBuffers(1, &ibo);
-
-		vbo = 0;
-		cbo = 0;
-		ibo = 0;
-		uvbo = 0;
-		*/
 	}
 	else
 	{
@@ -632,7 +667,7 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 		glBindVertexArray(0);
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
 	if (bbVao)
 	{
 		glDeleteVertexArrays(1, &bbVao);
@@ -659,6 +694,16 @@ void Voxel::UI::Text::loadBuffers(const std::vector<float>& vertices, const std:
 		max.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		min.x, min.y, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 	};
+
+	lineIndicesSize = 8;
+
+#if V_DEBUG_DRAW_TEXT_LINE_DIVIDER
+
+#endif
+
+#if V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER
+
+#endif
 
 	GLuint lineVbo;
 	glGenBuffers(1, &lineVbo);
@@ -817,6 +862,7 @@ void Voxel::UI::Text::renderSelf()
 	if (font == nullptr) return;
 	if (vao == 0) return;
 	if (program == nullptr) return;
+	if (textSize == 0) return;
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
@@ -843,7 +889,7 @@ void Voxel::UI::Text::renderSelf()
 		glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
 	}
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
 	if (bbVao)
 	{
 		auto lineProgram = ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::LINE_SHADER);
@@ -852,8 +898,7 @@ void Voxel::UI::Text::renderSelf()
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
 
 		glBindVertexArray(bbVao);
-		glDrawArrays(GL_LINES, 0, 8);
-
+		glDrawArrays(GL_LINES, 0, lineIndicesSize);
 	}
 #endif
 }

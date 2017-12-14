@@ -105,9 +105,9 @@ void Voxel::DebugConsole::init()
 
 	debugCanvas->addChild(command, 0);
 
-	commandHistorys = UI::Text::create("cmdHistorys", "_", 1);
+	commandHistorys = UI::Text::create("cmdHistorys", "", 1);
 	commandHistorys->setPosition(glm::vec2(5.0f, 23.0f));
-	commandHistorys->setText("");
+	//commandHistorys->setText("");
 	commandHistorys->setPivot(glm::vec2(-0.5f, -0.5f));
 	commandHistorys->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	commandHistorys->setVisibility(false);

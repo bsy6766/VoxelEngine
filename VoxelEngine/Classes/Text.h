@@ -29,6 +29,20 @@ namespace Voxel
 				RIGHT
 			};
 		private:
+			// Defines line size. For mesh building only
+			struct LineSize
+			{
+			public:
+				// Constructor
+				LineSize() : width(0), maxBearingY(0), maxBotY(0) {}
+				// Width of line
+				int width;
+				// max bearing of line
+				int maxBearingY;
+				// max bot of line
+				int maxBotY;
+			};
+		private:
 			Text() = delete;
 
 			// Constructor
@@ -59,6 +73,15 @@ namespace Voxel
 			// outline
 			bool outlined;
 
+			// text size without escpaed keys line new line char
+			unsigned int textSize;
+
+			// line positions. Line positions are relative to center of text. Only stores y value
+			std::vector<float> linePositions;
+
+			// character positions. Character posistions are relative to center of each line. Only stores x value for each line
+			std::vector<std::vector<float>> characterPositions;
+
 			/**
 			*	Initialize text.
 			*/
@@ -68,6 +91,25 @@ namespace Voxel
 			*	Initialize text with outline
 			*/
 			bool initWithOutline(const std::string& text, const glm::vec3& outlineColor, ALIGN align = ALIGN::LEFT);
+
+			/**
+			*	Computes the origin point for each line
+			*	Origin point equals to point where guide lines start in real life notebooks.
+			*/
+			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
+
+			/**
+			*	Compute line size and max width
+			*	Each line size contains width, max bearing y and max bot y
+			*/
+			void computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int& maxWidth);
+
+			/**
+			*	Compute pen position.
+			*	Pen position is a guide point for writing text vertically. Think as vertical lines in notebook which we use as guide line to write letters in same line.
+			*	Mesh will be built starting from pen position, left to right.
+			*/
+			void computePenPositions(const std::vector<LineSize>& lineSizes, std::vector<glm::vec2>& penPositions, const float yAdvance);
 
 			/**
 			*	Builds mesh and loads.
@@ -84,13 +126,7 @@ namespace Voxel
 			*	@param reallocate true if it needs to reallocate buffer. Else, false.
 			*/
 			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool reallocate);
-
-			/**
-			*	Computes the origin point for each line
-			*	Origin point equals to point where guide lines start in real life notebooks.
-			*/
-			std::vector<glm::vec2> computeOrigins(Font* font, const std::vector<std::string>& split);
-
+			
 		public:
 			// Destructor
 			~Text();
@@ -160,6 +196,10 @@ namespace Voxel
 			*	Render self
 			*/
 			void renderSelf() override;
+
+#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
+			unsigned int lineIndicesSize;
+#endif
 		};
 	}
 }
