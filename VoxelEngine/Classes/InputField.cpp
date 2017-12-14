@@ -44,6 +44,8 @@ bool Voxel::UI::InputField::init(const std::string & defaultText, const int font
 		return false;
 	}
 
+
+
 	cursor = Voxel::UI::Image::createFromSpriteSheet(name + "Cursor", spriteSheetName, cursorImageName);
 
 	if (!cursor)
@@ -124,7 +126,9 @@ void Voxel::UI::InputField::updateCursorPosition()
 void Voxel::UI::InputField::modifyText(const std::string & text)
 {
 	this->text->setText(text);
-	this->text->updateModelMatrix(modelMat);
+
+	this->updateModelMatrix();
+
 	this->updateBoundingBox();
 
 	updateTextPosition();
@@ -195,11 +199,14 @@ void Voxel::UI::InputField::updateModelMatrix()
 	// so we have to update model matrix for both text and image manually because text and cursor doesn't have parent directly
 	// (If only Inputfield is not field of Text) Trick here is simply add text and cursor to inputfield, which updates model matrix and bounding box
 
+	// Inputfield's bounding box is same as text.
+	contentSize = text->getContentSize();
 	// Update self
 	Voxel::UI::TransformNode::updateModelMatrix();
 
 	// Update model mat is public for now. 
 	text->updateModelMatrix(modelMat);
+
 	cursor->updateModelMatrix(modelMat);
 }
 
@@ -208,8 +215,6 @@ void Voxel::UI::InputField::updateBoundingBox()
 	text->updateBoundingBox(modelMat);
 	cursor->updateBoundingBox(modelMat);
 
-	// Inputfield's bounding box is same as text.
-	contentSize = text->getContentSize();
 	// Don't forget to call this to update self and children bounding box.
 	Voxel::UI::TransformNode::updateBoundingBox();
 }
@@ -238,7 +243,7 @@ bool Voxel::UI::InputField::updateMouseMove(const glm::vec2 & mousePosition)
 				if (state == State::IDLE)
 				{
 					state = State::HOVERED;
-					std::cout << "Hovering\n";
+					//std::cout << "Hovering\n";
 				}
 
 				return true;
@@ -248,7 +253,7 @@ bool Voxel::UI::InputField::updateMouseMove(const glm::vec2 & mousePosition)
 				if (state == State::HOVERED || state == State::CLICKED)
 				{
 					state = State::IDLE;
-					std::cout << "Idle\n";
+					//std::cout << "Idle\n";
 				}
 			}
 		}
@@ -324,7 +329,7 @@ bool Voxel::UI::InputField::updateMousePress(const glm::vec2 & mousePosition, co
 					{
 						state = State::CLICKED;
 						pressed = true;
-						std::cout << "Clicked\n";
+						//std::cout << "Clicked\n";
 					}
 					else if (state == State::EDITTING)
 					{
@@ -373,7 +378,7 @@ bool Voxel::UI::InputField::updateMouseRelease(const glm::vec2 & mousePosition, 
 					// mouse is in bounding box
 					if (state == State::CLICKED)
 					{
-						std::cout << "Released\n";
+						//std::cout << "Released\n";
 						startEdit();
 					}
 					// else, disabled or not hovering
@@ -401,7 +406,7 @@ void Voxel::UI::InputField::startEdit()
 {
 	if (state != State::EDITTING)
 	{
-		std::cout << "Starts editing\n";
+		//std::cout << "Starts editing\n";
 
 		// start text input
 		state = State::EDITTING;
@@ -432,7 +437,7 @@ void Voxel::UI::InputField::finishEdit()
 {
 	if (state == State::EDITTING)
 	{
-		std::cout << "Finishes editing\n";
+		//std::cout << "Finishes editing\n";
 
 		// finish modifying
 		state = State::IDLE;
@@ -457,7 +462,7 @@ void Voxel::UI::InputField::finishEdit()
 
 void Voxel::UI::InputField::cancelEdit()
 {
-	std::cout << "Cancelled editing\n";
+	//std::cout << "Cancelled editing\n";
 
 	// finish modifying
 	state = State::IDLE;
@@ -532,6 +537,11 @@ void Voxel::UI::InputField::setToDefaultText()
 {
 	modifyText(defaultText);
 	textDefaultMode = true;
+}
+
+void Voxel::UI::InputField::setText(const std::string & text)
+{
+	modifyText(text);
 }
 
 void Voxel::UI::InputField::render()

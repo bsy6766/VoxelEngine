@@ -161,6 +161,7 @@ void Voxel::MenuScene::updateKeyboardInput()
 		else
 		{
 			inputField = Voxel::UI::InputField::create("if", "enter text here...", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
+			inputField->setPivot(glm::vec2(-0.5, 0.0f));
 			canvas->addChild(inputField);
 		}
 	}

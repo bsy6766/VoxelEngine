@@ -144,6 +144,9 @@ namespace Voxel
 			// set to default text
 			void setToDefaultText();
 
+			// set text
+			void setText(const std::string& text);
+
 			// render input field
 			void render() override;
 		};

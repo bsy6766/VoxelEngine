@@ -161,44 +161,46 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 {
+
 	if (inputField)
 	{
 		// feed input field
 		if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		{
-			updateInputFieldText(key, mods);
+			if (updateInputFieldText(key, mods))
+			{
+				return;
+			}
 		}
+	}
+
+	// update key state
+	if (action == GLFW_PRESS)
+	{
+		keyMap[key] = GLFW_PRESS;
+		keyTickMap[key] = GLFW_PRESS;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		keyMap[key] = GLFW_RELEASE;
+		keyTickMap[key] = GLFW_RELEASE;
+	}
+
+	/*
+	else if (action == GLFW_REPEAT)
+	{
+	keyMap[key] = GLFW_REPEAT;
+	keyTickMap[key] = GLFW_REPEAT;
 	}
 	else
 	{
-		// update key state
-		if (action == GLFW_PRESS)
-		{
-			keyMap[key] = GLFW_PRESS;
-			keyTickMap[key] = GLFW_PRESS;
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			keyMap[key] = GLFW_RELEASE;
-			keyTickMap[key] = GLFW_RELEASE;
-		}
-
-		/*
-		else if (action == GLFW_REPEAT)
-		{
-			keyMap[key] = GLFW_REPEAT;
-			keyTickMap[key] = GLFW_REPEAT;
-		}
-		else
-		{
-			keyMap[key] = -1;
-			keyTickMap[key] = -1;
-		}
-		*/
-
-		this->mods = mods;
-		//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
+	keyMap[key] = -1;
+	keyTickMap[key] = -1;
 	}
+	*/
+
+	this->mods = mods;
+	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
 glm::vec2 Voxel::InputHandler::getMousePosition() const
@@ -641,7 +643,7 @@ void Voxel::InputHandler::redirectKeyInputToText(Voxel::UI::InputField * inputFi
 	this->inputField = inputField;
 }
 
-void Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
+bool Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 {
 	if (inputField)
 	{
@@ -659,9 +661,21 @@ void Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 		}
 		else
 		{
-			inputField->appendStr(glfwKeyToString(key, mod));
+			auto str = glfwKeyToString(key, mod);
+			if (str.empty())
+			{
+				return false;
+			}
+			else
+			{
+				inputField->appendStr(glfwKeyToString(key, mod));
+			}
 		}
+
+		return true;
 	}
+
+	return false;
 }
 
 float Voxel::InputHandler::getAxisValue(IO::XBOX_360::AXIS axis)

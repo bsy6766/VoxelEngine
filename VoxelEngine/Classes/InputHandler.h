@@ -210,7 +210,7 @@ namespace Voxel
 		std::string glfwKeyToString(const int key, const int mod) const;
 
 		void redirectKeyInputToText(Voxel::UI::InputField* inputField);
-		void updateInputFieldText(const int key, const int mod);
+		bool updateInputFieldText(const int key, const int mod);
 	};
 }
 

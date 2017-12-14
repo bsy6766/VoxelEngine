@@ -98,12 +98,12 @@ void Voxel::DebugConsole::init()
 	debugCanvas->addChild(commandHistoryBg, 0);
 
 	cmdInputField = Voxel::UI::InputField::create("cmdIF", "Enter command", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
-	cmdInputField->setPosition(glm::vec2(5.0f, 15.0f));
-	cmdInputField->setPivot(glm::vec2(-0.5f, 0.5f));
+	cmdInputField->setPosition(glm::vec2(5.0f, 10.0f));
+	cmdInputField->setAlign(Voxel::UI::InputField::Align::LEFT);
 	cmdInputField->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	cmdInputField->setVisibility(false);
 	cmdInputField->setOnEditFinished(std::bind(&Voxel::DebugConsole::onEditFinished, this, std::placeholders::_1));
-	cmdInputField->setAlign(Voxel::UI::InputField::Align::LEFT);
+	cmdInputField->setOnEditCancelled(std::bind(&Voxel::DebugConsole::onEditCancelled, this));
 
 	debugCanvas->addChild(cmdInputField, 0);
 
@@ -670,7 +670,6 @@ void Voxel::DebugConsole::closeConsole()
 		game->toggleCursorMode(false);
 	}
 
-	cmdInputField->cancelEdit();
 	cmdInputField->setToDefaultText();
 }
 
@@ -678,123 +677,6 @@ bool Voxel::DebugConsole::isConsoleOpened()
 {
 	return openingConsole;
 }
-
-/*
-void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
-{
-	if (!c.empty())
-	{
-		auto curText = cmdInputField->getText();
-		if (curText == DefaultCommandInputText)
-		{
-			curText = "";
-		}
-
-		std::string strCpy = c;
-		//std::cout << "strcpy = " << strCpy << std::endl;
-
-		while (strCpy.empty() == false)
-		{
-			auto size = strCpy.size();
-
-			if (size >= 17)
-			{
-				{
-					// Check for up 
-					std::string token = strCpy.substr(0, 18);
-					//std::cout << "Token: " << token << std::endl;
-					if (token == "VOXEL_GLFW_KEY_UP")
-					{
-						// repeat last command
-						if (lastCommandIndex >= lastCommands.size())
-						{
-							lastCommandIndex = 0;
-						}
-
-						auto it = std::begin(lastCommands);
-						std::advance(it, lastCommandIndex);
-						curText = *it;
-
-						lastCommandIndex++;
-
-						if (size == 17)
-						{
-							strCpy.clear();
-							break;
-						}
-						else
-						{
-							strCpy = strCpy.substr(18);
-							continue;
-						}
-					}
-				}
-
-				if (size >= 20)
-				{
-					{
-						// Check for enter
-						std::string token = strCpy.substr(0, 21);
-						//std::cout << "Token: " << token << std::endl;
-						if (token == "VOXEL_GLFW_KEY_ENTER")
-						{
-						}
-					}
-
-					if (size >= 24)
-					{
-						// Check for back space
-						std::string token = strCpy.substr(0, 25);
-						//std::cout << "Token: " << token << std::endl;
-
-						if (token == "VOXEL_GLFW_KEY_BACKSPACE")
-						{
-							//std::cout << "Backspace\n";
-
-							auto curSize = curText.size();
-							if (curSize == 0)
-							{
-								// do nothing
-							}
-							else if (curSize == 1)
-							{
-								curText = DefaultCommandInputText;
-							}
-							else
-							{
-								curText = curText.substr(0, curSize - 1);
-							}
-
-							if (size == 24)
-							{
-								strCpy.clear();
-
-								//std::cout << "strcpy = " << strCpy << std::endl;
-								break;
-							}
-							else
-							{
-								strCpy = strCpy.substr(25);
-								continue;
-							}
-						}
-					}
-				}
-			}
-
-			// if it wasn't enter or backspace, keep update
-			std::string first = strCpy.substr(0, 1);
-			curText += first;
-			strCpy = strCpy.substr(1);
-
-			//std::cout << "strcpy = " << strCpy << std::endl;
-		}
-
-
-		cmdInputField->setText(curText);
-	}
-}
-*/
 
 bool Voxel::DebugConsole::executeCommand(const std::string & command)
 {
@@ -2072,6 +1954,45 @@ void Voxel::DebugConsole::onFPSUpdate(int fps)
 
 void Voxel::DebugConsole::update(const float delta)
 {
+	auto input = &InputHandler::getInstance();
+
+	if (lastCommands.empty() == false)
+	{
+		if (input->getKeyDown(GLFW_KEY_UP, true))
+		{
+			// repeat last command
+			lastCommandIndex++;
+
+			if (lastCommandIndex >= lastCommands.size())
+			{
+				lastCommandIndex = 0;
+			}
+
+			auto it = std::begin(lastCommands);
+			std::advance(it, lastCommandIndex);
+			auto nextCmd = *it;
+
+			cmdInputField->setText(nextCmd);
+		}
+		else if (input->getKeyDown(GLFW_KEY_DOWN, true))
+		{
+			if (lastCommandIndex == 0)
+			{
+				lastCommandIndex = lastCommands.size() - 1;
+			}
+			else
+			{
+				lastCommandIndex--;
+			}
+
+			auto it = std::begin(lastCommands);
+			std::advance(it, lastCommandIndex);
+			auto nextCmd = *it;
+
+			cmdInputField->setText(nextCmd);
+		}
+	}
+
 	debugCanvas->update(delta);
 }
 
