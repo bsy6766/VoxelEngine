@@ -2119,7 +2119,7 @@ void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 	this->regionID->setText("region: " + std::to_string(regionID));
 }
 
-void Voxel::DebugConsole::onEditFinished(const std::string & command)
+void Voxel::DebugConsole::onEditFinished(const std::string command)
 {
 	// execute command
 	std::cout << "Execute command: " << command << std::endl;

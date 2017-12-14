@@ -653,7 +653,7 @@ bool Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 		}
 		else if (key == GLFW_KEY_ENTER)
 		{
-			inputField->finishEdit();
+			inputField->submitEdit();
 		}
 		else if (key == GLFW_KEY_ESCAPE)
 		{

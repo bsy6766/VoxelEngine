@@ -14,6 +14,7 @@ Voxel::UI::InputField::InputField(const std::string& name)
 	, onEdit(nullptr)
 	, onEditFinished(nullptr)
 	, onEditCancelled(nullptr)
+	, onEditSubmitted(nullptr)
 	, align(Align::CENTER)
 	, prevText("")
 	, input(&InputHandler::getInstance())
@@ -178,14 +179,19 @@ void Voxel::UI::InputField::setOnEditStartCallback(const std::function<void()>& 
 	onEditStart = func;
 }
 
-void Voxel::UI::InputField::setOnEditCallback(const std::function<void(const std::string&)>& func)
+void Voxel::UI::InputField::setOnEditCallback(const std::function<void(const std::string)>& func)
 {
 	onEdit = func;
 }
 
-void Voxel::UI::InputField::setOnEditFinished(const std::function<void(const std::string&)>& func)
+void Voxel::UI::InputField::setOnEditFinished(const std::function<void(const std::string)>& func)
 {
 	onEditFinished = func;
+}
+
+void Voxel::UI::InputField::setOnEditSubmitted(const std::function<void(const std::string)>& func)
+{
+	onEditSubmitted = func;
 }
 
 void Voxel::UI::InputField::setOnEditCancelled(const std::function<void()>& func)
@@ -439,6 +445,11 @@ void Voxel::UI::InputField::finishEdit()
 	{
 		//std::cout << "Finishes editing\n";
 
+		if (onEditFinished)
+		{
+			onEditFinished(text->getText());
+		}
+
 		// finish modifying
 		state = State::IDLE;
 
@@ -452,10 +463,32 @@ void Voxel::UI::InputField::finishEdit()
 			modifyText(defaultText);
 			textDefaultMode = true;
 		}
+	}
+}
 
-		if (onEditFinished)
+void Voxel::UI::InputField::submitEdit()
+{
+	if (state == State::EDITTING)
+	{
+		//std::cout << "Finishes editing\n";
+
+		if (onEditSubmitted)
 		{
-			onEditFinished(text->getText());
+			onEditSubmitted(text->getText());
+		}
+
+		// finish modifying
+		state = State::IDLE;
+
+		cursor->restartAllActions();
+		cursor->pauseAction();
+
+		InputHandler::getInstance().redirectKeyInputToText(nullptr);
+
+		if (text->getText().empty())
+		{
+			modifyText(defaultText);
+			textDefaultMode = true;
 		}
 	}
 }
@@ -542,6 +575,18 @@ void Voxel::UI::InputField::setToDefaultText()
 void Voxel::UI::InputField::setText(const std::string & text)
 {
 	modifyText(text);
+}
+
+std::string Voxel::UI::InputField::getText() const
+{
+	if (text)
+	{
+		return text->getText();
+	}
+	else
+	{
+		return "";
+	}
 }
 
 void Voxel::UI::InputField::render()

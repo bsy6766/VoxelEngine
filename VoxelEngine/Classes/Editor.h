@@ -56,6 +56,8 @@ namespace Voxel
 		Voxel::UI::NinePatchImage* fileDropDownBg;
 		// New create window
 		Voxel::UI::NinePatchImage* newCreateWindow;
+		Voxel::UI::Button* createBtn;
+		Voxel::UI::InputField* newFileNameInputField;
 
 		bool menuBarDropDowned;
 
@@ -64,6 +66,8 @@ namespace Voxel
 
 		// cursor
 		Cursor* cursor;
+
+		std::string newFileName;
 
 		// update mouse
 		void updateMouseMove();
@@ -78,7 +82,8 @@ namespace Voxel
 		void onNewButtonClicked();
 		void onNewCreateButtonClicked();
 		void onNewCancelButtonClicked();
-
+		void onNewFileNameEdit(const std::string text);
+		void onNewFileNameEditSubmitted(const std::string text);
 	public:
 		Editor();
 		~Editor();

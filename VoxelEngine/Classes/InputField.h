@@ -74,9 +74,11 @@ namespace Voxel
 			// On input field clicked 
 			std::function<void()> onEditStart;
 			// Called when user modifies the text.
-			std::function<void(const std::string&)> onEdit;
+			std::function<void(const std::string)> onEdit;
 			// Called when user finishes modifying text and confirms
-			std::function<void(const std::string&)> onEditFinished;
+			std::function<void(const std::string)> onEditFinished;
+			// Called when user finishes modifying text by pressing enter
+			std::function<void(const std::string)> onEditSubmitted;
 			// Called when user cancels edit
 			std::function<void()> onEditCancelled;
 
@@ -105,8 +107,9 @@ namespace Voxel
 
 			// set callback
 			void setOnEditStartCallback(const std::function<void()>& func);
-			void setOnEditCallback(const std::function<void(const std::string&)>& func);
-			void setOnEditFinished(const std::function<void(const std::string&)>& func);
+			void setOnEditCallback(const std::function<void(const std::string)>& func);
+			void setOnEditFinished(const std::function<void(const std::string)>& func);
+			void setOnEditSubmitted(const std::function<void(const std::string)>& func);
 			void setOnEditCancelled(const std::function<void()>& func);
 			
 			// override 
@@ -132,6 +135,9 @@ namespace Voxel
 			// Finish edit
 			void finishEdit();
 
+			// submit edit (finish by enter)
+			void submitEdit();
+
 			// cancel edit
 			void cancelEdit();
 
@@ -146,6 +152,9 @@ namespace Voxel
 
 			// set text
 			void setText(const std::string& text);
+
+			// get text
+			std::string getText() const;
 
 			// render input field
 			void render() override;

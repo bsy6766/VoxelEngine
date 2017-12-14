@@ -6,6 +6,7 @@
 #include "InputHandler.h"
 #include "Cursor.h"
 #include "Director.h"
+#include "Utility.h"
 
 // cpp
 #include <functional>
@@ -24,6 +25,8 @@ Editor::Editor()
 	, cursor(&Cursor::getInstance())
 	, menuBarDropDowned(false)
 	, newCreateWindow(nullptr)
+	, createBtn(nullptr)
+	, newFileNameInputField(nullptr)
 {}
 
 Editor::~Editor()
@@ -106,17 +109,24 @@ void Voxel::Editor::init()
 	newCreateWindow->setVisibility(false);
 	canvas->addChild(newCreateWindow);
 
-	//auto newFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name")
+	newFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
+	newFileNameInputField->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
+	newFileNameInputField->setAlign(Voxel::UI::InputField::Align::LEFT);
+	newFileNameInputField->setPosition(8.0f, -33.0f);
+	newFileNameInputField->setOnEditCallback(std::bind(&Voxel::Editor::onNewFileNameEdit, this, std::placeholders::_1));
+	newFileNameInputField->setOnEditSubmitted(std::bind(&Voxel::Editor::onNewFileNameEditSubmitted, this, std::placeholders::_1));
+	newCreateWindow->addChild(newFileNameInputField);
 
 	auto newLabel = Voxel::UI::Text::create("newLabel", "NEW", 1);
 	newLabel->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	newLabel->setPosition(0.0f, -9.0f);
 	newCreateWindow->addChild(newLabel);
 
-	auto createBtn = Voxel::UI::Button::create("cBtn", ss, "new_create_button.png");
+	createBtn = Voxel::UI::Button::create("cBtn", ss, "new_create_button.png");
 	createBtn->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	createBtn->setPosition(35.0f, 15.0f);
 	createBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewCreateButtonClicked, this));
+	createBtn->disable();
 	newCreateWindow->addChild(createBtn);
 
 	auto cancelBtn = Voxel::UI::Button::create("clBtn", ss, "new_cancel_button.png");
@@ -266,6 +276,7 @@ void Voxel::Editor::onNewButtonClicked()
 	editBtn->disable();
 	returnToMainMenuBtn->disable();
 	exitGameBtn->disable();
+	createBtn->disable();
 }
 
 void Voxel::Editor::onNewCreateButtonClicked()
@@ -279,6 +290,25 @@ void Voxel::Editor::onNewCreateButtonClicked()
 	editBtn->enable();
 	returnToMainMenuBtn->enable();
 	exitGameBtn->enable();
+	
+	std::cout << "Create new file: " << newFileName << "\n";
+
+	std::string rawName, ext;
+
+	Utility::String::fileNameToNameAndExt(newFileName, rawName, ext);
+
+	if (rawName == newFileName && ext.empty())
+	{
+		newFileName = rawName + ".schematic";
+	}
+	else if (ext != "schematic")
+	{
+		newFileName = newFileName + ".schematic";
+	}
+
+	std::cout << "Saving to \"" + newFileName + "\"\n";
+
+	newFileNameInputField->setToDefaultText();
 }
 
 void Voxel::Editor::onNewCancelButtonClicked()
@@ -291,6 +321,30 @@ void Voxel::Editor::onNewCancelButtonClicked()
 	editBtn->enable();
 	returnToMainMenuBtn->enable();
 	exitGameBtn->enable();
+
+	newFileName = "";
+
+	newFileNameInputField->setToDefaultText();
+}
+
+void Voxel::Editor::onNewFileNameEdit(const std::string text)
+{
+	if (text.empty() == false)
+	{
+		createBtn->enable();
+	}
+	else
+	{
+		createBtn->disable();
+	}
+
+	newFileName = text;
+}
+
+void Voxel::Editor::onNewFileNameEditSubmitted(const std::string text)
+{
+	newFileName = text;
+	onNewCreateButtonClicked();
 }
 
 void Voxel::Editor::render()

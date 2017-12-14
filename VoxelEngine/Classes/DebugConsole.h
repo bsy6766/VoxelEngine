@@ -120,7 +120,7 @@ namespace Voxel
 		//void updateDrawCallsAndVerticesSize();
 
 		// input field call back
-		void onEditFinished(const std::string& command);
+		void onEditFinished(const std::string command);
 		void onEditCancelled();
 
 #if V_DEBUG && V_DEBUG_UI_TEST
