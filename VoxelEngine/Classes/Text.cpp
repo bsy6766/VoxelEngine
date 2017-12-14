@@ -226,13 +226,22 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			// Advance value is the distance between pen position of each character in horizontal layout
 			// Advance includes bearing x + width + extra space for next character.
 			// We don't have to add extra space for last char because line ends.
-			if (i == (len - 1))
+			// However, if it's white space, add advance
+
+			if (c == ' ')
 			{
-				totalWidth += (glyph->bearingX + glyph->width);
+				totalWidth += glyph->advance;
 			}
 			else
 			{
-				totalWidth += glyph->advance;
+				if (i == (len - 1))
+				{
+					totalWidth += (glyph->bearingX + glyph->width);
+				}
+				else
+				{
+					totalWidth += glyph->advance;
+				}
 			}
 
 			// Find max bearing Y. BearingY is the upper height of character from pen position.
@@ -261,7 +270,7 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 
 		if (line.empty())
 		{
-			line = " ";
+			line = "";
 			// quick hack here. Add whitespace to emptyline to treat as line
 			lineSizes.back().width = 0;
 			lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
@@ -435,7 +444,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 		for (auto& line : split)
 		{
-			if (line != " ")
+			if (line.empty() == false)
 			{
 				//lineVertices.push_back(std::vector<float>());
 				// start x from pen position x

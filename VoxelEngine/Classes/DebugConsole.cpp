@@ -2071,7 +2071,7 @@ void Voxel::DebugConsole::toggleVisibility()
 
 void Voxel::DebugConsole::onFPSUpdate(int fps)
 {
-	fpsNumber->setText("fps: " + std::to_string(fps));
+	//fpsNumber->setText("fps: " + std::to_string(fps));
 }
 
 void Voxel::DebugConsole::update(const float delta)
