@@ -58,10 +58,10 @@ bool Voxel::UI::NinePatchImage::init(SpriteSheet * ss, const std::string & textu
 			
 		*/
 
-		const float x0 = -(bodySize.x * 0.5f);
-		const float x1 = bodySize.x * 0.5f;
-		const float y0 = bodySize.y * 0.5f;
-		const float y1 = -(bodySize.y * 0.5f);
+		const float x0 = -widthHalf + rightPadding;
+		const float x1 = widthHalf - leftPadding;
+		const float y0 = heightHalf - topPadding;
+		const float y1 = -heightHalf + bottomPadding;
 
 		auto& uvOrigin = imageEntry->uvOrigin;
 		auto& uvEnd = imageEntry->uvEnd;

@@ -101,10 +101,12 @@ void Voxel::Editor::init()
 	saveAsBtn->setPosition(0.0f, -92.0f);
 	fileDropDownBg->addChild(saveAsBtn);
 
-	newCreateWindow = Voxel::UI::NinePatchImage::create("ncw", ss, "new_window_bg.png", 8.0f, 8.0f, 28.0f, 33.0f, glm::vec2(154.0f, 10.0f));
+	newCreateWindow = Voxel::UI::NinePatchImage::create("ncw", ss, "new_window_bg.png", 8.0f, 8.0f, 44.0f, 16.0f, glm::vec2(250.0f, 60.0f));
 	newCreateWindow->setPosition(0.0f, 0.0f);
 	newCreateWindow->setVisibility(false);
 	canvas->addChild(newCreateWindow);
+
+	//auto newFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name")
 
 	auto newLabel = Voxel::UI::Text::create("newLabel", "NEW", 1);
 	newLabel->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
@@ -113,13 +115,13 @@ void Voxel::Editor::init()
 
 	auto createBtn = Voxel::UI::Button::create("cBtn", ss, "new_create_button.png");
 	createBtn->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
-	createBtn->setPosition(34.0f, 13.0f);
+	createBtn->setPosition(35.0f, 15.0f);
 	createBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewCreateButtonClicked, this));
 	newCreateWindow->addChild(createBtn);
 
 	auto cancelBtn = Voxel::UI::Button::create("clBtn", ss, "new_cancel_button.png");
 	cancelBtn->setCoordinateOrigin(glm::vec2(0.5f, -0.5f));
-	cancelBtn->setPosition(-34.0f, 13.0f);
+	cancelBtn->setPosition(-35.0f, 15.0f);
 	cancelBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewCancelButtonClicked, this));
 	newCreateWindow->addChild(cancelBtn);
 }
