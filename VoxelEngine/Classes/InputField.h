@@ -4,6 +4,9 @@
 // voxel
 #include "UIBase.h"
 
+// cpp
+#include <functional>
+
 namespace Voxel
 {
 	namespace UI
@@ -46,6 +49,13 @@ namespace Voxel
 			// Cursor.
 			Voxel::UI::Image* cursor;
 
+			// On input field clicked 
+			std::function<void()> onInputFieldClicked;
+			// On text changed
+			std::function<void(const std::string&)> onTextChanged;
+			// on input field finishes
+			std::function<void()> onTextFinished;
+
 			// Initialize
 			bool init(const std::string& defaultText, const int fontId, const std::string& spriteSheetName, const std::string& cursorImageName);
 		public:
@@ -56,18 +66,23 @@ namespace Voxel
 
 			// get default text
 			std::string getDefaultText() const;
-
+			
 			// override 
 			void updateModelMatrix() override;
+			void updateBoundingBox() override;
+
+			// update key input
+			bool updateKeyboardInput(const std::string& str) override;
 
 			// update mouse move
-			virtual bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
+			bool updateMouseMove(const glm::vec2& mousePosition);
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
 
 			// update mouse press
-			virtual bool updateMousePress(const glm::vec2& mousePosition, const int button);
+			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
 
 			// update mouse release 
-			virtual bool updateMouseRelease(const glm::vec2& mousePosition, const int button);
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
 
 			// render input field
 			void render() override;
