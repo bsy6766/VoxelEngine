@@ -197,6 +197,14 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">../Sprites/ui/Editor/edit_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/edit_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/edit_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/edit_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/exit_game_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/exit_game_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/exit_game_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/exit_game_button_idle.png</key>
             <key type="filename">../Sprites/ui/Editor/file_button_clicked.png</key>
             <key type="filename">../Sprites/ui/Editor/file_button_disabled.png</key>
             <key type="filename">../Sprites/ui/Editor/file_button_hovered.png</key>
@@ -213,6 +221,47 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../Sprites/ui/Editor/file_drop_down_bg.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,2,4,4</rect>
+                <key>scale9Paddings</key>
+                <rect>2,2,4,4</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/Editor/file_new_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_new_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_new_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_new_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_open_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_open_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_open_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_open_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_as_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_as_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_as_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_as_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/file_save_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>28,6,56,12</rect>
+                <key>scale9Paddings</key>
+                <rect>28,6,56,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/ui/Editor/menu_bar.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -223,6 +272,55 @@
                 <rect>0,8,1,15</rect>
                 <key>scale9Paddings</key>
                 <rect>0,8,1,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/Editor/new_cancel_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_cancel_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_cancel_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_cancel_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_create_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_create_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_create_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/new_create_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>15,5,30,9</rect>
+                <key>scale9Paddings</key>
+                <rect>15,5,30,9</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/Editor/new_window_bg.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>12,16,24,32</rect>
+                <key>scale9Paddings</key>
+                <rect>12,16,24,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>46,6,91,12</rect>
+                <key>scale9Paddings</key>
+                <rect>46,6,91,12</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

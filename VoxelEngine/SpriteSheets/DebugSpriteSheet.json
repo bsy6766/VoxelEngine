@@ -190,6 +190,15 @@
 	"pivot": {"x":0.5,"y":0.5}
 },
 {
+	"filename": "debug_input_field_cursor.png",
+	"frame": {"x":25,"y":497,"w":2,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":14},
+	"sourceSize": {"w":2,"h":14},
+	"pivot": {"x":0.5,"y":0.5}
+},
+{
 	"filename": "debug_progress_hor.png",
 	"frame": {"x":33,"y":378,"w":92,"h":22},
 	"rotated": false,
@@ -304,6 +313,6 @@
 	"format": "RGBA8888",
 	"size": {"w":512,"h":512},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:009aaae1b7d9a20c8157c4305579b7dc:933ddd6c9f2e2dc4e42c46f1504f9f38:75f08dbd0e9e01137e89ec75be33d055$"
+	"smartupdate": "$TexturePacker:SmartUpdate:e5829338f59daaba1c54324fc7e9c658:ef2b0aaeac61148c0d57bce539818775:75f08dbd0e9e01137e89ec75be33d055$"
 }
 }
