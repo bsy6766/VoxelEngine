@@ -729,7 +729,7 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 		modelMat = getModelMatrix();
 	}
 
-	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	//boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	// Check if this node has children
 	if (hasChildren())
@@ -746,7 +746,7 @@ void Voxel::UI::TransformNode::updateModelMatrix(const glm::mat4 & parentMatrix)
 {
 	modelMat = parentMatrix * getModelMatrix();
 
-	boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	//boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	// Check if this node has children
 	if (hasChildren())
