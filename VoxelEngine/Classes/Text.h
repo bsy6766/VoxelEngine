@@ -76,8 +76,8 @@ namespace Voxel
 			// text size without escpaed keys line new line char
 			unsigned int textSize;
 
-			// line positions. Line positions are relative to center of text. Only stores y value
-			std::vector<float> linePositions;
+			// total lines
+			unsigned int totalLines;
 
 			// character positions. Character posistions are relative to center of each line. Only stores x value for each line
 			std::vector<std::vector<float>> characterPositions;
@@ -191,6 +191,11 @@ namespace Voxel
 			*	Clear text.
 			*/
 			void clear();
+
+			/**
+			*	Get character index from mouse point
+			*/
+			int getCharIndexOnCursor(const glm::vec2& cursorPosition);
 
 			/**
 			*	Render self

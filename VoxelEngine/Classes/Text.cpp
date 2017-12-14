@@ -28,6 +28,7 @@ Voxel::UI::Text::Text(const std::string& name)
 	, uvbo(0)
 	, ibo(0)
 	, textSize(0)
+	, totalLines(0)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
 	, lineIndicesSize(0)
 #endif
@@ -206,6 +207,31 @@ void Voxel::UI::Text::clear()
 #endif
 }
 
+int Voxel::UI::Text::getCharIndexOnCursor(const glm::vec2 & cursorPosition)
+{
+	if (visibility)
+	{
+		// visible
+		if (textSize > 0)
+		{
+			// have atleast 1 char
+			float yStart = boundingBox.center.y + (boundingBox.size.y * 0.5f);
+
+			if (totalLines == 1)
+			{
+				// only have 1 line
+			}
+			else
+			{
+				const int lineSpace = font->getLineSpace();
+				const int outlineSize = font->getOutlineSize();
+			}
+		}
+	}
+
+	return -1;
+}
+
 void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
 {
 	// Iterate per line. Find the maximum width and height
@@ -218,6 +244,11 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 		int maxBotY = 0;
 
 		unsigned int len = line.size();
+
+		totalLines = len;
+
+		characterPositions.push_back(std::vector<float>());
+
 		for (unsigned int i = 0; i < len; i++)
 		{
 			const char c = line[i];
@@ -231,16 +262,19 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			if (c == ' ')
 			{
 				totalWidth += glyph->advance;
+				characterPositions.back().push_back(glyph->advance);
 			}
 			else
 			{
 				if (i == (len - 1))
 				{
 					totalWidth += (glyph->bearingX + glyph->width);
+					characterPositions.back().push_back(glyph->bearingX + glyph->width);
 				}
 				else
 				{
 					totalWidth += glyph->advance;
+					characterPositions.back().push_back(glyph->advance);
 				}
 			}
 
@@ -343,7 +377,8 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		// set texture
 		texture = font->getTexture();
 
-		linePositions.clear();
+		totalLines = 0;
+
 		characterPositions.clear();
 
 		// Step 0 done.
