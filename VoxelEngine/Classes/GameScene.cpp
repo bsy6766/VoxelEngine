@@ -196,10 +196,6 @@ void Voxel::GameScene::initSpriteSheets()
 
 	ssm.addSpriteSheet("UISpriteSheet.json");
 	//ssm.addSpriteSheet("EnvironmentSpriteSheet.json");
-
-#if V_DEBUG
-	ssm.addSpriteSheet("DebugSpriteSheet.json");
-#endif
 }
 
 void Voxel::GameScene::initRandoms()
@@ -299,10 +295,6 @@ void Voxel::GameScene::releaseSpriteSheets()
 
 	ssm.removeSpriteSheetByKey("UISpriteSheet");
 	//ssm.removeSpriteSheetByKey("EnvironmentSpriteSheet");
-
-#if V_DEBUG
-	ssm.removeSpriteSheetByKey("DebugSpriteSheet");
-#endif
 
 	std::cout << "GameScene released spritesheet\n";
 	ssm.print(false);
