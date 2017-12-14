@@ -226,6 +226,8 @@ glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 
 void Voxel::UI::TransformNode::updateBoundingBox()
 {
+	// todo: optimize? Also fix bounding box for rotating object, especially nested uis.
+
 	auto screenPos = glm::vec2(getParentMatrix() * glm::vec4(position, 1.0f, 1.0f));
 	auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
 
@@ -402,20 +404,107 @@ bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel:
 	}
 }
 
-bool Voxel::UI::TransformNode::removeChild(const std::string & name)
+bool Voxel::UI::TransformNode::removeChild(const std::string & name, const bool releaseChild)
 {
-	for (auto& e : children)
+	auto it = children.begin();
+	for (; it != children.end();)
 	{
-		if ((e.second)->name == name)
+		if ((it->second)->getName() == name)
 		{
-			delete (e.second);
-			children.erase(e.first);
+			if (releaseChild)
+			{
+				if (it->second)
+				{
+					delete (it->second);
+				}
+			}
+
+			children.erase(it);
 
 			return true;
 		}
 	}
 
 	return false;
+}
+
+bool Voxel::UI::TransformNode::removeChild(const unsigned int id, const bool releaseChild)
+{
+	auto it = children.begin();
+	for (; it != children.end();)
+	{
+		if ((it->second)->getID() == id)
+		{
+			if (releaseChild)
+			{
+				if (it->second)
+				{
+					delete (it->second);
+				}
+			}
+
+			children.erase(it);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Voxel::UI::TransformNode::removeChild(TransformNode * child, const bool releaseChild)
+{
+	auto zOrder = child->getZOrder();
+
+	auto find_it = children.find(zOrder);
+	if (find_it == children.end())
+	{
+		return removeChild(child->getID());
+	}
+	else
+	{
+		if (releaseChild)
+		{
+			if ((find_it->second))
+			{
+				delete (find_it->second);
+			}
+		}
+
+		children.erase(find_it);
+
+		return true;
+	}
+}
+
+void Voxel::UI::TransformNode::setParent(TransformNode * parent)
+{
+	if (parent)
+	{
+		// set parent
+		if (this->parent)
+		{
+			// parent exists. remove from children
+			this->parent->removeChild(this);
+			// set to nullptr
+			this->parent = nullptr;
+		}
+
+		// add to new parent
+		parent->addChild(this);
+	}
+}
+
+void Voxel::UI::TransformNode::removeParent()
+{
+	// remove parent.
+	if (this->parent)
+	{
+		// parent exists. remove from children
+		this->parent->removeChild(this);
+		// set to nullptr
+		this->parent = nullptr;
+	}
 }
 
 bool Voxel::UI::TransformNode::getNextZOrder(Voxel::ZOrder & curZOrder)
@@ -603,16 +692,12 @@ void Voxel::UI::TransformNode::printChildren(const int tab)
 
 glm::vec2 Voxel::UI::TransformNode::getContentSize() const
 {
-	glm::vec2 scaled = contentSize;
-	scaled.x *= scale.x;
-	scaled.y *= scale.y;
-
-	return scaled;
+	return contentSize;
 }
 
 glm::mat4 Voxel::UI::TransformNode::getParentMatrix() const
 {
-	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * getCoordinateOrigin(), 0.0f));
+	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * scale * getCoordinateOrigin(), 0.0f));
 }
 
 glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
@@ -622,7 +707,7 @@ glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
 
 	if (pivot.x != 0.0f || pivot.y != 0.0f)
 	{
-		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * -1.0f, 0));
+		mat = glm::translate(mat, glm::vec3(pivot * getContentSize() * scale * -1.0f, 0));
 	}
 
 	return mat;

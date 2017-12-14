@@ -148,12 +148,6 @@ namespace Voxel
 			// Action pause. 
 			bool actionPaused;
 
-			// update bounding box center
-			void updateBoundingBox();
-
-			// Get contensize
-			glm::vec2 getContentSize() const;
-
 			// get parent matrix
 			glm::mat4 getParentMatrix() const;
 
@@ -162,6 +156,9 @@ namespace Voxel
 
 			// Updates model matrix based on parent's matrix
 			virtual void updateModelMatrix();
+
+			// update bounding box center
+			virtual void updateBoundingBox();
 		public:
 			// Destructor
 			virtual ~TransformNode();
@@ -263,6 +260,11 @@ namespace Voxel
 			glm::vec2 getCoordinateOrigin() const;
 
 			/**
+			*	Get content size of ui. This is the original size of content without any transformation applied.
+			*/
+			glm::vec2 getContentSize() const;
+
+			/**
 			*	Set bounding box
 			*	@param center Center position of bounding box
 			*	@param size Size of bounding box
@@ -272,7 +274,7 @@ namespace Voxel
 			/**
 			*	Get bounding box.
 			*/
-			Voxel::Shape::Rect getBoundingBox() const;
+			virtual Voxel::Shape::Rect getBoundingBox() const;
 
 			/**
 			*	Set Z order
@@ -336,9 +338,31 @@ namespace Voxel
 			bool addChild(TransformNode* child, ZOrder& zOrder);
 
 			/**
-			*	Remove child by name. For debug purpose
+			*	Remove child by name. Searches the name and remvoes from children.
 			*/
-			bool removeChild(const std::string& name);
+			bool removeChild(const std::string& name, const bool releaseChild = false);
+
+			/**
+			*	Remove child by id. Searches the id and remvoes from children.
+			*/
+			bool removeChild(const unsigned int id, const bool releaseChild = false);
+
+			/**
+			*	Remove child by instance. 
+			*	This attemps to find by z order. If fails, searcehs with id.
+			*/
+			bool removeChild(TransformNode* child, const bool releaseChild = false);
+
+			/**
+			*	Set parent.
+			*	@param parent A parent ui to set. If parent is nullptr, does nothing. To remove parent @see removeParent()
+			*/
+			void setParent(TransformNode* parent);
+
+			/**
+			*	Removes parent and removes itself from parent.
+			*/
+			void removeParent();
 
 			/**
 			*	Get child by name. This isn't efficient way since it uses string key.
