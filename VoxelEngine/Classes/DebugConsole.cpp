@@ -79,16 +79,16 @@ void Voxel::DebugConsole::init()
 	auto resolution = Application::getInstance().getGLView()->getScreenSize();
 	this->settingPtr = &Setting::getInstance();
 
-	commandInputField = UI::Image::createFromSpriteSheet("cmdInputField", "GlobalSpriteSheet", "2x2_black.png");
-	commandInputField->setPivot(glm::vec2(0, -0.5f));
-	commandInputField->setCoordinateOrigin(glm::vec2(0, -0.5f));
-	commandInputField->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
-	commandInputField->setOpacity(0.45f);
-	commandInputField->setVisibility(false);
+	commandInputFieldBg = UI::Image::createFromSpriteSheet("cmdIFBg", "GlobalSpriteSheet", "2x2_black.png");
+	commandInputFieldBg->setPivot(glm::vec2(0, -0.5f));
+	commandInputFieldBg->setCoordinateOrigin(glm::vec2(0, -0.5f));
+	commandInputFieldBg->setScale(glm::vec2(resolution.x * 0.5f, 10.0f));
+	commandInputFieldBg->setOpacity(0.45f);
+	commandInputFieldBg->setVisibility(false);
 
-	debugCanvas->addChild(commandInputField, 0);
+	debugCanvas->addChild(commandInputFieldBg, 0);
 
-	commandHistoryBg = UI::Image::createFromSpriteSheet("cmdHistoryBg", "GlobalSpriteSheet", "2x2_black.png");
+	commandHistoryBg = UI::Image::createFromSpriteSheet("cmdHisBg", "GlobalSpriteSheet", "2x2_black.png");
 	commandHistoryBg->setCoordinateOrigin(glm::vec2(0, -0.5f));
 	commandHistoryBg->setPivot(glm::vec2(0, -0.5f));
 	commandHistoryBg->setScale(glm::vec2(resolution.x * 0.5f, 85.0f));
@@ -97,13 +97,15 @@ void Voxel::DebugConsole::init()
 
 	debugCanvas->addChild(commandHistoryBg, 0);
 
-	command = UI::Text::create("cmd", DefaultCommandInputText, 1);
-	command->setPosition(glm::vec2(5.0f, 15.0f));
-	command->setPivot(glm::vec2(-0.5f, 0.5f));
-	command->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
-	command->setVisibility(false);
+	cmdInputField = Voxel::UI::InputField::create("cmdIF", "Enter command", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
+	cmdInputField->setPosition(glm::vec2(5.0f, 15.0f));
+	cmdInputField->setPivot(glm::vec2(-0.5f, 0.5f));
+	cmdInputField->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
+	cmdInputField->setVisibility(false);
+	cmdInputField->setOnEditFinished(std::bind(&Voxel::DebugConsole::onEditFinished, this, std::placeholders::_1));
+	cmdInputField->setAlign(Voxel::UI::InputField::Align::LEFT);
 
-	debugCanvas->addChild(command, 0);
+	debugCanvas->addChild(cmdInputField, 0);
 
 	commandHistorys = UI::Text::create("cmdHistorys", "", 1);
 	commandHistorys->setPosition(glm::vec2(5.0f, 23.0f));
@@ -639,26 +641,37 @@ void Voxel::DebugConsole::init()
 
 void Voxel::DebugConsole::openConsole()
 {
-	commandInputField->setVisibility(true);
+	commandInputFieldBg->setVisibility(true);
 	commandHistoryBg->setVisibility(true);
-	command->setVisibility(true);
+	cmdInputField->setVisibility(true);
 	commandHistorys->setVisibility(true);
 	openingConsole = true;
 
-	InputHandler::getInstance().setBufferMode(true);
+	InputHandler::getInstance().redirectKeyInputToText(cmdInputField);
+
+	cmdInputField->startEdit();
 }
 
 void Voxel::DebugConsole::closeConsole()
 {
-	commandInputField->setVisibility(false);
+	commandInputFieldBg->setVisibility(false);
 	commandHistoryBg->setVisibility(false);
-	command->setVisibility(false);
-	command->setText(DefaultCommandInputText);
+	cmdInputField->setVisibility(false);
 	commandHistorys->setVisibility(false);
 	openingConsole = false;
 	lastCommandIndex = 0;
 
-	InputHandler::getInstance().setBufferMode(false);
+	InputHandler::getInstance().redirectKeyInputToText(nullptr);
+
+	GameScene* game = Application::getInstance().getDirector()->getCurrentScene<GameScene>();
+
+	if (game)
+	{
+		game->toggleCursorMode(false);
+	}
+
+	cmdInputField->cancelEdit();
+	cmdInputField->setToDefaultText();
 }
 
 bool Voxel::DebugConsole::isConsoleOpened()
@@ -666,11 +679,12 @@ bool Voxel::DebugConsole::isConsoleOpened()
 	return openingConsole;
 }
 
+/*
 void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 {
 	if (!c.empty())
 	{
-		auto curText = command->getText();
+		auto curText = cmdInputField->getText();
 		if (curText == DefaultCommandInputText)
 		{
 			curText = "";
@@ -724,25 +738,6 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 						//std::cout << "Token: " << token << std::endl;
 						if (token == "VOXEL_GLFW_KEY_ENTER")
 						{
-							// execute command
-							std::cout << "Execute command: " << curText << std::endl;
-							bool result = executeCommand(curText);
-							if (result)
-							{
-								std::cout << "Success.\n";
-								updateCommandHistory();
-							}
-							else
-							{
-								std::cout << "Fail.\n";
-							}
-							closeConsole();
-							GameScene* game = Application::getInstance().getDirector()->getCurrentScene<GameScene>();
-							if (game)
-							{
-								game->toggleCursorMode(false);
-							}
-							return;
 						}
 					}
 
@@ -796,9 +791,10 @@ void Voxel::DebugConsole::updateConsoleInputText(const std::string & c)
 		}
 
 
-		command->setText(curText);
+		cmdInputField->setText(curText);
 	}
 }
+*/
 
 bool Voxel::DebugConsole::executeCommand(const std::string & command)
 {
@@ -2100,7 +2096,7 @@ void Voxel::DebugConsole::updateResolution(int width, int height)
 
 	resolutionNumber->setText("resolution: " + std::to_string(width) + ", " + std::to_string(height));
 
-	commandInputField->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 10.0f));
+	commandInputFieldBg->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 10.0f));
 	commandHistoryBg->setScale(glm::vec2(static_cast<float>(width) * 0.5f, 100.0f));
 }
 
@@ -2200,6 +2196,33 @@ void Voxel::DebugConsole::updateBiome(const std::string & biomeType, const std::
 void Voxel::DebugConsole::updateRegion(const unsigned int regionID)
 {
 	this->regionID->setText("region: " + std::to_string(regionID));
+}
+
+void Voxel::DebugConsole::onEditFinished(const std::string & command)
+{
+	// execute command
+	std::cout << "Execute command: " << command << std::endl;
+
+	bool result = executeCommand(command);
+
+	if (result)
+	{
+		std::cout << "Success.\n";
+		updateCommandHistory();
+	}
+	else
+	{
+		std::cout << "Fail.\n";
+	}
+
+	closeConsole();
+
+	return;
+}
+
+void Voxel::DebugConsole::onEditCancelled()
+{
+	closeConsole();
 }
 
 /*

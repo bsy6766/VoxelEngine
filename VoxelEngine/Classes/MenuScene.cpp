@@ -151,6 +151,27 @@ void Voxel::MenuScene::updateKeyboardInput()
 		Application::getInstance().getGLView()->close();
 		return;
 	}
+
+	if (input->getKeyDown(GLFW_KEY_T, true))
+	{
+		if (inputField)
+		{
+			inputField->setAlign(Voxel::UI::InputField::Align::CENTER);
+		}
+		else
+		{
+			inputField = Voxel::UI::InputField::create("if", "enter text here...", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
+			canvas->addChild(inputField);
+		}
+	}
+	else if (input->getKeyDown(GLFW_KEY_R, true))
+	{
+		inputField->setAlign(Voxel::UI::InputField::Align::LEFT);
+	}
+	else if (input->getKeyDown(GLFW_KEY_Y, true))
+	{
+		inputField->setAlign(Voxel::UI::InputField::Align::RIGHT);
+	}
 }
 
 void Voxel::MenuScene::updateMouseMoveInput()
@@ -207,21 +228,6 @@ void Voxel::MenuScene::updateMouseClickInput()
 	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
 	{
 		canvas->updateMouseRelease(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
-	}
-	
-	if (input->getKeyDown(GLFW_KEY_T, true))
-	{
-		auto inputField = Voxel::UI::InputField::create("if", "enter text here...", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
-		canvas->addChild(inputField);
-	}
-	else if (input->getKeyDown(GLFW_KEY_R, true))
-	{
-		buttons.at(0)->stopAllActions();
-	}
-	else if (input->getKeyDown(GLFW_KEY_Y, true))
-	{
-		auto blinkSeq = Voxel::UI::Repeat::create(Voxel::UI::Sequence::create({ Voxel::UI::Visibility::create(0.0f, true), Voxel::UI::Visibility::create(0.5f, false), Voxel::UI::Delay::create(0.5f)}), 2);
-		buttons.at(0)->runAction(blinkSeq);
 	}
 }
 

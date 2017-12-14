@@ -186,12 +186,14 @@ namespace Voxel
 			*	@param y y position in screen space
 			*/
 			void setPosition(const float x, const float y);
+			void setPosition(const float x, const float y, const bool updateModelMatirx);
 
 			/**
 			*	Set position
 			*	@param position New position to set.
 			*/
 			void setPosition(const glm::vec2& position);
+			void setPosition(const glm::vec2& position, const bool updateModelMatirx);
 
 			/**
 			*	Add position

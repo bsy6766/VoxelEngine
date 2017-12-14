@@ -10,9 +10,14 @@ Voxel::UI::InputField::InputField(const std::string& name)
 	, text(nullptr)
 	, cursor(nullptr)
 	, state(State::IDLE)
-	, onInputFieldClicked(nullptr)
-	, onTextChanged(nullptr)
-	, onTextFinished(nullptr)
+	, onEditStart(nullptr)
+	, onEdit(nullptr)
+	, onEditFinished(nullptr)
+	, onEditCancelled(nullptr)
+	, align(Align::CENTER)
+	, prevText("")
+	, input(&InputHandler::getInstance())
+	, textDefaultMode(true)
 {}
 
 Voxel::UI::InputField::~InputField()
@@ -47,13 +52,88 @@ bool Voxel::UI::InputField::init(const std::string & defaultText, const int font
 	}
 
 	cursor->setVisibility(false);
-	auto blinkSeq = Voxel::UI::RepeatForever::create(Voxel::UI::Sequence::create({ Voxel::UI::Visibility::create(0.0f, true), Voxel::UI::Visibility::create(0.5f, false), Voxel::UI::Delay::create(0.5f) }));
+	auto blinkSeq = Voxel::UI::RepeatForever::create(Voxel::UI::Sequence::create({ Voxel::UI::Visibility::create(0.0f, true), Voxel::UI::Visibility::create(0.4f, false), Voxel::UI::Delay::create(0.4f) }));
 	cursor->runAction(blinkSeq);
 	cursor->pauseAction();
 
 	setInteractable();
 
 	return true;
+}
+
+void Voxel::UI::InputField::updateTextPosition()
+{
+	auto textBB = text->getBoundingBox();
+
+	switch (align)
+	{
+	case Voxel::UI::InputField::Align::LEFT:
+	{
+		text->setPosition(textBB.size.x * 0.5f, 0.0f, false);
+	}
+		break;
+	case Voxel::UI::InputField::Align::CENTER:
+	{
+		text->setPosition(0.0f, 0.0f, false);
+	}
+		break;
+	case Voxel::UI::InputField::Align::RIGHT:
+	{
+		text->setPosition(textBB.size.x * 0.5f * -1.0f, 0.0f, false);
+	}
+		break;
+	default:
+		return;
+		break;
+	}
+
+	text->updateModelMatrix(modelMat);
+	text->updateBoundingBox(modelMat);
+}
+
+void Voxel::UI::InputField::updateCursorPosition()
+{
+	auto textBB = text->getBoundingBox();
+
+	switch (align)
+	{
+	case Voxel::UI::InputField::Align::LEFT:
+	{
+		cursor->setPosition(textBB.size.x + 1.0f, 0.0f, false);
+	}
+		break;
+	case Voxel::UI::InputField::Align::CENTER:
+	{
+		cursor->setPosition(textBB.size.x * 0.5f, 0.0f, false);
+	}
+		break;
+	case Voxel::UI::InputField::Align::RIGHT:
+	{
+		cursor->setPosition(0.0f, 0.0f, false);
+	}
+		break;
+	default:
+		return;
+		break;
+	}
+
+	cursor->updateModelMatrix(modelMat);
+	cursor->updateBoundingBox(modelMat);
+}
+
+void Voxel::UI::InputField::modifyText(const std::string & text)
+{
+	this->text->setText(text);
+	this->text->updateModelMatrix(modelMat);
+	this->updateBoundingBox();
+
+	updateTextPosition();
+	updateCursorPosition();
+
+	if (onEdit)
+	{
+		onEdit(text);
+	}
 }
 
 Voxel::UI::InputField * Voxel::UI::InputField::create(const std::string & name, const std::string & defaultText, const std::string& spriteSheetName, const int fontId, const std::string & cursorImageName)
@@ -81,6 +161,34 @@ std::string Voxel::UI::InputField::getDefaultText() const
 	return defaultText;
 }
 
+void Voxel::UI::InputField::setAlign(const Voxel::UI::InputField::Align align)
+{
+	this->align = align;
+
+	updateTextPosition();
+	updateCursorPosition();
+}
+
+void Voxel::UI::InputField::setOnEditStartCallback(const std::function<void()>& func)
+{
+	onEditStart = func;
+}
+
+void Voxel::UI::InputField::setOnEditCallback(const std::function<void(const std::string&)>& func)
+{
+	onEdit = func;
+}
+
+void Voxel::UI::InputField::setOnEditFinished(const std::function<void(const std::string&)>& func)
+{
+	onEditFinished = func;
+}
+
+void Voxel::UI::InputField::setOnEditCancelled(const std::function<void()>& func)
+{
+	onEditCancelled = func;
+}
+
 void Voxel::UI::InputField::updateModelMatrix()
 {
 	// Unlike other ui, inputfield is a class that wraps text and image together.
@@ -106,47 +214,16 @@ void Voxel::UI::InputField::updateBoundingBox()
 	Voxel::UI::TransformNode::updateBoundingBox();
 }
 
-bool Voxel::UI::InputField::updateKeyboardInput(const std::string & str)
+void Voxel::UI::InputField::update(const float delta)
 {
-	if (!str.empty())
+	if (text)
 	{
-		std::string strCpy = str;
-
-		while (strCpy.empty() == false)
-		{
-			auto size = strCpy.size();
-
-			if (size >= 20)
-			{
-				std::string token = strCpy.substr(0, 21);
-
-				if (token == "VOXEL_GLFW_KEY_ENTER")
-				{
-					// end input
-					state = State::IDLE;
-
-					cursor->restartAllActions();
-					cursor->pauseAction();
-
-					if (onTextFinished)
-					{
-						onTextFinished();
-					}
-
-					return true;
-				}
-			}
-			
-			auto curText = text->getText();
-			curText += strCpy.substr(0, 1);
-			strCpy = strCpy.substr(1);
-		}
-
-		return true;
+		text->update(delta);
 	}
-	else
+	
+	if (cursor)
 	{
-		return false;
+		cursor->update(delta);
 	}
 }
 
@@ -161,6 +238,7 @@ bool Voxel::UI::InputField::updateMouseMove(const glm::vec2 & mousePosition)
 				if (state == State::IDLE)
 				{
 					state = State::HOVERED;
+					std::cout << "Hovering\n";
 				}
 
 				return true;
@@ -170,6 +248,7 @@ bool Voxel::UI::InputField::updateMouseMove(const glm::vec2 & mousePosition)
 				if (state == State::HOVERED || state == State::CLICKED)
 				{
 					state = State::IDLE;
+					std::cout << "Idle\n";
 				}
 			}
 		}
@@ -245,8 +324,9 @@ bool Voxel::UI::InputField::updateMousePress(const glm::vec2 & mousePosition, co
 					{
 						state = State::CLICKED;
 						pressed = true;
+						std::cout << "Clicked\n";
 					}
-					else if (state == State::MODIFYING)
+					else if (state == State::EDITTING)
 					{
 						// todo: change cursor position.
 					}
@@ -254,13 +334,9 @@ bool Voxel::UI::InputField::updateMousePress(const glm::vec2 & mousePosition, co
 				else
 				{
 					// didn't pressed text
-					if (state == State::MODIFYING)
+					if (state == State::EDITTING)
 					{
-						// finish modifying
-						state = State::IDLE;
-
-						cursor->restartAllActions();
-						cursor->pauseAction();
+						finishEdit();
 					}
 				}
 			}
@@ -297,22 +373,12 @@ bool Voxel::UI::InputField::updateMouseRelease(const glm::vec2 & mousePosition, 
 					// mouse is in bounding box
 					if (state == State::CLICKED)
 					{
-						// start text input
-						state = State::MODIFYING;
-
-						cursor->resumeAction();
-
-						InputHandler::getInstance().setBufferMode(true);
-
-						released = true;
-
-						// button clicked!
-						if (onInputFieldClicked)
-						{
-							onInputFieldClicked();
-						}
+						std::cout << "Released\n";
+						startEdit();
 					}
 					// else, disabled or not hovering
+
+					released = true;
 				}
 			}
 		}
@@ -331,6 +397,143 @@ bool Voxel::UI::InputField::updateMouseRelease(const glm::vec2 & mousePosition, 
 	}
 }
 
+void Voxel::UI::InputField::startEdit()
+{
+	if (state != State::EDITTING)
+	{
+		std::cout << "Starts editing\n";
+
+		// start text input
+		state = State::EDITTING;
+
+		prevText = text->getText();
+
+		cursor->resumeAction();
+
+		InputHandler::getInstance().redirectKeyInputToText(this);
+
+		if (text->getText() == defaultText)
+		{
+			if (textDefaultMode)
+			{
+				modifyText("");
+				textDefaultMode = false;
+			}
+		}
+
+		if (onEditStart)
+		{
+			onEditStart();
+		}
+	}
+}
+
+void Voxel::UI::InputField::finishEdit()
+{
+	if (state == State::EDITTING)
+	{
+		std::cout << "Finishes editing\n";
+
+		// finish modifying
+		state = State::IDLE;
+
+		cursor->restartAllActions();
+		cursor->pauseAction();
+
+		InputHandler::getInstance().redirectKeyInputToText(nullptr);
+
+		if (text->getText().empty())
+		{
+			modifyText(defaultText);
+			textDefaultMode = true;
+		}
+
+		if (onEditFinished)
+		{
+			onEditFinished(text->getText());
+		}
+	}
+}
+
+void Voxel::UI::InputField::cancelEdit()
+{
+	std::cout << "Cancelled editing\n";
+
+	// finish modifying
+	state = State::IDLE;
+
+	cursor->restartAllActions();
+	cursor->pauseAction();
+
+	InputHandler::getInstance().redirectKeyInputToText(nullptr);
+
+	modifyText(prevText);
+
+	if (onEditCancelled)
+	{
+		onEditCancelled();
+	}
+}
+
+void Voxel::UI::InputField::appendStr(const std::string & str)
+{
+	auto curText = text->getText();
+
+	if (curText == defaultText)
+	{
+		if (textDefaultMode)
+		{
+			modifyText(str);
+		}
+		else
+		{
+			modifyText(curText + str);
+		}
+	}
+	else
+	{
+		modifyText(curText + str);
+	}
+}
+
+void Voxel::UI::InputField::removeLastCharacter()
+{
+	auto curText = text->getText();
+	
+	if (curText == defaultText)
+	{
+		if (textDefaultMode)
+		{
+			modifyText("");
+			textDefaultMode = false;
+			return;
+		}
+	}
+
+
+	auto curSize = curText.size();
+	if (curSize == 0)
+	{
+		// do nothing
+	}
+	else if (curSize == 1)
+	{
+		curText = "";
+	}
+	else
+	{
+		curText = curText.substr(0, curSize - 1);
+	}
+
+	modifyText(curText);
+}
+
+void Voxel::UI::InputField::setToDefaultText()
+{
+	modifyText(defaultText);
+	textDefaultMode = true;
+}
+
 void Voxel::UI::InputField::render()
 {
 	if (children.empty())
@@ -338,8 +541,15 @@ void Voxel::UI::InputField::render()
 		if (visibility)
 		{
 			// Render self
-			text->renderSelf();
-			cursor->renderSelf();
+			if (text)
+			{
+				text->renderSelf();
+			}
+
+			if (state == State::EDITTING && cursor && cursor->getVisibility())
+			{
+				cursor->renderSelf();
+			}
 		}
 	}
 	else
@@ -360,8 +570,15 @@ void Voxel::UI::InputField::render()
 			// else, doesn't have negative ordered children
 
 			// Render self
-			text->renderSelf();
-			cursor->renderSelf();
+			if (text)
+			{
+				text->renderSelf();
+			}
+
+			if (state == State::EDITTING && cursor && cursor->getVisibility())
+			{
+				cursor->renderSelf();
+			}
 
 			// Render positive 
 			for (; children_it != children.end(); children_it++)

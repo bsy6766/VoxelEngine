@@ -1,7 +1,6 @@
 #ifndef INPUT_HANDLER_H
 #define INPUT_HANDLER_H
 
-
 // cpp
 #include <unordered_map>
 #include <unordered_map>
@@ -16,6 +15,11 @@
 
 namespace Voxel
 {
+	namespace UI
+	{
+		class InputField;
+	}
+
 	/**
 	*	@class InputHandler
 	*	@brief Manages input received from GLFW. Used as singleton
@@ -42,6 +46,7 @@ namespace Voxel
 	protected:
 		// Constructor
 		InputHandler();
+
 		// Destructor
 		~InputHandler();
 
@@ -70,10 +75,9 @@ namespace Voxel
 
 		// glfw modifier bit. 
 		int mods;
-
-		// input buffer. For debug console
-		bool bufferEnabled;
-		std::string buffer;
+		
+		// input field. Only one at a time can swallow all the input.
+		Voxel::UI::InputField* inputField;
 
 		// Controller
 		ControllerManager* controllerManager;
@@ -203,9 +207,10 @@ namespace Voxel
 
 		void setCursorToCenter();
 
-		void setBufferMode(const float enabled);
-		std::string getBuffer();
-		std::string glfwKeyToString(const int key, const int mod);
+		std::string glfwKeyToString(const int key, const int mod) const;
+
+		void redirectKeyInputToText(Voxel::UI::InputField* inputField);
+		void updateInputFieldText(const int key, const int mod);
 	};
 }
 

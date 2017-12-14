@@ -125,9 +125,22 @@ void Voxel::UI::TransformNode::setPosition(const float x, const float y)
 	needToUpdateModelMat = true;
 }
 
+void Voxel::UI::TransformNode::setPosition(const float x, const float y, const bool updateModelMatirx)
+{
+	position.x = x;
+	position.y = y;
+
+	needToUpdateModelMat = updateModelMatirx;
+}
+
 void Voxel::UI::TransformNode::setPosition(const glm::vec2 & position)
 {
 	setPosition(position.x, position.y);
+}
+
+void Voxel::UI::TransformNode::setPosition(const glm::vec2 & position, const bool updateModelMatirx)
+{
+	setPosition(position.x, position.y, updateModelMatirx);
 }
 
 void Voxel::UI::TransformNode::addPosition(const glm::vec2 & delta)
@@ -226,7 +239,10 @@ glm::vec2 Voxel::UI::TransformNode::getCoordinateOrigin() const
 
 void Voxel::UI::TransformNode::updateBoundingBox()
 {
-	updateBoundingBox(getParentMatrix());
+	if (parent)
+	{
+		updateBoundingBox(getParentMatrix());
+	}
 }
 
 void Voxel::UI::TransformNode::updateBoundingBox(const glm::mat4 & parentMatrix)
@@ -702,7 +718,14 @@ glm::vec2 Voxel::UI::TransformNode::getContentSize() const
 
 glm::mat4 Voxel::UI::TransformNode::getParentMatrix() const
 {
-	return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * parent->getScale() * getCoordinateOrigin(), 0.0f));
+	if (parent)
+	{
+		return parent->modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(parent->getContentSize() * parent->getScale() * getCoordinateOrigin(), 0.0f));
+	}
+	else
+	{
+		return glm::mat4(1.0f);
+	}
 }
 
 glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
@@ -779,8 +802,6 @@ void Voxel::UI::TransformNode::update(const float delta)
 					++it;
 				}
 			}
-
-			needToUpdateModelMat = true;
 		}
 	}
 

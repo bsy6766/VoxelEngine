@@ -6,6 +6,7 @@
 
 // voxel
 #include "Setting.h"
+#include "InputField.h"
 
 using namespace Voxel;
 
@@ -14,8 +15,8 @@ InputHandler::InputHandler()
 	, curMousePos(0.0f)
 	, prevMousePos(0.0f)
 	, mods(0)
-	, bufferEnabled(false)
 	, mouseScrollValue(0)
+	, inputField(nullptr)
 {
 	// Initialize default key map
 	defaultKeyBindMap =
@@ -67,24 +68,9 @@ void InputHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, in
 {
 	//std::cout << "key = " << key << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
 
-	auto& instance = InputHandler::getInstance();
-	instance.updateKeyboard(key, action, mods);
+	// Not buffer mode. update key states
+	InputHandler::getInstance().updateKeyboard(key, action, mods);
 	//std::cout << "char = " << InputHandler::getInstance().glfwKeyToString(key, mods) << std::endl;
-
-	if (action == GLFW_PRESS)
-	{
-		if (instance.bufferEnabled)
-		{
-			instance.buffer += instance.glfwKeyToString(key, mods);
-		}
-	}
-	else if (action == GLFW_REPEAT)
-	{
-		if (instance.bufferEnabled)
-		{
-			instance.buffer += instance.glfwKeyToString(key, mods);
-		}
-	}
 }
 
 void InputHandler::glfwCursorPosCallback(GLFWwindow* window, double x, double y)
@@ -175,30 +161,44 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 {
-	if (action == GLFW_PRESS)
+	if (inputField)
 	{
-		keyMap[key] = GLFW_PRESS;
-		keyTickMap[key] = GLFW_PRESS;
-	}
-	else if (action == GLFW_RELEASE)
-	{
-		keyMap[key] = GLFW_RELEASE;
-		keyTickMap[key] = GLFW_RELEASE;
-	}
-	/*
-	else if (action == GLFW_REPEAT)
-	{
-		keyMap[key] = GLFW_REPEAT;
-		keyTickMap[key] = GLFW_REPEAT;
+		// feed input field
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			updateInputFieldText(key, mods);
+		}
 	}
 	else
 	{
-		keyMap[key] = -1;
-		keyTickMap[key] = -1;
+		// update key state
+		if (action == GLFW_PRESS)
+		{
+			keyMap[key] = GLFW_PRESS;
+			keyTickMap[key] = GLFW_PRESS;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			keyMap[key] = GLFW_RELEASE;
+			keyTickMap[key] = GLFW_RELEASE;
+		}
+
+		/*
+		else if (action == GLFW_REPEAT)
+		{
+			keyMap[key] = GLFW_REPEAT;
+			keyTickMap[key] = GLFW_REPEAT;
+		}
+		else
+		{
+			keyMap[key] = -1;
+			keyTickMap[key] = -1;
+		}
+		*/
+
+		this->mods = mods;
+		//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 	}
-	*/
-	this->mods = mods;
-	//std::cout << "Key update. key = " << key << ", action = " << action << ", mods = " << mods << std::endl;
 }
 
 glm::vec2 Voxel::InputHandler::getMousePosition() const
@@ -431,41 +431,10 @@ void Voxel::InputHandler::setCursorToCenter()
 	Application::getInstance().getGLView()->setCursorPos(0, 0);
 }
 
-void Voxel::InputHandler::setBufferMode(const float enabled)
+std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod) const
 {
-	bufferEnabled = enabled;
-
-	if (!enabled)
+	if (key >= 65 && key <= 90)
 	{
-		this->buffer.clear();
-	}
-}
-
-std::string Voxel::InputHandler::getBuffer()
-{
-	std::string copy = buffer;
-	buffer.clear();
-	return copy;
-}
-
-std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
-{
-	// Backspace
-	if (key == GLFW_KEY_BACKSPACE)
-	{
-		return "VOXEL_GLFW_KEY_BACKSPACE";
-	}
-	else if (key == GLFW_KEY_ENTER)
-	{
-		return "VOXEL_GLFW_KEY_ENTER";
-	}
-	else if (key == GLFW_KEY_UP)
-	{
-		return "VOXEL_GLFW_KEY_UP";
-	}
-	else if (key >= 65 && key <= 90)
-	{
-		// GLFW key is same as ascii. However, it doesn't support shifted keys.
 		// Alphabet
 		if (mod & GLFW_MOD_SHIFT)
 		{
@@ -474,40 +443,37 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 		}
 		else
 		{
-			// lower case
+			// lower case. lower cases are 32 higher than uppper cases
 			return std::string(1, static_cast<char>(key + 32));
 		}
 	}
 	else if (key == GLFW_KEY_SPACE)
 	{
-		// whitespace
+		// whitespace. 
 		return " ";
 	}
-	else if (key == GLFW_KEY_PERIOD)
+	else if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9)
 	{
-		return ".";
-	}
-	else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
-	{
+		// numbers
 		if (mod & GLFW_MOD_SHIFT)
 		{
 			// shift + number
 			switch (key)
 			{
 			case GLFW_KEY_0:
-				// 0
+				// 0. 48 -> 41
 				return ")";
 				break;
 			case GLFW_KEY_1:
-				// 1
+				// 1. 49 -> 33
 				return "!";
 				break;
 			case GLFW_KEY_2:
-				// 2
+				// 2. 50 -> 64
 				return "@";
 				break;
 			case GLFW_KEY_3:
-				// 3
+				// 3. 51 -> 35
 				return "#";
 				break;
 			case GLFW_KEY_4:
@@ -545,9 +511,71 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 			return std::string(1, static_cast<char>(key));
 		}
 	}
+	else if (key == GLFW_KEY_GRAVE_ACCENT)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "~";
+		}
+		else
+		{
+			return "`";
+		}
+	}
+	else if (key == GLFW_KEY_PERIOD)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return ">";
+		}
+		else
+		{
+			return ".";
+		}
+	}
 	else if (key == GLFW_KEY_MINUS)
 	{
-		return "-";
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "_";
+		}
+		else
+		{
+			return "-";
+		}
+	}
+	else if (key == GLFW_KEY_EQUAL)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "+";
+		}
+		else
+		{
+			return "=";
+		}
+	}
+	else if (key == GLFW_KEY_SLASH)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "?";
+		}
+		else
+		{
+			return "/";
+		}
+	}
+	else if (key == GLFW_KEY_COMMA)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "<";
+		}
+		else
+		{
+			return ",";
+		}
 	}
 	else if (key == GLFW_KEY_SEMICOLON)
 	{
@@ -560,8 +588,80 @@ std::string Voxel::InputHandler::glfwKeyToString(const int key, const int mod)
 			return ";";
 		}
 	}
+	else if (key == GLFW_KEY_APOSTROPHE)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "\"";
+		}
+		else
+		{
+			return "'";
+		}
+	}
+	else if (key == GLFW_KEY_LEFT_BRACKET)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "{";
+		}
+		else
+		{
+			return "[";
+		}
+	}
+	else if (key == GLFW_KEY_RIGHT_BRACKET)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "}";
+		}
+		else
+		{
+			return "]";
+		}
+	}
+	else if (key == GLFW_KEY_BACKSLASH)
+	{
+		if (mod & GLFW_MOD_SHIFT)
+		{
+			return "|";
+		}
+		else
+		{
+			return "\\";
+		}
+	}
 
 	return "";
+}
+
+void Voxel::InputHandler::redirectKeyInputToText(Voxel::UI::InputField * inputField)
+{
+	this->inputField = inputField;
+}
+
+void Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
+{
+	if (inputField)
+	{
+		if (key == GLFW_KEY_BACKSPACE)
+		{
+			inputField->removeLastCharacter();
+		}
+		else if (key == GLFW_KEY_ENTER)
+		{
+			inputField->finishEdit();
+		}
+		else if (key == GLFW_KEY_ESCAPE)
+		{
+			inputField->cancelEdit();
+		}
+		else
+		{
+			inputField->appendStr(glfwKeyToString(key, mod));
+		}
+	}
 }
 
 float Voxel::InputHandler::getAxisValue(IO::XBOX_360::AXIS axis)

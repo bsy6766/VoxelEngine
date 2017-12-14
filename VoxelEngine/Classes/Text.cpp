@@ -114,6 +114,8 @@ void Voxel::UI::Text::setText(const std::string & text)
 		// It's empty. Clear the text.
 		//clear();
 		this->text = text;
+		this->contentSize.x = 0.0f;
+		this->boundingBox.size.x = 0.0f;
 	}
 	else
 	{
@@ -209,6 +211,7 @@ void Voxel::UI::Text::clear()
 
 int Voxel::UI::Text::getCharIndexOnCursor(const glm::vec2 & cursorPosition)
 {
+	// todo: Implement this. For now, doesn't really need it. It's good to have to make inputfield more functional, but it's really an option to have. No big deal.
 	if (visibility)
 	{
 		// visible
@@ -235,6 +238,8 @@ int Voxel::UI::Text::getCharIndexOnCursor(const glm::vec2 & cursorPosition)
 void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
 {
 	// Iterate per line. Find the maximum width and height
+	totalLines = lines.size();
+
 	for (auto& line : lines)
 	{
 		lineSizes.push_back(LineSize());
@@ -244,8 +249,6 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 		int maxBotY = 0;
 
 		unsigned int len = line.size();
-
-		totalLines = len;
 
 		characterPositions.push_back(std::vector<float>());
 
@@ -262,19 +265,19 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			if (c == ' ')
 			{
 				totalWidth += glyph->advance;
-				characterPositions.back().push_back(glyph->advance);
+				characterPositions.back().push_back(static_cast<float>(glyph->advance));
 			}
 			else
 			{
 				if (i == (len - 1))
 				{
 					totalWidth += (glyph->bearingX + glyph->width);
-					characterPositions.back().push_back(glyph->bearingX + glyph->width);
+					characterPositions.back().push_back(static_cast<float>(glyph->bearingX + glyph->width));
 				}
 				else
 				{
 					totalWidth += glyph->advance;
-					characterPositions.back().push_back(glyph->advance);
+					characterPositions.back().push_back(static_cast<float>(glyph->advance));
 				}
 			}
 

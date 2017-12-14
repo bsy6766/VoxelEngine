@@ -46,6 +46,7 @@ namespace Voxel
 		
 		// temp
 		Voxel::UI::Image* bg;
+		Voxel::UI::InputField* inputField = nullptr;
 
 		/**
 		*	Updates keyboard input. May interupt and skip update during debug mode.

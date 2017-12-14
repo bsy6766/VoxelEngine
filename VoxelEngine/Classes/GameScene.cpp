@@ -746,13 +746,6 @@ void Voxel::GameScene::updateKeyboardInput(const float delta)
 		// end key update
 		return;
 	}
-
-	if (debugConsole->isConsoleOpened())
-	{
-		// While console is opened, block all input in world
-		debugConsole->updateConsoleInputText(input->getBuffer());
-		return;
-	}
 #endif
 	// If reach here, console is not enabled or nothing to do with debug console
 

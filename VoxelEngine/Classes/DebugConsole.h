@@ -67,9 +67,9 @@ namespace Voxel
 		UI::Text* worldMapRegionID;
 		UI::Text* worldMapRegionSitePos;
 		
-		UI::Image* commandInputField;
+		UI::Image* commandInputFieldBg;
 		UI::Image* commandHistoryBg;
-		UI::Text* command;
+		UI::InputField* cmdInputField;
 		UI::Text* commandHistorys;
 
 		std::list<std::string> executedCommandHistory;
@@ -96,9 +96,7 @@ namespace Voxel
 		void closeConsole();
 
 		bool isConsoleOpened();
-
-		void updateConsoleInputText(const std::string& c);
-
+		
 		void render();
 
 		void toggleVisibility();
@@ -120,6 +118,10 @@ namespace Voxel
 		void updateRegion(const unsigned int regionID);
 		
 		//void updateDrawCallsAndVerticesSize();
+
+		// input field call back
+		void onEditFinished(const std::string& command);
+		void onEditCancelled();
 
 #if V_DEBUG && V_DEBUG_UI_TEST
 		Voxel::UI::Image* testImage;
