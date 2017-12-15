@@ -253,6 +253,9 @@ namespace Voxel
 		// Set window's floating. For debug
 		void setWindowFloating(const bool mode);
 
+		// Set window minimized
+		void setWindowMinimized();
+
 		// Get screen size (resolution)
 		glm::ivec2 getScreenSize();
 

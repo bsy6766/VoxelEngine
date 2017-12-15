@@ -59,6 +59,8 @@ namespace Voxel
 
 #if V_DEBUG && V_DEBUG_LOG_CONSOLE
 		void consoleInfo(const std::string& log);
+		void consoleWarn(const std::string& log);
+		void consoleError(const std::string& log);
 #endif
 	};
 }

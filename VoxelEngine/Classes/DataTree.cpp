@@ -7,6 +7,7 @@
 #include <iostream>
 
 // voxel
+#include "Config.h"
 #include "Logger.h"
 
 using namespace Voxel;
@@ -77,7 +78,7 @@ DataTree* DataTree::create(const std::string& fileName)
 	}
 	else
 	{
-#if _DEBUG
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
 		auto logger = &Voxel::Logger::getInstance();
 		logger->consoleInfo("[DataTree] Failed to open file \"" + fileName + "\"");
 		logger->consoleInfo("[DataTree] Creating new one.");

@@ -2,6 +2,7 @@
 
 // voxel
 #include "Font.h"
+#include "Logger.h"
 
 // cpp
 #include <iostream>
@@ -39,13 +40,23 @@ int FontManager::addFont(const std::string& fontName, const int fontSize, int ou
 	{
 		FontManager::idCounter++;
 		fonts.emplace(FontManager::idCounter, newFont);
-		std::cout << "[FontManager] Adding new font \"" + fontName + "\" with size: " << fontSize << std::endl;
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleInfo("[FontManager] Added font " + fontName + "\" with size: " + std::to_string(fontSize));
+#endif
 		return FontManager::idCounter;
 	}
 	else
 	{
 		delete newFont;
 		newFont = nullptr;
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleError("[FontManager] Failed to add" + fontName + "\" with size: " + std::to_string(fontSize));
+#endif
+
 		return -1;
 	}
 }

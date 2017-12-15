@@ -12,10 +12,9 @@
 #include "Camera.h"
 #include "Logger.h"
 #include "Setting.h"
+#include "ErrorCode.h"
 
 using namespace Voxel;
-using std::cout;
-using std::endl;
 
 std::function<void(int)> GLView::onFPSCounted = nullptr;
 
@@ -105,8 +104,8 @@ void Voxel::GLView::initGLFW()
 {
 	if (glfwInit() != GL_TRUE)
 	{
-		// GLFW failed to initailize.
-		throw std::runtime_error("[GLView] Error. Failed to initialize GLFW");
+		// GLFW failed to initailize. Error code: FAILED_TO_INITIALIZE_GLFW
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_INITIALIZE_GLFW));
 	}
 	else
 	{
@@ -114,7 +113,7 @@ void Voxel::GLView::initGLFW()
 		int versionMajor, versionMinor, versionRev;
 		glfwGetVersion(&versionMajor, &versionMinor, &versionRev);
 
-#if _DEBUG
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
 		auto logger = &Voxel::Logger::getInstance();
 		logger->consoleInfo("[GLView] Intialized GLFW.");
 		logger->consoleInfo("[GLView] GLFW version " + std::to_string(versionMajor) + "." + std::to_string(versionMinor) + "." + std::to_string(versionRev));
@@ -153,12 +152,15 @@ void Voxel::GLView::initMonitorData()
 			int vCount = 0;
 			auto videoModes = glfwGetVideoModes(monitor, &vCount);
 
-			for (int j = 0; j < vCount; j++)
+			if (videoModes)
 			{
-				if (videoModes[j].refreshRate == 60)
+				for (int j = 0; j < vCount; j++)
 				{
-					// add only with 60 refresh rate
-					monitors.back().videoModes.push_back(VideoMode(videoModes[j]));
+					if (videoModes[j].refreshRate == 60)
+					{
+						// add only with 60 refresh rate
+						monitors.back().videoModes.push_back(VideoMode(videoModes[j]));
+					}
 				}
 			}
 		}
@@ -186,7 +188,8 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	//set to OpenGL 4.3
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
 	//Set the color info
@@ -240,8 +243,11 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 
 	if (!window)
 	{
+		// Failed to create window.
+		// Terminate
 		glfwTerminate();
-		throw std::runtime_error("GLFW failed to create window");
+		// Error code: FAILED_TO_CREATE_GLFW_WINDOW
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_CREATE_GLFW_WINDOW));
 	}
 
 	// if window successfully made, make it current window
@@ -296,9 +302,11 @@ void Voxel::GLView::initGLEW()
 	GLenum err = glewInit();
 
 	if (GLEW_OK != err) {
-		/* Problem: glewInit failed, something is seriously wrong. */
-		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-		throw std::runtime_error("glew init failed");
+		// Problem: glewInit failed, something is seriously wrong.
+		//fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+
+		// Error code: FAILED_TO_INITIALIZE_GLEW
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_INITIALIZE_GLEW) + "\nGlew error code: " + std::to_string(err));
 	}
 
 	std::stringstream vss;
@@ -318,7 +326,7 @@ void Voxel::GLView::initGLEW()
 
 	//cout << "\n[GLView] OpenGL and GPU informations" << endl;
 
-#if _DEBUG
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
 	if (GLEW_NVX_gpu_memory_info)
 	{
 		auto logger = &Voxel::Logger::getInstance();
@@ -336,8 +344,10 @@ void Voxel::GLView::initGLEW()
 #endif
 
 	//@warning Hardcorded
-	if (!GLEW_VERSION_4_3) {
-		throw std::runtime_error("OpenGL 4.3 API is not available");
+	if (!GLEW_VERSION_3_3) 
+	{
+		// Todo: Check version and try to use the highest one? or just use 3.3 core profile?
+		throw std::runtime_error("OpenGL 3.3 API is not available");
 	}
 }
 
@@ -720,6 +730,11 @@ void Voxel::GLView::setWindowDecoration(const bool mode)
 void Voxel::GLView::setWindowFloating(const bool mode)
 {
 	glfwSetWindowAttrib(window, GLFW_FLOATING, mode);
+}
+
+void Voxel::GLView::setWindowMinimized()
+{
+	glfwIconifyWindow(window);
 }
 
 glm::ivec2 Voxel::GLView::getScreenSize()

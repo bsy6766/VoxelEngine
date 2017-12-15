@@ -19,6 +19,9 @@
 #include "Logger.h"
 #include "GLView.h"
 
+// boost. 
+//#include <boost\predef.h>
+
 using std::cout;
 using std::endl;
 using namespace Voxel;
@@ -57,12 +60,9 @@ Application::Application()
 
 Application::~Application()
 {
-	auto logger = &Voxel::Logger::getInstance();
+	cleanUp();
 
-	// Everything should be deleted first in terminate();
-	logger->info("[Application] Destroying application");
-
-	logger->flush();
+	Voxel::Logger::getInstance().flush();
 }
 
 void Application::init()
@@ -70,7 +70,7 @@ void Application::init()
 #if V_BUILD_NUMBER
 	initInternalSettings();
 #endif
-	
+
 	// initialize glview
 	initGLView();
 
@@ -255,6 +255,7 @@ void Voxel::Application::cleanUp()
 		// This release current scene and next scene.
 		// These scenes should release their own sprite sheets.
 		delete director;
+		director = nullptr;
 	}
 
 	// Release spritesheet. SpriteSheets that are used for each scene should be relased at this point. Release remaining.
@@ -270,6 +271,7 @@ void Voxel::Application::cleanUp()
 	if (glView)
 	{
 		delete glView;
+		glView = nullptr;
 	}
 }
 

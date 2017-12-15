@@ -6,6 +6,7 @@
 #include "Texture2D.h"
 #include "Utility.h"
 #include "FileSystem.h"
+#include "Logger.h"
 
 using namespace Voxel;
 

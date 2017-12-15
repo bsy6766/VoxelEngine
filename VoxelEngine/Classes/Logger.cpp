@@ -61,7 +61,19 @@ void Voxel::Logger::flush()
 	logger->flush();
 }
 
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
 void Voxel::Logger::consoleInfo(const std::string & log)
 {
 	console->info(log);
 }
+
+void Voxel::Logger::consoleWarn(const std::string & log)
+{
+	console->warn(log);
+}
+
+void Voxel::Logger::consoleError(const std::string & log)
+{
+	console->error(log);
+}
+#endif

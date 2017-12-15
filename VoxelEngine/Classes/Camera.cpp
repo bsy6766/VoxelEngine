@@ -13,6 +13,7 @@
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Setting.h"
+#include "Logger.h"
 
 using namespace Voxel;
 using namespace glm;
@@ -58,12 +59,14 @@ bool Voxel::Camera::init(const glm::vec3 & position, const float fovy, const flo
 
 	screenSpacePos = glm::vec3(0, 0, (screenHeight * 0.5f) / tan(glm::radians(fovy * 0.5f)));
 
-	std::cout << "[Camera] Creating camera. Fovy: " << fovy << ", Fovx: " << fovx << ", Nears: " << nears << ", fars: " << fars << ", aspect: " << aspect << std::endl;
-	std::cout << "[Camera] Camera position (" << position.x << ", " << position.y << ", " << position.z << ")\n";
-	std::cout << "[Camera] Camera rotation (" << angle.x << ", " << angle.y << ", " << angle.z << ")\n";
-	std::cout << "[Camera] Camera screen space (" << screenSpacePos.x << ", " << screenSpacePos.y << ", " << screenSpacePos.z << ")\n";
-	std::cout << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
 
+	logger->consoleInfo("[Camera] Creating camera. Fovy: " + std::to_string(fovy) + ", Fovx: " + std::to_string(fovx) + ", Nears: " + std::to_string(nears) + ", fars: " + std::to_string(fars) + ", aspect: " + std::to_string(aspect));
+	logger->consoleInfo("[Camera] Camera position (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z));
+	logger->consoleInfo("[Camera] Camera rotation (" + std::to_string(angle.x) + ", " + std::to_string(angle.y) + ", " + std::to_string(angle.z));
+	logger->consoleInfo("[Camera] Camera screen space (" + std::to_string(screenSpacePos.x) + ", " + std::to_string(screenSpacePos.y) + ", " + std::to_string(screenSpacePos.z));
+#endif
 	return true;
 }
 
