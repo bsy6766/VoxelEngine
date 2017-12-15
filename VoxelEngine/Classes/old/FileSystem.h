@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <unordered_map>
+#include <filesystem>
 
 // glm
 #include <glm/glm.hpp>
@@ -12,6 +13,32 @@
 namespace Voxel
 {
 	class Block;
+
+	/**
+	*	@class FileSystem
+	*	@brief Singleton class that reads and writes file
+	*
+	*	
+	*/
+	class FileSystem2
+	{
+	public:
+		~FileSystem2();
+	private:
+		FileSystem2();
+
+		// Delete copy, move, assign operators
+		FileSystem2(FileSystem2 const&) = delete;             // Copy construct
+		FileSystem2(FileSystem2&&) = delete;                  // Move construct
+		FileSystem2& operator=(FileSystem2 const&) = delete;  // Copy assign
+		FileSystem2& operator=(FileSystem2 &&) = delete;      // Move assign
+	public:
+		static FileSystem2& getInstance()
+		{
+			static FileSystem2 instance;
+			return instance;
+		}
+	};
 
 	/**
 	*	@class FileSystem
