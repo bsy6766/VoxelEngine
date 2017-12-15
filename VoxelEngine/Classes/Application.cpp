@@ -11,7 +11,7 @@
 #include "InputHandler.h"
 #include "DataTree.h"
 #include "Setting.h"
-#include "FileSystem.h"
+//#include "FileSystem.h"
 #include "Utility.h"
 #include "MenuScene.h"
 #include "Cursor.h"
@@ -45,7 +45,7 @@ Application::Application()
 	cout << "Working Directory is: " << workingDirectory << endl;
 
 	// initialize singleton instance
-	FileSystem::getInstance();
+	//FileSystem::getInstance();
 
 	// Read game settings
 	Setting::getInstance();

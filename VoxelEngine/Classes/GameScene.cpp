@@ -52,8 +52,6 @@
 
 #include "DebugConsole.h"
 
-#include "FileSystem.h"
-
 #include "EarClip.h"
 
 using namespace Voxel;
@@ -367,7 +365,6 @@ void Voxel::GameScene::release()
 
 	//if (dynamicCanvas) delete dynamicCanvas;
 
-
 	// Release sprite sheet
 	releaseSpriteSheets();
 }
@@ -379,7 +376,7 @@ void Voxel::GameScene::createNew(const std::string & worldName)
 	//FileSystem& fs = FileSystem::getInstance();
 	//fs.init();
 	//fs.createNewWorldSave("New World");
-
+	 
 	// Creates new world. 
 	// First, create player.
 	// Todo: Load player from menu screen. 
