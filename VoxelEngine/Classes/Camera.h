@@ -6,6 +6,7 @@
 
 // cpp
 #include <iostream>
+#include <Config.h>
 
 namespace Voxel
 {
@@ -26,6 +27,7 @@ namespace Voxel
 	class Camera
 	{
 	private:
+		// Constructor
 		Camera();
 
 		// Data
@@ -66,49 +68,78 @@ namespace Voxel
 
 		// Updates projection. Call this when camera attribute (near, far, fovy, aspect) is chanced
 		void updateProjection();
+
+		// init
+		bool init(const glm::vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
 	public:
+		// Destructor
 		~Camera();
 
+		/**
+		*	Create camera
+		*	@param position Position of camera
+		*	@param fovy Vertical field of view angle
+		*	@param nears Near clipping plane
+		*	@param fars Far clipping plane
+		*	@param screenWidth Screen width
+		*	@param screenHeight SCreen height
+		*	@return A new camera instance. nullptr if fails.
+		*/
 		static Camera* create(const glm::vec3& position, const float fovy, const float nears, const float fars, const float screenWidth, const float screenHeight);
 		
+		// public main camera.
 		static Camera* mainCamera;
 
 		// UI fovy
 		static const float UIFovy;
-
-		void initDebugFrustumLines();
-
+		
 		// Get projection matrix. This is based on camera setting (fovy, near, far, aspect)
 		glm::mat4 getProjection();
+
 		// Get projection matrix with specific fovy value.
 		glm::mat4 getProjection(const float fovy);
+
 		// Get view matrix. This is 'world to view' matrix. 
 		// Camera doesn't move but world is. This moves world to view.
 		glm::mat4 getViewMat();
+
+		// Get camera's world matrix
 		glm::mat4 getWorldMat();
+
 		// Get orientation. Basically rotation. 
 		// This doesn't mean that camera is rotated. It's where camera want to look. 
 		glm::mat4 getOrientation();
+
 		// Get position of camera
 		glm::vec3 getPosition();
+
 		// Set position of camera
 		void setPosition(const glm::vec3& position);
+
 		// add distance to current camera position
 		void addPosition(const glm::vec3& distance);
+
 		// Set rotation angle
 		void setAngle(const glm::vec3& angle);
+
 		// Add angle to current angle
 		void addAngle(const glm::vec3& angle);
+
 		// Get angle
 		glm::vec3 getAngle();
+
 		// Get angle in y axis
 		float getAngleY();
+
 		// Get near
 		float getNear() const;
+
 		// Set near
 		void setNear(const float near);
+
 		// get far
 		float getFar() const;
+
 		// Set far
 		void setFar(const float far);
 

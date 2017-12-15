@@ -14,16 +14,18 @@ namespace Voxel
 	*/
 	class FontManager
 	{
-	public:
-		const static std::string DEFAULT_FONT_NAME;
 	private:
-		FontManager();
+		// Constructor
+		FontManager() = default;
 
+		// Font id counter
 		static int idCounter;
+
+		// Fonts
 		std::unordered_map<int, Font*> fonts;
 
-		void initDefaultFont();
 	public:
+		// Constructor
 		~FontManager();
 
 		/**

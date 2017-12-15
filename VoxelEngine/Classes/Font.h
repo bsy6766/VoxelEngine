@@ -47,7 +47,6 @@ namespace Voxel
 		glm::vec2 uvBotRight;
 	};
 
-
 	/**
 	*	@class Font
 	*	@brief Loads TTF font using Freetype 2
@@ -92,6 +91,7 @@ namespace Voxel
 	public:
 		// creates font
 		static Font* create(const std::string& fontName, const int fontSize);
+
 		// creates font with outline
 		static Font* createWithOutline(const std::string& fontName, const int fontSize, const int outlineSize);
 
@@ -101,19 +101,28 @@ namespace Voxel
 		// Get glyph for specific char
 		Glyph* getCharGlyph(const char c);
 
-		// getters
+		// Get line space
 		int getLineSpace();
+
+		// Get outline size in pixel
 		int getOutlineSize();
+
+		// Get texture
 		Texture2D* getTexture();
 
+		// Close free type library
 		static void closeFreetype();
 
+		// activate font texture
 		void activateTexture(unsigned int/*glenum*/ textureUnit);
+
+		// bind font texture
 		void bind();
 
 		// Simply compares the size of outline. If 0, no outline supported
 		bool isOutlineEnabled();
 
+		// get font size in pixel
 		int getSize();
 	};
 }

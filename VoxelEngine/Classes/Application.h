@@ -10,11 +10,23 @@
 
 namespace Voxel
 {
-	// Foward
+	// Foward Declaration
 	class DataTree;
 	class Director;
 	class Cursor;
 
+	/**
+	*	@class Application
+	*	@brief A root instance that runs the application.
+	*
+	*	Application is the root class that runs the entire application.
+	*	Application initialize all required resources and default sub systems that the game uses.
+	*
+	*	Application has GLView instance that manages the OpenGL, GLFW and GLEW. @see class GLView for details.
+	*	Application has Director instance that manages all the scenes in the game. @see class Director and Scene.
+	*	
+	*	Application runs main game (while) loop.
+	*/
 	class Application
 	{
 	private:

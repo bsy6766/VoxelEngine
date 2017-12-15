@@ -11,7 +11,6 @@
 #include "InputHandler.h"
 #include "DataTree.h"
 #include "Setting.h"
-//#include "FileSystem.h"
 #include "Utility.h"
 #include "MenuScene.h"
 #include "Cursor.h"
@@ -43,10 +42,7 @@ Application::Application()
 	}
 
 	cout << "Working Directory is: " << workingDirectory << endl;
-
-	// initialize singleton instance
-	//FileSystem::getInstance();
-
+	
 	// Read game settings
 	Setting::getInstance();
 }
@@ -98,6 +94,7 @@ void Voxel::Application::initMainCamera()
 	float near = internalSetting->getFloat("Camera.near");
 	float far = internalSetting->getFloat("Camera.far");
 
+	// Create main camera
 	Camera::mainCamera = Camera::create(glm::vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
 }
 

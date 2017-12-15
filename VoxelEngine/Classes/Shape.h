@@ -47,16 +47,36 @@ namespace Voxel
 		class Plane
 		{
 		public:
-			/**
-			*	Constructor
-			*	@param normal 
-			*/
-			Plane(const glm::vec3& normal, const float distance);
+			enum Face : unsigned int
+			{
+				LEFT,
+				RIGHT,
+				BOTTOM,
+				TOP,
+				NEAR,
+				FAR,
+			};
+		public:
+			// Constructor with normal and distance to origin
+			Plane(const glm::vec3& normal, const float distanceToOrigin);
+
+			// constructor with triangle
 			Plane(const Triangle& triangle);
+			
+			// constructor
+			Plane();
+
+			// Default destructor
 			~Plane() = default;
 
+			// plane's normal vector
 			glm::vec3 normal;
-			float distance;
+
+			// d
+			float distanceToOrigin;
+
+			// Calculates shortest distance from point to plane
+			float distanceToPoint(const glm::vec3& point);
 		};
 
 		/**

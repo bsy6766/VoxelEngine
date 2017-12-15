@@ -58,7 +58,7 @@
 *	If enabled, draws UI bounding box. Need to enable each ui bounding boxe configs.
 */
 #ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
-#define V_DEBUG_DRAW_UI_BOUNDING_BOX 1
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
 #endif
 
 #if V_DEBUG_DRAW_UI_BOUNDING_BOX
@@ -92,7 +92,7 @@
 	*	If enabled, draws Text UI bounding box.
 	*/
 	#ifndef V_DEBUG_DRAW_TEXT_BOUNDING_BOX
-	#define V_DEBUG_DRAW_TEXT_BOUNDING_BOX 1
+	#define V_DEBUG_DRAW_TEXT_BOUNDING_BOX 0
 	#endif
 
 	#if V_DEBUG_DRAW_TEXT_BOUNDING_BOX
@@ -179,7 +179,7 @@
 *	if enabled, renders frustum line
 */
 #ifndef V_DEBUG_FRUSTUM_LINE
-#define V_DEBUG_FRUSTUM_LINE 1
+#define V_DEBUG_FRUSTUM_LINE 0
 #endif
 
 /**
@@ -205,7 +205,8 @@
 #ifndef V_DEBUG_COUNT_DRAW_CALLS
 #define V_DEBUG_COUNT_DRAW_CALLS 1
 #endif
+
 #endif
-// Sub debug defiens ends
+// Sub debug defiens ends. V_DEBUG
 
 #endif	// CONFIG_H

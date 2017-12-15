@@ -20,15 +20,22 @@ namespace Voxel
 
 		// skybox
 		const glm::vec3 SKYBOX = glm::vec3(150.0f / 255.0f, 210.0f / 255.0f, 1.0f);
-
+		
+		/**
+		*	@struct SkyboxColor
+		*	@brief simple wrapper of 2 colors (one top and one bottom) for skybox
+		*/
 		struct SkyboxColor
 		{
+		public:
 			glm::vec3 topColor;
 			glm::vec3 bottomColor;
 
+			// Constructor
 			SkyboxColor(const glm::vec3& topColor, const glm::vec3& bottomColor) : topColor(topColor), bottomColor(bottomColor) {}
 		};
 
+		// Skybox colors based on time.
 		const SkyboxColor SC_12_00_AM = SkyboxColor(glm::vec3(0.0f, 0.0f, 12.0f / 255.0f), glm::vec3(0.0f, 0.0f, 12.0f / 255.0f));
 		const SkyboxColor SC_1_00_AM = SkyboxColor(glm::vec3(2.0f / 255.0f, 1.0f / 255.0f, 17.0f / 255.0f), glm::vec3(25.0f / 255.0f, 22.0f / 255.0f, 33.0f / 255.0f));
 		const SkyboxColor SC_2_00_AM = SkyboxColor(glm::vec3(2.0f / 255.0f, 1.0f / 255.0f, 17.0f / 255.0f), glm::vec3(32.0f / 255.0f, 32.0f / 255.0f, 44.0f / 255.0f));

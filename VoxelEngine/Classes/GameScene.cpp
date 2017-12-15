@@ -1902,7 +1902,9 @@ void Voxel::GameScene::renderWorld()
 		// Change view mat for other lines
 		lineProgram->setUniformMat4("viewMat", viewMat * worldMat * glm::inverse(player->getWorldMatrix()));
 
+#if V_DEBUG_FRUSTUM_LINE
 		Camera::mainCamera->getFrustum()->render(player->getFrustumViewMatrix(), lineProgram);
+#endif
 	}
 #endif
 #endif

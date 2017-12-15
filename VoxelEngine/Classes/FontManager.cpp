@@ -10,32 +10,12 @@ using namespace Voxel;
 
 int FontManager::idCounter = 0;
 
-const std::string FontManager::DEFAULT_FONT_NAME = "Ariel.ttf";
-
-FontManager::FontManager()
-{
-	initDefaultFont();
-}
-
 FontManager::~FontManager()
 {
 	clear();
 	Font::closeFreetype();
 }
 
-void FontManager::initDefaultFont()
-{
-	auto arial = Font::create("Arial.ttf", 50);
-	if (arial)
-	{
-		std::cout << "[FontManager] Adding default font \"Arial.ttf\" with id #0\n";
-		fonts.emplace(0, arial);
-	}
-	else
-	{
-		throw std::runtime_error("Failed to load default font \"Arial.ttf\"");
-	}
-}
 
 int FontManager::addFont(const std::string& fontName, const int fontSize, int outline)
 {

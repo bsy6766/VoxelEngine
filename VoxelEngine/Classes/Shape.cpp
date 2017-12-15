@@ -65,16 +65,26 @@ void Voxel::Shape::Triangle::checkOrientation()
 
 
 
-Shape::Plane::Plane(const glm::vec3 & normal, const float distance)
+Voxel::Shape::Plane::Plane(const glm::vec3 & normal, const float distanceToOrigin)
 	: normal(normal)
-	, distance(distance)
+	, distanceToOrigin(distanceToOrigin)
 {
 }
 
-Shape::Plane::Plane(const Triangle& triangle)
+Voxel::Shape::Plane::Plane(const Triangle& triangle)
 {
 	normal = glm::normalize(glm::cross(triangle.p2 - triangle.p1, triangle.p3 - triangle.p1));
-	distance = glm::dot(normal, triangle.p1);
+	distanceToOrigin = glm::dot(normal, triangle.p1);
+}
+
+Voxel::Shape::Plane::Plane()
+	: normal(0.0f)
+	, distanceToOrigin(0.0f)
+{}
+
+float Voxel::Shape::Plane::distanceToPoint(const glm::vec3& point)
+{
+	return glm::dot(point, normal) + distanceToOrigin;
 }
 
 
