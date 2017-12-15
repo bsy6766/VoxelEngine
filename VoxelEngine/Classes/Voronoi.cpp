@@ -572,7 +572,10 @@ void Voxel::Voronoi::Diagram::randomizeCells(const int w, const int l, std::mt19
 		}
 	}
 
-	std::random_shuffle(candidates.begin(), candidates.end());
+	// random_shuffle is deprecated
+	//std::random_shuffle(candidates.begin(), candidates.end());
+	// using shuffle with engine
+	std::shuffle(candidates.begin(), candidates.end(), engine);
 
 	unsigned int index = 0;
 	auto len = candidates.size();
