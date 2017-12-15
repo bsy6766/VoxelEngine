@@ -8,6 +8,7 @@
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
+#include "FileSystem.h"
 
 using namespace Voxel;
 
@@ -220,7 +221,7 @@ bool Voxel::Texture2D::initFontTexture(const int width, const int height, GLenum
 
 unsigned char * Voxel::Texture2D::loadImage(const std::string& textureFilePath, int & width, int & height, int & channel)
 {
-	auto filePath = Application::getInstance().getWorkingDirectory() + "/" + Texture2D::DEFAULT_TEXTURE_PATH + textureFilePath;
+	auto filePath = FileSystem::getInstance().getWorkingDirectory() + "/" + Texture2D::DEFAULT_TEXTURE_PATH + textureFilePath;
 	
 	FILE* file = nullptr;
 	auto err = fopen_s(&file, filePath.c_str(), "rb");

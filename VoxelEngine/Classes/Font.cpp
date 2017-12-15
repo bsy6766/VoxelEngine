@@ -5,6 +5,7 @@
 #include "Utility.h"
 #include "Texture2D.h"
 #include "Utility.h"
+#include "FileSystem.h"
 
 using namespace Voxel;
 
@@ -74,7 +75,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 	this->outlineSize = outlineSize;
 
-	std::string fontPath = Application::getInstance().getWorkingDirectory() + "/" + DEFAULT_FONT_PATH + fontName;
+	std::string fontPath = FileSystem::getInstance().getWorkingDirectory() + "/" + DEFAULT_FONT_PATH + fontName;
 	if (FT_New_Face(library, fontPath.c_str(), 0, &face))
 	{
 		throw std::runtime_error("Freetype2 failed to load font at \"" + fontPath + "\"");

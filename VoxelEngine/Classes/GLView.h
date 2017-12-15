@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <vector>
 
 // glm
 #include <glm\glm.hpp>
@@ -19,6 +20,62 @@
 namespace Voxel
 {
 	class Program;
+
+	/**
+	*	@struct VideoMode
+	*	@brief A simple pack of data that has GLFW video mode data
+	*/
+	struct VideoMode
+	{
+		// Only GLView class can access this struct
+		friend class GLView;
+	public:
+		int width;
+		int height;
+		int redBits;
+		int greenBits;
+		int blueBits;
+		int refreshRate;
+
+	private:
+		// constructor
+		VideoMode() : width(0), height(0), redBits(0), greenBits(0), blueBits(0), refreshRate(0) {}
+		VideoMode(const GLFWvidmode& glfwVideoMode) : width(glfwVideoMode.width), height(glfwVideoMode.height), redBits(glfwVideoMode.redBits), greenBits(glfwVideoMode.greenBits), blueBits(glfwVideoMode.blueBits), refreshRate(glfwVideoMode.refreshRate) {}
+
+	public:
+		glm::ivec2 getResolution() const { return glm::ivec2(width, height); }
+		glm::ivec3 getRGBBits() const { return glm::ivec3(redBits, greenBits, blueBits); }
+		int getRefreshRate() const { return refreshRate; }
+	};
+
+	/**
+	*	@struct Monitor
+	*	@brief A simple pack of that that has monitor info with list of video mode
+	*/
+	struct MonitorInfo
+	{
+		// Only GLView class can access this struct
+		friend class GLView;
+	private:
+		// Constructor
+		MonitorInfo() : name(""), index(-11) {}
+
+		// name of monitor
+		std::string name;
+
+		// index of monitor
+		int index;
+
+		// list of video mode. Small -> Large
+		std::vector<VideoMode> videoModes;
+	public:
+		~MonitorInfo() = default;
+
+		// get name
+		std::string getName() const { return name; }
+		int getIndex() const { return index; }
+		std::vector<VideoMode> getVideoModes() const { return videoModes; }
+	};
 
 	/**
 	*	@class GLView
@@ -36,6 +93,9 @@ namespace Voxel
 		// Window
 		GLFWwindow* window;
 		GLFWmonitor* monitor;
+
+		// Monitos. @see Monitor for details
+		std::vector<MonitorInfo> monitors;
 
 		// Time & FPS
 		double currentTime;
@@ -66,12 +126,17 @@ namespace Voxel
 		static void glfwWindowFocusCallback(GLFWwindow* window, int focus);
 
 		// Intiialize opengl
-		void init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync); 
+		void init(const std::string& windowTitle); 
 		
 		/**
 		*	Initialize GLFW
 		*/
 		void initGLFW();
+
+		/**
+		*	Initialize monitor data
+		*/
+		void initMonitorData();
 
 		/**
 		*	Initailize GLFW window
@@ -91,7 +156,7 @@ namespace Voxel
 		/**
 		*	Initialize defulat shader programs that are used in game
 		*/
-		void initDefaultShaderProgram();
+		void initShaderPrograms();
 
 		/**
 		*	Get CPU name for debugging
@@ -151,6 +216,9 @@ namespace Voxel
 		
 		// Get GLFWmonitor with specific monitor index
 		GLFWmonitor* getMonitorFromIndex(const int monitorIndex);
+
+		// Get monitor info
+		MonitorInfo* getMonitorInfo(const unsigned int monitorInfoIndex);
 
 		// Check if window is windowed
 		bool isWindowed();

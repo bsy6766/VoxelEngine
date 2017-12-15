@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <iostream>
 
+// voxel
+#include "Logger.h"
+
 using namespace Voxel;
 
 std::unordered_map<std::string, bool> DataTree::boolAliases = {
@@ -50,25 +53,45 @@ DataTree* DataTree::create(const std::string& fileName)
 		{
 			fileData += (line + "\n");
 		}
-	}
+		
+		// check data
+		if (fileData.empty() || fileData.size() <= 0)
+		{
+			//Data is empty or size is 0. 
+			return nullptr;
+		}
 
-	if (fileData.empty() || fileData.size() <= 0)
+		DataTree* data = new DataTree("ROOT_KEY", "ROOT_VALUE");
+		bool result = data->parse(fileData);
+
+		if (result == false)
+		{
+			//Failed to parse
+			delete data;
+			return nullptr;
+		}
+
+		file.close();
+
+		return data;
+	}
+	else
 	{
-		//Data is empty or size is 0. 
-		return nullptr;
+#if _DEBUG
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleInfo("[DataTree] Failed to open file \"" + fileName + "\"");
+		logger->consoleInfo("[DataTree] Creating new one.");
+
+		std::ofstream newFile(fileName, std::fstream::out);
+		newFile.close();
+
+		DataTree* data = new DataTree("ROOT_KEY", "ROOT_VALUE");
+
+		// nothing to fill
+
+		return data;
+#endif
 	}
-
-	DataTree* data = new DataTree("ROOT_KEY", "ROOT_VALUE");
-	bool result = data->parse(fileData);
-
-	if (result == false)
-	{
-		//Failed to parse
-		delete data;
-		return nullptr;
-	}
-
-	return data;
 }
 
 bool DataTree::parse(const std::string& fileData)

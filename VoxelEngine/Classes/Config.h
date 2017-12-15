@@ -8,6 +8,14 @@
 */
 
 /**
+*	@def V_BUILD_NUMBER
+*	If enabled, counts build number
+*/
+#ifndef V_BUILD_NUMBER
+#define V_BUILD_NUMBER 1
+#endif
+
+/**
 *	@def V_DEBUG
 *	If enabled, all sub debug defines will be applied. 
 */
@@ -205,6 +213,15 @@
 #ifndef V_DEBUG_COUNT_DRAW_CALLS
 #define V_DEBUG_COUNT_DRAW_CALLS 1
 #endif
+
+/**
+*	@def V_DEBUG_LOG_CONSOLE
+*	If enabled, output log in console from logger
+*/
+#ifndef V_DEBUG_LOG_CONSOLE
+#define V_DEBUG_LOG_CONSOLE 1
+#endif
+
 
 #endif
 // Sub debug defiens ends. V_DEBUG

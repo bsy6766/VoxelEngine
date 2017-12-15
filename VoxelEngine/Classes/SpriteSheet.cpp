@@ -3,6 +3,7 @@
 // voxel
 #include "Application.h"
 #include "Utility.h"
+#include "FileSystem.h"
 
 // cpp
 #include <fstream>
@@ -82,7 +83,7 @@ void Voxel::SpriteSheet::print()
 
 bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 {
-	const std::string wd = Application::getInstance().getWorkingDirectory();
+	const std::string wd = FileSystem::getInstance().getWorkingDirectory();
 
 	const std::string path = wd + "/spritesheets/";
 

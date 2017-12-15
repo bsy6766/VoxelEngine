@@ -1,5 +1,0 @@
-buildNumber 6305
-windowTitle Voxel Engine
-Camera 
-	near 0.01f
-	far 1000.0f

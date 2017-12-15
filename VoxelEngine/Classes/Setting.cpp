@@ -3,37 +3,110 @@
 // cpp
 #include <iostream>
 
+// voxel
+#include "DataTree.h"
+#include "FileSystem.h"
+#include "Application.h"
+#include "Logger.h"
+#include "GLView.h"
+
 using namespace Voxel;
 
 Setting::Setting()
+	: modified(false)
+	// Video setting
+	, windowMode(1)
+	, resolution(0)
+	, vsync(false)
+	, renderDistance(0)
+	, fieldOfView(0)
+	, blockShadeMode(0)
+
 {
-	gameSetting = DataTree::create("data/setting");
+	// Initialize setting
 
-	windowMode = gameSetting->getInt("videoSetting.window.mode");
-	int w = gameSetting->getInt("videoSetting.window.resolution.width");
-	int h = gameSetting->getInt("videoSetting.window.resolution.height");
-	resolution = glm::ivec2(w, h);
-	vsync = gameSetting->getBool("videoSetting.vsync");
-	renderDistance = gameSetting->getInt("videoSetting.renderDistance");
-	fieldOfView = gameSetting->getInt("videoSetting.fieldOfView");
-	blockShadeMode = gameSetting->getInt("videoSetting.blockShade");
+	// get filesystem
+	auto fs = &Voxel::FileSystem::getInstance();
 
-	std::cout << "[Setting] Window mode = " << windowMode << std::endl;
-	std::cout << "[Setting] Resolution = (" << resolution.x << ", " << resolution.y << ")\n";
-	std::cout << "[Setting] Vsnyc = " << vsync << std::endl;
-	std::cout << "[Setting] Render distance = " << renderDistance << std::endl;
-	std::cout << "[Setting] Field of view = " << fieldOfView << std::endl;
-	std::cout << "[Setting] Block shade mode = " << blockShadeMode << std::endl;
+	// get logger
+	auto logger = &Voxel::Logger::getInstance();
 
-	autoJump = gameSetting->getBool("control.autoJump");
+	auto userSettingFilePath = fs->getUserDirectory() + "\\user.txt";
+
+	// Check if user setting file exists
+	if (fs->doesPathExists(userSettingFilePath))
+	{
+		// user file exists. read from it.
+		logger->info("[System] User setting file found");
+
+		// Create data tree file
+		userSetting = DataTree::create(fs->getUserDirectory() + "\\user.txt");
+
+		// load setting
+		windowMode = userSetting->getInt("videoSetting.window.mode");
+		int w = userSetting->getInt("videoSetting.window.resolution.width");
+		int h = userSetting->getInt("videoSetting.window.resolution.height");
+		resolution = glm::ivec2(w, h);
+		vsync = userSetting->getBool("videoSetting.vsync");
+		renderDistance = userSetting->getInt("videoSetting.renderDistance");
+		fieldOfView = userSetting->getInt("videoSetting.fieldOfView");
+		blockShadeMode = userSetting->getInt("videoSetting.blockShade");
+	}
+	else
+	{
+		// user file doesn't exists. set values to default
+		logger->info("[System] User setting file not found. New setting created with default");
+
+		setVideoModeToDefault();
+
+		// Create data tree file
+		userSetting = DataTree::create(userSettingFilePath);
+
+		// set setting
+		userSetting->setInt("videoSetting.window.mode", windowMode);
+		userSetting->setInt("videoSetting.window.resolution.width", resolution.x);
+		userSetting->setInt("videoSetting.window.resolution.height", resolution.y);
+		userSetting->setBool("videoSetting.vsync", vsync);
+		userSetting->setInt("videoSetting.renderDistance", renderDistance);
+		userSetting->setInt("videoSetting.fieldOfView", fieldOfView);
+		userSetting->setInt("videoSetting.blockShade", blockShadeMode);
+
+		// save
+		userSetting->save(userSettingFilePath);
+	}
+
+	if (!fs->doesPathExists(userSettingFilePath))
+	{
+		logger->error("[System] Failed to save user settings");
+	}
+
+	autoJump = userSetting->getBool("control.autoJump");
 }
 
 Setting::~Setting()
 {
-	if (gameSetting)
+	if (userSetting)
 	{
-		delete gameSetting;
+		delete userSetting;
 	}
+}
+
+void Voxel::Setting::setVideoModeToDefault()
+{
+	// fullscreen
+	windowMode = 1;
+	// primary monitor
+	monitorIndex = 0;
+	// Set to primary's monitors highest resolution
+	resolution = Application::getInstance().getGLView()->getMonitorInfo(monitorIndex)->getVideoModes().back().getResolution();
+	// Disable vsync
+	vsync = false;
+	// default render distance
+	renderDistance = 8;
+	// default fov
+	fieldOfView = 70;
+	// default shade mode
+	blockShadeMode = 2;
 }
 
 int Voxel::Setting::getWindowMode()
@@ -78,5 +151,5 @@ void Voxel::Setting::setAutoJumpMode(const bool mode)
 
 std::string Voxel::Setting::getString(const std::string & key)
 {
-	return gameSetting->getString(key);
+	return userSetting->getString(key);
 }

@@ -10,6 +10,8 @@
 #include "Shader.h"
 #include "Program.h"
 #include "Camera.h"
+#include "Logger.h"
+#include "Setting.h"
 
 using namespace Voxel;
 using std::cout;
@@ -57,15 +59,44 @@ GLView::~GLView()
 	glfwTerminate();
 }
 
-void Voxel::GLView::init(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
+void Voxel::GLView::init(const std::string& windowTitle)
 {
-	initCPUName();
+	// Init GLFW
 	initGLFW();
-	initWindow(screenWidth, screenHeight, windowTitle, windowMode, vsync);
+
+	// Then init monitor data
+	initMonitorData();
+
+	// After initializing monitor data, init settings
+	auto setting = &Setting::getInstance();
+
+	// Get values
+	auto res = setting->getResolution();
+
+	// initialize and create window.
+	// Note: Should I save bit depth for each rgb channel?
+	initWindow(res.x, res.y, windowTitle, setting->getWindowMode(), setting->getVsync());
+
+	// Init cpu name
+	initCPUName();
+
+	// Init GLEW
 	initGLEW();
+
+	// print hardware info
+	auto logger = &Voxel::Logger::getInstance();
+
+	logger->info("[System] CPU: " + CPUName);
+	logger->info("[System] GPU vendor: " + GPUVendor);
+	logger->info("[System] GPU renderer: " + GPURenderer);
+	logger->info("[System] OpenGL version: " + GLVersion);
+	logger->info("[System] GLSL version: " + std::string((char*)glGetString(GL_SHADING_LANGUAGE_VERSION)));
+	
+	// Init OpenGL
 	initOpenGL();
 
-	initDefaultShaderProgram();
+	// init shader and programs
+	initShaderPrograms();
 
 	glfwSetCursorPos(window, 0, 0);
 }
@@ -83,9 +114,71 @@ void Voxel::GLView::initGLFW()
 		int versionMajor, versionMinor, versionRev;
 		glfwGetVersion(&versionMajor, &versionMinor, &versionRev);
 
-		cout << "[GLView] Intialized GLFW." << endl;
-		cout << "[GLView] GLFW version " << versionMajor << "." << versionMinor << "." << versionRev << endl;
+#if _DEBUG
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleInfo("[GLView] Intialized GLFW.");
+		logger->consoleInfo("[GLView] GLFW version " + std::to_string(versionMajor) + "." + std::to_string(versionMinor) + "." + std::to_string(versionRev));
+#endif
 	}
+}
+
+void Voxel::GLView::initMonitorData()
+{
+	auto& logger = Voxel::Logger::getInstance();
+
+	// clear previous data
+	monitors.clear();
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	logger.consoleInfo("[GLView] Initializing monitor info");
+#endif
+
+	// Get monitors
+	int count = 0;
+	auto glfwMonitors = glfwGetMonitors(&count);
+
+	// iterate through glfw monitors
+	for (int i = 0; i < count; i++)
+	{
+		GLFWmonitor* monitor = glfwMonitors[i];
+
+		if (monitor)
+		{
+			// create monitor data
+			monitors.push_back(MonitorInfo());
+			monitors.back().name = glfwGetMonitorName(monitor);
+			monitors.back().index = i;
+
+			// get all video modes
+			int vCount = 0;
+			auto videoModes = glfwGetVideoModes(monitor, &vCount);
+
+			for (int j = 0; j < vCount; j++)
+			{
+				if (videoModes[j].refreshRate == 60)
+				{
+					// add only with 60 refresh rate
+					monitors.back().videoModes.push_back(VideoMode(videoModes[j]));
+				}
+			}
+		}
+	}
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	// Debug print all the monitor and video modes in console
+	for (auto& monitor : monitors)
+	{
+		logger.consoleInfo("[GLView] Monitor #" + std::to_string(monitor.index) + ", \"" + monitor.name + "\"" + ((monitor.index == 0) ? std::string(" (Primary)") : std::string()));
+		logger.consoleInfo("[GLView] VideoModes...");
+
+		for (auto& videoMode : monitor.videoModes)
+		{
+			logger.consoleInfo("[GLView] Width: " + std::to_string(videoMode.width) + ", height : " + std::to_string(videoMode.height) + ", redBits: " + std::to_string(videoMode.redBits) + ", greeBits: " + std::to_string(videoMode.greenBits) + ", blueBits: " + std::to_string(videoMode.blueBits) + ", refreshRate: " + std::to_string(videoMode.refreshRate));
+		}
+
+		logger.consoleInfo("");
+	}
+#endif
 }
 
 void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
@@ -94,7 +187,7 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
 	//Set the color info
 	glfwWindowHint(GLFW_DEPTH_BITS, 24);
@@ -208,8 +301,6 @@ void Voxel::GLView::initGLEW()
 		throw std::runtime_error("glew init failed");
 	}
 
-	cout << "\n[GLView] OpenGL and GPU informations" << endl;
-
 	std::stringstream vss;
 	vss << glGetString(GL_VENDOR);
 
@@ -225,27 +316,28 @@ void Voxel::GLView::initGLEW()
 
 	GLVersion = glss.str();
 
-	std::cout << "[GLView] OpenGL version: " << GLVersion << std::endl;
-	std::cout << "[GLView] GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-	std::cout << "[GLView] GPU vendor: " << GPUVendor << std::endl;
-	std::cout << "[GLView] GPU renderer: " << GPURenderer << std::endl;
+	//cout << "\n[GLView] OpenGL and GPU informations" << endl;
 
+#if _DEBUG
 	if (GLEW_NVX_gpu_memory_info)
 	{
+		auto logger = &Voxel::Logger::getInstance();
+
 		GLint totalMemoryInKB = 0;
 		glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &totalMemoryInKB);
 
-		std::cout << "[GLView] GPU total memory: " << totalMemoryInKB / 1000 << " mb\n";
+		logger->consoleInfo("[GLView] GPU total memory: " + std::to_string(totalMemoryInKB / 1000) + " mb");
 
 		GLint curAvailableMemoryInKB = 0;
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &curAvailableMemoryInKB);
 
-		std::cout << "[GLView] GPU currently available memory: " << curAvailableMemoryInKB << " kb\n";
+		logger->consoleInfo("[GLView] GPU currently available memory: " + std::to_string(curAvailableMemoryInKB / 1000) + " mb");
 	}
+#endif
 
 	//@warning Hardcorded
-	if (!GLEW_VERSION_4_5) {
-		throw std::runtime_error("OpenGL 4.5 API is not available");
+	if (!GLEW_VERSION_4_3) {
+		throw std::runtime_error("OpenGL 4.3 API is not available");
 	}
 }
 
@@ -262,7 +354,7 @@ void Voxel::GLView::initOpenGL()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void Voxel::GLView::initDefaultShaderProgram()
+void Voxel::GLView::initShaderPrograms()
 {
 	ProgramManager::getInstance().initPrograms();
 }
@@ -303,8 +395,6 @@ void Voxel::GLView::initCPUName()
 
 	auto first = CPUName.find_first_not_of(' ');
 	CPUName = CPUName.substr(first, CPUName.size());
-
-	std::cout << "[GLView] CPU: " << CPUName << std::endl;
 }
 
 bool Voxel::GLView::isRunning()
@@ -454,6 +544,25 @@ GLFWmonitor * Voxel::GLView::getMonitorFromIndex(const int monitorIndex)
 	else
 	{
 		return monitors[monitorIndex];
+	}
+}
+
+MonitorInfo* Voxel::GLView::getMonitorInfo(const unsigned int monitorInfoIndex)
+{
+	if (monitors.empty())
+	{
+		return nullptr;
+	}
+	else
+	{
+		if (monitorInfoIndex >= monitors.size())
+		{
+			return nullptr;
+		}
+		else
+		{
+			return &monitors.at(monitorInfoIndex);
+		}
 	}
 }
 

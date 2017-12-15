@@ -15,6 +15,9 @@
 #include "MenuScene.h"
 #include "Cursor.h"
 #include "FontManager.h"
+#include "FileSystem.h"
+#include "Logger.h"
+#include "GLView.h"
 
 using std::cout;
 using std::endl;
@@ -23,9 +26,18 @@ using namespace Voxel;
 Application::Application()
 	: glView(nullptr)
 	, director(nullptr)
-	, internalSetting(nullptr)
 	, needToSkipFrame(true)
 {
+	// init file system
+	auto fs = &Voxel::FileSystem::getInstance();
+
+	// init logger
+	auto logger = &Voxel::Logger::getInstance();
+
+	logger->info("[Application] Initializing application");
+
+	/*
+	// old version
 	cout << "Creating Application" << endl;
 
 	char cCurrentPath[FILENAME_MAX];
@@ -36,28 +48,30 @@ Application::Application()
 	}
 	else
 	{
-		cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+		cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; // not really required
 
 		this->workingDirectory = std::string(cCurrentPath);
 	}
-
-	cout << "Working Directory is: " << workingDirectory << endl;
-	
-	// Read game settings
-	Setting::getInstance();
+	*/
 }
 
 Application::~Application()
 {
-	cout << "Destroying Application" << endl; 
+	auto logger = &Voxel::Logger::getInstance();
+
 	// Everything should be deleted first in terminate();
+	logger->info("[Application] Destroying application");
+
+	logger->flush();
 }
 
 void Application::init()
-{
-	std::cout << "[Application] Initializing application\n";
+{	
+#if V_BUILD_NUMBER
 	initInternalSettings();
-
+#endif
+	
+	// initialize glview
 	initGLView();
 
 	initMainCamera();
@@ -71,6 +85,8 @@ void Application::init()
 	// init cursor
 	cursor	= &Cursor::getInstance();
 	cursor->init();
+
+	Voxel::Logger::getInstance().flush();
 }
 
 void Voxel::Application::initGLView()
@@ -78,12 +94,8 @@ void Voxel::Application::initGLView()
 	glView = new GLView();
 
 	//auto title = "Voxel Engine / version: 0 / build: " + internalSetting->getString("buildNumber");
-	auto title = "Voxel Engine";
-
-	auto& setting = Setting::getInstance();
-	auto resolution = setting.getResolution();
-
-	glView->init(resolution.x, resolution.y, title, setting.getWindowMode(), setting.getVsync());
+	
+	glView->init("Voxel Engine");
 }
 
 void Voxel::Application::initMainCamera()
@@ -91,39 +103,17 @@ void Voxel::Application::initMainCamera()
 	auto& setting = Setting::getInstance();
 	auto resolution = glm::vec2(setting.getResolution());
 	auto fov = setting.getFieldOfView();
-	float near = internalSetting->getFloat("Camera.near");
-	float far = internalSetting->getFloat("Camera.far");
+	float nears = 0.01f;
+	float fars = 1000.0f;
 
 	// Create main camera
-	Camera::mainCamera = Camera::create(glm::vec3(0, 0, 0), static_cast<float>(fov), near, far, resolution.x, resolution.y);
+	Camera::mainCamera = Camera::create(glm::vec3(0, 0, 0), static_cast<float>(fov), nears, fars, resolution.x, resolution.y);
 }
 
 void Voxel::Application::initDirector()
 {
 	director = new Director();
 	director->runScene(Voxel::Director::SceneName::MENU_SCENE);
-}
-
-void Voxel::Application::initInternalSettings()
-{
-	if (internalSetting) 
-	{
-		delete internalSetting;
-	}
-
-	internalSetting = DataTree::create("data/internal");
-
-	if (internalSetting)
-	{
-		int build = internalSetting->getInt("buildNumber");
-		build++;
-		internalSetting->setInt("buildNumber", build);
-		internalSetting->save("data/internal");
-	}
-	else
-	{
-		std::cout << "[Application] Failed to load internal setting\n";
-	}
 }
 
 void Voxel::Application::initFonts()
@@ -242,11 +232,6 @@ Director * Voxel::Application::getDirector()
 	return director;
 }
 
-std::string Voxel::Application::getWorkingDirectory()
-{
-	return workingDirectory;
-}
-
 void Voxel::Application::cleanUp()
 {
 	// delete everything here before GLFW window dies
@@ -286,9 +271,19 @@ void Voxel::Application::cleanUp()
 	{
 		delete glView;
 	}
+}
+
+#if V_BUILD_NUMBER
+void Voxel::Application::initInternalSettings()
+{
+	auto internalSetting = DataTree::create(Voxel::FileSystem::getInstance().getWorkingDirectory() + "/../buildNumber");
 
 	if (internalSetting)
 	{
-		delete internalSetting;
+		int build = internalSetting->getInt("buildNumber");
+		build++;
+		internalSetting->setInt("buildNumber", build);
+		internalSetting->save(Voxel::FileSystem::getInstance().getWorkingDirectory() + "/../buildNumber");
 	}
 }
+#endif

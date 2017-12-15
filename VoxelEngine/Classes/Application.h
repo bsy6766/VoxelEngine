@@ -14,6 +14,7 @@ namespace Voxel
 	class DataTree;
 	class Director;
 	class Cursor;
+	class Logger;
 
 	/**
 	*	@class Application
@@ -54,9 +55,6 @@ namespace Voxel
 		// Initailzie game
 		void initDirector();
 
-		// Initialize internal settings
-		void initInternalSettings();
-
 		// Init fonts
 		void initFonts();
 
@@ -74,10 +72,7 @@ namespace Voxel
 
 		// Set true to skip next frame.
 		bool needToSkipFrame;
-
-		// internal setting
-		DataTree* internalSetting;
-
+		
 		// Clean up
 		void cleanUp();
 	public:
@@ -104,9 +99,11 @@ namespace Voxel
 
 		// Get director
 		Director* getDirector();
-
-		// Get working directory
-		std::string getWorkingDirectory();
+		
+#if V_BUILD_NUMBER
+		// Initialize internal settings
+		void initInternalSettings();
+#endif
 	};
 }
 
