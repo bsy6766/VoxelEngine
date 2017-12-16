@@ -4,6 +4,8 @@
 #include "Application.h"
 #include "Utility.h"
 #include "FileSystem.h"
+#include "Logger.h"
+#include "Config.h"
 
 // cpp
 #include <fstream>
@@ -62,23 +64,32 @@ Texture2D * Voxel::SpriteSheet::getTexture()
 
 void Voxel::SpriteSheet::print()
 {
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+
+	logger->consoleInfo("[SpriteSheet] Info");
+
 	if (texture)
 	{
-		std::cout << "Texture: " << texture->getName() << "\n";
+		logger->consoleInfo("[SpriteSheet] Texture name: " + texture->getName());
 	}
 	else
 	{
-		std::cout << "Texture: nullptr\n";
+		logger->consoleWarn("[SpriteSheet] Texture doesn't eixsts.");
 	}
 
-	std::cout << "Images...\n";
+	logger->consoleInfo("[SpriteSheet] " + std::to_string(imageEntryMap.size()) + " images in spritesheet");
 
 	for (auto& ie : imageEntryMap)
 	{
-		std::cout << "Name: " << ie.first << "\n";
-		std::cout << "Size: (" << (ie.second).width << ", " << (ie.second).height << ")\n";
-		std::cout << "Texture coordinate: " << Utility::Log::vec2ToStr((ie.second).uvOrigin) << ", " << Utility::Log::vec2ToStr((ie.second).uvEnd) << std::endl;
+		logger->consoleInfo("[ImageEntry] Name: " + ie.first);
+		logger->consoleInfo("[ImageEntry] Width: " + std::to_string((ie.second).width));
+		logger->consoleInfo("[ImageEntry] Height: " + std::to_string((ie.second).height));
+		logger->consoleInfo("[ImageEntry] Height: " + std::to_string((ie.second).height));
+		logger->consoleInfo("[ImageEntry] uvOrigin: (" + std::to_string((ie.second).uvOrigin.x) + ", " + std::to_string((ie.second).uvOrigin.y) + ")");
+		logger->consoleInfo("[ImageEntry] uvOrigin: (" + std::to_string((ie.second).uvEnd.x) + ", " + std::to_string((ie.second).uvEnd.y) + ")");
 	}
+#endif
 }
 
 bool Voxel::SpriteSheet::init(const std::string & dataFileName)
@@ -100,17 +111,23 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 		return false;
 	}
 	
-	auto& meta = j.at("meta");
+	auto& textureInfo = j.at("texture");
 
-	std::string textureName = meta.at("image");
+	std::string textureName = textureInfo.at("path");
 
 	texture = Texture2D::createSpriteSheetTexture(textureName, GL_TEXTURE_2D);
 
+	if (!texture)
+	{
+		return false;
+	}
+
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
-	std::string textureFormatStr = meta.at("format");
-	const float textureWidth = meta.at("size").at("w");
-	const float textureHeight = meta.at("size").at("h");
+	auto textureSize = texture->getTextureSize();
+
+	const float textureWidth = textureSize.x;
+	const float textureHeight = textureSize.y;
 
 	auto& frames = j.at("frames");
 
@@ -250,18 +267,23 @@ void Voxel::SpriteSheetManager::releaseAll()
 
 void Voxel::SpriteSheetManager::print(const bool detail)
 {
-	std::cout << "[SpriteSheetManager] All SpriteSheet info\n";
-	std::cout << "[SpriteSheetManager] SpriteSheet count: " << spriteSheetMap.size() << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+	
+	logger->consoleInfo("[SpriteSheetManager] All SpriteSheet informations");
+	logger->consoleInfo("[SpriteSheetManager] Total spritesheets: " + std::to_string(spriteSheetMap.size()));
 
 	for (auto& ss : spriteSheetMap)
 	{
 		if (ss.second)
 		{
-			std::cout << "Spritesheet: " << ss.first << std::endl;
+			logger->consoleInfo("[SpriteSheetManager] Key: " + ss.first);
+
 			if (detail)
 			{
 				(ss.second)->print();
 			}
 		}
 	}
+#endif
 }
