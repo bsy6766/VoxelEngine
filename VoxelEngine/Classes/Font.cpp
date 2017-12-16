@@ -7,6 +7,7 @@
 #include "Utility.h"
 #include "FileSystem.h"
 #include "Logger.h"
+#include "ErrorCode.h"
 
 using namespace Voxel;
 
@@ -26,9 +27,6 @@ Font::Font()
 	initLibrary();
 }
 
-Font::~Font()
-{}
-
 void Voxel::Font::initLibrary()
 {
 	if (!library)
@@ -36,7 +34,8 @@ void Voxel::Font::initLibrary()
 		if (FT_Init_FreeType(&library))
 		{
 			library = nullptr;
-			throw std::runtime_error("Failed to initialize Freetype2");
+
+			throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_INITIALIZE_FREETYPE2));
 		}
 	}
 }
@@ -77,9 +76,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	this->outlineSize = outlineSize;
 
 	std::string fontPath = FileSystem::getInstance().getWorkingDirectory() + "/" + DEFAULT_FONT_PATH + fontName;
+
 	if (FT_New_Face(library, fontPath.c_str(), 0, &face))
 	{
-		throw std::runtime_error("Freetype2 failed to load font at \"" + fontPath + "\"");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_LOAD_FONT_FILE) + "\nInvalid font file: \"" + fontPath + "\"");
 	}
 
 	//std::cout << "[Font] Glyph count = " << (face->ascender >> 6) << std::endl;
@@ -106,14 +106,18 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 	const int textureSizeLimit = 2048;
 	
+	auto logger = &Voxel::Logger::getInstance();
+
 	// whitespace to tilde. Iterate all character to find the size of character map
 	// this loops find the texture size we are going to make for this font.
 	// whitespace doesn't have texture space, so we can ignore, but font always can have different stuffs filled in any char, so we still check for it.
-	for (unsigned int i = ' '; i < '~'; i++)
+	for (unsigned int i = ' '; i <= '~'; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
-			std::cout << "[Font] Failed to load character" << static_cast<char>(i) << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+			logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
+#endif
 			continue;
 		}
 
@@ -136,19 +140,20 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	if (widthDiv > textureSizeLimit || heightDiv > textureSizeLimit)
 	{
 		FT_Done_Face(face);
-		std::cout << "[Font] Font size is too big to generate font texture\n";
+
+		// Font texutre size is too big.
+		// Todo: Fix this. Idea: Create program that exports font texture to separate image per char and use texture packer to create font atlas...
+		assert(false);
 		return false;
 	}
 
 	int pow2Width = Utility::Math::findNearestPowTwo(widthDiv);
 	int pow2Height = Utility::Math::findNearestPowTwo(heightDiv);
 
-	// Todo: don't foce to 1024. make algorithm that finds minimum power 2 rentangular shape.
-	pow2Width = 1024;
-	pow2Height = 1024;
-
-	std::cout << "[Font] Generating font texture sized (" << pow2Width << ", " << pow2Height << ")\n";
-
+	// Todo: don't foce to 256. make algorithm that finds minimum power 2 rentangular shape.
+	pow2Width = 256;
+	pow2Height = 256;
+	
 	//int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
 	//int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
 
@@ -171,6 +176,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	// bind font texture
 	texture->bind();
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 	// iterate over char map (whitespace to tilde) again. 
 	// x offset. 
 	float x = 0;
@@ -185,7 +192,9 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
-			std::cout << "[Font] Failed to load character" << static_cast<char>(i) << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+			logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
+#endif
 			continue;
 		}
 
@@ -226,7 +235,10 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 
 			if (y > pow2Height)
 			{
-				std::cout << "[Font] Error. Font size is too big to fit in texture\n";
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+				logger->consoleError("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
+#endif
+				throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FONT_TEXTURE_TOO_SMALL));
 				return false;
 			}
 			x = 0;
@@ -269,6 +281,8 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	linespace = face->size->metrics.height >> 6;
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+	texture->saveToPNG();
 
 	//make sure release face.
 	FT_Done_Face(face);

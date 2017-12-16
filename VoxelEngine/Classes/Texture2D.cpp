@@ -298,6 +298,10 @@ bool Voxel::Texture2D::saveToPNG()
 	// unbind texture
 	glBindTexture(this->textureTarget, 0);
 
+#if V_DEBUG && V_DEBUG_CONSOLE
+	logger->consoleInfo("[Texture2D] Texture saved: " + (Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png"));
+#endif
+
 	// success!
 	return true;
 }
@@ -386,7 +390,6 @@ bool Voxel::Texture2D::initFontTexture(const int width, const int height, GLenum
 	glGenTextures(1, &this->textureObject);
 	glBindTexture(GL_TEXTURE_2D, this->textureObject);
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -396,6 +399,9 @@ bool Voxel::Texture2D::initFontTexture(const int width, const int height, GLenum
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 
 	this->textureTarget = textureTarget;
+	this->width = width;
+	this->height = height;
+	this->channel = 3;
 
 	return true;
 }

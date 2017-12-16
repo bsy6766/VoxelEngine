@@ -96,7 +96,7 @@ namespace Voxel
 		static Font* createWithOutline(const std::string& fontName, const int fontSize, const int outlineSize);
 
 		// destructor
-		~Font();
+		~Font() = default;
 
 		// Get glyph for specific char
 		Glyph* getCharGlyph(const char c);
