@@ -9,6 +9,11 @@
 #include "Program.h"
 #include "Utility.h"
 #include "FileSystem.h"
+#include "Logger.h"
+#include "Config.h"
+
+// libpng
+#include <png.h>
 
 using namespace Voxel;
 
@@ -127,6 +132,176 @@ std::string Voxel::Texture2D::getName() const
 	return name;
 }
 
+bool Voxel::Texture2D::saveToPNG()
+{
+#if V_DEBUG && V_DEBUG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+	logger->consoleInfo("[Texture2D] Saving to png...");
+#endif
+
+	// bind
+	glBindTexture(this->textureTarget, this->textureObject);
+
+	// buffer
+	uint8_t *pixels;
+
+	// to channel enum
+	Channel channelEnum = static_cast<Channel>(channel);
+
+	// Gl get tex image reads left to right, top to bottom
+	switch (channelEnum)
+	{
+	case Voxel::Texture2D::Channel::RGB:
+		pixels = new uint8_t[width * height * 3];
+		glGetTexImage(textureTarget, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		break;
+	case Voxel::Texture2D::Channel::RGBA:
+		pixels = new uint8_t[width * height * 4];
+		glGetTexImage(textureTarget, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		break;
+	case Voxel::Texture2D::Channel::GRAYSCALE:
+	case Voxel::Texture2D::Channel::GRAYSCALE_ALPHA:
+	default:
+		// This engine doesn't supports grayscale
+		glBindTexture(this->textureTarget, 0);
+		return false;
+		break;
+	}
+
+	// open file
+	FILE* file = fopen((Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png").c_str(), "wb");
+
+	// check file
+	if (!file)
+	{
+		// Failed to open file
+#if V_DEBUG && V_DEBUG_CONSOLE
+		logger->consoleInfo("[Texture2D] Failed to open file: " + (Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png"));
+#endif
+		// delete pixels
+		delete[] pixels;
+		// unbind
+		glBindTexture(this->textureTarget, 0);
+
+		return false;
+	}
+
+	// create png struct
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png)
+	{
+		// failed
+		// delete pixels
+		delete[] pixels;
+		// close file
+		fclose(file);
+		// unbind
+		glBindTexture(this->textureTarget, 0);
+
+		return false;
+	}
+
+	// create png info
+	png_infop info = png_create_info_struct(png);
+	if (!info)
+	{
+		// failed
+		// delete pixels
+		delete[] pixels;
+		// close file
+		fclose(file);
+		// unbind
+		glBindTexture(this->textureTarget, 0);
+
+		return false;
+	}
+
+	if (setjmp(png_jmpbuf(png)))
+	{
+		// delete pixels
+		delete[] pixels;
+		// close file
+		fclose(file);
+		// unbind
+		glBindTexture(this->textureTarget, 0);
+		// destroy png struct and info
+		png_destroy_write_struct(&png, &info);
+
+		return false;
+	}
+
+	png_init_io(png, file);
+
+	if (channelEnum == Channel::RGB)
+	{
+		png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+	}
+	else if (channelEnum == Channel::RGBA)
+	{
+		png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+	}
+
+	png_write_info(png, info);
+
+	png_bytep *row_pointers = (png_bytep *)malloc(height * sizeof(png_bytep));
+
+	if (row_pointers == nullptr)
+	{
+		// failed to malloc
+		// delete pixels
+		delete[] pixels;
+		// close file
+		fclose(file);
+		// unbind
+		glBindTexture(this->textureTarget, 0);
+		// destroy png struct and info
+		png_destroy_write_struct(&png, &info);
+
+		return false;
+	}
+
+	// Convert pixel to row pointer
+	if (channelEnum == Channel::RGB)
+	{
+		for (int i = 0; i < height; i++)
+		{
+			row_pointers[i] = (png_bytep)pixels + (i * width * 3);
+		}
+	}
+	else if (channelEnum == Channel::RGBA)
+	{
+		for (int i = 0; i < height; i++)
+		{
+			row_pointers[i] = (png_bytep)pixels + (i * width * 4);
+		}
+	}
+
+	// write png
+	png_write_image(png, row_pointers);
+
+	// free
+	free(row_pointers);
+	row_pointers = nullptr;
+
+	// end png
+	png_write_end(png, info);
+
+	// release
+	png_destroy_write_struct(&png, &info);
+	
+	// release pixels
+	delete[] pixels;
+
+	// close file
+	fclose(file);
+
+	// unbind texture
+	glBindTexture(this->textureTarget, 0);
+
+	// success!
+	return true;
+}
+
 void Voxel::Texture2D::activate(GLenum textureUnit)
 {
 	glActiveTexture(textureUnit);
@@ -141,12 +316,18 @@ void Voxel::Texture2D::bind()
 
 void Voxel::Texture2D::print()
 {
-	std::cout << "Texture info:\n";
-	std::cout << "Object: " << textureObject << std::endl;
-	std::cout << "Target: " << textureTarget << std::endl;
-	std::cout << "Location: " << textureLocation << std::endl;
-	std::cout << "w: " << width << "h: " << height << std::endl;
-	std::cout << "Channel: " << channel << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+
+	logger->consoleInfo("[Texture] Info");
+	logger->consoleInfo("[Texture] Name: " + name);
+	logger->consoleInfo("[Texture] Texture object: " + std::to_string(textureObject));
+	logger->consoleInfo("[Texture] Texture target: " + std::to_string(textureTarget));
+	logger->consoleInfo("[Texture] Texture location: " + std::to_string(textureLocation));
+	logger->consoleInfo("[Texture] Width: " + std::to_string(width));
+	logger->consoleInfo("[Texture] Height: " + std::to_string(height));
+	logger->consoleInfo("[Texture] Channel: " + std::to_string(channel));
+#endif
 }
 
 bool Voxel::Texture2D::init(const std::string & textureName, GLenum textureTarget)
@@ -288,7 +469,6 @@ void Voxel::Texture2D::generate2DTexture(const int width, const int height, cons
 	case Channel::RGBA:
 		// PNG
 		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		std::cout << "[Texture2D] Created texture size of (" << width << ", " << height << ") with RGBA channel\n";
 		break;
 	case Channel::NONE:
 	default:
@@ -323,7 +503,6 @@ void Voxel::Texture2D::generate2DUISpriteSheetTexture(const int width, const int
 	case Channel::RGBA:
 		// PNG
 		glTexImage2D(textureTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		std::cout << "[Texture2D] Created sprite sheet texture size of (" << width << ", " << height << ") with RGBA channel\n";
 		break;
 	case Channel::NONE:
 	default:
@@ -392,18 +571,21 @@ std::shared_ptr<Texture2D> Voxel::TextureManager::getTexture(const std::string &
 
 void Voxel::TextureManager::print()
 {
-	std::cout << "[TextureManager] All texture info\n";
-	std::cout << "[TextureManager] SpriteSheet count: " << texturesMap.size() << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+
+	logger->consoleInfo("[TextureManager] All texture informations");
+	logger->consoleInfo("[TextureManager] Total textures: " + std::to_string(texturesMap.size()));
 
 	for (auto& e : texturesMap)
 	{
 		if (e.second)
 		{
-			std::cout << "Texture name: " << (e.second)->getName() << std::endl;
-			std::cout << "Reference count: " << e.second.use_count() << std::endl;
+			logger->consoleInfo("[TextureManager] Key: " + e.first + ", RefCount: " + std::to_string(e.second.use_count()));
 			e.second->print();
 		}
 	}
+#endif
 }
 
 void Voxel::TextureManager::releaseAll()

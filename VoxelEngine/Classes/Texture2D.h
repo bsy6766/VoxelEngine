@@ -94,8 +94,12 @@ namespace Voxel
 		// get texture id
 		std::string getName() const;
 
+		// save to png. This is for debug.
+		bool saveToPNG();
+
 		// activate texture
 		void activate(GLenum textureUnit);
+
 		// bind texture
 		void bind();
 
