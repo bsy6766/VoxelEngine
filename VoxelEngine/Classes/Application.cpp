@@ -30,6 +30,7 @@ Application::Application()
 	: glView(nullptr)
 	, director(nullptr)
 	, needToSkipFrame(true)
+	, cleaned(false)
 {
 	// init file system
 	auto fs = &Voxel::FileSystem::getInstance();
@@ -120,8 +121,14 @@ void Voxel::Application::initFonts()
 {
 	auto& fm = FontManager::getInstance();
 
-	fm.addFont("Pixel.ttf", 10);
-	fm.addFont("Pixel.ttf", 10, 2);
+	if (!fm.addFont("Pixel.ttf", 10))
+	{
+	}
+
+	if (!fm.addFont("Pixel.ttf", 10, 2))
+	{
+
+	}
 }
 
 void Voxel::Application::initSpriteSheets()
@@ -232,9 +239,25 @@ Director * Voxel::Application::getDirector()
 	return director;
 }
 
+bool Voxel::Application::takeScreenShot()
+{
+	if (glView)
+	{
+		//return glView->capture();
+	}
+
+	return false;
+}
+
 void Voxel::Application::cleanUp()
 {
 	// delete everything here before GLFW window dies
+	if (cleaned)
+	{
+		return;
+	}
+
+	cleaned = true;
 
 	// Delete main Camera
 	if (Camera::mainCamera)

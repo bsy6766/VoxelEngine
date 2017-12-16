@@ -74,6 +74,7 @@ namespace Voxel
 		bool needToSkipFrame;
 		
 		// Clean up
+		bool cleaned;
 		void cleanUp();
 	public:
 		// Get application instance
@@ -99,6 +100,9 @@ namespace Voxel
 
 		// Get director
 		Director* getDirector();
+
+		// Take screenshot
+		bool takeScreenShot();
 		
 #if V_BUILD_NUMBER
 		// Initialize internal settings

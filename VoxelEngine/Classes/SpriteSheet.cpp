@@ -126,8 +126,8 @@ bool Voxel::SpriteSheet::init(const std::string & dataFileName)
 
 	auto textureSize = texture->getTextureSize();
 
-	const float textureWidth = textureSize.x;
-	const float textureHeight = textureSize.y;
+	const float textureWidth = static_cast<float>(textureSize.x);
+	const float textureHeight = static_cast<float>(textureSize.y);
 
 	auto& frames = j.at("frames");
 

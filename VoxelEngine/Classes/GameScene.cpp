@@ -1218,7 +1218,7 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 {
 	if (input->hasController())
 	{
-		auto valueLeftAxisX = input->getAxisValue(IO::XBOX_360::AXIS::L_AXIS_X);
+		auto valueLeftAxisX = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::L_AXIS_X);
 		if (valueLeftAxisX  > 0.0f)
 		{
 			// Right
@@ -1230,7 +1230,7 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 		}
 		// Else, didn't move
 
-		auto valueLeftAxisY = input->getAxisValue(IO::XBOX_360::AXIS::L_AXIS_Y);
+		auto valueLeftAxisY = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::L_AXIS_Y);
 		if (valueLeftAxisY > 0.0f)
 		{
 			//foward
@@ -1244,13 +1244,13 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 
 		if (player->isFlying())
 		{
-			auto valueLeftTrigger = input->getAxisValue(IO::XBOX_360::AXIS::LT);
+			auto valueLeftTrigger = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::LT);
 			if (valueLeftTrigger > 0.0f)
 			{
 				player->moveUp(delta);
 			}
 
-			auto valueRightTrigger = input->getAxisValue(IO::XBOX_360::AXIS::RT);
+			auto valueRightTrigger = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::RT);
 			if (valueRightTrigger > 0.0f)
 			{
 				player->moveDown(delta);
@@ -1260,7 +1260,7 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 		{
 			if (player->isOnGround())
 			{
-				if (input->isControllerButtonDown(Voxel::IO::XBOX_360::BUTTON::B))
+				if (input->isControllerButtonDown(Voxel::GAMEPAD::XBOX_360::BUTTON::B))
 				{
 					// Todo: Controller manager doesn't have feature to check if button was pressed only current frame.
 					player->jump();
@@ -1269,7 +1269,7 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 			}
 		}
 
-		auto valueRightAxisX = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_X);
+		auto valueRightAxisX = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::R_AXIS_X);
 		if (valueRightAxisX != 0.0f)
 		{
 			//std::cout << "V = " << valueRightAxisX << std::endl;
@@ -1277,7 +1277,7 @@ void Voxel::GameScene::updateControllerInput(const float delta)
 			player->addRotationY(delta * valueRightAxisX * 10.0f);
 		}
 
-		auto valueRightAxisY = input->getAxisValue(IO::XBOX_360::AXIS::R_AXIS_Y);
+		auto valueRightAxisY = input->getAxisValue(GAMEPAD::XBOX_360::AXIS::R_AXIS_Y);
 		if (valueRightAxisY != 0.0f)
 		{
 			player->addRotationX(delta * valueRightAxisY * 10.0f);

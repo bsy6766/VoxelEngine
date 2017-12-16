@@ -12,10 +12,6 @@ Voxel::UI::Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition
 	, centerPosition(centerPosition)
 	, visibility(true)
 {
-	std::cout << "[Canvas] Creating new canvas\n";
-	std::cout << "[Canvas] Size (" << size.x << ", " << size.y << ")\n";
-	std::cout << "[Canvas] Center (" << centerPosition.x << ", " << centerPosition.y << ")\n";
-
 	contentSize = size;
 
 	setInteractable();

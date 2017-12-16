@@ -7,7 +7,7 @@
 #include <functional>
 
 // voxel
-#include "ControllerManager.h"
+#include "GamePadManager.h"
 #include "Application.h"
 
 // gl
@@ -80,7 +80,7 @@ namespace Voxel
 		Voxel::UI::InputField* inputField;
 
 		// Controller
-		ControllerManager* controllerManager;
+		GamePadManager* controllerManager;
 
 		// Checks if player has custom key bind. Returns -1 if didn't.
 		int getKeyFromUserKeyBind(const KEY_INPUT keyInput);
@@ -111,11 +111,11 @@ namespace Voxel
 		static void glfwScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
 		// Controller Manager Callback
-		static void onButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button);
-		static void onButtonReleased(ControllerID id, IO::XBOX_360::BUTTON button);
-		static void onAxisMoved(ControllerID id, IO::XBOX_360::AXIS axis, const float value);
-		static void onControllerConnected(ControllerID id);
-		static void onControllerDisconnected(ControllerID id);
+		static void onButtonPressed(GamePadID id, GAMEPAD::XBOX_360::BUTTON button);
+		static void onButtonReleased(GamePadID id, GAMEPAD::XBOX_360::BUTTON button);
+		static void onAxisMoved(GamePadID id, GAMEPAD::XBOX_360::AXIS axis, const float value);
+		static void onControllerConnected(GamePadID id);
+		static void onControllerDisconnected(GamePadID id);
 
 		// Get current mouse position
 		glm::vec2 getMousePosition() const;
@@ -188,10 +188,10 @@ namespace Voxel
 		// TODO: Controller id can be change at connection and disctionection. save id to player and update
 		// For now, assume it's 0
 		// L_AXIS_X. Left = -1, Right = 1
-		float getAxisValue(IO::XBOX_360::AXIS axis);
+		float getAxisValue(GAMEPAD::XBOX_360::AXIS axis);
 
 		// Check if controller button is down
-		bool isControllerButtonDown(IO::XBOX_360::BUTTON button);
+		bool isControllerButtonDown(GAMEPAD::XBOX_360::BUTTON button);
 
 		// check if controller is connected
 		bool hasController();

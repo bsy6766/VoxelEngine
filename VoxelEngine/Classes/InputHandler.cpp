@@ -7,11 +7,12 @@
 // voxel
 #include "Setting.h"
 #include "InputField.h"
+#include "Logger.h"
 
 using namespace Voxel;
 
 InputHandler::InputHandler()
-	: controllerManager(ControllerManager::getInstance())
+	: controllerManager(GamePadManager::getInstance())
 	, curMousePos(0.0f)
 	, prevMousePos(0.0f)
 	, mods(0)
@@ -38,7 +39,7 @@ InputHandler::InputHandler()
 
 Voxel::InputHandler::~InputHandler()
 {
-	ControllerManager::deleteInstance();
+	GamePadManager::deleteInstance();
 }
 
 void Voxel::InputHandler::update()
@@ -90,27 +91,20 @@ void Voxel::InputHandler::glfwScrollCallback(GLFWwindow * window, double xOffset
 	InputHandler::getInstance().mouseScrollValue = static_cast<int>(yOffset);
 }
 
-void Voxel::InputHandler::onButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button)
-{
-}
+void Voxel::InputHandler::onButtonPressed(GamePadID id, GAMEPAD::XBOX_360::BUTTON button)
+{}
 
-void Voxel::InputHandler::onButtonReleased(ControllerID id, IO::XBOX_360::BUTTON button)
-{
-}
+void Voxel::InputHandler::onButtonReleased(GamePadID id, GAMEPAD::XBOX_360::BUTTON button)
+{}
 
-void Voxel::InputHandler::onAxisMoved(ControllerID id, IO::XBOX_360::AXIS axis, const float value)
-{
-}
+void Voxel::InputHandler::onAxisMoved(GamePadID id, GAMEPAD::XBOX_360::AXIS axis, const float value)
+{}
 
-void Voxel::InputHandler::onControllerConnected(ControllerID id)
-{
-	std::cout << "[InputHandler] Controller #" << id << " is connected\n";
-}
+void Voxel::InputHandler::onControllerConnected(GamePadID id)
+{}
 
-void Voxel::InputHandler::onControllerDisconnected(ControllerID id)
-{
-	std::cout << "[InputHandler] Controller #" << id << " is disconnected\n";
-}
+void Voxel::InputHandler::onControllerDisconnected(GamePadID id)
+{}
 
 int Voxel::InputHandler::getKeyFromUserKeyBind(const KEY_INPUT keyInput)
 {
@@ -285,7 +279,9 @@ bool Voxel::InputHandler::getKeyDown(const KEY_INPUT keyInput, const bool tick)
 		if (find == defaultKeyBindMap.end())
 		{
 			// Wasn't able to find key
-			std::cout << "[InputHandler] Wasn't able to find default key for KEY_INPUT: " << (int)keyInput << "\n";
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+			Voxel::Logger::getInstance().warn("[InputHandler] Wasn't able to find default key for KEY_INPUT: " + std::to_string(static_cast<int>(keyInput)));
+#endif
 			return false;
 		}
 		else
@@ -678,12 +674,12 @@ bool Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 	return false;
 }
 
-float Voxel::InputHandler::getAxisValue(IO::XBOX_360::AXIS axis)
+float Voxel::InputHandler::getAxisValue(GAMEPAD::XBOX_360::AXIS axis)
 {
 	return controllerManager->getAxisValue(0, axis);
 }
 
-bool Voxel::InputHandler::isControllerButtonDown(IO::XBOX_360::BUTTON button)
+bool Voxel::InputHandler::isControllerButtonDown(GAMEPAD::XBOX_360::BUTTON button)
 {
 	return controllerManager->isButtonPressed(0, button);
 }

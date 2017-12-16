@@ -12,11 +12,11 @@
 
 namespace Voxel
 {
-	class ControllerManager;
+	class GamePadManager;
 
-	typedef Sint16 ControllerID;
+	typedef Sint16 GamePadID;
 
-	namespace IO
+	namespace GAMEPAD
 	{
 		namespace XBOX_360
 		{
@@ -59,26 +59,30 @@ namespace Voxel
 		*/
 	}
 
-	class Controller
+	class GamePad
 	{
 	private:
 		// Manager class if friend
-		friend ControllerManager;
+		friend GamePadManager;
 
 		// Private constructor. User can't make their own controller instance.
-		Controller(SDL_GameController* controller, SDL_Haptic* haptic, const std::string& name, const ControllerID id, const int buttonCount, const int axisCount);
-		// Private destructor. Only manager can delete instance.
-		~Controller();
+		GamePad(SDL_GameController* controller, SDL_Haptic* haptic, const std::string& name, const GamePadID id);
 
-		// SDL instances holder
+		// Private destructor. Only manager can delete instance.
+		~GamePad();
+
+		// SDL game controller
 		SDL_GameController* controller;
+
+		// SDL haptic (optional)
 		SDL_Haptic* haptic;
 
-		// Informations
+		// name of controller
 		std::string name;
-		ControllerID id;
-		int buttonCount;
-		int axisCount;
+
+		// id
+		GamePadID id;
+
 		// Note: SDL supports balls for controller, but we will focus on xbox360 for windows.
 		bool hapticEnabled;
 
@@ -102,59 +106,70 @@ namespace Voxel
 		Sint16 AXIS_MAX;
 
 		// Button state
-		std::unordered_map<IO::XBOX_360::BUTTON, bool> buttonStateMap;
-		// Axis movement state
-		std::unordered_map<IO::XBOX_360::AXIS, float> axisValueMap;
+		std::unordered_map<GAMEPAD::XBOX_360::BUTTON, bool> buttonStateMap;
+		std::unordered_map<GAMEPAD::XBOX_360::BUTTON, bool> buttonStateTickMap;
 
-		// Update specific button's state
-		void updateButtonState(IO::XBOX_360::BUTTON button, bool state);
-		void updateAxisValue(IO::XBOX_360::AXIS axis, float value);
+		// Axis movement state
+		std::unordered_map<GAMEPAD::XBOX_360::AXIS, float> axisValueMap;
+
+		/**
+		*	Update button state
+		*/
+		void updateButtonState(GAMEPAD::XBOX_360::BUTTON button, bool state);
+
+		/**
+		*	Update axis value
+		*/
+		void updateAxisValue(GAMEPAD::XBOX_360::AXIS axis, float value);
 
 		/**
 		*	Gets axis value based on each controller setting.
 		*	SDL returns -32768 ~ 32767 value on axis movement.
 		*	We convert axis value in 0.0f ~ 1.0f scale. 
 		*/
-		const float convertAxisValue(ControllerID rawValue, const float modifier = 1.0f);
+		const float convertAxisValue(GamePadID rawValue, const float modifier = 1.0f);
 
 		// Play rumble effect
 		void playRumble(const float strength, const Uint32 length);
+		
+		// Check if button was pressed
+		bool isButtonPressed(GAMEPAD::XBOX_360::BUTTON button, const bool tick = false);
 
-		// Check if has button or axis
-		const bool hasButton(IO::XBOX_360::BUTTON button);
-		const bool hasAxis(IO::XBOX_360::AXIS axis);
+		// Check if button was released
+		bool isButtonReleased(GAMEPAD::XBOX_360::BUTTON button, const bool tick = false);
+
+		// Get axis value
+		float getAxisValue(GAMEPAD::XBOX_360::AXIS axis);
+
+		// post update. Wipes button tick states
+		void postUpdate();
 	public:
 	};
 
 	/**
-	*	@class ControllerManager
+	*	@class GamePadManager
 	*
 	*	@brief Manages multiple controllers connections.
 	*
-	*	@note Only supports XBOX 360 controller
-	*
-	*	This class manages multiple xbox 360 controllers.
-	*	Here are list of features supported
-	*	- Connection detection
-	*
+	*	@note Only supports XBOX controllers
 	*/
-	class ControllerManager
+	class GamePadManager
 	{
 	private:
 		// Constructor
-		ControllerManager();
+		GamePadManager();
 
 		// Destructor
-		~ControllerManager();
+		~GamePadManager();
 
 		//Singleton instance
-		static ControllerManager* instance;
+		static GamePadManager* instance;
 
 		// True if sdl is usable.
 		bool active;
 
 		// Store controller
-		std::unordered_map<ControllerID/*SDL controller id*/, Controller*> controllers;
+		std::unordered_map<GamePadID/*SDL controller id*/, GamePad*> gamePads;
 
 		/**
 		*	Add controller to manager
@@ -172,35 +187,36 @@ namespace Voxel
 		*	It stores down state for each button pressed.
 		*	Also it calls onButtonPressed if has.
 		*/
-		void buttonPressed(ControllerID id, const SDL_ControllerButtonEvent event);
+		void buttonPressed(GamePadID id, const SDL_ControllerButtonEvent event);
 
 		/**
 		*	Button released
 		*	Same mechanism with buttonPressed function but just for released/up state
 		*/
-		void buttonReleased(ControllerID id, const SDL_ControllerButtonEvent event);
+		void buttonReleased(GamePadID id, const SDL_ControllerButtonEvent event);
 
 		/**
 		*	Axis moved
 		*	This function is called when SDL detects axis movement.
 		*/
-		void axisMoved(ControllerID id, const SDL_ControllerAxisEvent event);
+		void axisMoved(GamePadID id, const SDL_ControllerAxisEvent event);
 
 		/**
 		*	Finds controller by id.
 		*	Nullptr if doesn't exists
 		*/
-		Controller* findController(ControllerID id);
+		GamePad* findGamePad(GamePadID id) const;
+
 	public:
 		// Get instance
-		static ControllerManager* getInstance();
+		static GamePadManager* getInstance();
 
 		// Destroy instance.
 		static void deleteInstance();
 
 		// Prevent copying or assigning instance
-		ControllerManager(ControllerManager const&) = delete;
-		void operator=(ControllerManager const&) = delete;
+		GamePadManager(GamePadManager const&) = delete;
+		void operator=(GamePadManager const&) = delete;
 
 		const float SDL_AXIS_MAX_ABS_VALUE = 32767;
 		const float SDL_AXIS_MIN_ABS_VALUE = 32768;
@@ -212,45 +228,63 @@ namespace Voxel
 		void update();
 
 		// Callback function when button is pressed
-		static std::function<void(ControllerID id, IO::XBOX_360::BUTTON button)> onButtonPressed;
+		static std::function<void(GamePadID id, GAMEPAD::XBOX_360::BUTTON button)> onButtonPressed;
 
 		// Callback function when button is released.
-		static std::function<void(ControllerID id, IO::XBOX_360::BUTTON button)> onButtonReleased;
+		static std::function<void(GamePadID id, GAMEPAD::XBOX_360::BUTTON button)> onButtonReleased;
 
 		// Callback function when axis moved.
-		static std::function<void(ControllerID id, IO::XBOX_360::AXIS axis, const float value)> onAxisMoved;
+		static std::function<void(GamePadID id, GAMEPAD::XBOX_360::AXIS axis, const float value)> onAxisMoved;
 
 		// Callback function when controller is connected
-		static std::function<void(ControllerID id)> onControllerConnected;
+		static std::function<void(GamePadID id)> onControllerConnected;
 
 		// Callback function when controller is disconnected
-		static std::function<void(ControllerID id)> onControllerDisconnected;
+		static std::function<void(GamePadID id)> onControllerDisconnected;
 
 		// Get/Set minimum axis value
-		const Sint16 getMinAxisValue(ControllerID id);
-		void setMinAxisValue(ControllerID id, Sint16 value);
+		Sint16 getMinAxisValue(GamePadID id) const;
+		void setMinAxisValue(GamePadID id, Sint16 value);
 
 		// Get/Set maximum axis value
-		const Sint16 getMaxAxisValue(ControllerID id);
-		void setMaxAxisValue(ControllerID id, Sint16 value);
+		Sint16 getMaxAxisValue(GamePadID id) const;
+		void setMaxAxisValue(GamePadID id, Sint16 value);
 
 		// Haptic modifier (Vibration power)
-		const float getHapticModifier(ControllerID id);
-		void setHapticModifier(ControllerID id, float modifier);
+		float getHapticModifier(GamePadID id) const;
+		void setHapticModifier(GamePadID id, float modifier);
 
-		// Check button state and axis value
-		const bool isButtonPressed(ControllerID id, IO::XBOX_360::BUTTON button);
-		const bool isButtonReleased(ControllerID id, IO::XBOX_360::BUTTON button);
-		const bool isAxisMoved(ControllerID id, IO::XBOX_360::AXIS axis);
+		/**
+		*	Check if button was pressed
+		*	@param id GamePad id to check
+		*	@param button Button to check
+		*	@param tick true to check if button was pressed current frame. Else, false.
+		*/
+		bool isButtonPressed(GamePadID id, GAMEPAD::XBOX_360::BUTTON button, const bool tick = false) const;
+
+		/**
+		*	Check if button was released
+		*	@param id GamePad id to check
+		*	@param button Button to check
+		*	@param tick true to check if button was released current frame. Else, false.
+		*/
+		bool isButtonReleased(GamePadID id, GAMEPAD::XBOX_360::BUTTON button, const bool tick = false) const;
+
+		/**
+		*	Check if axis moved 
+		*	@param id GamePad id to check
+		*	@param axis Axis to check
+		*/
+		bool isAxisMoved(GamePadID id, GAMEPAD::XBOX_360::AXIS axis) const;
 
 		// Check if has haptic
-		const bool hasHaptic(ControllerID id);
+		bool hasHaptic(GamePadID id) const;
 
 		// Play rumble.
-		void playRumble(ControllerID id, float strength, Uint32 length);
+		void playRumble(GamePadID id, float strength, Uint32 length);
 
 		// Get axis value for controller. returns 0 if controller is not found
-		float getAxisValue(ControllerID id, IO::XBOX_360::AXIS axis);
+		float getAxisValue(GamePadID id, GAMEPAD::XBOX_360::AXIS axis);
 
 		// Get number of controllers connected
 		int getControllerCount();

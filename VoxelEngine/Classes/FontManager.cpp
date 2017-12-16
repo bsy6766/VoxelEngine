@@ -9,11 +9,12 @@
 
 using namespace Voxel;
 
-int FontManager::idCounter = 0;
+int FontManager::idCounter = 1;
 
 FontManager::~FontManager()
 {
 	clear();
+
 	Font::closeFreetype();
 }
 
@@ -38,13 +39,14 @@ int FontManager::addFont(const std::string& fontName, const int fontSize, int ou
 
 	if (newFont)
 	{
-		FontManager::idCounter++;
 		fonts.emplace(FontManager::idCounter, newFont);
 
 #if V_DEBUG && V_DEBUG_LOG_CONSOLE
 		auto logger = &Voxel::Logger::getInstance();
 		logger->consoleInfo("[FontManager] Added font " + fontName + "\" with size: " + std::to_string(fontSize));
 #endif
+
+		FontManager::idCounter++;
 		return FontManager::idCounter;
 	}
 	else
@@ -88,28 +90,15 @@ Font* FontManager::getFont(const int id)
 
 void Voxel::FontManager::clear()
 {
-	Font* arial = nullptr;
-
 	for (auto font : fonts)
 	{
-		if (font.first == 0)
+		if (font.second)
 		{
-			// Don't delete arial
-			arial = font.second;
-			continue;
-		}
-		else
-		{
-			if (font.second)
-			{
-				delete font.second;
-			}
+			delete font.second;
 		}
 	}
 
 	fonts.clear();
 
-	fonts.emplace(0, arial);
-
-	FontManager::idCounter = 0;
+	FontManager::idCounter = 1;
 }

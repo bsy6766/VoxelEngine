@@ -809,15 +809,21 @@ void GLView::glfwErrorCallback(int error, const char * description)
 
 void Voxel::GLView::glfwWindowFocusCallback(GLFWwindow * window, int focus)
 {
-	std::cout << "[GLView] ";
 	if (focus == GLFW_TRUE)
 	{
-		std::cout << "Gained focus\n";
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleInfo("[GLView] Focus gained");
+#endif
+
 		Application::getInstance().skipFrame();
 	}
 	else
 	{
-		std::cout << "Lost focus\n";
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+		logger->consoleInfo("[GLView] Focus lost");
+#endif
 	}
 }
 
