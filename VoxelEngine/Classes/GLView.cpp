@@ -105,7 +105,7 @@ void Voxel::GLView::initGLFW()
 	if (glfwInit() != GL_TRUE)
 	{
 		// GLFW failed to initailize. Error code: FAILED_TO_INITIALIZE_GLFW
-		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_INITIALIZE_GLFW));
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_INITIALIZE_GLFW));
 	}
 	else
 	{
@@ -247,7 +247,7 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 		// Terminate
 		glfwTerminate();
 		// Error code: FAILED_TO_CREATE_GLFW_WINDOW
-		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_CREATE_GLFW_WINDOW));
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_CREATE_GLFW_WINDOW));
 	}
 
 	// if window successfully made, make it current window
@@ -306,7 +306,7 @@ void Voxel::GLView::initGLEW()
 		//fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 
 		// Error code: FAILED_TO_INITIALIZE_GLEW
-		throw std::runtime_error(std::to_string(Voxel::Error::Code::FAILED_TO_INITIALIZE_GLEW) + "\nGlew error code: " + std::to_string(err));
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_INITIALIZE_GLEW) + "\nGlew error code: " + std::to_string(err));
 	}
 
 	std::stringstream vss;
