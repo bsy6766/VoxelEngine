@@ -1,30 +1,27 @@
-{"frames": [
-
 {
-	"filename": "sun.png",
-	"frame": {"x":1,"y":1,"w":241,"h":241},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":8,"y":8,"w":241,"h":241},
-	"sourceSize": {"w":256,"h":256},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "sun_2.png",
-	"frame": {"x":1,"y":244,"w":237,"h":237},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":237,"h":237},
-	"sourceSize": {"w":237,"h":237},
-	"pivot": {"x":0.5,"y":0.5}
-}],
-"meta": {
-	"app": "http://www.codeandweb.com/texturepacker",
-	"version": "1.0",
-	"image": "EnvironmentSpriteSheet.png",
-	"format": "RGBA8888",
-	"size": {"w":512,"h":512},
-	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:346bd16f4404591208de50fbac878785:58df1c493a8b6282493c5aae122bbe4d:583b57f8fb762461de7feeac75170fcc$"
-}
+    "frames": [
+        {
+            "frame": {
+                "y": 1, 
+                "x": 1, 
+                "w": 241, 
+                "h": 241
+            }, 
+            "filename": "sun.png"
+        }, 
+        {
+            "frame": {
+                "y": 244, 
+                "x": 1, 
+                "w": 237, 
+                "h": 237
+            }, 
+            "filename": "sun_2.png"
+        }
+    ], 
+    "texture": {
+        "path": "EnvironmentSpriteSheet.png", 
+        "height": 512, 
+        "width": 512
+    }
 }

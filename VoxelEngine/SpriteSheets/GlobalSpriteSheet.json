@@ -1,48 +1,45 @@
-{"frames": [
-
 {
-	"filename": "1x1_black.png",
-	"frame": {"x":1,"y":5,"w":1,"h":1},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
-	"sourceSize": {"w":1,"h":1},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "1x1_green.png",
-	"frame": {"x":4,"y":5,"w":1,"h":1},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
-	"sourceSize": {"w":1,"h":1},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "1x1_white.png",
-	"frame": {"x":5,"y":1,"w":1,"h":1},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":1,"h":1},
-	"sourceSize": {"w":1,"h":1},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "2x2_black.png",
-	"frame": {"x":1,"y":1,"w":2,"h":2},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":2},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-}],
-"meta": {
-	"app": "http://www.codeandweb.com/texturepacker",
-	"version": "1.0",
-	"image": "GlobalSpriteSheet.png",
-	"format": "RGBA8888",
-	"size": {"w":8,"h":8},
-	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:9b2def83cb482b7390021ceebc3a9de7:9e965c460da0d626b5c7f5320edc80fc:2e0dfc21fa1b05d5fdcaf0c6a2effe4a$"
-}
+    "frames": [
+        {
+            "frame": {
+                "y": 5, 
+                "x": 1, 
+                "w": 1, 
+                "h": 1
+            }, 
+            "filename": "1x1_black.png"
+        }, 
+        {
+            "frame": {
+                "y": 5, 
+                "x": 4, 
+                "w": 1, 
+                "h": 1
+            }, 
+            "filename": "1x1_green.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 5, 
+                "w": 1, 
+                "h": 1
+            }, 
+            "filename": "1x1_white.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 1, 
+                "w": 2, 
+                "h": 2
+            }, 
+            "filename": "2x2_black.png"
+        }
+    ], 
+    "texture": {
+        "path": "GlobalSpriteSheet.png", 
+        "height": 8, 
+        "width": 8
+    }
 }

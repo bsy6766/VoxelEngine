@@ -1,192 +1,189 @@
-{"frames": [
-
 {
-	"filename": "credits_button_clicked.png",
-	"frame": {"x":1,"y":67,"w":174,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":4,"w":174,"h":31},
-	"sourceSize": {"w":174,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "credits_button_disabled.png",
-	"frame": {"x":481,"y":1,"w":3,"h":3},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "credits_button_hovered.png",
-	"frame": {"x":177,"y":67,"w":174,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":174,"h":31},
-	"sourceSize": {"w":174,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "credits_button_idle.png",
-	"frame": {"x":177,"y":67,"w":174,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":174,"h":31},
-	"sourceSize": {"w":174,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "editor_button_clicked.png",
-	"frame": {"x":353,"y":67,"w":156,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":4,"w":156,"h":31},
-	"sourceSize": {"w":156,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "editor_button_disabled.png",
-	"frame": {"x":481,"y":1,"w":3,"h":3},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "editor_button_hovered.png",
-	"frame": {"x":1,"y":100,"w":156,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":156,"h":31},
-	"sourceSize": {"w":156,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "editor_button_idle.png",
-	"frame": {"x":1,"y":100,"w":156,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":156,"h":31},
-	"sourceSize": {"w":156,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "exit_game_button_clicked.png",
-	"frame": {"x":1,"y":1,"w":238,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":4,"w":238,"h":31},
-	"sourceSize": {"w":238,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "exit_game_button_disabled.png",
-	"frame": {"x":481,"y":1,"w":3,"h":3},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "exit_game_button_hovered.png",
-	"frame": {"x":241,"y":1,"w":238,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":238,"h":31},
-	"sourceSize": {"w":238,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "exit_game_button_idle.png",
-	"frame": {"x":241,"y":1,"w":238,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":238,"h":31},
-	"sourceSize": {"w":238,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "options_button_clicked.png",
-	"frame": {"x":1,"y":34,"w":186,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":4,"w":186,"h":31},
-	"sourceSize": {"w":186,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "options_button_disabled.png",
-	"frame": {"x":481,"y":1,"w":3,"h":3},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "options_button_hovered.png",
-	"frame": {"x":189,"y":34,"w":186,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":186,"h":31},
-	"sourceSize": {"w":186,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "options_button_idle.png",
-	"frame": {"x":189,"y":34,"w":186,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":186,"h":31},
-	"sourceSize": {"w":186,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "play_button_clicked.png",
-	"frame": {"x":377,"y":34,"w":114,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":4,"w":114,"h":31},
-	"sourceSize": {"w":114,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "play_button_disabled.png",
-	"frame": {"x":481,"y":1,"w":3,"h":3},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":3,"h":3},
-	"sourceSize": {"w":2,"h":2},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "play_button_hovered.png",
-	"frame": {"x":159,"y":100,"w":114,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":114,"h":31},
-	"sourceSize": {"w":114,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "play_button_idle.png",
-	"frame": {"x":159,"y":100,"w":114,"h":31},
-	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":0,"w":114,"h":31},
-	"sourceSize": {"w":114,"h":35},
-	"pivot": {"x":0.5,"y":0.5}
-}],
-"meta": {
-	"app": "http://www.codeandweb.com/texturepacker",
-	"version": "1.0",
-	"image": "MenuSceneUISpriteSheet.png",
-	"format": "RGBA8888",
-	"size": {"w":512,"h":512},
-	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:58a9cc617c9d3b9e10e237422d411502:70ea1f919057e1eadd3b435939c2b26a:3058dfeec412ffca65d807551b30e5da$"
-}
+    "frames": [
+        {
+            "frame": {
+                "y": 67, 
+                "x": 1, 
+                "w": 174, 
+                "h": 31
+            }, 
+            "filename": "credits_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "credits_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 67, 
+                "x": 177, 
+                "w": 174, 
+                "h": 31
+            }, 
+            "filename": "credits_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 67, 
+                "x": 177, 
+                "w": 174, 
+                "h": 31
+            }, 
+            "filename": "credits_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 67, 
+                "x": 353, 
+                "w": 156, 
+                "h": 31
+            }, 
+            "filename": "editor_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "editor_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 1, 
+                "w": 156, 
+                "h": 31
+            }, 
+            "filename": "editor_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 1, 
+                "w": 156, 
+                "h": 31
+            }, 
+            "filename": "editor_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 1, 
+                "w": 238, 
+                "h": 31
+            }, 
+            "filename": "exit_game_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "exit_game_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 241, 
+                "w": 238, 
+                "h": 31
+            }, 
+            "filename": "exit_game_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 241, 
+                "w": 238, 
+                "h": 31
+            }, 
+            "filename": "exit_game_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 34, 
+                "x": 1, 
+                "w": 186, 
+                "h": 31
+            }, 
+            "filename": "options_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "options_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 34, 
+                "x": 189, 
+                "w": 186, 
+                "h": 31
+            }, 
+            "filename": "options_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 34, 
+                "x": 189, 
+                "w": 186, 
+                "h": 31
+            }, 
+            "filename": "options_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 34, 
+                "x": 377, 
+                "w": 114, 
+                "h": 31
+            }, 
+            "filename": "play_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "play_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 159, 
+                "w": 114, 
+                "h": 31
+            }, 
+            "filename": "play_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 159, 
+                "w": 114, 
+                "h": 31
+            }, 
+            "filename": "play_button_idle.png"
+        }
+    ], 
+    "texture": {
+        "path": "MenuSceneUISpriteSheet.png", 
+        "height": 512, 
+        "width": 512
+    }
 }

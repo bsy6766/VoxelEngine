@@ -1,318 +1,315 @@
-{"frames": [
-
 {
-	"filename": "debug_anim_frame_0.png",
-	"frame": {"x":215,"y":141,"w":50,"h":50},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":50},
-	"sourceSize": {"w":50,"h":50},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_anim_frame_1.png",
-	"frame": {"x":127,"y":347,"w":55,"h":55},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
-	"sourceSize": {"w":55,"h":55},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_anim_frame_2.png",
-	"frame": {"x":153,"y":141,"w":60,"h":60},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":60,"h":60},
-	"sourceSize": {"w":60,"h":60},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_anim_frame_3.png",
-	"frame": {"x":153,"y":73,"w":66,"h":66},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":66,"h":66},
-	"sourceSize": {"w":66,"h":66},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_anim_frame_4.png",
-	"frame": {"x":33,"y":305,"w":71,"h":71},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":71,"h":71},
-	"sourceSize": {"w":71,"h":71},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_button_clicked.png",
-	"frame": {"x":184,"y":333,"w":100,"h":48},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":48},
-	"sourceSize": {"w":100,"h":48},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_button_disabled.png",
-	"frame": {"x":241,"y":193,"w":100,"h":48},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":48},
-	"sourceSize": {"w":100,"h":48},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_button_hovered.png",
-	"frame": {"x":267,"y":139,"w":100,"h":48},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":48},
-	"sourceSize": {"w":100,"h":48},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_button_idle.png",
-	"frame": {"x":287,"y":67,"w":100,"h":48},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":48},
-	"sourceSize": {"w":100,"h":48},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_clicked.png",
-	"frame": {"x":291,"y":1,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_clickedSelected.png",
-	"frame": {"x":331,"y":1,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_deselected.png",
-	"frame": {"x":371,"y":1,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_disabled.png",
-	"frame": {"x":242,"y":243,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_hovered.png",
-	"frame": {"x":242,"y":283,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_hoveredSelected.png",
-	"frame": {"x":282,"y":243,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_checkbox_selected.png",
-	"frame": {"x":282,"y":283,"w":38,"h":38},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":38,"h":38},
-	"sourceSize": {"w":38,"h":38},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_cross_hair.png",
-	"frame": {"x":133,"y":476,"w":32,"h":32},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
-	"sourceSize": {"w":32,"h":32},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_draggable_image.png",
-	"frame": {"x":25,"y":407,"w":106,"h":88},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":106,"h":88},
-	"sourceSize": {"w":106,"h":88},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_fade_image.png",
-	"frame": {"x":103,"y":203,"w":70,"h":70},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
-	"sourceSize": {"w":70,"h":70},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_hier_bar.png",
-	"frame": {"x":411,"y":1,"w":70,"h":30},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":30},
-	"sourceSize": {"w":70,"h":30},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_image.png",
-	"frame": {"x":1,"y":1,"w":150,"h":200},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":150,"h":200},
-	"sourceSize": {"w":150,"h":200},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_input_field_cursor.png",
-	"frame": {"x":25,"y":497,"w":2,"h":14},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":2,"h":14},
-	"sourceSize": {"w":2,"h":14},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_hor.png",
-	"frame": {"x":33,"y":378,"w":92,"h":22},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":92,"h":22},
-	"sourceSize": {"w":92,"h":22},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_hor_bg.png",
-	"frame": {"x":167,"y":476,"w":100,"h":30},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":30},
-	"sourceSize": {"w":100,"h":30},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_radial.png",
-	"frame": {"x":178,"y":269,"w":62,"h":62},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":62,"h":62},
-	"sourceSize": {"w":62,"h":62},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_radial_bg.png",
-	"frame": {"x":106,"y":275,"w":70,"h":70},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
-	"sourceSize": {"w":70,"h":70},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_ver.png",
-	"frame": {"x":1,"y":407,"w":22,"h":92},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":92},
-	"sourceSize": {"w":22,"h":92},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_progress_ver_bg.png",
-	"frame": {"x":1,"y":305,"w":30,"h":100},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":30,"h":100},
-	"sourceSize": {"w":30,"h":100},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_rotate_image.png",
-	"frame": {"x":133,"y":404,"w":70,"h":70},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
-	"sourceSize": {"w":70,"h":70},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_scale_image.png",
-	"frame": {"x":153,"y":1,"w":70,"h":70},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":70,"h":70},
-	"sourceSize": {"w":70,"h":70},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_scale_window.png",
-	"frame": {"x":1,"y":203,"w":100,"h":100},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
-	"sourceSize": {"w":100,"h":100},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_square_0.png",
-	"frame": {"x":175,"y":203,"w":64,"h":64},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
-	"sourceSize": {"w":64,"h":64},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_square_1.png",
-	"frame": {"x":221,"y":73,"w":64,"h":64},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
-	"sourceSize": {"w":64,"h":64},
-	"pivot": {"x":0.5,"y":0.5}
-},
-{
-	"filename": "debug_square_2.png",
-	"frame": {"x":225,"y":1,"w":64,"h":64},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
-	"sourceSize": {"w":64,"h":64},
-	"pivot": {"x":0.5,"y":0.5}
-}],
-"meta": {
-	"app": "http://www.codeandweb.com/texturepacker",
-	"version": "1.0",
-	"image": "DebugSpriteSheet.png",
-	"format": "RGBA8888",
-	"size": {"w":512,"h":512},
-	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:e5829338f59daaba1c54324fc7e9c658:ef2b0aaeac61148c0d57bce539818775:75f08dbd0e9e01137e89ec75be33d055$"
-}
+    "frames": [
+        {
+            "frame": {
+                "y": 141, 
+                "x": 215, 
+                "w": 50, 
+                "h": 50
+            }, 
+            "filename": "debug_anim_frame_0.png"
+        }, 
+        {
+            "frame": {
+                "y": 347, 
+                "x": 127, 
+                "w": 55, 
+                "h": 55
+            }, 
+            "filename": "debug_anim_frame_1.png"
+        }, 
+        {
+            "frame": {
+                "y": 141, 
+                "x": 153, 
+                "w": 60, 
+                "h": 60
+            }, 
+            "filename": "debug_anim_frame_2.png"
+        }, 
+        {
+            "frame": {
+                "y": 73, 
+                "x": 153, 
+                "w": 66, 
+                "h": 66
+            }, 
+            "filename": "debug_anim_frame_3.png"
+        }, 
+        {
+            "frame": {
+                "y": 305, 
+                "x": 33, 
+                "w": 71, 
+                "h": 71
+            }, 
+            "filename": "debug_anim_frame_4.png"
+        }, 
+        {
+            "frame": {
+                "y": 333, 
+                "x": 184, 
+                "w": 100, 
+                "h": 48
+            }, 
+            "filename": "debug_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 193, 
+                "x": 241, 
+                "w": 100, 
+                "h": 48
+            }, 
+            "filename": "debug_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 139, 
+                "x": 267, 
+                "w": 100, 
+                "h": 48
+            }, 
+            "filename": "debug_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 67, 
+                "x": 287, 
+                "w": 100, 
+                "h": 48
+            }, 
+            "filename": "debug_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 291, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 331, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_clickedSelected.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 371, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_deselected.png"
+        }, 
+        {
+            "frame": {
+                "y": 243, 
+                "x": 242, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 283, 
+                "x": 242, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 243, 
+                "x": 282, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_hoveredSelected.png"
+        }, 
+        {
+            "frame": {
+                "y": 283, 
+                "x": 282, 
+                "w": 38, 
+                "h": 38
+            }, 
+            "filename": "debug_checkbox_selected.png"
+        }, 
+        {
+            "frame": {
+                "y": 476, 
+                "x": 133, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "debug_cross_hair.png"
+        }, 
+        {
+            "frame": {
+                "y": 407, 
+                "x": 25, 
+                "w": 106, 
+                "h": 88
+            }, 
+            "filename": "debug_draggable_image.png"
+        }, 
+        {
+            "frame": {
+                "y": 203, 
+                "x": 103, 
+                "w": 70, 
+                "h": 70
+            }, 
+            "filename": "debug_fade_image.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 411, 
+                "w": 70, 
+                "h": 30
+            }, 
+            "filename": "debug_hier_bar.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 1, 
+                "w": 150, 
+                "h": 200
+            }, 
+            "filename": "debug_image.png"
+        }, 
+        {
+            "frame": {
+                "y": 497, 
+                "x": 25, 
+                "w": 2, 
+                "h": 14
+            }, 
+            "filename": "debug_input_field_cursor.png"
+        }, 
+        {
+            "frame": {
+                "y": 378, 
+                "x": 33, 
+                "w": 92, 
+                "h": 22
+            }, 
+            "filename": "debug_progress_hor.png"
+        }, 
+        {
+            "frame": {
+                "y": 476, 
+                "x": 167, 
+                "w": 100, 
+                "h": 30
+            }, 
+            "filename": "debug_progress_hor_bg.png"
+        }, 
+        {
+            "frame": {
+                "y": 269, 
+                "x": 178, 
+                "w": 62, 
+                "h": 62
+            }, 
+            "filename": "debug_progress_radial.png"
+        }, 
+        {
+            "frame": {
+                "y": 275, 
+                "x": 106, 
+                "w": 70, 
+                "h": 70
+            }, 
+            "filename": "debug_progress_radial_bg.png"
+        }, 
+        {
+            "frame": {
+                "y": 407, 
+                "x": 1, 
+                "w": 22, 
+                "h": 92
+            }, 
+            "filename": "debug_progress_ver.png"
+        }, 
+        {
+            "frame": {
+                "y": 305, 
+                "x": 1, 
+                "w": 30, 
+                "h": 100
+            }, 
+            "filename": "debug_progress_ver_bg.png"
+        }, 
+        {
+            "frame": {
+                "y": 404, 
+                "x": 133, 
+                "w": 70, 
+                "h": 70
+            }, 
+            "filename": "debug_rotate_image.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 153, 
+                "w": 70, 
+                "h": 70
+            }, 
+            "filename": "debug_scale_image.png"
+        }, 
+        {
+            "frame": {
+                "y": 203, 
+                "x": 1, 
+                "w": 100, 
+                "h": 100
+            }, 
+            "filename": "debug_scale_window.png"
+        }, 
+        {
+            "frame": {
+                "y": 203, 
+                "x": 175, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "debug_square_0.png"
+        }, 
+        {
+            "frame": {
+                "y": 73, 
+                "x": 221, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "debug_square_1.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 225, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "debug_square_2.png"
+        }
+    ], 
+    "texture": {
+        "path": "DebugSpriteSheet.png", 
+        "height": 512, 
+        "width": 512
+    }
 }
