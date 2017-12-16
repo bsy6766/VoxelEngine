@@ -13,6 +13,8 @@ void Voxel::ProgramManager::initPrograms()
 {
 	auto& shaderManager = ShaderManager::getInstance();
 
+	// Doesn't have to check if programs are valid. They throw exception if fails.
+
 	auto voxelShaderLineVert = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.vert", GL_VERTEX_SHADER);
 	auto voxelShaderLineFrag = shaderManager.createShader("voxelShaderLine", "shaders/voxelShaderLine.frag", GL_FRAGMENT_SHADER);
 	auto voxelShaderLineProgram = Program::create(voxelShaderLineVert, voxelShaderLineFrag);
@@ -48,6 +50,7 @@ void Voxel::ProgramManager::initPrograms()
 	auto voxelShaderPolygonSideProgram = Program::create(voxelShaderPolygonSideVert, voxelShaderPolygonSideFrag);
 	programs.emplace(PROGRAM_NAME::POLYGON_SIDE_SHADER, voxelShaderPolygonSideProgram);
 
+	// Don't need shader anymore if it's attached to program
 	shaderManager.releaseAll();
 }
 
