@@ -4,6 +4,9 @@
 #include <fstream>	//file
 #include <sstream>	//string stream
 
+// voxel
+#include "ErrorCode.h"
+
 using namespace Voxel;
 
 Voxel::Shader::~Shader()
@@ -33,7 +36,7 @@ bool Shader::init(const std::string & filePath, GLenum shaderType)
 
 	if (!fs.is_open())
 	{
-		throw std::runtime_error(std::string("Failed to open shader file: ") + filePath);
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_OPEN_SHADER_FILE) + "\nFailed to open: " + filePath);
 	}
 
 	std::stringstream buffer;
@@ -45,7 +48,7 @@ bool Shader::init(const std::string & filePath, GLenum shaderType)
 
 	if (shaderCode.empty())
 	{
-		throw std::runtime_error(std::string("Shader file \"") + filePath + std::string("\" is empty."));
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_SHADER_FILE_IS_EMPTY) + "\nFile empty: " + filePath);
 	}
 
 	shaderObject = glCreateShader(shaderType);
@@ -86,6 +89,6 @@ void Shader::checkCompileError()
 
 		delete[] strInfoLog;
 
-		throw std::runtime_error(msg);
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_SHADER_COMPILE_ERROR) + "\n" + msg);
 	}
 }

@@ -2,6 +2,7 @@
 
 // voxel
 #include "Shader.h"
+#include "ErrorCode.h"
 
 // cpp
 #include <iostream>
@@ -23,12 +24,12 @@ Program * Program::create(Shader * vertexShader, Shader * fragmentShader)
 {
 	if (vertexShader == nullptr)
 	{
-		throw std::runtime_error("Vertex shader is null");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_NULL_VERTEX_SHADER));
 	}
 
 	if (fragmentShader == nullptr)
 	{
-		throw std::runtime_error("Fragment shader is null");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_NULL_FRAGMENT_SHADER));
 	}
 
 	Program* newProgram = new Program();
@@ -49,7 +50,7 @@ bool Program::init(Shader * vertexShader, Shader * fragmentShader)
 
 	if (programObject == 0)
 	{
-		throw std::runtime_error("Failed to create glProgram");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_CREATE_GL_PROGRAM));
 	}
 
 	glAttachShader(programObject, vertexShader->getObject());
@@ -523,6 +524,6 @@ void Program::checkLinkError()
 
 		glDeleteProgram(programObject);
 		programObject = 0;
-		throw std::runtime_error(msg);
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_LINK_PROGRAM) + msg);
 	}
 }
