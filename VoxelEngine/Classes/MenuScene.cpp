@@ -79,7 +79,7 @@ void Voxel::MenuScene::init()
 
 	// input
 	input = &InputHandler::getInstance();
-
+	
 	sm.print(false);
 	TextureManager::getInstance().print();
 }
