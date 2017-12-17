@@ -140,12 +140,10 @@ void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vec
 	glEnableVertexAttribArray(uvVertLoc);
 	glVertexAttribPointer(uvVertLoc, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-	//============= find error here. error count: 14. Only during using sprite sheet
 	GLuint ibo;
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices.front(), GL_STATIC_DRAW);
-	//========================
 
 	glBindVertexArray(0);
 

@@ -8,3 +8,4 @@
 #include "CheckBox.h"
 #include "ProgressTimer.h"
 #include "InputField.h"
+#include "Slider.h"

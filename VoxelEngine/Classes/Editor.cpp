@@ -35,11 +35,15 @@ Editor::Editor()
 	, newFileNameInputField(nullptr)
 	, schematic(nullptr)
 	, floorVao(0)
-	, floorAngle(0)
+	, floorAngleX(0)
+	, floorAngleY(0)
 	, floorModelMat(1.0f)
-	, floorColor(glm::vec4(142.0f/255.0f, 1.0f, 237.0f/255.0f, 1.0f))
+	, floorColor(glm::vec4(142.0f/255.0f, 1.0f, 237.0f/255.0f, 0.75f))
 	, originLineVao(0)
+	, floorPosition(0.0f)
 	, mouseState(MouseState::IDLE)
+	, zoomLevel(0)
+	, slider(nullptr)
 {}
 
 Editor::~Editor()
@@ -70,16 +74,16 @@ void Voxel::Editor::initEditor()
 
 	std::vector<float> floorVert = 
 	{
-		/*
 		-size, 0.0f, -size,
 		-size, 0.0f, size,
 		size, 0.0f, -size,
 		size, 0.0f, size,
-		*/
+		/*
 		-size, -size, 0.0f,
 		-size, size, 0.0f,
 		size, -size, 0.0f,
 		size, size, 0.0f
+		*/
 	};
 
 	std::vector<unsigned int> floorIndices =
@@ -272,12 +276,16 @@ void Voxel::Editor::onEnterFinished()
 	// reset camera
 	Camera* mc = Camera::mainCamera;
 
-	mc->setPosition(glm::vec3(0.0f, 0.0f, -100.0f));
-	mc->setAngle(glm::vec3(0.0f, 180.0f, 0.0f));
+	mc->setPosition(glm::vec3(0.0f, 100.0f, -150.0f));
+	mc->setAngle(glm::vec3(30.0f, 180.0f, 0.0f));
+
+	Application::getInstance().getGLView()->setVsync(true);
 }
 
 void Voxel::Editor::onExit()
-{}
+{
+	Application::getInstance().getGLView()->setVsync(false);
+}
 
 void Voxel::Editor::onExitFinished()
 {}
@@ -293,6 +301,62 @@ void Voxel::Editor::update(const float delta)
 		updateMouseRelease();
 	}
 
+	// debug
+	if (input->getKeyDown(GLFW_KEY_T, true))
+	{
+		if (slider)
+		{
+			slider->setPosition(0, 0);
+		}
+		else
+		{
+			slider = Voxel::UI::Slider::create("slider", "EditorUISpriteSheet", "dimension_slider_bar.png", "dimension_slider_button.png", Voxel::UI::Slider::Type::HORIZONTAL, 0, 100);
+			canvas->addChild(slider);
+		}
+	}
+	else if (input->getKeyDown(GLFW_KEY_Y, true))
+	{
+		slider->setValue(10.0f);
+	}
+	else if (input->getKeyDown(GLFW_KEY_U, true))
+	{
+		slider->setPosition(glm::vec2(50.0f, 100.0f));
+	}
+	else if (input->getKeyDown(GLFW_KEY_I, true))
+	{
+		slider->setScale(2.0f);
+	}
+
+	if (input->getKeyDown(GLFW_KEY_ESCAPE, true))
+	{
+		if (menuBarDropDowned)
+		{
+			fileDropDownBg->setVisibility(false);
+			menuBarDropDowned = false;
+		}
+		else if(newCreateWindow->getVisibility())
+		{
+			onNewCancelButtonClicked();
+		}
+	}
+
+	if (input->getKeyDown(GLFW_KEY_P, true))
+	{
+		// reset model pos
+		floorPosition.x = 0.0f;
+		floorPosition.y = 0.0f;
+		floorPosition.z = 0.0f;
+		floorModelMat = glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0f), -floorPosition), glm::radians(floorAngleY), glm::vec3(0, 1, 0)), glm::radians(floorAngleX), glm::vec3(1, 0, 0));
+	}
+	else if (input->getKeyDown(GLFW_KEY_O, true))
+	{
+		//reset model orientation
+		floorAngleX = 0.0f;
+		floorAngleY = 0.0f;
+		floorModelMat = glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0f), -floorPosition), glm::radians(floorAngleY), glm::vec3(0, 1, 0)), glm::radians(floorAngleX), glm::vec3(1, 0, 0));
+	}
+
+	/*
 	if (input->getKeyDown(GLFW_KEY_W))
 	{
 		Camera::mainCamera->addPosition(glm::vec3(0, 0, 3.0f) * delta);
@@ -335,6 +399,7 @@ void Voxel::Editor::update(const float delta)
 		Camera::mainCamera->addAngle(glm::vec3(0.0f, 20.0f, 0.0f) * delta);
 		std::cout << "c ang = " << Utility::Log::vec3ToStr(Camera::mainCamera->getAngle()) << std::endl;
 	}
+	*/
 
 	updateMouseScroll();
 }
@@ -389,11 +454,38 @@ bool Voxel::Editor::updateMouseMove(const float delta)
 
 			if (mouseMovedDist.x != 0.0f)
 			{
-				floorAngle += (mouseMovedDist.x * delta);
-				floorModelMat = glm::rotate(glm::mat4(1.0f), glm::radians(floorAngle), glm::vec3(0, 1, 0));
+				floorAngleY += (mouseMovedDist.x * 20.0f * delta);
 			}
+
+			if (mouseMovedDist.y != 0.0f)
+			{
+				floorAngleX += (mouseMovedDist.y * 20.0f * delta);
+			}
+
+			floorModelMat = glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0f), -floorPosition), glm::radians(floorAngleY), glm::vec3(0, 1, 0)), glm::radians(floorAngleX), glm::vec3(1, 0, 0));
 		}
+		else if (mouseState == MouseState::CLICKED_MIDDLE_BUTTON)
+		{
+			auto mouseMovedDist = input->getMouseMovedDistance();
+
+			if (mouseMovedDist.x != 0.0f)
+			{
+				floorPosition.x += (mouseMovedDist.x * 15.0f * delta);
+			}
+			
+			if(mouseMovedDist.y != 0.0f)
+			{
+				floorPosition.z += (mouseMovedDist.y * 15.0f * delta);
+			}
+
+			//floorModelMat = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(floorAngle), glm::vec3(0, 1, 0)), floorPosition);
+			floorModelMat = glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0f), -floorPosition), glm::radians(floorAngleY), glm::vec3(0, 1, 0)), glm::radians(floorAngleX), glm::vec3(1, 0, 0));
 		}
+		else
+		{
+			// raycast floor
+		}
+	}
 
 
 	return movedOnUI;
@@ -414,11 +506,15 @@ bool Voxel::Editor::updateMousePress()
 	if (!pressedOnUI)
 	{
 		// Didn't press mouse over ui
-		if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+		if (mouseState == MouseState::IDLE)
 		{
-			if (mouseState == MouseState::IDLE)
+			if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
 			{
 				mouseState = MouseState::CLICKED_RIGHT_BUTTON;
+			}
+			else if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
+			{
+				mouseState = MouseState::CLICKED_MIDDLE_BUTTON;
 			}
 		}
 	}
@@ -438,6 +534,21 @@ bool Voxel::Editor::updateMouseRelease()
 		}
 	}
 
+	if (input->getMouseUp(GLFW_MOUSE_BUTTON_2, true))
+	{
+		if (mouseState == MouseState::CLICKED_RIGHT_BUTTON)
+		{
+			mouseState = MouseState::IDLE;
+		}
+	}
+	else if (input->getMouseUp(GLFW_MOUSE_BUTTON_3, true))
+	{
+		if (mouseState == MouseState::CLICKED_MIDDLE_BUTTON)
+		{
+			mouseState = MouseState::IDLE;
+		}
+	}
+
 	return releasedOnUI;
 }
 
@@ -447,11 +558,31 @@ void Voxel::Editor::updateMouseScroll()
 
 	if (mouseScroll == 1)
 	{
-		// zoom int
+		// zoom in
+		zoomIn();
 	}
 	else if (mouseScroll == -1)
 	{
 		// zoom out
+		zoomOut();
+	}
+}
+
+void Voxel::Editor::zoomIn()
+{
+	if (zoomLevel < 5)
+	{
+		zoomLevel++;
+		Camera::mainCamera->setPosition(Camera::mainCamera->getPosition() - glm::vec3(0.0f, 10.0f, -15.0f));
+	}
+}
+
+void Voxel::Editor::zoomOut()
+{
+	if (zoomLevel > 0)
+	{
+		zoomLevel--;
+		Camera::mainCamera->setPosition(Camera::mainCamera->getPosition() - glm::vec3(0.0f, -10.0f, 15.0f));
 	}
 }
 

@@ -153,25 +153,14 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
-		if (inputField)
-		{
-			inputField->setAlign(Voxel::UI::InputField::Align::CENTER);
-		}
-		else
-		{
-			inputField = Voxel::UI::InputField::create("if", "enter text here...", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
-			inputField->setPivot(glm::vec2(-0.5, 0.0f));
-			inputField->setScale(4.0f);
-			canvas->addChild(inputField);
-		}
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{
-		inputField->setAlign(Voxel::UI::InputField::Align::LEFT);
+
 	}
 	else if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-		inputField->setAlign(Voxel::UI::InputField::Align::RIGHT);
+
 	}
 }
 
@@ -295,6 +284,6 @@ void Voxel::MenuScene::render()
 #if V_DEBUG && V_DEBUG_EDITOR
 void Voxel::MenuScene::onEditorClicked()
 {
-	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::EDITOR_SCENE, 1.5f);
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::EDITOR_SCENE, 0.5f);
 }
 #endif

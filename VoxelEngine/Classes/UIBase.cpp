@@ -248,15 +248,16 @@ void Voxel::UI::TransformNode::updateBoundingBox()
 void Voxel::UI::TransformNode::updateBoundingBox(const glm::mat4 & parentMatrix)
 {
 	// todo: optimize? Also fix bounding box for rotating object, especially nested uis.
-
+	// For now, disable rotation. Because, I don't think here is a case to check UI bounding box that is rotated or rotating.
 	auto screenPos = glm::vec2(parentMatrix * glm::vec4(position, 1.0f, 1.0f));
 	auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
-
-	auto rotPos = glm::vec2(0);
 
 	auto r = glm::radians(angle);
 	auto cos = glm::cos(r);
 	auto sin = glm::sin(r);
+
+	/*
+	auto rotPos = glm::vec2(0);
 
 	rotPos.x = screenPos.x + ((shiftPos.x - screenPos.x) * cos) + ((shiftPos.y - screenPos.y) * sin);
 	rotPos.y = screenPos.y + ((shiftPos.x - screenPos.x) * sin) + ((shiftPos.y - screenPos.y) * cos);
@@ -264,6 +265,11 @@ void Voxel::UI::TransformNode::updateBoundingBox(const glm::mat4 & parentMatrix)
 	boundingBox.center = rotPos;
 
 	auto originalBB = Voxel::Shape::Rect(rotPos, contentSize * scale);
+	*/
+
+	boundingBox.center = shiftPos;
+
+	auto originalBB = Voxel::Shape::Rect(shiftPos, contentSize * scale);
 
 	auto p1 = originalBB.getMin();
 	auto p4 = originalBB.getMax();

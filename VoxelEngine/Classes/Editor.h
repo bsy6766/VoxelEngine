@@ -52,8 +52,8 @@ namespace Voxel
 		enum class MouseState
 		{
 			IDLE = 0,					// doing nothing
-			CLICKED_RIGHT_BUTTON,
-			
+			CLICKED_RIGHT_BUTTON,		// Rotate model
+			CLICKED_MIDDLE_BUTTON,		// pan model in x, z axis
 		};
 	private:
 		// canvas
@@ -88,7 +88,9 @@ namespace Voxel
 
 		// floor
 		GLuint floorVao;
-		float floorAngle;
+		glm::vec3 floorPosition;
+		float floorAngleX;
+		float floorAngleY;
 		glm::vec4 floorColor;
 		glm::mat4 floorModelMat;
 
@@ -98,6 +100,9 @@ namespace Voxel
 		// block face indicator
 		GLuint faceIndicatorVao;
 
+		// temp
+		Voxel::UI::Slider* slider;
+		
 		// init
 		void initEditor();
 		void initUI();
@@ -107,6 +112,11 @@ namespace Voxel
 		bool updateMousePress();
 		bool updateMouseRelease();
 		void updateMouseScroll();
+
+		// zoom
+		int zoomLevel;
+		void zoomIn();
+		void zoomOut();
 
 		// callback
 		void onFileButtonClicked();

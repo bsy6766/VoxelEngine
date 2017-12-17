@@ -66,7 +66,7 @@
 *	If enabled, draws UI bounding box. Need to enable each ui bounding boxe configs.
 */
 #ifndef V_DEBUG_DRAW_UI_BOUNDING_BOX
-#define V_DEBUG_DRAW_UI_BOUNDING_BOX 0
+#define V_DEBUG_DRAW_UI_BOUNDING_BOX 1
 #endif
 
 #if V_DEBUG_DRAW_UI_BOUNDING_BOX
@@ -145,6 +145,14 @@
 	*/
 	#ifndef V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX
 	#define V_DEBUG_DRAW_PROGRESS_TIMER_BOUNDING_BOX 0
+	#endif
+
+	/**
+	*	@def V_DEBUG_DRAW_SLIDER_BOUNDING_BOX
+	*	If enabled, draws slider UI bounding box.
+	*/
+	#ifndef V_DEBUG_DRAW_SLIDER_BOUNDING_BOX
+	#define V_DEBUG_DRAW_SLIDER_BOUNDING_BOX 0
 	#endif
 
 #endif // V_DEBUG_DRAW_UI_BOUNDING_BOX

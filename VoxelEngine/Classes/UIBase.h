@@ -482,7 +482,7 @@ namespace Voxel
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
-			void createDebugBoundingBoxLine();
+			virtual void createDebugBoundingBoxLine();
 #endif
 		};
 
