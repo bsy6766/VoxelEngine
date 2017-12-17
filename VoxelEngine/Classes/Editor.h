@@ -8,11 +8,15 @@
 // cpp
 #include <array>
 
+//gl
+#include <GL\glew.h>
+
 namespace Voxel
 {
 	// foward delcaration
 	class Cursor;
 	class InputHandler;
+	class Schematic;
 
 	/**
 	*	@class Editor
@@ -44,6 +48,13 @@ namespace Voxel
 			RETURN_TO_MAIN_MENU,
 			MAX_FILE_DROP_DOWN_BUTTON,
 		};
+
+		enum class MouseState
+		{
+			IDLE = 0,					// doing nothing
+			CLICKED_RIGHT_BUTTON,
+			
+		};
 	private:
 		// canvas
 		Voxel::UI::Canvas* canvas;
@@ -67,11 +78,34 @@ namespace Voxel
 		// cursor
 		Cursor* cursor;
 
+		// mouse state
+		MouseState mouseState;
+
 		std::string newFileName;
 
+		// Schematic
+		Schematic* schematic;
+
+		// floor
+		GLuint floorVao;
+		float floorAngle;
+		glm::vec4 floorColor;
+		glm::mat4 floorModelMat;
+
+		// origin line
+		GLuint originLineVao;
+
+		// block face indicator
+		GLuint faceIndicatorVao;
+
+		// init
+		void initEditor();
+		void initUI();
+
 		// update mouse
-		void updateMouseMove();
-		void updateMouseClick();
+		bool updateMouseMove(const float delta);
+		bool updateMousePress();
+		bool updateMouseRelease();
 		void updateMouseScroll();
 
 		// callback

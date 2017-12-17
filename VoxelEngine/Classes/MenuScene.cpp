@@ -28,7 +28,6 @@ void Voxel::MenuScene::init()
 	auto rs = Application::getInstance().getGLView()->getScreenSize();
 	
 	canvas = new Voxel::UI::Canvas(rs, glm::vec2(0.0f));
-
 	const auto ss = "MenuSceneUISpriteSheet";
 	auto& sm = SpriteSheetManager::getInstance();
 
@@ -162,6 +161,7 @@ void Voxel::MenuScene::updateKeyboardInput()
 		{
 			inputField = Voxel::UI::InputField::create("if", "enter text here...", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
 			inputField->setPivot(glm::vec2(-0.5, 0.0f));
+			inputField->setScale(4.0f);
 			canvas->addChild(inputField);
 		}
 	}

@@ -4,9 +4,8 @@ uniform sampler2D tex;
 uniform bool outlined;
 uniform int outlineSize;
 uniform vec3 outlineColor;
-
-//uniform float fontTextureWidth;
-//uniform float fontTextureHeight;
+uniform float textureWidth;
+uniform float textureHeight;
 
 in vec4 vertColor;
 in vec2 fragTexCoord;
@@ -25,8 +24,8 @@ void main()
     	}
     	else
     	{
-    		float udx = 1.0 / 1024.0;
-    		float udy = 1.0 / 1024.0;
+    		float udx = 1.0 / textureWidth;
+    		float udy = 1.0 / textureHeight;
 
     		int counter = 0;
 

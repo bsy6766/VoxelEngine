@@ -7,6 +7,9 @@
 // glm
 #include <glm\glm.hpp>
 
+// voxel
+#include "LocalizationTags.h"
+
 namespace Voxel
 {
 	// foward declaration
@@ -44,6 +47,9 @@ namespace Voxel
 		// modified flag
 		bool modified;
 
+		// localization. 
+		Voxel::Localization::Tag localizationTag;
+
 		// Video settings
 		int windowMode;					// 0 = windowed, 1 = fullscreen, 2 = windowed fullscren
 		int monitorIndex;				// 0 is primary.
@@ -59,6 +65,8 @@ namespace Voxel
 		// Control
 		bool autoJump;
 
+		// Set localization to default (enUS)
+		void setLocalizationToDefault();
 		// Set video mode to default setting
 		void setVideoModeToDefault();
 	
@@ -82,6 +90,8 @@ namespace Voxel
 		void setAutoJumpMode(const bool mode);
 
 		std::string getString(const std::string& key);
+
+		Localization::Tag getLocalizationTag() const;
 	};
 
 }

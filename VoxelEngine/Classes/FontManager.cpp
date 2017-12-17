@@ -19,7 +19,7 @@ FontManager::~FontManager()
 }
 
 
-int FontManager::addFont(const std::string& fontName, const int fontSize, int outline)
+int FontManager::addFont(const std::string& fontName, const int fontSize, int outline, const Voxel::Localization::Tag locale)
 {
 	Font* newFont = nullptr; 
 
@@ -30,11 +30,11 @@ int FontManager::addFont(const std::string& fontName, const int fontSize, int ou
 
 	if (outline == 0)
 	{
-		newFont = Font::create(fontName, fontSize);
+		newFont = Font::create(fontName, fontSize, locale);
 	}
 	else
 	{
-		newFont = Font::createWithOutline(fontName, fontSize, outline);
+		newFont = Font::createWithOutline(fontName, fontSize, outline, locale);
 	}
 
 	if (newFont)
@@ -43,7 +43,7 @@ int FontManager::addFont(const std::string& fontName, const int fontSize, int ou
 
 #if V_DEBUG && V_DEBUG_LOG_CONSOLE
 		auto logger = &Voxel::Logger::getInstance();
-		logger->consoleInfo("[FontManager] Added font " + fontName + "\" with size: " + std::to_string(fontSize));
+		logger->consoleInfo("[FontManager] Added font " + fontName + "\" with size: " + std::to_string(fontSize) + ", locale: " + Voxel::Localization::toString(locale));
 #endif
 
 		FontManager::idCounter++;

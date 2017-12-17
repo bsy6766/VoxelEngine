@@ -112,6 +112,8 @@ namespace Voxel
 			void setOnEditSubmitted(const std::function<void(const std::string)>& func);
 			void setOnEditCancelled(const std::function<void()>& func);
 			
+			void setScale(const float scale) override;
+
 			// override 
 			void updateModelMatrix() override;
 			void updateBoundingBox() override;

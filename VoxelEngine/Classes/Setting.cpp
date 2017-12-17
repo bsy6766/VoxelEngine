@@ -21,7 +21,7 @@ Setting::Setting()
 	, renderDistance(0)
 	, fieldOfView(0)
 	, blockShadeMode(0)
-
+	, localizationTag(Voxel::Localization::Tag::en_US)
 {
 	// Initialize setting
 
@@ -43,6 +43,9 @@ Setting::Setting()
 		userSetting = DataTree::create(fs->getUserDirectory() + "\\user.txt");
 
 		// load setting
+
+		// localization
+		localizationTag = Localization::toTag(userSetting->getString("localization"));
 		windowMode = userSetting->getInt("videoSetting.window.mode");
 		int w = userSetting->getInt("videoSetting.window.resolution.width");
 		int h = userSetting->getInt("videoSetting.window.resolution.height");
@@ -57,12 +60,14 @@ Setting::Setting()
 		// user file doesn't exists. set values to default
 		logger->info("[System] User setting file not found. New setting created with default");
 
+		setLocalizationToDefault();
 		setVideoModeToDefault();
 
 		// Create data tree file
 		userSetting = DataTree::create(userSettingFilePath);
 
 		// set setting
+		userSetting->setString("localization", Voxel::Localization::toString(localizationTag));
 		userSetting->setInt("videoSetting.window.mode", windowMode);
 		userSetting->setInt("videoSetting.window.resolution.width", resolution.x);
 		userSetting->setInt("videoSetting.window.resolution.height", resolution.y);
@@ -74,6 +79,24 @@ Setting::Setting()
 		// save
 		userSetting->save(userSettingFilePath);
 	}
+
+	logger->info("[System] Localization: " + Voxel::Localization::toString(localizationTag));
+
+	if (windowMode == 0)
+	{
+		logger->info("[System] Window mode: Windowed");
+	}
+	else if (windowMode == 1)
+	{
+		logger->info("[System] Window mode: Fullscreen");
+	}
+	else if (windowMode == 2)
+	{
+		logger->info("[System] Window mode: Windowed fullscreen");
+	}
+
+	logger->info("[System] Resolution: " + std::to_string(resolution.x) + " x " + std::to_string(resolution.y));
+	logger->info("[System] Vertical sync: " + std::string(vsync ? "1" : "0"));
 
 	if (!fs->doesPathExists(userSettingFilePath))
 	{
@@ -89,6 +112,11 @@ Setting::~Setting()
 	{
 		delete userSetting;
 	}
+}
+
+void Voxel::Setting::setLocalizationToDefault()
+{
+	localizationTag = Voxel::Localization::Tag::en_US;
 }
 
 void Voxel::Setting::setVideoModeToDefault()
@@ -152,4 +180,9 @@ void Voxel::Setting::setAutoJumpMode(const bool mode)
 std::string Voxel::Setting::getString(const std::string & key)
 {
 	return userSetting->getString(key);
+}
+
+Localization::Tag Voxel::Setting::getLocalizationTag() const
+{
+	return localizationTag;
 }

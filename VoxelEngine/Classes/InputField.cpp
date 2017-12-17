@@ -199,6 +199,20 @@ void Voxel::UI::InputField::setOnEditCancelled(const std::function<void()>& func
 	onEditCancelled = func;
 }
 
+void Voxel::UI::InputField::setScale(const float scale)
+{
+	text->setScale(scale);
+	cursor->setScale(scale);
+
+	// Update self
+	Voxel::UI::TransformNode::updateModelMatrix();
+
+	// Update model mat is public for now. 
+	text->updateModelMatrix(modelMat);
+
+	cursor->updateModelMatrix(modelMat);
+}
+
 void Voxel::UI::InputField::updateModelMatrix()
 {
 	// Unlike other ui, inputfield is a class that wraps text and image together.

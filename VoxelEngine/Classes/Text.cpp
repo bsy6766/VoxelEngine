@@ -255,7 +255,7 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 		for (unsigned int i = 0; i < len; i++)
 		{
 			const char c = line[i];
-			Glyph* glyph = font->getCharGlyph(c);
+			Glyph* glyph = font->getGlyph((int)c);
 
 			// Advance value is the distance between pen position of each character in horizontal layout
 			// Advance includes bearing x + width + extra space for next character.
@@ -310,7 +310,7 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			line = "";
 			// quick hack here. Add whitespace to emptyline to treat as line
 			lineSizes.back().width = 0;
-			lineSizes.back().maxBearingY = font->getCharGlyph(' ')->height;
+			lineSizes.back().maxBearingY = font->getGlyph(32/* whitespace */)->height;
 			lineSizes.back().maxBotY = 0;
 		}
 		else
@@ -496,7 +496,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 				{
 					// Build quad for each character
 					const char c = line[i];
-					Glyph* glyph = font->getCharGlyph(c);
+					Glyph* glyph = font->getGlyph((int)c);
 					// Empty pos. p1 = left bottom, p2 = right top. z == 0
 					glm::vec2 leftBottom(0);
 					glm::vec2 rightTop(0);
@@ -806,7 +806,7 @@ std::vector<glm::vec2> Voxel::UI::Text::computeOrigins(Font * font, const std::v
 			const char c = cStr[i];
 
 			// Get glyph data
-			Glyph* glyph = font->getCharGlyph(c);
+			Glyph* glyph = font->getGlyph((int)c);
 			if (glyph == nullptr)
 			{
 				std::cout << "[Text] Failed to find glyph for char: " << c << std::endl;
@@ -924,6 +924,10 @@ void Voxel::UI::Text::renderSelf()
 		program->setUniformBool("outlined", true);
 		program->setUniformInt("outlineSize", 2);
 		program->setUniformVec3("outlineColor", outlineColor);
+
+		auto textureSize = texture->getTextureSize();
+		program->setUniformFloat("textureWidth", static_cast<float>(textureSize.x));
+		program->setUniformFloat("textureHeight", static_cast<float>(textureSize.y));
 	}
 	else
 	{

@@ -5,6 +5,9 @@
 #include <string>
 #include <unordered_map>
 
+// voxel
+#include "LocalizationTags.h"
+
 namespace Voxel
 {
 	class Font;
@@ -44,7 +47,7 @@ namespace Voxel
 
 		// Add font. Returns integer font ID or -1 if fails to load font.
 		// Id starts from 1. 0 is used by default font
-		int addFont(const std::string& fontName, const int fontSize, int outlineSize = 0);
+		int addFont(const std::string& fontName, const int fontSize, int outlineSize, const Voxel::Localization::Tag locale);
 
 		// Get font by id
 		Font* getFont(const int id);

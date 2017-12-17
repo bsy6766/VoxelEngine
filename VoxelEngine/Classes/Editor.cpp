@@ -7,9 +7,15 @@
 #include "Cursor.h"
 #include "Director.h"
 #include "Utility.h"
+#include "Camera.h"
+#include "ProgramManager.h"
+#include "Program.h"
 
 // cpp
 #include <functional>
+
+// glm
+#include <glm\gtx\transform.hpp>
 
 using namespace Voxel;
 
@@ -27,15 +33,124 @@ Editor::Editor()
 	, newCreateWindow(nullptr)
 	, createBtn(nullptr)
 	, newFileNameInputField(nullptr)
+	, schematic(nullptr)
+	, floorVao(0)
+	, floorAngle(0)
+	, floorModelMat(1.0f)
+	, floorColor(glm::vec4(142.0f/255.0f, 1.0f, 237.0f/255.0f, 1.0f))
+	, originLineVao(0)
+	, mouseState(MouseState::IDLE)
 {}
 
 Editor::~Editor()
-{}
+{
+	if (floorVao)
+	{
+		glDeleteVertexArrays(1, &floorVao);
+	}
+}
 
 void Voxel::Editor::init()
 {
 	Application::getInstance().getGLView()->setClearColor(glm::vec3(0.4375f));
 
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::POLYGON_SHADER);
+	program->use(true);
+
+	program->setUniformMat4("projMat", Camera::mainCamera->getProjection());
+	program->setUniformMat4("viewMat", Camera::mainCamera->getViewMat());
+
+	initEditor();
+	initUI();
+}
+
+void Voxel::Editor::initEditor()
+{
+	float size = 50.0f;
+
+	std::vector<float> floorVert = 
+	{
+		/*
+		-size, 0.0f, -size,
+		-size, 0.0f, size,
+		size, 0.0f, -size,
+		size, 0.0f, size,
+		*/
+		-size, -size, 0.0f,
+		-size, size, 0.0f,
+		size, -size, 0.0f,
+		size, size, 0.0f
+	};
+
+	std::vector<unsigned int> floorIndices =
+	{
+		0, 1, 2, 1, 2, 3,
+	};
+
+	// gen vao
+	glGenVertexArrays(1, &floorVao);
+	glBindVertexArray(floorVao);
+
+	GLuint floorVbo;
+	glGenBuffers(1, &floorVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, floorVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * floorVert.size(), &floorVert.front(), GL_STATIC_DRAW);
+
+	// Enable vertices attrib
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::POLYGON_SHADER);
+	GLint vertLoc = program->getAttribLocation("vert");
+
+	// vert
+	glEnableVertexAttribArray(vertLoc);
+	glVertexAttribPointer(vertLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	GLuint floorIbo;
+	glGenBuffers(1, &floorIbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorIbo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * floorIndices.size(), &floorIndices.front(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &floorVbo);
+	glDeleteBuffers(1, &floorIbo);
+	floorVbo = 0;
+	floorIbo = 0;
+
+	std::vector<float> oLineVert = 
+	{
+		0.0f, 500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, -500.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	};
+
+	// gen vao
+	glGenVertexArrays(1, &originLineVao);
+	glBindVertexArray(originLineVao);
+
+	// Generate buffer object
+	GLuint oLineVbo;
+	glGenBuffers(1, &oLineVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, oLineVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * oLineVert.size(), &oLineVert.front(), GL_STATIC_DRAW);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	GLint lineVertLoc = lineProgram->getAttribLocation("vert");
+	GLint colorLoc = lineProgram->getAttribLocation("color");
+
+	// vert
+	glEnableVertexAttribArray(lineVertLoc);
+	glVertexAttribPointer(lineVertLoc, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), nullptr);
+
+	// color
+	glEnableVertexAttribArray(colorLoc);
+	glVertexAttribPointer(colorLoc, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat)));
+
+	glBindVertexArray(0);
+
+	glDeleteBuffers(1, &oLineVbo);
+}
+
+void Voxel::Editor::initUI()
+{
 	canvas = new Voxel::UI::Canvas(Application::getInstance().getGLView()->getScreenSize(), glm::vec2(0.0f));
 
 	const auto ss = "EditorUISpriteSheet";
@@ -153,7 +268,13 @@ void Voxel::Editor::onEnter()
 {}
 
 void Voxel::Editor::onEnterFinished()
-{}
+{
+	// reset camera
+	Camera* mc = Camera::mainCamera;
+
+	mc->setPosition(glm::vec3(0.0f, 0.0f, -100.0f));
+	mc->setAngle(glm::vec3(0.0f, 180.0f, 0.0f));
+}
 
 void Voxel::Editor::onExit()
 {}
@@ -167,19 +288,65 @@ void Voxel::Editor::update(const float delta)
 	{
 		canvas->update(delta);
 
-		updateMouseMove();
-		updateMouseClick();
+		updateMouseMove(delta);
+		updateMousePress();
+		updateMouseRelease();
+	}
+
+	if (input->getKeyDown(GLFW_KEY_W))
+	{
+		Camera::mainCamera->addPosition(glm::vec3(0, 0, 3.0f) * delta);
+		std::cout << "c pos = " << Utility::Log::vec3ToStr(Camera::mainCamera->getPosition()) << std::endl;
+	}
+	else if (input->getKeyDown(GLFW_KEY_S))
+	{
+		Camera::mainCamera->addPosition(glm::vec3(0, 0, -3.0f) * delta);
+		std::cout << "c pos = " << Utility::Log::vec3ToStr(Camera::mainCamera->getPosition()) << std::endl;
+	}
+	else if (input->getKeyDown(GLFW_KEY_A))
+	{
+		Camera::mainCamera->addPosition(glm::vec3(3.0f, 0, 0.0f) * delta);
+		std::cout << "c pos = " << Utility::Log::vec3ToStr(Camera::mainCamera->getPosition()) << std::endl;
+	}
+	else if (input->getKeyDown(GLFW_KEY_D))
+	{
+		Camera::mainCamera->addPosition(glm::vec3(-13.0f, 0, 0.0f) * delta);
+		std::cout << "c pos = " << Utility::Log::vec3ToStr(Camera::mainCamera->getPosition()) << std::endl;
+	}
+
+	if (input->getKeyDown(GLFW_KEY_R))
+	{
+		Camera::mainCamera->addAngle(glm::vec3(-20.0f, 0.0f, 0.0f) * delta);
+		std::cout << "c ang = " << Utility::Log::vec3ToStr(Camera::mainCamera->getAngle()) << std::endl;
+	}
+	else if (input->getKeyDown(GLFW_KEY_T))
+	{
+		Camera::mainCamera->addAngle(glm::vec3(20.0f, 0.0f, 0.0f) * delta);
+		std::cout << "c ang = " << Utility::Log::vec3ToStr(Camera::mainCamera->getAngle()) << std::endl;
+	}
+
+	if (input->getKeyDown(GLFW_KEY_Q))
+	{
+		Camera::mainCamera->addAngle(glm::vec3(0.0f, -20.0f, 0.0f) * delta);
+		std::cout << "c ang = " << Utility::Log::vec3ToStr(Camera::mainCamera->getAngle()) << std::endl;
+	}
+	else if (input->getKeyDown(GLFW_KEY_E))
+	{
+		Camera::mainCamera->addAngle(glm::vec3(0.0f, 20.0f, 0.0f) * delta);
+		std::cout << "c ang = " << Utility::Log::vec3ToStr(Camera::mainCamera->getAngle()) << std::endl;
 	}
 
 	updateMouseScroll();
 }
 
-void Voxel::Editor::updateMouseMove()
+bool Voxel::Editor::updateMouseMove(const float delta)
 {
+	auto movedOnUI = false;
+
 	if (canvas)
 	{
 		auto mouseMovedDist = input->getMouseMovedDistance();
-		canvas->updateMouseMove(cursor->getPosition(), glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
+		movedOnUI = canvas->updateMouseMove(cursor->getPosition(), glm::vec2(mouseMovedDist.x, -mouseMovedDist.y));
 	}
 
 	if (menuBarDropDowned)
@@ -214,21 +381,64 @@ void Voxel::Editor::updateMouseMove()
 			onEditButtonClicked();
 		}
 	}
+	else
+	{
+		if (mouseState == MouseState::CLICKED_RIGHT_BUTTON)
+		{
+			auto mouseMovedDist = input->getMouseMovedDistance();
+
+			if (mouseMovedDist.x != 0.0f)
+			{
+				floorAngle += (mouseMovedDist.x * delta);
+				floorModelMat = glm::rotate(glm::mat4(1.0f), glm::radians(floorAngle), glm::vec3(0, 1, 0));
+			}
+		}
+		}
+
+
+	return movedOnUI;
 }
 
-void Voxel::Editor::updateMouseClick()
+bool Voxel::Editor::updateMousePress()
 {
+	bool pressedOnUI = false;
+
 	if (canvas)
 	{
 		if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
 		{
-			canvas->updateMousePress(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
-		}
-		else if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
-		{
-			canvas->updateMouseRelease(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
+			pressedOnUI = canvas->updateMousePress(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
 		}
 	}
+
+	if (!pressedOnUI)
+	{
+		// Didn't press mouse over ui
+		if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+		{
+			if (mouseState == MouseState::IDLE)
+			{
+				mouseState = MouseState::CLICKED_RIGHT_BUTTON;
+			}
+		}
+	}
+
+	return pressedOnUI;
+}
+
+bool Voxel::Editor::updateMouseRelease()
+{
+	bool releasedOnUI = false;
+
+	if (canvas)
+	{
+		if (input->getMouseUp(GLFW_MOUSE_BUTTON_1, true))
+		{
+			releasedOnUI = canvas->updateMouseRelease(cursor->getPosition(), GLFW_MOUSE_BUTTON_1);
+		}
+	}
+
+	return releasedOnUI;
 }
 
 void Voxel::Editor::updateMouseScroll()
@@ -349,6 +559,25 @@ void Voxel::Editor::onNewFileNameEditSubmitted(const std::string text)
 
 void Voxel::Editor::render()
 {
+	auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::POLYGON_SHADER);
+	program->use(true);
+	program->setUniformMat4("viewMat", Camera::mainCamera->getViewMat() * Camera::mainCamera->getWorldMat());
+	program->setUniformMat4("modelMat", floorModelMat);
+	program->setUniformVec4("color", floorColor);
+
+	glBindVertexArray(floorVao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	auto lineProgram = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::LINE_SHADER);
+	lineProgram->use(true);
+	lineProgram->setUniformMat4("viewMat", Camera::mainCamera->getViewMat() * Camera::mainCamera->getWorldMat());
+	lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+	glBindVertexArray(originLineVao);
+	glDrawArrays(GL_LINES, 0, 2);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_ALWAYS);
+
 	if (canvas)
 	{
 		canvas->render();

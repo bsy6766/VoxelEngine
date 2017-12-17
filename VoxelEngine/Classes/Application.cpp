@@ -18,6 +18,7 @@
 #include "FileSystem.h"
 #include "Logger.h"
 #include "GLView.h"
+#include "LocalizationTags.h"
 
 // boost. 
 //#include <boost\predef.h>
@@ -120,15 +121,26 @@ void Voxel::Application::initDirector()
 void Voxel::Application::initFonts()
 {
 	auto& fm = FontManager::getInstance();
+	auto& setting = Setting::getInstance();
 
-	if (!fm.addFont("Pixel.ttf", 10))
+	if (!fm.addFont("Pixel.ttf", 10, 0, setting.getLocalizationTag()))
 	{
 	}
 
-	if (!fm.addFont("Pixel.ttf", 10, 2))
+	if (!fm.addFont("Pixel.ttf", 10, 2, setting.getLocalizationTag()))
 	{
 
 	}
+
+	/*
+	if (!fm.addFont("NanumGothic.ttf", 15, 0, Voxel::Localization::Tag::ko_KR))
+	{
+	}
+	*/
+
+	//fm.addFont("Moris.ttf", 36, 0, Voxel::Localization::Tag::ko_KR);
+	//fm.addFont("soyaStraight10.ttf", 40, 0, Voxel::Localization::Tag::ko_KR);
+	//fm.addFont("NanumBarunGothicBold.ttf", 18, 0, Voxel::Localization::Tag::ko_KR);
 }
 
 void Voxel::Application::initSpriteSheets()

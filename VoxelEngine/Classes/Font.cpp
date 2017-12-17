@@ -8,6 +8,7 @@
 #include "FileSystem.h"
 #include "Logger.h"
 #include "ErrorCode.h"
+#include "BinPacker.h"
 
 using namespace Voxel;
 
@@ -17,10 +18,9 @@ const int Font::MIN_FONT_SIZE = 10;
 const std::string Font::DEFAULT_FONT_PATH = "fonts/";
 
 Font::Font()
-	: size(0)
+	: fontSize(0)
 	, linespace(0)
-	, texAtlasWidth(0)
-	, texAtlasHeight(0)
+	, textureSize(0)
 	, texture(nullptr)
 	, outlineSize(0)
 {
@@ -40,10 +40,38 @@ void Voxel::Font::initLibrary()
 	}
 }
 
-Font* Font::create(const std::string& fontName, const int fontSize)
+int Voxel::Font::getTextureSizeByLocale(const Voxel::Localization::Tag locale) const
+{
+	int size = 0;
+
+	switch (locale)
+	{
+	case Voxel::Localization::Tag::en_US:
+		if (outlineSize == 0)
+		{
+			size = 128;
+		}
+		else
+		{
+			size = 256;
+		}
+		break;
+	case Voxel::Localization::Tag::ko_KR:
+		size = 2048;
+		break;
+	default:
+		// Bad locale
+		assert(false);
+		break;
+	}
+
+	return size;
+}
+
+Font* Font::create(const std::string& fontName, const int fontSize, const Voxel::Localization::Tag locale)
 {
 	auto newFont = new Font();
-	if (newFont->init(fontName, fontSize, 0))
+	if (newFont->init(fontName, fontSize, 0, locale))
 	{
 		return newFont;
 	}
@@ -54,10 +82,10 @@ Font* Font::create(const std::string& fontName, const int fontSize)
 	}
 }
 
-Font * Voxel::Font::createWithOutline(const std::string & fontName, const int fontSize, const int outlineSize)
+Font * Voxel::Font::createWithOutline(const std::string & fontName, const int fontSize, const int outlineSize, const Voxel::Localization::Tag locale)
 {
 	auto newFont = new Font();
-	if (newFont->init(fontName, fontSize, outlineSize))
+	if (newFont->init(fontName, fontSize, outlineSize, locale))
 	{
 		return newFont;
 	}
@@ -68,10 +96,14 @@ Font * Voxel::Font::createWithOutline(const std::string & fontName, const int fo
 	}
 }
 
-bool Voxel::Font::init(const std::string & fontName, const int fontSize, const int outlineSize)
+bool Voxel::Font::init(const std::string & fontName, const int fontSize, const int outlineSize, const Voxel::Localization::Tag locale)
 {
+	auto start = Utility::Time::now();
+
 	// Load the font with freetype2
 	FT_Face face;
+
+	this->fontName = fontName;
 
 	this->outlineSize = outlineSize;
 
@@ -82,87 +114,20 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FAILED_TO_LOAD_FONT_FILE) + "\nInvalid font file: \"" + fontPath + "\"");
 	}
 
-	//std::cout << "[Font] Glyph count = " << (face->ascender >> 6) << std::endl;
-
 	// save font size
-	size = fontSize;
+	this->fontSize = fontSize;
 	// If size is else than min, force to Min value
-	if (size < MIN_FONT_SIZE)
+	if (this->fontSize < MIN_FONT_SIZE)
 	{
-		size = MIN_FONT_SIZE;
+		this->fontSize = MIN_FONT_SIZE;
 	}
 	
 	// Set font size. Larger size = Higher font texture
-	FT_Set_Pixel_Sizes(face, 0, size);
+	FT_Set_Pixel_Sizes(face, 0, this->fontSize);
 
-	FT_GlyphSlot glyphSlot = face->glyph;
-
-	unsigned int widthSum = 0;
-	unsigned int maxHeight = 0;
-
-	// This is a 2 pixel wide extra padding in x, y coordinate in texture to prevent bleeding. So 1 pixels per side.
-	unsigned int widthPadding = 1;
-	unsigned int heightPadding = 1;
-
-	const int textureSizeLimit = 2048;
+	// Todo: Each language need different size of texture
+	textureSize = getTextureSizeByLocale(locale);
 	
-	auto logger = &Voxel::Logger::getInstance();
-
-	// whitespace to tilde. Iterate all character to find the size of character map
-	// this loops find the texture size we are going to make for this font.
-	// whitespace doesn't have texture space, so we can ignore, but font always can have different stuffs filled in any char, so we still check for it.
-	for (unsigned int i = ' '; i <= '~'; i++)
-	{
-		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
-		{
-#if V_DEBUG && V_DEBUG_LOG_CONSOLE
-			logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
-#endif
-			continue;
-		}
-
-		// Adding pad
-		widthSum += glyphSlot->bitmap.width + (widthPadding * 2) + (outlineSize * 2);
-
-		unsigned int curHeight = (glyphSlot->bitmap.rows + (heightPadding * 2) + (outlineSize + 2));
-		if (maxHeight < curHeight)
-		{
-			maxHeight = curHeight;
-		}
-	}
-
-	// Add another padding at the end to prevent bleeding
-	//maxHeight += heightPadding;
-
-	int widthDiv = widthSum / 8;
-	int heightDiv = maxHeight * 16;
-	
-	if (widthDiv > textureSizeLimit || heightDiv > textureSizeLimit)
-	{
-		FT_Done_Face(face);
-
-		// Font texutre size is too big.
-		// Todo: Fix this. Idea: Create program that exports font texture to separate image per char and use texture packer to create font atlas...
-		assert(false);
-		return false;
-	}
-
-	int pow2Width = Utility::Math::findNearestPowTwo(widthDiv);
-	int pow2Height = Utility::Math::findNearestPowTwo(heightDiv);
-
-	// Todo: don't foce to 256. make algorithm that finds minimum power 2 rentangular shape.
-	pow2Width = 256;
-	pow2Height = 256;
-	
-	//int pow2WidthSum = Utility::Math::findNearestPowTwo(widthSum);
-	//int pow2MaxHeight = Utility::Math::findNearestPowTwo(maxHeight);
-
-	//texAtlasWidth = static_cast<float>(pow2WidthSum);
-	//texAtlasHeight = static_cast<float>(pow2MaxHeight);
-
-	texAtlasWidth = static_cast<float>(pow2Width);
-	texAtlasHeight = static_cast<float>(pow2Height);
-
 	std::string textureName = Utility::String::removeFileExtFromFileName(fontName) + "_" + std::to_string(fontSize);
 
 	if (outlineSize != 0)
@@ -170,7 +135,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		textureName += "_Outlined";
 	}
 
-	texture = Texture2D::createFontTexture(textureName, pow2Width, pow2Height, GL_TEXTURE_2D);
+	texture = Texture2D::createFontTexture(textureName, textureSize, textureSize, GL_TEXTURE_2D);
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXT_SHADER);
 
 	// bind font texture
@@ -179,33 +144,80 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	// iterate over char map (whitespace to tilde) again. 
-	// x offset. 
-	float x = 0;
-	// y offset.
-	float y = static_cast<float>(heightPadding + outlineSize);
+
+	auto startBinPack = Utility::Time::now();
+	switch (locale)
+	{
+	case Voxel::Localization::Tag::en_US:
+		initEnUS(face);
+		break;
+	case Voxel::Localization::Tag::ko_KR:
+		initKoKR(face);
+		break;
+	default:
+		assert(false);
+		break;
+	}
+	auto endBinPack = Utility::Time::now();
+	
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+	auto end = Utility::Time::now();
+
+#if V_DEBUG && V_DEBUG_CONSOLE
+	Voxel::Logger::getInstance().consoleInfo("[Font] Texture generation took: " + Utility::Time::toMilliSecondString(start, end) + ", bin packing took: " + Utility::Time::toMilliSecondString(startBinPack, endBinPack));
+#endif
+
+#if V_DEBUG
+	texture->saveToPNG();
+#endif
+
+	//make sure release face.
+	FT_Done_Face(face);
+
+	return true;
+}
+
+bool Voxel::Font::initDefaultCharacters(FT_Face & face)
+{
+	return false;
+}
+
+bool Voxel::Font::initEnUS(FT_Face& face)
+{
+	FT_GlyphSlot glyphSlot = face->glyph;
+
+	auto logger = &Voxel::Logger::getInstance();
 
 	int whitespaceHeight = 0;
+	
+	const int padding = 1;
+	const float padF = static_cast<float>(padding);
+	const int totalPad = padding + outlineSize;
+	const float totalPadF = static_cast<float>(totalPad);
+	const float textureSizeF = static_cast<float>(textureSize);
 
-	int customLineSpace = 0;
-
-	for (unsigned int i = ' '; i <= '~'; i++)
+	Voxel::Bin::BinPacker bp;
+	bp.init(glm::vec2(textureSizeF, textureSizeF));
+	
+	// en-US load characters in ascii table.
+	for (int unicode = 32/* whitespace */; unicode <= 126/* ~ */; unicode++)
 	{
-		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
+		if (FT_Load_Char(face, unicode, FT_LOAD_RENDER))
 		{
 #if V_DEBUG && V_DEBUG_LOG_CONSOLE
-			logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
+			//logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(unicode)));
 #endif
 			continue;
 		}
 
 		// create glyph data
-		char c = static_cast<char>(i);
-		glyphMap.emplace(c, Glyph());
+		glyphMap.emplace(unicode, Glyph());
 
-		auto& glyph = glyphMap[c];
+		auto& glyph = glyphMap[unicode];
 
 		glyph.valid = true;
-		glyph.c = c;
+		glyph.unicode = unicode;
 		glyph.metrics = glyphSlot->metrics;
 		glyph.height = glyphSlot->metrics.height >> 6;
 		glyph.width = glyphSlot->metrics.width >> 6;
@@ -220,79 +232,142 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 			whitespaceHeight = glyph.height;
 		}
 
-		if ((size + glyph.botY) > customLineSpace)
+		const float charX = (totalPadF * 2.0f) + static_cast<float>(glyphSlot->bitmap.width);
+
+		const float charY = (totalPadF * 2.0f) + static_cast<float>(glyphSlot->bitmap.rows);
+
+		Voxel::Bin::ItemNode* itemNode = bp.insert(glm::vec2(charX, charY));
+
+		if (itemNode)
 		{
-			customLineSpace = (size + glyph.botY);
-		}
+			// substitude bitmap buffer to texture
+			const glm::vec2 origin = itemNode->area.origin;
+			const glm::vec2 size = itemNode->area.size;
 
-		// get next X.
-		int nextX = (int)x + glyphSlot->bitmap.width + ((widthPadding + outlineSize) * 2);
-
-		if (nextX > pow2Width)
-		{
-			// go to next line. Use max height as y offset instead of linespace
-			y += static_cast<float>(maxHeight);
-
-			if (y > pow2Height)
+			if (unicode == 32/* whitespace */)
 			{
-#if V_DEBUG && V_DEBUG_LOG_CONSOLE
-				logger->consoleError("[Font] \"" + fontName + " failed to load character: " + std::to_string(static_cast<char>(i)));
-#endif
-				throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_FONT_TEXTURE_TOO_SMALL));
-				return false;
+				glyph.uvTopLeft.x = 0.0f;
+				glyph.uvTopLeft.y = 0.0f;
+
+				glyph.uvBotRight.x = 0.0f;
+				glyph.uvBotRight.y = 0.0f;
 			}
-			x = 0;
+			else
+			{
+				glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(origin.x) + totalPad, static_cast<int>(origin.y) + totalPad, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
+
+				glyph.uvTopLeft.x = (itemNode->area.origin.x + padF) / textureSizeF;
+				glyph.uvTopLeft.y = ((itemNode->area.origin.y + padF) / textureSizeF);
+
+				glyph.uvBotRight.x = ((itemNode->area.origin.x + itemNode->area.size.x) - padF) / textureSizeF;
+				glyph.uvBotRight.y = (((itemNode->area.origin.y + itemNode->area.size.y) - padF) / textureSizeF);
+			}
 		}
-
-		// advance by paddings
-		x += static_cast<float>(widthPadding + outlineSize);
-
-		// substitude bitmap buffer to texture
-		glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(x), static_cast<int>(y), glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
-
-		// Top left of uv. Advance back by outline padding
-		glyph.uvTopLeft = glm::vec2((x - static_cast<float>(outlineSize)) / texAtlasWidth, (y - static_cast<float>(outlineSize)) / texAtlasHeight);
-
-		// advance by size of char bitmap width
-		x += static_cast<float>(glyphSlot->bitmap.width);
-
-		// Bottom right of uv. advance more 
-		glyph.uvBotRight = glm::vec2((x + static_cast<float>(outlineSize)) / texAtlasWidth, ((static_cast<float>(glyphSlot->bitmap.rows) + y + static_cast<float>(outlineSize)) / texAtlasHeight));
-
-		/*
-		if (i == 70)
+		else
 		{
-			std::cout << "char = \"" << c << "\"\n";
-			std::cout << "uvTopLeft (" << glyph.uvTopLeft.x << " ," << glyph.uvTopLeft.y << ")\n";
-			std::cout << "uvBotRight (" << glyph.uvBotRight.x << " ," << glyph.uvBotRight.y << ")\n";
+			// todo: remove this on release
+			assert(false);
 		}
-		*/
-
-		// advance by paddings
-		x += static_cast<float>(widthPadding + outlineSize);
 	}
+	
+	glyphMap[32/* whtiesapce */].height = whitespaceHeight;
 
-
-	//linespace = (face->height >> 6);
-	//linespace = customLineSpace;
-
-	glyphMap[' '].height = whitespaceHeight;
-	//linespace = whitespaceHeight;
 	linespace = face->size->metrics.height >> 6;
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-	texture->saveToPNG();
-
-	//make sure release face.
-	FT_Done_Face(face);
 
 	return true;
 }
 
-Glyph* Font::getCharGlyph(const char c)
+bool Voxel::Font::initKoKR(FT_Face & face)
 {
-	auto find_it = glyphMap.find(c);
+	FT_GlyphSlot glyphSlot = face->glyph;
+
+	auto logger = &Voxel::Logger::getInstance();
+
+	int whitespaceHeight = 0;
+
+	const int padding = 1;
+	const float padF = static_cast<float>(padding);
+	const int totalPad = padding + outlineSize;
+	const float totalPadF = static_cast<float>(totalPad);
+	const float textureSizeF = static_cast<float>(textureSize);
+
+	Voxel::Bin::BinPacker bp;
+	bp.init(glm::vec2(textureSizeF, textureSizeF));
+
+	for (int unicode = 44032; unicode <= 55203; unicode++)
+	{
+		auto ci = FT_Get_Char_Index(face, unicode);
+		if (ci == 0)
+		{
+			continue;
+		}
+
+		if (FT_Load_Char(face, unicode, FT_LOAD_RENDER))
+		{
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+			logger->consoleWarn("[Font] \"" + fontName + " failed to load character: " + std::to_string(unicode));
+#endif
+			continue;
+		}
+
+		// create glyph data
+		glyphMap.emplace(unicode, Glyph());
+
+		auto& glyph = glyphMap[unicode];
+
+		glyph.valid = true;
+		glyph.unicode = unicode;
+		glyph.metrics = glyphSlot->metrics;
+		glyph.height = glyphSlot->metrics.height >> 6;
+		glyph.width = glyphSlot->metrics.width >> 6;
+		glyph.bearingX = glyphSlot->metrics.horiBearingX >> 6;
+		glyph.bearingY = glyphSlot->metrics.horiBearingY >> 6;
+		//std::cout << c << " " << glyph.height << ", " << glyph.bearingY << std::endl;
+		glyph.botY = glyph.height - glyph.bearingY;
+		glyph.advance = glyphSlot->metrics.horiAdvance >> 6;
+
+		if (whitespaceHeight < glyph.height)
+		{
+			whitespaceHeight = glyph.height;
+		}
+
+		const float charX = (totalPadF * 2.0f) + static_cast<float>(glyphSlot->bitmap.width);
+
+		const float charY = (totalPadF * 2.0f) + static_cast<float>(glyphSlot->bitmap.rows);
+
+		Voxel::Bin::ItemNode* itemNode = bp.insert(glm::vec2(charX, charY));
+
+		if (itemNode)
+		{
+			// substitude bitmap buffer to texture
+			const glm::vec2 origin = itemNode->area.origin;
+			const glm::vec2 size = itemNode->area.size;
+
+			glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(origin.x) + totalPad, static_cast<int>(origin.y) + totalPad, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
+
+			glyph.uvTopLeft.x = (itemNode->area.origin.x + padF) / textureSizeF;
+			glyph.uvTopLeft.y = ((itemNode->area.origin.y + padF) / textureSizeF);
+
+			glyph.uvBotRight.x = ((itemNode->area.origin.x + itemNode->area.size.x) - padF) / textureSizeF;
+			glyph.uvBotRight.y = (((itemNode->area.origin.y + itemNode->area.size.y) - padF) / textureSizeF);
+		}
+		else
+		{
+			// todo: remove this on release
+			abort();
+		}
+	}
+
+	glyphMap[' '].height = whitespaceHeight;
+
+	linespace = face->size->metrics.height >> 6;
+
+	return true;
+}
+
+Glyph * Voxel::Font::getGlyph(const int unicode)
+{
+	auto find_it = glyphMap.find(unicode);
 	if (find_it == glyphMap.end())
 	{
 		return nullptr;
@@ -345,5 +420,5 @@ bool Voxel::Font::isOutlineEnabled()
 
 int Voxel::Font::getSize()
 {
-	return size;
+	return fontSize;
 }

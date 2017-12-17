@@ -134,6 +134,8 @@ std::string Voxel::Texture2D::getName() const
 
 bool Voxel::Texture2D::saveToPNG()
 {
+	auto start = Utility::Time::now();
+
 #if V_DEBUG && V_DEBUG_CONSOLE
 	auto logger = &Voxel::Logger::getInstance();
 	logger->consoleInfo("[Texture2D] Saving to png...");
@@ -169,7 +171,7 @@ bool Voxel::Texture2D::saveToPNG()
 	}
 
 	// open file
-	FILE* file = fopen((Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png").c_str(), "wb");
+	FILE* file = fopen((Voxel::FileSystem::getInstance().getWorkingDirectory() + "/FontTextureDump/" + name + ".png").c_str(), "wb");
 
 	// check file
 	if (!file)
@@ -298,8 +300,10 @@ bool Voxel::Texture2D::saveToPNG()
 	// unbind texture
 	glBindTexture(this->textureTarget, 0);
 
+	auto end = Utility::Time::now();
+
 #if V_DEBUG && V_DEBUG_CONSOLE
-	logger->consoleInfo("[Texture2D] Texture saved: " + (Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png"));
+	logger->consoleInfo("[Texture2D] Texture saved (" + Utility::Time::toMilliSecondString(start, end) + "): " + (Voxel::FileSystem::getInstance().getWorkingDirectory() + "/" + name + ".png"));
 #endif
 
 	// success!

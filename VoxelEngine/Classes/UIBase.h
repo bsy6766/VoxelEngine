@@ -220,7 +220,7 @@ namespace Voxel
 			*	Set scale of ui
 			*	@param scale SCale of ui for both x and y axis.
 			*/
-			void setScale(const float scale);
+			virtual void setScale(const float scale);
 
 			/**
 			*	Set scale of ui.
