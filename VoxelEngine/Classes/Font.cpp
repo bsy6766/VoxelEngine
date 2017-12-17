@@ -165,11 +165,11 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	auto end = Utility::Time::now();
 
 #if V_DEBUG && V_DEBUG_CONSOLE
-	Voxel::Logger::getInstance().consoleInfo("[Font] Texture generation took: " + Utility::Time::toMilliSecondString(start, end) + ", bin packing took: " + Utility::Time::toMilliSecondString(startBinPack, endBinPack));
+	Voxel::Logger::getInstance().consoleInfo("[Font] Texture generation took: " + Utility::Time::toMicroSecondString(start, end) + ", bin packing took: " + Utility::Time::toMicroSecondString(startBinPack, endBinPack));
 #endif
 
 #if V_DEBUG
-	texture->saveToPNG();
+	//texture->saveToPNG();
 #endif
 
 	//make sure release face.
@@ -241,8 +241,6 @@ bool Voxel::Font::initEnUS(FT_Face& face)
 		if (itemNode)
 		{
 			// substitude bitmap buffer to texture
-			const glm::vec2 origin = itemNode->area.origin;
-			const glm::vec2 size = itemNode->area.size;
 
 			if (unicode == 32/* whitespace */)
 			{
@@ -254,7 +252,7 @@ bool Voxel::Font::initEnUS(FT_Face& face)
 			}
 			else
 			{
-				glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(origin.x) + totalPad, static_cast<int>(origin.y) + totalPad, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(itemNode->area.origin.x) + totalPad, static_cast<int>(itemNode->area.origin.y) + totalPad, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
 
 				glyph.uvTopLeft.x = (itemNode->area.origin.x + padF) / textureSizeF;
 				glyph.uvTopLeft.y = ((itemNode->area.origin.y + padF) / textureSizeF);

@@ -17,6 +17,7 @@ namespace Voxel
 			glm::vec2 size;
 
 			Rect() : origin(0), size(0) {}
+			Rect(const glm::vec2& origin, const glm::vec2& size) : origin(origin), size(size) {}
 
 			float Rect::getMaxX() const
 			{

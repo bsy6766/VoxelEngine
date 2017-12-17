@@ -117,9 +117,7 @@ Voxel::Bin::ItemNode * Voxel::Bin::BinPacker::insert(ItemNode * itemNode, const 
 
 		// Check if the new rect fits to this node
 		const glm::vec2 origin = itemNode->area.origin;
-		Rect targetArea = Rect();
-		targetArea.origin = origin;
-		targetArea.size = size;
+		Rect targetArea = Rect(origin, size);
 
 		if (itemNode->area.containsRect(targetArea) == false)
 		{
@@ -161,21 +159,21 @@ Voxel::Bin::ItemNode * Voxel::Bin::BinPacker::insert(ItemNode * itemNode, const 
 			*/
 
 			// left origin equals to area's origin
-			const glm::vec2 leftOrigin = origin;
+			//const glm::vec2 leftOrigin = origin;
 			// left size. width equasl to new rect's width and height is same as area
 			const glm::vec2 leftSize = glm::vec2(size.x, itemNode->area.size.y);
 			// set area
-			itemNode->left->area.origin = leftOrigin;
+			itemNode->left->area.origin = origin;
 			itemNode->left->area.size = leftSize;
 
 			// Right origin. x Start from area's origin and left size's width, which includes the pad
-			float rightX = origin.x + leftSize.x;
-			glm::vec2 rightOrigin = glm::vec2(rightX, origin.y);
+			//float rightX = origin.x + leftSize.x;
+			//glm::vec2 rightOrigin = glm::vec2(origin.x + leftSize.x, origin.y);
 			// right width is difference between area awidht and leftsize with
-			glm::vec2 rightSize = glm::vec2(itemNode->area.size.x - leftSize.x, itemNode->area.size.y);
+			//glm::vec2 rightSize = glm::vec2(itemNode->area.size.x - leftSize.x, itemNode->area.size.y);
 			// Set area
-			itemNode->right->area.origin = rightOrigin;
-			itemNode->right->area.size = rightSize;
+			itemNode->right->area.origin = glm::vec2(origin.x + leftSize.x, origin.y);
+			itemNode->right->area.size = glm::vec2(itemNode->area.size.x - leftSize.x, itemNode->area.size.y);
 		}
 		else
 		{
@@ -195,17 +193,17 @@ Voxel::Bin::ItemNode * Voxel::Bin::BinPacker::insert(ItemNode * itemNode, const 
 			*/
 
 			// Left origin equals to area's origin
-			glm::vec2 leftOrigin = origin;
-			glm::vec2 leftSize = glm::vec2(itemNode->area.size.x, size.y);
-			itemNode->left->area.origin = leftOrigin;
-			itemNode->left->area.size = leftSize;
+			//glm::vec2 leftOrigin = origin;
+			//glm::vec2 leftSize = glm::vec2(itemNode->area.size.x, size.y);
+			itemNode->left->area.origin = origin;
+			itemNode->left->area.size = glm::vec2(itemNode->area.size.x, size.y);
 
-			float rightY = size.y + origin.y;
-			glm::vec2 rightOrigin = glm::vec2(origin.x, rightY);
-			float rightHeight = itemNode->area.size.y - size.y;
-			glm::vec2 rightSize = glm::vec2(itemNode->area.size.x, rightHeight);
-			itemNode->right->area.origin = rightOrigin;
-			itemNode->right->area.size = rightSize;
+			//float rightY = size.y + origin.y;
+			//glm::vec2 rightOrigin = glm::vec2(origin.x, rightY);
+			//float rightHeight = itemNode->area.size.y - size.y;
+			//glm::vec2 rightSize = glm::vec2(itemNode->area.size.x, rightHeight);
+			itemNode->right->area.origin = glm::vec2(origin.x, size.y + origin.y);
+			itemNode->right->area.size = glm::vec2(itemNode->area.size.x, itemNode->area.size.y - size.y);
 		}
 
 		return insert(itemNode->left, size);
