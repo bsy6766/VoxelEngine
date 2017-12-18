@@ -256,6 +256,21 @@ float Voxel::Ray::getMinimumIntersectingDistance(const Shape::AABB & aabb)
 	return minDist;
 }
 
+bool Voxel::Ray::doesIntersectsQuad(const Shape::Quad & quad, glm::vec3 & intersectingPoint)
+{	
+	Voxel::Shape::Triangle first = Voxel::Shape::Triangle(quad.p1, quad.p2, quad.p3, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	if (doesIntersectsTriangle(first, intersectingPoint))
+	{
+		return true;
+	}
+	else
+	{
+		Voxel::Shape::Triangle second = Voxel::Shape::Triangle(quad.p4, quad.p3, quad.p2, glm::vec3(0.0f, 1.0f, 0.0f));
+		return doesIntersectsTriangle(second, intersectingPoint);
+	}
+}
+
 float Voxel::Ray::scalarTriple(const glm::vec3 & u, const glm::vec3 & v, const glm::vec3 & w)
 {
 	return glm::dot(u, glm::cross(v, w));

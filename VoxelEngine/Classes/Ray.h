@@ -78,6 +78,14 @@ namespace Voxel
 		float getMinimumIntersectingDistance(const Shape::AABB& aabb);
 
 		/**
+		*	Check if ray intersects rect
+		*	@param quad Qaud to raycast
+		*	@param intersectingPoint A glm::vec3 to get intersecting point. Only valid if return is true.
+		*	@return true if ray intersects rect. Else, false.
+		*/
+		bool doesIntersectsQuad(const Shape::Quad& quad, glm::vec3& intersectingPoint);
+
+		/**
 		*	Calculate scalar triple.
 		*	u * (v X w)
 		*/
