@@ -215,7 +215,13 @@ glm::vec2 Voxel::UI::TransformNode::getScale() const
 
 void Voxel::UI::TransformNode::setPivot(const glm::vec2 & pivot)
 {
-	this->pivot = glm::clamp(pivot, -0.5f, 0.5f);
+	setPivot(pivot.x, pivot.y);
+}
+
+void Voxel::UI::TransformNode::setPivot(const float x, const float y)
+{
+	this->pivot.x = glm::clamp(x, -0.5f, 0.5f);
+	this->pivot.y = glm::clamp(y, -0.5f, 0.5f);
 
 	needToUpdateModelMat = true;
 }

@@ -238,6 +238,7 @@ namespace Voxel
 			*	@param pivot Pivot of ui to set. Default value is 0.0
 			*/
 			void setPivot(const glm::vec2& pivot);
+			void setPivot(const float x, const float y);
 
 			/**
 			*	Get pivot of ui
