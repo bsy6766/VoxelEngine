@@ -16,12 +16,21 @@
                 "w": 32, 
                 "h": 32
             }, 
-            "filename": "pointer.png"
+            "filename": "pan.png"
         }, 
         {
             "frame": {
                 "y": 69, 
                 "x": 1, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "pointer.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 35, 
                 "w": 32, 
                 "h": 32
             }, 

@@ -2,6 +2,15 @@
     "frames": [
         {
             "frame": {
+                "y": 4, 
+                "x": 185, 
+                "w": 10, 
+                "h": 10
+            }, 
+            "filename": "block_face_indicator.png"
+        }, 
+        {
+            "frame": {
                 "y": 1, 
                 "x": 222, 
                 "w": 184, 
@@ -12,7 +21,7 @@
         {
             "frame": {
                 "y": 4, 
-                "x": 185, 
+                "x": 197, 
                 "w": 8, 
                 "h": 16
             }, 
@@ -20,8 +29,8 @@
         }, 
         {
             "frame": {
-                "y": 4, 
-                "x": 195, 
+                "y": 16, 
+                "x": 185, 
                 "w": 8, 
                 "h": 16
             }, 
@@ -30,7 +39,7 @@
         {
             "frame": {
                 "y": 4, 
-                "x": 205, 
+                "x": 207, 
                 "w": 8, 
                 "h": 16
             }, 
@@ -39,7 +48,7 @@
         {
             "frame": {
                 "y": 22, 
-                "x": 185, 
+                "x": 195, 
                 "w": 8, 
                 "h": 16
             }, 
@@ -47,8 +56,8 @@
         }, 
         {
             "frame": {
-                "y": 81, 
-                "x": 409, 
+                "y": 21, 
+                "x": 464, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -56,8 +65,8 @@
         }, 
         {
             "frame": {
-                "y": 86, 
-                "x": 455, 
+                "y": 123, 
+                "x": 289, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -65,8 +74,8 @@
         }, 
         {
             "frame": {
-                "y": 83, 
-                "x": 289, 
+                "y": 116, 
+                "x": 115, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -74,8 +83,8 @@
         }, 
         {
             "frame": {
-                "y": 109, 
-                "x": 289, 
+                "y": 142, 
+                "x": 115, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -83,8 +92,8 @@
         }, 
         {
             "frame": {
-                "y": 96, 
-                "x": 115, 
+                "y": 149, 
+                "x": 275, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -92,7 +101,7 @@
         }, 
         {
             "frame": {
-                "y": 122, 
+                "y": 168, 
                 "x": 115, 
                 "w": 44, 
                 "h": 24
@@ -101,7 +110,7 @@
         }, 
         {
             "frame": {
-                "y": 112, 
+                "y": 138, 
                 "x": 449, 
                 "w": 44, 
                 "h": 24
@@ -110,7 +119,7 @@
         }, 
         {
             "frame": {
-                "y": 135, 
+                "y": 175, 
                 "x": 275, 
                 "w": 44, 
                 "h": 24
@@ -119,8 +128,8 @@
         }, 
         {
             "frame": {
-                "y": 148, 
-                "x": 115, 
+                "y": 164, 
+                "x": 435, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -128,8 +137,8 @@
         }, 
         {
             "frame": {
-                "y": 138, 
-                "x": 449, 
+                "y": 193, 
+                "x": 161, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -137,8 +146,8 @@
         }, 
         {
             "frame": {
-                "y": 161, 
-                "x": 275, 
+                "y": 194, 
+                "x": 115, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -146,8 +155,8 @@
         }, 
         {
             "frame": {
-                "y": 174, 
-                "x": 115, 
+                "y": 193, 
+                "x": 207, 
                 "w": 44, 
                 "h": 24
             }, 
@@ -155,12 +164,21 @@
         }, 
         {
             "frame": {
-                "y": 22, 
-                "x": 195, 
+                "y": 34, 
+                "x": 185, 
                 "w": 8, 
                 "h": 8
             }, 
             "filename": "file_drop_down_bg.png"
+        }, 
+        {
+            "frame": {
+                "y": 47, 
+                "x": 389, 
+                "w": 112, 
+                "h": 24
+            }, 
+            "filename": "file_new_button_clicked.png"
         }, 
         {
             "frame": {
@@ -169,7 +187,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_new_button_clicked.png"
+            "filename": "file_new_button_disabled.png"
         }, 
         {
             "frame": {
@@ -178,7 +196,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_new_button_disabled.png"
+            "filename": "file_new_button_hovered.png"
         }, 
         {
             "frame": {
@@ -187,7 +205,25 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_new_button_hovered.png"
+            "filename": "file_new_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 73, 
+                "x": 349, 
+                "w": 112, 
+                "h": 24
+            }, 
+            "filename": "file_open_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 99, 
+                "x": 349, 
+                "w": 112, 
+                "h": 24
+            }, 
+            "filename": "file_open_button_disabled.png"
         }, 
         {
             "frame": {
@@ -196,16 +232,16 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_new_button_idle.png"
+            "filename": "file_open_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 107, 
-                "x": 335, 
+                "y": 115, 
+                "x": 175, 
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_open_button_clicked.png"
+            "filename": "file_open_button_idle.png"
         }, 
         {
             "frame": {
@@ -214,16 +250,16 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_open_button_disabled.png"
+            "filename": "file_save_as_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 115, 
-                "x": 161, 
+                "y": 125, 
+                "x": 335, 
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_open_button_hovered.png"
+            "filename": "file_save_as_button_disabled.png"
         }, 
         {
             "frame": {
@@ -232,16 +268,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_open_button_idle.png"
-        }, 
-        {
-            "frame": {
-                "y": 133, 
-                "x": 335, 
-                "w": 112, 
-                "h": 24
-            }, 
-            "filename": "file_save_as_button_clicked.png"
+            "filename": "file_save_as_button_hovered.png"
         }, 
         {
             "frame": {
@@ -250,7 +277,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_save_as_button_disabled.png"
+            "filename": "file_save_as_button_idle.png"
         }, 
         {
             "frame": {
@@ -259,16 +286,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_save_as_button_hovered.png"
-        }, 
-        {
-            "frame": {
-                "y": 159, 
-                "x": 321, 
-                "w": 112, 
-                "h": 24
-            }, 
-            "filename": "file_save_as_button_idle.png"
+            "filename": "file_save_button_clicked.png"
         }, 
         {
             "frame": {
@@ -277,7 +295,7 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_save_button_clicked.png"
+            "filename": "file_save_button_disabled.png"
         }, 
         {
             "frame": {
@@ -286,21 +304,12 @@
                 "w": 112, 
                 "h": 24
             }, 
-            "filename": "file_save_button_disabled.png"
-        }, 
-        {
-            "frame": {
-                "y": 185, 
-                "x": 321, 
-                "w": 112, 
-                "h": 24
-            }, 
             "filename": "file_save_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 193, 
-                "x": 161, 
+                "y": 151, 
+                "x": 321, 
                 "w": 112, 
                 "h": 24
             }, 
@@ -318,7 +327,7 @@
         {
             "frame": {
                 "y": 4, 
-                "x": 215, 
+                "x": 217, 
                 "w": 1, 
                 "h": 30
             }, 
@@ -336,29 +345,11 @@
         {
             "frame": {
                 "y": 21, 
-                "x": 402, 
+                "x": 404, 
                 "w": 58, 
                 "h": 18
             }, 
             "filename": "new_cancel_button_disabled.png"
-        }, 
-        {
-            "frame": {
-                "y": 41, 
-                "x": 379, 
-                "w": 58, 
-                "h": 18
-            }, 
-            "filename": "new_cancel_button_hovered.png"
-        }, 
-        {
-            "frame": {
-                "y": 61, 
-                "x": 379, 
-                "w": 58, 
-                "h": 18
-            }, 
-            "filename": "new_cancel_button_idle.png"
         }, 
         {
             "frame": {
@@ -367,7 +358,7 @@
                 "w": 58, 
                 "h": 18
             }, 
-            "filename": "new_create_button_clicked.png"
+            "filename": "new_cancel_button_hovered.png"
         }, 
         {
             "frame": {
@@ -376,7 +367,7 @@
                 "w": 58, 
                 "h": 18
             }, 
-            "filename": "new_create_button_disabled.png"
+            "filename": "new_cancel_button_idle.png"
         }, 
         {
             "frame": {
@@ -385,12 +376,30 @@
                 "w": 58, 
                 "h": 18
             }, 
+            "filename": "new_create_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 83, 
+                "x": 289, 
+                "w": 58, 
+                "h": 18
+            }, 
+            "filename": "new_create_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 103, 
+                "x": 289, 
+                "w": 58, 
+                "h": 18
+            }, 
             "filename": "new_create_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 81, 
-                "x": 349, 
+                "y": 96, 
+                "x": 115, 
                 "w": 58, 
                 "h": 18
             }, 
@@ -398,8 +407,8 @@
         }, 
         {
             "frame": {
-                "y": 21, 
-                "x": 462, 
+                "y": 73, 
+                "x": 463, 
                 "w": 48, 
                 "h": 63
             }, 
@@ -426,7 +435,7 @@
         {
             "frame": {
                 "y": 11, 
-                "x": 218, 
+                "x": 220, 
                 "w": 182, 
                 "h": 24
             }, 
@@ -435,7 +444,7 @@
         {
             "frame": {
                 "y": 37, 
-                "x": 195, 
+                "x": 205, 
                 "w": 182, 
                 "h": 24
             }, 
