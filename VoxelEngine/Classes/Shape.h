@@ -137,6 +137,35 @@ namespace Voxel
 		};
 
 		/**
+		*	@class Quad
+		*	@bieft 3D rectangle with 4 given points
+		*/
+		class Quad
+		{
+		public:
+			// Constructor
+			Quad();
+			/**
+			*	Constructor
+			*	@param p1 First point of quad. (min x, min y)
+			*	@param p2 Second point of quad. (min x, max y)
+			*	@param p3 Third point of quad. (max x, min y)
+			*	@param p4 Fourth point of quad. (max x, max y)
+			*	@param n Normal of quad. 
+			*/
+			Quad(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4, const glm::vec3& n);
+
+			// Destructor
+			~Quad() = default;
+
+			glm::vec3 p1;
+			glm::vec3 p2;
+			glm::vec3 p3;
+			glm::vec3 p4;
+			glm::vec3 n;
+		};
+
+		/**
 		*	@class Sphere
 		*	@brief 3D Sphere with position and radius
 		*/

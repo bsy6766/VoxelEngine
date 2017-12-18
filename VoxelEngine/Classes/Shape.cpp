@@ -357,6 +357,28 @@ void Shape::AABB::print()
 	std::cout << "[BoundingBox] center: (" << center.x << ", " << center.y << ", " << center.z << "), size: (" << size.x << ", " << size.y << ", " << size.z << ")\n";
 }
 
+
+
+Voxel::Shape::Quad::Quad()
+	: p1(0.0f)
+	, p2(0.0f)
+	, p3(0.0f)
+	, p4(0.0f)
+	, n(0.0f)
+{}
+
+Voxel::Shape::Quad::Quad(const glm::vec3 & p1, const glm::vec3 & p2, const glm::vec3 & p3, const glm::vec3 & p4, const glm::vec3 & n)
+	: p1(p1)
+	, p2(p2)
+	, p3(p3)
+	, p4(p4)
+	, n(n)
+{}
+
+
+
+
+
 Voxel::Shape::Sphere::Sphere()
 	: radius(0)
 	, position(0)
