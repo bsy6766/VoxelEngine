@@ -52,8 +52,11 @@ namespace Voxel
 		// Get env path
 		std::string	getEnv(const std::string& value);
 
-		// Check if path exists
+		// Check if path exists. Path is case insensitive
 		bool doesPathExists(const std::string& path) const;
+
+		// Check if path is regular file
+		bool isRegularFile(const std::string& path) const;
 
 		// Check if path is directory.
 		bool isDirectory(const std::string& path) const;

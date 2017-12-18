@@ -77,6 +77,11 @@ bool Voxel::FileSystem::doesPathExists(const std::string & path) const
 	return fs::exists(fs::path(path));
 }
 
+bool Voxel::FileSystem::isRegularFile(const std::string & path) const
+{
+	return fs::is_regular_file(path);
+}
+
 bool Voxel::FileSystem::isDirectory(const std::string & path) const
 {
 	return fs::is_directory(fs::path(path));
