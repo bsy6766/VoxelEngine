@@ -691,32 +691,19 @@ RegionMesh * Voxel::WorldMap::getRegionMesh(const unsigned int regionMeshIndex)
 
 void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool select)
 {
-	//std::cout << "raycast" << std::endl;
-
-	//std::cout << "mp = " << prevMouseClickedPos.x << ", " << prevMouseClickedPos.y << "\n";
-
 	auto screenSize = glm::vec2(Application::getInstance().getGLView()->getScreenSize());
 
 	glm::mat4 proj = Camera::mainCamera->getProjection();
-	glm::mat4 view = getViewMatrix();
-	
-	GLint viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	//std::cout << "viewport = " << viewport[0] << ", " << viewport[1] << ", " << viewport[2] << ", " << viewport[3] << "\n";
+	glm::mat4 mat = getViewMatrix() * modelMat;
 	
 	auto openglXY = cursorPos + (screenSize * 0.5f);
-	//std::cout << "openglXY = " << openglXY.x << ", " << openglXY.y << "\n";
 
-	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), view * modelMat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	//std::cout << "near = " << Utility::Log::vec3ToStr(near) << "\n";
-	//std::cout << "far = " << Utility::Log::vec3ToStr(far) << "\n";
-	
 	Ray ray(near, far);
-	//ray.print();
 
 	//initDebugMousePickRayLine(ray);
 
