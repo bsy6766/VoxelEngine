@@ -4,6 +4,7 @@
 // voxel
 #include "Scene.h"
 #include "UI.h"
+#include "Cube.h"
 
 // cpp
 #include <array>
@@ -55,6 +56,20 @@ namespace Voxel
 			CLICKED_RIGHT_BUTTON,		// Rotate model
 			CLICKED_MIDDLE_BUTTON,		// pan model in x, z axis
 		};
+
+		enum class EditState
+		{
+			NONE = 0,
+			ADD_BLOCK,
+			REMOVE_BLOCK,
+		};
+
+		enum class SchematicState
+		{
+			NONE = 0,
+			NEW,
+			OPENED,
+		};
 	private:
 		// canvas
 		Voxel::UI::Canvas* canvas;
@@ -65,10 +80,18 @@ namespace Voxel
 		Voxel::UI::Button* exitGameBtn;
 		// Files drop down
 		Voxel::UI::NinePatchImage* fileDropDownBg;
+
 		// New create window
 		Voxel::UI::NinePatchImage* newCreateWindow;
 		Voxel::UI::Button* createBtn;
 		Voxel::UI::InputField* newFileNameInputField;
+		Voxel::UI::Slider* dimensionXSlider;
+		Voxel::UI::Slider* dimensionYSlider;
+		Voxel::UI::Slider* dimensionZSlider;
+		Voxel::UI::Text* dimensionLabel;
+		Voxel::UI::Text* dimensionXLabel;
+		Voxel::UI::Text* dimensionYLabel;
+		Voxel::UI::Text* dimensionZLabel;
 
 		bool menuBarDropDowned;
 
@@ -81,10 +104,19 @@ namespace Voxel
 		// mouse state
 		MouseState mouseState;
 
+		// edit state
+		EditState editState;
+
 		std::string newFileName;
 
 		// Schematic
+		glm::ivec3 dimension;
 		Schematic* schematic;
+		SchematicState schematicState;
+		bool schematicModified;
+
+		// FPS label
+		Voxel::UI::Text* fpsLabel;
 
 		// floor
 		GLuint floorVao;
@@ -93,20 +125,40 @@ namespace Voxel
 		float floorAngleY;
 		glm::vec4 floorColor;
 		glm::mat4 floorModelMat;
-
-		// origin line
-		GLuint originLineVao;
-
+		glm::vec2 floorSize;
+		
 		// block face indicator
 		GLuint faceIndicatorVao;
+		glm::vec3 faceIndicatorPos;
+		Cube::Face faceIndicatorCubeFace;
+		glm::ivec3 curFaceIndicatorPos;
+		bool faceIndicatorVisibility;
+		glm::mat4 faceIndicatorModelMat;
+		glm::vec4 faceIndicatorColor;
 
-		// temp
-		Voxel::UI::Slider* slider;
+		// origin line
+		GLuint axisLineVao;
+
+		// cam pos. For smooth zoom
+		glm::vec3 camPosTarget;
+		glm::vec3 defaultCamPos;
 		
 		// init
 		void initEditor();
+		void initFloor();
+		void initFaceIndicator();
+		void initAxisGuide();
 		void initUI();
+		void initMenuBar();
+		void initFileDropDownMenu();
+		void initNewCreateWindow();
 
+		// release/clean
+		void releaseFloor();
+		void releaseAxisGuide();
+
+		// update key
+		void updateKey();
 		// update mouse
 		bool updateMouseMove(const float delta);
 		bool updateMousePress();
@@ -118,7 +170,20 @@ namespace Voxel
 		void zoomIn();
 		void zoomOut();
 
+		// ray
+		// Raycast floor and get intersecting point
+		bool raycastFloor(glm::vec3& intersectingPoint);
+
+		void updateFloorModelMat();
+		void updateFaceIndicatorModelMat();
+		glm::ivec3 intersectingFloorPointToCoordinate(const glm::vec3& intersectingPoint);
+
+		// file
+		bool attempToCreateFile();
+		void askOverwrite();
+
 		// callback
+		void onFPSCount(int fps);
 		void onFileButtonClicked();
 		void onEditButtonClicked();
 		void onReturnToMainMenuButtonClicked();
@@ -128,6 +193,9 @@ namespace Voxel
 		void onNewCancelButtonClicked();
 		void onNewFileNameEdit(const std::string text);
 		void onNewFileNameEditSubmitted(const std::string text);
+		void onDimensionXSliderMove(float value);
+		void onDimensionYSliderMove(float value);
+		void onDimensionZSliderMove(float value);
 	public:
 		Editor();
 		~Editor();
