@@ -110,7 +110,7 @@
 		*	If enabled, draws debug line between texts lines.
 		*/
 		#ifndef V_DEBUG_DRAW_TEXT_LINE_DIVIDER
-		#define V_DEBUG_DRAW_TEXT_LINE_DIVIDER 1
+		#define V_DEBUG_DRAW_TEXT_LINE_DIVIDER 0
 		#endif
 
 		/**
@@ -118,7 +118,7 @@
 		*	If enabled, draws debug line between each character in text.
 		*/
 		#ifndef V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER
-		#define V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER 1
+		#define V_DEBUG_DRAW_TEXT_CHARACTER_DIVIDER 0
 		#endif
 
 	#endif //V_DEBUG_DRAW_TEXT_BOUNDING_BOX

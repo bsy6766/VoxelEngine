@@ -29,18 +29,37 @@ namespace Voxel
 				RIGHT
 			};
 		private:
-			// Defines line size. For mesh building only
-			struct LineSize
+			// Sub line size. 
+			struct SubLineSize
 			{
 			public:
 				// Constructor
-				LineSize() : width(0), maxBearingY(0), maxBotY(0) {}
-				// Width of line
+				SubLineSize() : width(0), maxBearingY(0), maxBotY(0), penPosition(0.0f) {}
+				// width
 				int width;
 				// max bearing of line
 				int maxBearingY;
 				// max bot of line
 				int maxBotY;
+				// line text
+				std::string text;
+				// pen position
+				glm::vec2 penPosition;
+			};
+			// Defines line size. For mesh building only
+			struct LineSize
+			{
+			public:
+				// Constructor
+				LineSize() : maxX(0), maxBearingY(0), maxBotY(0) {}
+				// Width of line
+				int maxX;
+				// max bearing of line
+				int maxBearingY;
+				// max bot of line
+				int maxBotY;
+				// sub lines
+				std::vector<SubLineSize> subLineSizes;
 			};
 		private:
 			Text() = delete;
@@ -82,15 +101,18 @@ namespace Voxel
 			// character positions. Character posistions are relative to center of each line. Only stores x value for each line
 			std::vector<std::vector<float>> characterPositions;
 
+			// Line break width. Text will break text in to multiple lines to fit text in certain width. If 0, it doesn't break.
+			unsigned int lineBreakWidth;
+
 			/**
 			*	Initialize text.
 			*/
-			bool init(const std::string& text, const ALIGN align = ALIGN::LEFT);
+			bool init(const std::string& text, const ALIGN align, const unsigned int lineBreakWidth);
 
 			/**
 			*	Initialize text with outline
 			*/
-			bool initWithOutline(const std::string& text, const glm::vec3& outlineColor, ALIGN align = ALIGN::LEFT);
+			bool initWithOutline(const std::string& text, const glm::vec3& outlineColor, ALIGN align, const unsigned int lineBreakWidth);
 
 			/**
 			*	Computes the origin point for each line
@@ -100,16 +122,17 @@ namespace Voxel
 
 			/**
 			*	Compute line size and max width
-			*	Each line size contains width, max bearing y and max bot y
+			*	Each line size contains width, max bearing y and max bot y.
+			*	@return true if successfully computed line sizes. false if text can't fit in lineBreakWidth
 			*/
-			void computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int& maxWidth);
+			bool computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int& maxWidth);
 
 			/**
 			*	Compute pen position.
 			*	Pen position is a guide point for writing text vertically. Think as vertical lines in notebook which we use as guide line to write letters in same line.
 			*	Mesh will be built starting from pen position, left to right.
 			*/
-			void computePenPositions(const std::vector<LineSize>& lineSizes, std::vector<glm::vec2>& penPositions, const float yAdvance);
+			void computePenPositions(std::vector<LineSize>& lineSizes,const float yAdvance);
 
 			/**
 			*	Builds mesh and loads.
@@ -137,9 +160,10 @@ namespace Voxel
 			*	@param text A string text to render
 			*	@param fontID Font id to use
 			*	@param align Text align. Left by default.
+			*	@param lineBreakWidth A width to break text in multiple lines. 0 means no line break and it's default.
 			*	@return Text ui if successfully loads text to render. Else, nullptr
 			*/
-			static Text* create(const std::string& name, const std::string& text, const int fontID, const ALIGN align = ALIGN::LEFT);
+			static Text* create(const std::string& name, const std::string& text, const int fontID, const ALIGN align = ALIGN::LEFT, const unsigned int lineBreakWidth = 0);
 
 			/**
 			*	Create text
@@ -148,9 +172,10 @@ namespace Voxel
 			*	@param fontID Font id to use
 			*	@param outlineColor Color of text outline
 			*	@param align Text align. Left by default.
+			*	@param lineBreakWidth A width to break text in multiple lines. 0 means no line break and it's default.
 			*	@return Text ui if successfully loads text to render. Else, nullptr
 			*/
-			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec3& outlineColor = glm::vec3(0.0f), const ALIGN align = ALIGN::LEFT);
+			static Text* createWithOutline(const std::string& name, const std::string& text, const int fontID, const glm::vec3& outlineColor = glm::vec3(0.0f), const ALIGN align = ALIGN::LEFT, const unsigned int lineBreakWidth = 0);
 
 			/**
 			*	Sets text.

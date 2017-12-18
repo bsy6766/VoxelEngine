@@ -39,7 +39,7 @@ Voxel::UI::Text::~Text()
 	clear();
 }
 
-Voxel::UI::Text * Voxel::UI::Text::create(const std::string & name, const std::string & text, const int fontID, const ALIGN align)
+Voxel::UI::Text * Voxel::UI::Text::create(const std::string & name, const std::string & text, const int fontID, const ALIGN align, const unsigned int lineBreakWidth)
 {
 	Text* newText = new Text(name);
 
@@ -47,7 +47,7 @@ Voxel::UI::Text * Voxel::UI::Text::create(const std::string & name, const std::s
 
 	if (newText->font != nullptr)
 	{
-		if (newText->init(text, align))
+		if (newText->init(text, align, lineBreakWidth))
 		{
 			return newText;
 		}
@@ -59,7 +59,7 @@ Voxel::UI::Text * Voxel::UI::Text::create(const std::string & name, const std::s
 	return nullptr;
 }
 
-Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec3 & outlineColor, const ALIGN align)
+Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec3 & outlineColor, const ALIGN align, const unsigned int lineBreakWidth)
 {
 	Text* newText = new Text(name);
 
@@ -70,7 +70,7 @@ Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, c
 		// Check if font supports outline
 		if (newText->font->isOutlineEnabled())
 		{
-			if (newText->initWithOutline(text, outlineColor, align))
+			if (newText->initWithOutline(text, outlineColor, align, lineBreakWidth))
 			{
 				return newText;
 			}
@@ -83,21 +83,23 @@ Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, c
 	return nullptr;
 }
 
-bool Voxel::UI::Text::init(const std::string & text, const ALIGN align)
+bool Voxel::UI::Text::init(const std::string & text, const ALIGN align, const unsigned int lineBreakWidth)
 {
 	this->text = text;
 	this->align = align;
+	this->lineBreakWidth = lineBreakWidth;
 
 	updateModelMatrix();
 
 	return buildMesh(true);
 }
 
-bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec3 & outlineColor, ALIGN align)
+bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec3 & outlineColor, ALIGN align, const unsigned int lineBreakWidth)
 {
 	this->text = text;
 	this->align = align;
 	this->outlineColor = outlineColor;
+	this->lineBreakWidth = lineBreakWidth;
 
 	this->outlined = (this->font->getOutlineSize() > 0);
 
@@ -135,7 +137,15 @@ void Voxel::UI::Text::setText(const std::string & text)
 			// Different. rebuild text
 			this->text = text;
 
-			buildMesh(update);
+			bool result = buildMesh(update);
+
+			if (!result)
+			{
+				// failed update mesh
+				this->text = "";
+				this->contentSize.x = 0.0f;
+				this->boundingBox.size.x = 0.0f;
+			}
 		}
 	}
 }
@@ -235,22 +245,59 @@ int Voxel::UI::Text::getCharIndexOnCursor(const glm::vec2 & cursorPosition)
 	return -1;
 }
 
-void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
+bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
 {
 	// Iterate per line. Find the maximum width and height
-	totalLines = lines.size();
+	totalLines += lines.size();
 
 	for (auto& line : lines)
 	{
+		// create line size
 		lineSizes.push_back(LineSize());
 
-		int totalWidth = 0;
+		// get ref
+		LineSize& lineSize = lineSizes.back();
+
+		if (line.empty())
+		{
+			lineSize.subLineSizes.push_back(SubLineSize());
+			lineSize.subLineSizes.back().width = 0;
+			lineSize.subLineSizes.back().maxBearingY = font->getGlyph(32/* whitespace */)->height;
+			lineSize.subLineSizes.back().maxBotY = 0;
+			lineSize.subLineSizes.back().text = "";
+
+			lineSize.maxX = 0;
+			lineSize.maxBearingY = lineSize.subLineSizes.back().maxBearingY;
+			lineSize.maxBotY = 0;
+
+			maxWidth = glm::max(maxWidth, 0);
+		}
+
+		// maximum x in single LineSize.
+		int maxX = 0;
+
 		int maxBearingY = 0;
 		int maxBotY = 0;
 
+		// get length of line
 		unsigned int len = line.size();
 
+		// create char pos vector
 		characterPositions.push_back(std::vector<float>());
+
+		// Mesure size of the word.
+		unsigned int currentWordWith = 0;
+
+		// Measure size of current line
+		unsigned int currentLineWidth = 0;
+
+		// Measure max
+		int currentMaxBearingY = 0;
+		int currentMaxBotY = 0;
+
+		// sub line text
+		std::string subLineText = "";
+		std::string currentWord = "";
 
 		for (unsigned int i = 0; i < len; i++)
 		{
@@ -262,67 +309,190 @@ void Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			// We don't have to add extra space for last char because line ends.
 			// However, if it's white space, add advance
 
-			if (c == ' ')
+			int charWidth = 0;
+			bool whitespace = (c == ' ');
+
+			if (whitespace)
 			{
-				totalWidth += glyph->advance;
-				characterPositions.back().push_back(static_cast<float>(glyph->advance));
+				// white space. advance
+				charWidth = glyph->advance;
 			}
 			else
 			{
 				if (i == (len - 1))
 				{
-					totalWidth += (glyph->bearingX + glyph->width);
-					characterPositions.back().push_back(static_cast<float>(glyph->bearingX + glyph->width));
+					// If character is
+					charWidth = (glyph->bearingX + glyph->width);
 				}
 				else
 				{
-					totalWidth += glyph->advance;
-					characterPositions.back().push_back(static_cast<float>(glyph->advance));
+					// Character is not in the end. advance.
+					charWidth = glyph->advance;
 				}
 			}
 
+			// add to vec
+			characterPositions.back().push_back(static_cast<float>(charWidth));
+
+			if (!whitespace)
+			{
+				// if char is not whitespace, measure world size
+				currentWordWith += charWidth;
+				// append char to current word
+				currentWord.append(1, c);
+			}
+
+			// First, check if word can even fit on line break with. If so, continue. Else, invalid text. If line break width is smaller than single word's width, we can't render anything.
+			if (lineBreakWidth > 0 && currentWordWith > lineBreakWidth)
+			{
+				// word size exceeded line break width. Abort.
+				return false;
+			}
+			// Else, word can fit.
+
+			// add to line width
+			currentLineWidth += charWidth;
+
+			// Then, check if line can fit the 
+			if (lineBreakWidth > 0 && currentLineWidth > lineBreakWidth)
+			{
+				// current line exceeded line break width. 
+				lineSize.subLineSizes.push_back(SubLineSize());
+				SubLineSize& sls = lineSize.subLineSizes.back();
+
+				if (whitespace)
+				{
+					// last char added was whitespace. This means all words in this sub line fits line break width. 
+					sls.width = currentLineWidth - charWidth;
+					sls.text = subLineText + " " + currentWord;
+					currentWord = "";
+					currentLineWidth = 0;
+				}
+				else
+				{
+					// last char add wasn't whitesapce. sub line's width is current line with widhotu current word width
+					sls.width = currentLineWidth - currentWordWith;
+					sls.text = subLineText;
+					currentLineWidth = currentWordWith;
+				}
+
+				if (sls.width % 2 == 1)
+				{
+					// Odd size distorts ui
+					sls.width++;
+				}
+
+				sls.maxBearingY = currentMaxBearingY;
+				sls.maxBotY = currentMaxBotY;
+
+				subLineText = "";
+
+				maxX = glm::max(sls.width, maxX);
+
+				currentMaxBearingY = 0;
+				currentMaxBotY = 0;
+			}
+			else
+			{
+				// current line still fits
+			}
+
 			// Find max bearing Y. BearingY is the upper height of character from pen position.
+			/*
 			if (maxBearingY < glyph->bearingY)
 			{
 				maxBearingY = glyph->bearingY;
 			}
+			*/
+			maxBearingY = glm::max(maxBearingY, glyph->bearingY);
+			currentMaxBearingY = glm::max(currentMaxBearingY, glyph->bearingY);
 
 			// Find max botY. BotY is my defined value, which is the lower height of character from pen position
+			/*
 			if (maxBotY < glyph->botY)
 			{
 				maxBotY = glyph->botY;
 			}
+			*/
+			maxBotY = glm::max(maxBotY, glyph->botY);
+			currentMaxBotY = glm::max(currentMaxBotY, glyph->botY);
+
+			// If char was whitespace, reset world size and word str
+			if (whitespace)
+			{
+				charWidth = 0;
+
+				if (subLineText.empty())
+				{
+					subLineText = currentWord;
+				}
+				else
+				{
+					subLineText += (" " + currentWord);
+				}
+
+				currentWord = "";
+				currentWordWith = 0;
+			}
+		}
+		// loop ends.
+
+		// Add list subline size.
+		lineSize.subLineSizes.push_back(SubLineSize());
+		SubLineSize& sls = lineSize.subLineSizes.back();
+
+		sls.width = currentLineWidth;
+
+		if (sls.width % 2 == 1)
+		{
+			// Odd size distorts ui
+			sls.width++;
 		}
 
-		// Make max width and height even number because this is UI(?)
-		// Note: The reason why I added this is because when pen position x had decimal points due to width being odd number, entire text rendering becaome weird (extended in x axis. slightly)
-		// This fixed the issue.
-		if (totalWidth % 2 == 1)
-		{
-			totalWidth++;
-		}
+		sls.maxBearingY = currentMaxBearingY;
+		sls.maxBotY = currentMaxBotY;
 
-		// total width is sum of glyph's advance, which includes extra space for next character. Remove it
-		maxWidth = glm::max(totalWidth, maxWidth);
-
-		if (line.empty())
+		if (subLineText.empty())
 		{
-			line = "";
-			// quick hack here. Add whitespace to emptyline to treat as line
-			lineSizes.back().width = 0;
-			lineSizes.back().maxBearingY = font->getGlyph(32/* whitespace */)->height;
-			lineSizes.back().maxBotY = 0;
+			sls.text = currentWord;
 		}
 		else
 		{
-			lineSizes.back().width = totalWidth;
-			lineSizes.back().maxBearingY = maxBearingY;
-			lineSizes.back().maxBotY = maxBotY;
+			sls.text = subLineText + " " + currentWord;
 		}
+
+		maxX = glm::max(sls.width, maxX);
+
+		if (maxX % 2 == 1)
+		{
+			// Odd size distorts ui
+			maxX++;
+		}
+
+		lineSize.maxX = maxX;
+		lineSize.maxBearingY = maxBearingY;
+		lineSize.maxBotY = maxBotY;
+
+		// Keeping this to remind myself the bug I had.
+		// Make max width and height even number because this is UI(?)
+		// Note: The reason why I added this is because when pen position x had decimal points due to width being odd number, entire text rendering becaome weird (extended in x axis. slightly)
+		// This fixed the issue.
+		//if (totalWidth % 2 == 1)
+		//{
+		//	totalWidth++;
+		//}
+
+		// total width is sum of glyph's advance, which includes extra space for next character. Remove it
+		maxWidth = glm::max(maxX, maxWidth);
+	
+		// end of current line size
 	}
+	// loop ends
+
+	return true;
 }
 
-void Voxel::UI::Text::computePenPositions(const std::vector<LineSize>& lineSizes, std::vector<glm::vec2>& penPositions, const float yAdvance)
+void Voxel::UI::Text::computePenPositions(std::vector<LineSize>& lineSizes, const float yAdvance)
 {
 	// Current Y. Because we are using horizontal layout, we advance y in negative direction (Down), starting from height point, which is half of max height
 	float curY = boundingBox.size.y * 0.5f;
@@ -331,25 +501,35 @@ void Voxel::UI::Text::computePenPositions(const std::vector<LineSize>& lineSizes
 	curY -= font->getSize();
 
 	// Iterate line sizes to find out each line's pen position from origin
-	for (auto lineSize : lineSizes)
+	for (auto& lineSize : lineSizes)
 	{
-		glm::vec2 penPos = glm::vec2(0);
-		if (align == ALIGN::LEFT)
+		// has line break width. possible multiple sublinesize in linesize
+		for (auto& sls : lineSize.subLineSizes)
 		{
-			// Align text to left. x is always the most left pos of longest line
-			penPos.x = static_cast<float>(boundingBox.size.x) * -0.5f;
-		}
-		else if (align == ALIGN::RIGHT)
-		{
-			// Aling text to right.
-			penPos.x = (static_cast<float>(boundingBox.size.x) * 0.5f) - static_cast<float>(lineSize.width);
-		}
-		else // center
-		{
-			// Aling text to center.
-			penPos.x = static_cast<float>(lineSize.width) * -0.5f;
+			glm::vec2 penPos = glm::vec2(0);
+
+			if (align == ALIGN::LEFT)
+			{
+				// Align text to left. x is always the most left pos of longest line
+				penPos.x = static_cast<float>(boundingBox.size.x) * -0.5f;
+			}
+			else if (align == ALIGN::RIGHT)
+			{
+				// Aling text to right.
+				penPos.x = (static_cast<float>(boundingBox.size.x) * 0.5f) - static_cast<float>(lineSize.maxX);
+			}
+			else // center
+			{
+				// Aling text to center.
+				penPos.x = static_cast<float>(lineSize.maxX) * -0.5f;
+			}
+
+			penPos.y = curY;
+			curY -= yAdvance;
+			sls.penPosition = penPos;
 		}
 
+		/*
 		// Y works same for same
 		//penPos.y = curY - lineSize.maxBearingY;
 		penPos.y = curY;
@@ -361,6 +541,7 @@ void Voxel::UI::Text::computePenPositions(const std::vector<LineSize>& lineSizes
 		curY -= yAdvance;
 		// As I said, customizing for MunroSmall
 		//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
+		*/
 	}
 }
 
@@ -416,16 +597,45 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		int maxWidth = 0;
 
 		// Compute line sizes
-		computeLineSizes(split, lineSizes, maxWidth);
+		bool result = computeLineSizes(split, lineSizes, maxWidth);
+
+		if (!result)
+		{
+			// abort
+			return false;
+		}
 
 		// get outline size
 		const float outlineSize = static_cast<float>(font->getOutlineSize());
 		// get line space
 		const int lineSpace = font->getLineSpace();
 		// count line. Exclude last line
-		const int lineCount = split.size() - 1;
+		//const int lineSizeCount = lineSizes.size() - 1;
+		int totalLineCount = 0;
+
+		for (auto& lineSize : lineSizes)
+		{
+			totalLineCount += lineSize.subLineSizes.size();
+		}
+
+		if (totalLineCount == 0)
+		{
+			//abort
+			return false;
+		}
+
 		// compute total height
-		int totalHeight = (lineCount * lineSpace) + font->getSize();
+		//int totalHeight = (lineSizeCount * lineSpace) + font->getSize();
+		int totalHeight = 0;
+		
+		if (lineSizes.size() == 1)
+		{
+			totalHeight = font->getSize();
+		}
+		else
+		{
+			totalHeight = ((totalLineCount - 1) * lineSpace) + font->getSize();
+		}
 
 		/*
 		if (totalHeight % 2 == 1)
@@ -441,15 +651,18 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		// Step 3. Compute text bounding box and content size ------------
 
 		int lineGapHeight = static_cast<int>(outlineSize);
-		int lineGap = lineCount * lineGapHeight;
+		//int lineGap = lineSizeCount * lineGapHeight;
+		int lineGap = (totalLineCount - 1) * lineGapHeight;
 
+		/*
 		// Set size of Text object. Ignore last line's line gap
 		const float h = static_cast<float>(totalHeight + lineGap);
 		auto boxMin = glm::vec2(static_cast<float>(maxWidth) * -0.5f, h * -0.5f);
 		auto boxMax = glm::vec2(static_cast<float>(maxWidth) * 0.5f, h * 0.5f);
+		*/
 
 		boundingBox.center = position;
-		boundingBox.size = glm::vec2(maxWidth, h);
+		boundingBox.size = glm::vec2(maxWidth, totalHeight + ((lineSizes.size() == 1) ? 0 : lineGap));
 
 		contentSize = boundingBox.size;
 
@@ -460,9 +673,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		// Step 4. Compute pen positions ------------
 
 		// Pen position. Also called as origin or base line in y pos.
-		std::vector<glm::vec2> penPositions;
-
-		computePenPositions(lineSizes, penPositions, static_cast<float>(lineSpace + lineGapHeight));
+		computePenPositions(lineSizes, static_cast<float>(lineSpace + lineGapHeight));
 
 		// Step 4 done.
 
@@ -470,7 +681,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 		// We have pen position for each line. Iterate line and build vertices based on 
 		int penPosIndex = 0;
-		//std::vector<std::vector<float>> lineVertices;
+
 		std::vector<float> vertices;
 		// colors, indices and uv doesn't have to be tralsated later.
 		std::vector<float> colors;
@@ -480,27 +691,27 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 		textSize = 0;	// Doesn't include escaped keys like new line
 
-		for (auto& line : split)
+		for (auto& lineSize : lineSizes)
 		{
-			if (line.empty() == false)
+			for (auto& subLineSize : lineSize.subLineSizes)
 			{
-				//lineVertices.push_back(std::vector<float>());
-				// start x from pen position x
-				float curX = penPositions.at(penPosIndex).x;
+				float penPosX = subLineSize.penPosition.x;
+				float penPosY = subLineSize.penPosition.y;
 
-				unsigned int len = line.size();
+				unsigned int len = subLineSize.text.size();
 
 				textSize += len;
 
 				for (unsigned int i = 0; i < len; i++)
 				{
 					// Build quad for each character
-					const char c = line[i];
+					const char c = subLineSize.text[i];
 					Glyph* glyph = font->getGlyph((int)c);
+
 					// Empty pos. p1 = left bottom, p2 = right top. z == 0
 					glm::vec2 leftBottom(0);
 					glm::vec2 rightTop(0);
-					float x = curX;
+					float x = penPosX;
 
 					// Advance x for bearing x
 					x += static_cast<float>(glyph->bearingX);
@@ -513,11 +724,11 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 					rightTop.x = (x + outlineSize);
 
 					// Calculate Y based on pen position
-					leftBottom.y = penPositions.at(penPosIndex).y - static_cast<float>(glyph->botY) - outlineSize;
-					rightTop.y = penPositions.at(penPosIndex).y + static_cast<float>(glyph->bearingY) + outlineSize;
+					leftBottom.y = penPosY - static_cast<float>(glyph->botY) - outlineSize;
+					rightTop.y = penPosY + static_cast<float>(glyph->bearingY) + outlineSize;
 
 					// Advnace pen pos x to next char
-					curX += glyph->advance;
+					penPosX += glyph->advance;
 
 					// Store left bttom and right top vertices pos
 					vertices.push_back(leftBottom.x); vertices.push_back(leftBottom.y); vertices.push_back(0);	// left bottom
@@ -525,13 +736,12 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 					vertices.push_back(rightTop.x); vertices.push_back(leftBottom.y); vertices.push_back(0);		// right bottom
 					vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
 
-
+					// color
 					for (int j = 0; j < 4; j++)
 					{
 						colors.push_back(color.r);
 						colors.push_back(color.g);
 						colors.push_back(color.b);
-						//colors.push_back(color.a);
 					}
 
 					// uv.
@@ -540,7 +750,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 					uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvBotRight.y);	// right bottom
 					uvVertices.push_back(glyph->uvBotRight.x); uvVertices.push_back(glyph->uvTopLeft.y);	// right top
 
-																											// indices. range of 4 per quad.
+					// indices. range of 4 per quad.
 					indices.push_back(indicesIndex * 4);
 					indices.push_back(indicesIndex * 4 + 1);
 					indices.push_back(indicesIndex * 4 + 2);
@@ -552,8 +762,6 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 					indicesIndex++;
 				}
 			}
-
-			penPosIndex++;
 		}
 		
 		// load buffer

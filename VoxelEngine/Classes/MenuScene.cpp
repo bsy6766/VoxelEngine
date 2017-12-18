@@ -153,6 +153,8 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
+		auto temp = Voxel::UI::Text::createWithOutline("temp", "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s,\nwhen an unknown printer took a galley of type and scrambled it to make a type specimen book.", 2, glm::vec3(0, 0, 1), Voxel::UI::Text::ALIGN::LEFT, 225);
+		canvas->addChild(temp);
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{
