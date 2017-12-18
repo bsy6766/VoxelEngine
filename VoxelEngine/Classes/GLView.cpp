@@ -16,8 +16,6 @@
 
 using namespace Voxel;
 
-std::function<void(int)> GLView::onFPSCounted = nullptr;
-
 GLView::GLView()
 	: window(nullptr)
 	, currentTime(0)
@@ -31,6 +29,7 @@ GLView::GLView()
 	, windowTitle("")
 	, clearColor(0)
 	, vsync(false)
+	, onFPSCounted(nullptr)
 #if V_DEBUG
 #if V_DEBUG_COUNT_VISIBLE_VERTICES
 	, countVertices(true)

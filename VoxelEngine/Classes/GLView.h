@@ -278,7 +278,7 @@ namespace Voxel
 		void close();
 
 		// FPS callback
-		static std::function<void(int)> onFPSCounted;
+		std::function<void(int)> onFPSCounted;
 
 		// get system info
 		std::string getCPUName();
