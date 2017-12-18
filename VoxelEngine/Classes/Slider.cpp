@@ -65,6 +65,7 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 
 		this->minValue = minValue;
 		this->maxValue = maxValue;
+		this->currentValue = minValue;
 
 		std::array<float, 12> barVertices;
 		std::array<float, 8> barUVs;
@@ -326,7 +327,6 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 
 	if (type == Type::HORIZONTAL)
 	{
-
 		if (mousePosition.x <= barBoundingBox.getMin().x)
 		{
 			buttonBoundingBox.center.x = (barBoundingBox.size.x * -0.5f) + barBoundingBox.center.x;
@@ -368,8 +368,8 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 			const float mpRange = mousePosition.x - barBoundingBox.getMin().x;
 
 			const float ratio = mpRange / barBoundingBox.size.x;
-
-			newValue = ratio * (maxValue - minValue);
+			
+			newValue = (ratio * (maxValue - minValue)) + minValue;
 
 			if (reversedValue)
 			{
@@ -390,7 +390,7 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 			onSliderMove(newValue);
 		}
 
-		std::cout << "v = " << newValue << "\n";
+	//	std::cout << "v = " << newValue << "\n";
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_SLIDER_BOUNDING_BOX
 		createDebugBoundingBoxLine();
 #endif
@@ -405,7 +405,7 @@ void Voxel::UI::Slider::updateButtonPos()
 	{
 		buttonBoundingBox.center = barBoundingBox.center;
 		buttonBoundingBox.center.x -= (barSize.x * scale.x * 0.5f);
-		buttonBoundingBox.center.x += ((currentValue / (maxValue - minValue)) * barBoundingBox.size.x);
+		buttonBoundingBox.center.x += (((currentValue - minValue) / (maxValue - minValue)) * barBoundingBox.size.x);
 	}
 }
 
@@ -421,12 +421,26 @@ void Voxel::UI::Slider::updateModelMatrix()
 {
 	Voxel::UI::TransformNode::updateModelMatrix();
 
-	barBoundingBox.center = position;
-	barBoundingBox.size = barSize * scale;
-	
-	updateButtonPos();
+	if (parent)
+	{
+		auto parentSize = parent->getContentSize() * 0.5f;
+		auto newBarPos = glm::vec2(position.x - parentSize.x, position.y + parentSize.y);
+		barBoundingBox.center = newBarPos;
+		barBoundingBox.size = barSize * scale;
 
-	buttonBoundingBox.size = buttonSize * scale;
+		updateButtonPos();
+
+		buttonBoundingBox.size = buttonSize * scale;
+	}
+	else
+	{
+		barBoundingBox.center = position;
+		barBoundingBox.size = barSize * scale;
+
+		updateButtonPos();
+
+		buttonBoundingBox.size = buttonSize * scale;
+	}
 }
 
 bool Voxel::UI::Slider::updateButtonMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
