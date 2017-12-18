@@ -61,7 +61,7 @@ DebugConsole::DebugConsole()
 
 	init();
 
-	GLView::onFPSCounted = std::bind(&DebugConsole::onFPSUpdate, this, std::placeholders::_1);
+	Application::getInstance().getGLView()->onFPSCounted = std::bind(&DebugConsole::onFPSUpdate, this, std::placeholders::_1);
 }
 
 DebugConsole::~DebugConsole()
@@ -71,7 +71,7 @@ DebugConsole::~DebugConsole()
 		delete debugCanvas;
 	}
 
-	GLView::onFPSCounted = nullptr;
+	Application::getInstance().getGLView()->onFPSCounted = nullptr;
 }
 
 void Voxel::DebugConsole::init()
