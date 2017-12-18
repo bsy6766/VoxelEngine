@@ -35,6 +35,24 @@
                 "h": 32
             }, 
             "filename": "pointer_large.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 69, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "pointer_minus.png"
+        }, 
+        {
+            "frame": {
+                "y": 35, 
+                "x": 35, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "pointer_pluse.png"
         }
     ], 
     "texture": {
