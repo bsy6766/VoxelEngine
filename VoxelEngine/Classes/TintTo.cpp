@@ -46,17 +46,14 @@ void Voxel::UI::TintTo::setTarget(TransformNode * target)
 void Voxel::UI::TintTo::update(const float delta)
 {
 	elapsedTime += delta;
-	//std::cout << "TintTo: " << elapsedTime << " / " << duration << "\n";
 
 	if (elapsedTime >= duration)
 	{
 		target->setColor(color);
-		//std::cout << "TintTo done. opacity: " << opacity << "\n";
 	}
 	else
 	{
 		const glm::vec3 curColor = target->getColor();
-		//std::cout << "TintTo. opacity: " << newOpacity << "\n";
 		target->setColor(curColor + ((color - curColor) * (delta / (duration - (elapsedTime - delta)))));
 	}
 }

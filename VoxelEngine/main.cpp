@@ -17,6 +17,7 @@ int main(int argc, const char * argv[])
 	
 #if _DEBUG
 	std::cout << "Hello world!\n";
+	std::cout << "This is debug message... shouldn't be on log file. If you see this ... well hello!\n"
 	std::cout << "Author: Seung Youp Baek\n";
 	std::cout << "Development start date: 08.12.2017\n";
 	std::cout << "Version: Development\n";
@@ -84,11 +85,13 @@ int main(int argc, const char * argv[])
 			logger.error("Additional error info: " + errorMsg.substr(pos + 1));
 		}
 
+		logger.info("[System] Please send this log file to .Sorry for the inconvenience.");
+
 		MessageBox(NULL, message.c_str(), "Project Voxel crash report", MB_OK | MB_SYSTEMMODAL);
 	}
 
-	logger.info("Ternimating...");
-	logger.info("End of log.");
+	logger.info("[System] Ternimating...");
+	logger.info("[System] End of log.");
 
 	return 0;
 }
