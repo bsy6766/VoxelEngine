@@ -93,6 +93,15 @@ namespace Voxel
 		Voxel::UI::Text* dimensionYLabel;
 		Voxel::UI::Text* dimensionZLabel;
 
+		// overwrite window
+		Voxel::UI::NinePatchImage* overwriteWindow;
+		Voxel::UI::Text* overwritePrompt;
+
+		// inspector
+		Voxel::UI::Image* inspectorWindow;
+		Voxel::UI::Text* inspectorDimensionLablel;
+		Voxel::UI::Text* inspectorCursorBlockPos;
+
 		bool menuBarDropDowned;
 
 		// inputhandler
@@ -129,7 +138,6 @@ namespace Voxel
 		
 		// block face indicator
 		GLuint faceIndicatorVao;
-		glm::vec3 faceIndicatorPos;
 		Cube::Face faceIndicatorCubeFace;
 		glm::ivec3 curFaceIndicatorPos;
 		bool faceIndicatorVisibility;
@@ -152,6 +160,8 @@ namespace Voxel
 		void initMenuBar();
 		void initFileDropDownMenu();
 		void initNewCreateWindow();
+		void initOverwriteWindow();
+		void initInspector();
 
 		// release/clean
 		void releaseFloor();

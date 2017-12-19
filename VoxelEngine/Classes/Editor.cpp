@@ -45,6 +45,11 @@ Editor::Editor()
 	, dimensionYLabel(nullptr)
 	, dimensionZLabel(nullptr)
 	, dimension(0)
+	, overwriteWindow(nullptr)
+	, overwritePrompt(nullptr)
+	, inspectorWindow(nullptr)
+	, inspectorDimensionLablel(nullptr)
+	, inspectorCursorBlockPos(nullptr)
 	, schematic(nullptr)
 	, schematicState(SchematicState::NONE)
 	, schematicModified(false)
@@ -57,7 +62,6 @@ Editor::Editor()
 	, floorColor(glm::vec4(142.0f / 255.0f, 1.0f, 237.0f / 255.0f, 0.75f))
 	, axisLineVao(0)
 	, faceIndicatorVao(0)
-	, faceIndicatorPos(0.0f)
 	, faceIndicatorCubeFace(Voxel::Cube::Face::NONE)
 	, faceIndicatorVisibility(false)
 	, faceIndicatorModelMat(1.0f)
@@ -253,6 +257,8 @@ void Voxel::Editor::initUI()
 	initMenuBar();
 	initFileDropDownMenu();
 	initNewCreateWindow();
+	initOverwriteWindow();
+	initInspector();
 }
 
 void Voxel::Editor::initMenuBar()
@@ -403,6 +409,37 @@ void Voxel::Editor::initNewCreateWindow()
 	dimensionZSlider->setPosition(154.0f, -102.0f);
 	dimensionZSlider->setOnSliderMove(std::bind(&Editor::onDimensionZSliderMove, this, std::placeholders::_1));
 	newCreateWindow->addChild(dimensionZSlider);
+}
+
+void Voxel::Editor::initOverwriteWindow()
+{
+
+}
+
+void Voxel::Editor::initInspector()
+{
+	const auto ss = "EditorUISpriteSheet";
+
+	inspectorWindow = Voxel::UI::Image::createFromSpriteSheet("inspec", ss, "inspector_bg.png");
+	inspectorWindow->setPivot(0.5f, 0.0f);
+	inspectorWindow->setCoordinateOrigin(glm::vec2(0.5f, 0.0f));
+	inspectorWindow->setScale(glm::vec2(1.0f, 1050.0f));
+	inspectorWindow->setPosition(0.0f, -15.0f);
+	canvas->addChild(inspectorWindow);
+
+	inspectorDimensionLablel = Voxel::UI::Text::create("inspecDimLabel", "Dimension (0000, 0000, 0000)", 1);
+	inspectorDimensionLablel->setPivot(-0.5f, 0.0f);
+	inspectorDimensionLablel->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
+	inspectorDimensionLablel->setPosition(4.0f, -9.0f);
+	inspectorWindow->addChild(inspectorDimensionLablel);
+
+	inspectorCursorBlockPos = Voxel::UI::Text::create("inspecCursorBPos", "Cursor (0000, 0000, 0000)", 1);
+	inspectorCursorBlockPos->setPivot(-0.5f, 0.0f);
+	inspectorCursorBlockPos->setPosition(4.0f, -25.0f);
+	inspectorCursorBlockPos->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
+	inspectorWindow->addChild(inspectorCursorBlockPos);
+
+	inspectorWindow->setVisibility(false);
 }
 
 void Voxel::Editor::releaseFloor()
@@ -689,13 +726,16 @@ bool Voxel::Editor::updateMouseMove(const float delta)
 
 				curFaceIndicatorPos = intersectingFloorPointToCoordinate(intersectingPoint);
 
-				std::cout << "coordinate: " << Utility::Log::vec3ToStr(curFaceIndicatorPos) << "\n";
+				//std::cout << "coordinate: " << Utility::Log::vec3ToStr(curFaceIndicatorPos) << "\n";
+
+				inspectorCursorBlockPos->setText("Cursor (" + std::to_string(curFaceIndicatorPos.x) + ", " + std::to_string(curFaceIndicatorPos.y) + ", " + std::to_string(curFaceIndicatorPos.z) + ")");
 
 				updateFaceIndicatorModelMat();
 			}
 			else
 			{
 				faceIndicatorVisibility = false;
+				inspectorCursorBlockPos->setText("Cursor (-, -, -)");
 			}
 		}
 	}
@@ -847,7 +887,19 @@ void Voxel::Editor::updateFaceIndicatorModelMat()
 		if (curFaceIndicatorPos.y == -1)
 		{
 			// floor
-			faceIndicatorModelMat = glm::translate(glm::mat4(1.0f), glm::vec3(curFaceIndicatorPos.x, 0.0f, curFaceIndicatorPos.z));
+			auto faceIndicatorPos = glm::vec3(curFaceIndicatorPos.x, 0.0f, curFaceIndicatorPos.z);
+			if (dimension.x % 2 == 0)
+			{
+				faceIndicatorPos.x += 0.5f;
+			}
+
+			if (dimension.z % 2 == 0)
+			{
+				faceIndicatorPos.z += 0.5f;
+			}
+
+			faceIndicatorModelMat = glm::translate(glm::mat4(1.0f), faceIndicatorPos);
+
 		}
 		else
 		{
@@ -868,17 +920,25 @@ void Voxel::Editor::updateFaceIndicatorModelMat()
 glm::ivec3 Voxel::Editor::intersectingFloorPointToCoordinate(const glm::vec3 & intersectingPoint)
 {
 	glm::vec3 shift = intersectingPoint;
-	shift.x += 0.5f;
-	shift.z += 0.5f;
+
+	if (dimension.x % 2 == 1)
+	{
+		shift.x += 0.5f;
+	}
+
+	if (dimension.z % 2 == 1)
+	{
+		shift.z += 0.5f;
+	}
 	
 	glm::ivec3 result = glm::ivec3(shift.x, -1.0, shift.z);
 
-	if (result.x < 0)
+	if (shift.x < 0.0f)
 	{
 		result.x -= 1;
 	}
 
-	if (result.z < 0)
+	if (shift.z < 0.0f)
 	{
 		result.z -= 1;
 	}
@@ -918,6 +978,12 @@ bool Voxel::Editor::attempToCreateFile()
 	{
 		return false;
 	}
+
+	// can create new file
+
+	fs->createEmptyFile(path);
+
+	schematicState = SchematicState::NEW;
 
 	return true;
 }
@@ -984,7 +1050,6 @@ void Voxel::Editor::onNewCreateButtonClicked()
 	if (result)
 	{
 		// Can create file
-
 		newCreateWindow->setVisibility(false);
 
 		// set button states
@@ -993,10 +1058,8 @@ void Voxel::Editor::onNewCreateButtonClicked()
 		returnToMainMenuBtn->enable();
 		exitGameBtn->enable();
 
-
 		// reset inputfield
 		newFileNameInputField->setToDefaultText();
-
 
 		// dimension
 		dimension.x = static_cast<int>(dimensionXSlider->getValue());
@@ -1005,6 +1068,10 @@ void Voxel::Editor::onNewCreateButtonClicked()
 
 		initFloor();
 		initAxisGuide();
+
+		inspectorWindow->setVisibility(true);
+		inspectorDimensionLablel->setText("Dimension (" + std::to_string(dimension.x) + ", " + std::to_string(dimension.y) + ", " + std::to_string(dimension.z) + ")");
+		inspectorCursorBlockPos->setText("Cursor (-, -, -)");
 	}
 	else
 	{

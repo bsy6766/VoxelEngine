@@ -87,6 +87,16 @@ bool Voxel::FileSystem::isDirectory(const std::string & path) const
 	return fs::is_directory(fs::path(path));
 }
 
+void Voxel::FileSystem::createEmptyFile(const std::string & path)
+{
+	fs::ofstream ofs(path);
+
+	if (ofs.is_open())
+	{
+		ofs.close();
+	}
+}
+
 bool Voxel::FileSystem::openFile(const std::string & path)
 {
 	if (ofs.is_open())

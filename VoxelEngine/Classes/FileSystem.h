@@ -61,6 +61,9 @@ namespace Voxel
 		// Check if path is directory.
 		bool isDirectory(const std::string& path) const;
 
+		// create empty file
+		void createEmptyFile(const std::string& path);
+
 		// open file
 		bool openFile(const std::string& path);
 
