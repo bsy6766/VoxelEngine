@@ -7,7 +7,6 @@
 
 // voxel
 #include "Utility.h"
-#include "Random.h"
 #include "Application.h"
 #include "Director.h"
 #include "ChunkUtil.h"
@@ -1522,7 +1521,6 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					if (arg1 == "reset")
 					{
 						Voxel::Utility::Random::resetGenerator();
-						Random::getInstance().resetAll();
 						executedCommandHistory.push_back("Reseting random generator");
 						addCommandHistory(command);
 						return true;

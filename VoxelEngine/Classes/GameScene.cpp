@@ -36,7 +36,6 @@
 #include "Program.h"
 #include "Cube.h"
 #include "Utility.h"
-#include "Random.h"
 #include "SimplexNoise.h"
 #include "Color.h"
 #include "Player.h"
@@ -196,11 +195,7 @@ void Voxel::GameScene::initSpriteSheets()
 void Voxel::GameScene::initRandoms()
 {
 	globalSeed = "ENGINE";
-	Utility::Random::setSeed(globalSeed);
 	Noise::Manager::init(globalSeed);
-
-	auto& rand = Random::getInstance();
-	rand.init(globalSeed);
 }
 
 void Voxel::GameScene::initUI()
@@ -521,10 +516,7 @@ void GameScene::update(const float delta)
 		else if (chunkWorkManager->isWaitingMainThread())
 		{
 			std::cout << "Chunk work manager is waiting for main thread\n.";
-
-			Utility::Random::resetGenerator();
-			Random::getInstance().resetAll();
-
+			
 			if (reloadState == ReloadState::CHUNK_MAP)
 			{
 				chunkMap->clear();
