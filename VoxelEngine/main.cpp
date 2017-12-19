@@ -17,7 +17,7 @@ int main(int argc, const char * argv[])
 	
 #if _DEBUG
 	std::cout << "Hello world!\n";
-	std::cout << "This is debug message... shouldn't be on log file. If you see this ... well hello!\n"
+	std::cout << "This is debug message... shouldn't be on log file. If you see this ... well hello!\n";
 	std::cout << "Author: Seung Youp Baek\n";
 	std::cout << "Development start date: 08.12.2017\n";
 	std::cout << "Version: Development\n";
