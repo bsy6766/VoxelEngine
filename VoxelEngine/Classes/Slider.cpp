@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Slider.h"
 
 // voxel
@@ -7,9 +10,6 @@
 #include "Program.h"
 #include "Utility.h"
 #include "InputHandler.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::Slider::Slider(const std::string & name)
 	: RenderNode(name)

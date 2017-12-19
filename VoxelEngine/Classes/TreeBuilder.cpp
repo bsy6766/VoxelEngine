@@ -1,8 +1,7 @@
-#include "TreeBuilder.h"
+// pch
+#include "PreCompiled.h"
 
-// glm
-#include <glm\glm.hpp>
-#include <glm/gtx/rotate_vector.hpp>
+#include "TreeBuilder.h"
 
 // voxel
 #include "ChunkUtil.h"

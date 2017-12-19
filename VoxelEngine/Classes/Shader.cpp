@@ -1,8 +1,7 @@
-#include "Shader.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <fstream>	//file
-#include <sstream>	//string stream
+#include "Shader.h"
 
 // voxel
 #include "ErrorCode.h"

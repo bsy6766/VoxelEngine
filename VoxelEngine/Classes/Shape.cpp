@@ -1,10 +1,10 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Shape.h"
 
 // voxel
 #include "Cube.h"
-
-// cpp
-#include <iostream>
 
 using namespace Voxel;
 

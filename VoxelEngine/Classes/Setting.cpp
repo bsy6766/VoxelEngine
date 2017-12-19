@@ -1,7 +1,7 @@
-#include "Setting.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
+#include "Setting.h"
 
 // voxel
 #include "DataTree.h"

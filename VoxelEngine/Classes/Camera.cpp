@@ -1,11 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Camera.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-
-// cpp
-#include <iostream>
 
 // voxel
 #include "Frustum.h"
@@ -208,9 +204,9 @@ float Voxel::Camera::getNear() const
 	return nears;
 }
 
-void Voxel::Camera::setNear(const float near)
+void Voxel::Camera::setNear(const float nears)
 {
-	nears = near;
+	this->nears = nears;
 
 	updateProjection();
 }
@@ -220,9 +216,9 @@ float Voxel::Camera::getFar() const
 	return fars;
 }
 
-void Voxel::Camera::setFar(const float far)
+void Voxel::Camera::setFar(const float fars)
 {
-	fars = far;
+	this->fars = fars;
 
 	updateProjection();
 }

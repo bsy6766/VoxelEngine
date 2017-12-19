@@ -1,10 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "ChunkMeshGenerator.h"
-
-// cpp
-#include <iostream>
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 // voxel
 #include "Chunk.h"

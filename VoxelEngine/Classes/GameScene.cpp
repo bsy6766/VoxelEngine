@@ -1,10 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "GameScene.h"
-
-// cpp
-#include <algorithm>
-
-// glm
-#include <glm\gtx\transform.hpp>
 
 // voxel
 #include "World.h"

@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "CheckBox.h"
 
 // voxel
@@ -6,9 +9,6 @@
 #include "Program.h"
 #include "Utility.h"
 #include "InputHandler.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::CheckBox::CheckBox(const std::string& name)
 	: RenderNode(name)

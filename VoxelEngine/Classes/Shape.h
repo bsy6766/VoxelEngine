@@ -53,8 +53,8 @@ namespace Voxel
 				RIGHT,
 				BOTTOM,
 				TOP,
-				NEAR,
-				FAR,
+				NEARS,
+				FARS,
 			};
 		public:
 			// Constructor with normal and distance to origin

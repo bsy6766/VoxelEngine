@@ -1,10 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Frustum.h"
-
-// cpp
-#include <iostream>
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 // voxel
 #include "Chunk.h"
@@ -39,9 +36,9 @@ Frustum::~Frustum()
 #endif
 }
 
-void Voxel::Frustum::updateProjection(const float fovy, const float aspect, const float near, const float far)
+void Voxel::Frustum::updateProjection(const float fovy, const float aspect, const float nears, const float fars)
 {
-	this->projection = glm::perspective(glm::radians(fovy), aspect, near, far);
+	this->projection = glm::perspective(glm::radians(fovy), aspect, nears, fars);
 }
 
 void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & playerVP)
@@ -73,16 +70,16 @@ void Voxel::Frustum::updateFrustumPlanes(const glm::mat4 & playerVP)
 	planes.at(Voxel::Shape::Plane::Face::TOP).distanceToOrigin = matrix[3][3] - matrix[3][1];
 
 	// near
-	planes.at(Voxel::Shape::Plane::Face::NEAR).normal.x = matrix[0][3] + matrix[0][2];
-	planes.at(Voxel::Shape::Plane::Face::NEAR).normal.y = matrix[1][3] + matrix[1][2];
-	planes.at(Voxel::Shape::Plane::Face::NEAR).normal.z = matrix[2][3] + matrix[2][2];
-	planes.at(Voxel::Shape::Plane::Face::NEAR).distanceToOrigin = matrix[3][3] + matrix[3][2];
+	planes.at(Voxel::Shape::Plane::Face::NEARS).normal.x = matrix[0][3] + matrix[0][2];
+	planes.at(Voxel::Shape::Plane::Face::NEARS).normal.y = matrix[1][3] + matrix[1][2];
+	planes.at(Voxel::Shape::Plane::Face::NEARS).normal.z = matrix[2][3] + matrix[2][2];
+	planes.at(Voxel::Shape::Plane::Face::NEARS).distanceToOrigin = matrix[3][3] + matrix[3][2];
 
 	// far
-	planes.at(Voxel::Shape::Plane::Face::FAR).normal.x = matrix[0][3] - matrix[0][2];
-	planes.at(Voxel::Shape::Plane::Face::FAR).normal.y = matrix[1][3] - matrix[1][2];
-	planes.at(Voxel::Shape::Plane::Face::FAR).normal.z = matrix[2][3] - matrix[2][2];
-	planes.at(Voxel::Shape::Plane::Face::FAR).distanceToOrigin = matrix[3][3] - matrix[3][2];
+	planes.at(Voxel::Shape::Plane::Face::FARS).normal.x = matrix[0][3] - matrix[0][2];
+	planes.at(Voxel::Shape::Plane::Face::FARS).normal.y = matrix[1][3] - matrix[1][2];
+	planes.at(Voxel::Shape::Plane::Face::FARS).normal.z = matrix[2][3] - matrix[2][2];
+	planes.at(Voxel::Shape::Plane::Face::FARS).distanceToOrigin = matrix[3][3] - matrix[3][2];
 
 	for (auto& plane : planes)
 	{

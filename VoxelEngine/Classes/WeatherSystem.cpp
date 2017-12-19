@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "WeatherSystem.h"
 
 using namespace Voxel;

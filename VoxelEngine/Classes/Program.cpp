@@ -1,14 +1,11 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Program.h"
 
 // voxel
 #include "Shader.h"
 #include "ErrorCode.h"
-
-// cpp
-#include <iostream>
-
-// glm
-#include <glm/gtc/type_ptr.hpp>
 
 using namespace Voxel;
 using namespace glm;

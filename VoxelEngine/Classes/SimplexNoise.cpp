@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "SimplexNoise.h"
 
 using namespace Voxel;

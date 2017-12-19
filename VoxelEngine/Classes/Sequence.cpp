@@ -4,9 +4,6 @@
 #include "Action.h"
 #include "UIBase.h"
 
-// cpp
-#include <iostream>
-
 Voxel::UI::Sequence::Sequence()
 	: Action()
 	, first(nullptr)

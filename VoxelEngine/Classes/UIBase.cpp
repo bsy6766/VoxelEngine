@@ -1,9 +1,7 @@
-#include "UI.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <sstream>
-#include <iostream>
-#include <limits>
+#include "UI.h"
 
 // voxel
 #include "Texture2D.h"
@@ -18,9 +16,6 @@
 #include "Utility.h"
 #include "Canvas.h"
 #include "UIActions.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 using namespace Voxel::UI;
 

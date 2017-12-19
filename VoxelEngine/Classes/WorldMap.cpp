@@ -1,9 +1,7 @@
-#include "WorldMap.h"
+// pch
+#include "PreCompiled.h"
 
-// glm
-#include <glm\gtx\transform.hpp>
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/rotate_vector.hpp>
+#include "WorldMap.h"
 
 // voxel
 #include "Application.h"
@@ -699,11 +697,11 @@ void Voxel::WorldMap::raycastRegion(const glm::vec2& cursorPos, const bool selec
 	
 	auto openglXY = cursorPos + (screenSize * 0.5f);
 
-	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto nears = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto fars = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	Ray ray(near, far);
+	Ray ray(nears, fars);
 
 	//initDebugMousePickRayLine(ray);
 

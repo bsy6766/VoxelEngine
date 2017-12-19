@@ -1,9 +1,12 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Application.h"
 
 // cpp
 #include <iostream>
-#include <stdio.h>  /* defines FILENAME_MAX */
-#include <direct.h>
+//#include <stdio.h>  /* defines FILENAME_MAX */
+//#include <direct.h>
 
 // voxel
 #include "Director.h"

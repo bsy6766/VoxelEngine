@@ -1,8 +1,7 @@
-#include "GamePadManager.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
-#include <string>
+#include "GamePadManager.h"
 
 // voxel
 #include "Logger.h"

@@ -1,7 +1,7 @@
-#include "Texture2D.h"
+// pch
+#include "PreCompiled.h"
 
-// stb_image
-#include "stb_image.h"
+#include "Texture2D.h"
 
 // voxel
 #include "Application.h"
@@ -11,9 +11,6 @@
 #include "FileSystem.h"
 #include "Logger.h"
 #include "Config.h"
-
-// libpng
-#include <png.h>
 
 using namespace Voxel;
 

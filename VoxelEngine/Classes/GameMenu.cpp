@@ -1,12 +1,12 @@
+// pch
+#include "PreCompiled.h"
+
 #include "GameMenu.h"
 
 // voxel
 #include "Application.h"
 #include "Director.h"
 #include "GameScene.h"
-
-// cpp
-#include <functional>
 
 Voxel::GameMenu::GameMenu()
 	: canvas(nullptr)

@@ -1,7 +1,7 @@
-#include "Canvas.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
+#include "Canvas.h"
 
 // Voxel
 #include "Camera.h"

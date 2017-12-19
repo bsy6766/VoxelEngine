@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Schematic.h"
 
 Voxel::Schematic::Schematic(const glm::ivec3 & dimension)

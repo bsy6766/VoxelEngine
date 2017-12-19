@@ -1,13 +1,10 @@
-#include <iostream>
-
-// win32
-#include <Windows.h>
+// pch
+#include "PreCompiled.h"
 
 // Voxel
 #include <Application.h>
 #include <FileSystem.h>
 #include <Logger.h>
-
 
 int main(int argc, const char * argv[])
 {

@@ -1,8 +1,7 @@
-#include "Voronoi.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
-#include <limits>
+#include "Voronoi.h"
 
 // voxel
 #include "Utility.h"

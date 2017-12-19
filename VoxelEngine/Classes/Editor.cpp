@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Editor.h"
 
 // voxel
@@ -14,12 +17,6 @@
 #include "Quad.h"
 #include "FileSystem.h"
 
-// cpp
-#include <functional>
-
-// glm
-#include <glm\gtx\transform.hpp>
-#include <glm/gtx/compatibility.hpp>
 
 using namespace Voxel;
 
@@ -857,11 +854,11 @@ bool Voxel::Editor::raycastFloor(glm::vec3 & intersectingPoint)
 
 	auto openglXY = cursor->getPosition() + (screenSize * 0.5f);
 
-	auto near = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto nears = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 0.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	auto far = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
+	auto fars = glm::unProject(glm::vec3(openglXY.x, openglXY.y, 1.0f), mat, proj, glm::vec4(0, 0, 1920, 1080));
 
-	Ray ray(near, far);
+	Ray ray(nears, fars);
 	
 	return ray.doesIntersectsQuad(Shape::Quad(glm::vec3(-floorSize.x, 0.0f, -floorSize.y), glm::vec3(-floorSize.x, 0.0f, floorSize.y), glm::vec3(floorSize.x, 0.0f, -floorSize.y), glm::vec3(floorSize.x, 0.0f, floorSize.y), glm::vec3(0, 1, 0)), intersectingPoint);
 }

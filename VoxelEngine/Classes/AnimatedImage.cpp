@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "AnimatedImage.h"
 
 // voxel
@@ -5,9 +8,6 @@
 #include "Utility.h"
 #include "ProgramManager.h"
 #include "Program.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
 	: RenderNode(name)

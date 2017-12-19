@@ -55,7 +55,7 @@ namespace Voxel
 		SEASONAL_FOREST,		// Basically forest but with different variation of trees. 
 		SWAMP,					// Warm area with high moisture. Water can be found. Oak trees can be found.
 		RAIN_FOREST,			// Jungle. Lots of rain and hot area. Lots of tall trees. Lots of plants below the tree. 
-		ERROR,
+		ERROR_BIOME,
 	};
 
 	namespace Vegitation

@@ -1,8 +1,7 @@
-#include "Biome.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
-#include <random>
+#include "Biome.h"
 
 using namespace Voxel;
 
@@ -173,7 +172,7 @@ Voxel::BiomeType Voxel::Biome::getBiomeType(float temperature, float moisture, f
 
 	// Error. Can't get biome
 	std::cout << "[Biome] Error. Wasn't able to find biome with t: " << temperature << ", m: " << moisture << ", e: " << elevation << std::endl;
-	return Voxel::BiomeType::ERROR;
+	return Voxel::BiomeType::ERROR_BIOME;
 }
 
 std::string Voxel::Biome::biomeTypeToString(Voxel::BiomeType type)
@@ -219,7 +218,7 @@ std::string Voxel::Biome::biomeTypeToString(Voxel::BiomeType type)
 	case Voxel::BiomeType::RAIN_FOREST:
 		return "RAIN FOREST";
 		break;
-	case Voxel::BiomeType::ERROR:
+	case Voxel::BiomeType::ERROR_BIOME:
 	default:
 		break;
 	}
@@ -420,7 +419,7 @@ int Voxel::Biome::getTreeSpawnRate()
 	case Voxel::BiomeType::DESERT:
 	case Voxel::BiomeType::OCEAN:
 	case Voxel::BiomeType::NONE:
-	case Voxel::BiomeType::ERROR:
+	case Voxel::BiomeType::ERROR_BIOME:
 	default:
 		break;
 	}

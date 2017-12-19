@@ -1,8 +1,7 @@
-#include "ECS.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <cassert>
-#include <string>
+#include "ECS.h"
 
 using namespace ECS;
 

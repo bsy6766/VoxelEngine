@@ -1,7 +1,7 @@
-#include "EarClip.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <algorithm>
+#include "EarClip.h"
 
 using namespace Voxel;
 

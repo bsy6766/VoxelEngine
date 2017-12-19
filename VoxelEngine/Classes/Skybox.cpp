@@ -1,11 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Skybox.h"
-
-// cpp
-#include <vector>
-#include <iostream>
-
-// glm
-#include <glm\gtx\transform.hpp>
 
 // voxel
 #include "Cube.h"

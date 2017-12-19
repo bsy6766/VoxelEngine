@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Cube.h"
 
 using namespace Voxel;

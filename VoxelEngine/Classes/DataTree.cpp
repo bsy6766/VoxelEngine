@@ -1,10 +1,7 @@
-#include "DataTree.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
+#include "DataTree.h"
 
 // voxel
 #include "Config.h"

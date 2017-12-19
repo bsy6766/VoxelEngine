@@ -1,7 +1,7 @@
-#include "World.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
+#include "World.h"
 
 // voxel
 #include "Region.h"

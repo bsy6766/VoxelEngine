@@ -1,9 +1,7 @@
-#include "Text.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
-#include <string>
-#include <sstream>
+#include "Text.h"
 
 // voxel
 #include "FontManager.h"
@@ -11,9 +9,6 @@
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Texture2D.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::Text::Text(const std::string& name)
 	: RenderNode(name)

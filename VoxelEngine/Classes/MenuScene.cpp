@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "MenuScene.h"
 
 // voxel
@@ -7,9 +10,6 @@
 #include "InputHandler.h"
 #include "UIActions.h"
 #include "Director.h"
-
-// cpp
-#include <functional>
 
 Voxel::MenuScene::MenuScene()
 	: Scene()

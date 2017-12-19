@@ -135,13 +135,13 @@ namespace Voxel
 		float getNear() const;
 
 		// Set near
-		void setNear(const float near);
+		void setNear(const float nears);
 
 		// get far
 		float getFar() const;
 
 		// Set far
-		void setFar(const float far);
+		void setFar(const float fars);
 
 		// set camera speed
 		void setSpeed(const float speed);

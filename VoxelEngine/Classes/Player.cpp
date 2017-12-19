@@ -1,8 +1,7 @@
-#include "Player.h"
+// pch
+#include "PreCompiled.h"
 
-// glm
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/compatibility.hpp>
+#include "Player.h"
 
 // voxel
 #include "Camera.h"

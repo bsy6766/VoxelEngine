@@ -1,10 +1,11 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Action.h"
 
 // voxel
 #include "UIBase.h"
 
-// cpp
-#include <iostream>
 
 Voxel::UI::Action::Action()
 	: duration(0.0f)

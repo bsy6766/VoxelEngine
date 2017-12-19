@@ -1,7 +1,7 @@
-#include "Cursor.h"
+// pch
+#include "PreCompiled.h"
 
-// glm
-#include <glm\gtx\transform.hpp>
+#include "Cursor.h"
 
 // voxel
 #include "Application.h"

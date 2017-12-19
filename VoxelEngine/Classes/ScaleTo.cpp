@@ -1,8 +1,5 @@
 #include "ScaleTo.h"
 
-// cpp
-#include <iostream>
-
 // voxel
 #include "UIBase.h"
 
@@ -51,11 +48,9 @@ void Voxel::UI::ScaleTo::setTarget(TransformNode * target)
 void Voxel::UI::ScaleTo::update(const float delta)
 {
 	elapsedTime += delta;
-	//std::cout << "ScaleTo: " << elapsedTime << " / " << duration << "\n";
 
 	if (elapsedTime >= duration)
 	{
-		//std::cout << "ScaleTo done. dest: (" << destination.x << ", " << destination.y << ")\n";
 		target->setScale(scale);
 	}
 	else
@@ -63,8 +58,6 @@ void Voxel::UI::ScaleTo::update(const float delta)
 		auto curScale = target->getScale();
 
 		target->setScale(curScale + ((scale - curScale) * (delta / (duration - (elapsedTime - delta)))));
-
-		//std::cout << "ScaleTo: (" << (curPos + movedDist).x << ", " << (curPos + movedDist).y << ")\n";
 	}
 }
 

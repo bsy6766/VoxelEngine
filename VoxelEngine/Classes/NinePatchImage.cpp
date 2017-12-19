@@ -1,12 +1,12 @@
+// pch
+#include "PreCompiled.h"
+
 #include "NinePatchImage.h"
 
 // voxel
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::NinePatchImage::NinePatchImage(const std::string& name)
 	: RenderNode(name)

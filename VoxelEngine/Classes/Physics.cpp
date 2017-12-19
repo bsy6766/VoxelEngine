@@ -1,10 +1,7 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Physics.h"
-
-// cpp
-#include <iostream>
-
-// glm
-#include <glm/gtx/compatibility.hpp>
 
 // voxel
 #include "Player.h"

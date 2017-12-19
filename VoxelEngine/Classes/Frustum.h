@@ -39,7 +39,7 @@ namespace Voxel
 		~Frustum();
 
 		// Update frustum projection
-		void updateProjection(const float fovy, const float aspect, const float near, const float far);
+		void updateProjection(const float fovy, const float aspect, const float nears, const float fars);
 		
 		// Update
 		void updateFrustumPlanes(const glm::mat4& MVP);

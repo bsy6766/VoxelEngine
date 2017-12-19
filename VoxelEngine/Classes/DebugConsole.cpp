@@ -1,11 +1,9 @@
+// pch
+#include "PreCompiled.h"
+
 #include "DebugConsole.h"
 
 #if V_DEBUG && V_DEBUG_CONSOLE
-
-// cpp
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
 
 // voxel
 #include "Utility.h"
@@ -1316,9 +1314,9 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 						}
 						else if (arg2 == "near")
 						{
-							const float far = Camera::mainCamera->getFar();
+							const float fars = Camera::mainCamera->getFar();
 
-							if (value < far)
+							if (value < fars)
 							{
 								Camera::mainCamera->setNear(value);
 								executedCommandHistory.push_back("Set camera near clipping plane to " + split.at(3));
@@ -1327,15 +1325,15 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							}
 							else
 							{
-								std::cout << "Near: " << value << " can't be large than far: " << far << "\n";
+								std::cout << "Near: " << value << " can't be large than far: " << fars << "\n";
 								return false;
 							}
 						}
 						else if (arg2 == "far")
 						{
-							const float near = Camera::mainCamera->getNear();
+							const float nears = Camera::mainCamera->getNear();
 
-							if (value > near)
+							if (value > nears)
 							{
 								Camera::mainCamera->setNear(value);
 								executedCommandHistory.push_back("Set camera far clipping plane to " + split.at(3));
@@ -1344,7 +1342,7 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 							}
 							else
 							{
-								std::cout << "Far: " << value << " can't be small than near: " << near << "\n";
+								std::cout << "Far: " << value << " can't be small than near: " << nears << "\n";
 								return false;
 							}
 						}

@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "ProgramManager.h"
 #include "Program.h"
 #include "ShaderManager.h"

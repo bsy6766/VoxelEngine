@@ -1,7 +1,7 @@
-#include "Logger.h"
+// pch
+#include "PreCompiled.h"
 
-// spdlog
-#include <spdlog\spdlog.h>
+#include "Logger.h"
 
 // voxel
 #include "FileSystem.h"

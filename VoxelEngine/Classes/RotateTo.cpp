@@ -1,8 +1,5 @@
 #include "RotateTo.h"
 
-// cpp
-#include <iostream>
-
 // voxel
 #include "UIBase.h"
 
@@ -71,11 +68,9 @@ void Voxel::UI::RotateTo::setTarget(TransformNode * target)
 void Voxel::UI::RotateTo::update(const float delta)
 {
 	elapsedTime += delta;
-	//std::cout << "RotateTo: " << elapsedTime << " / " << duration << "\n";
 
 	if (elapsedTime >= duration)
 	{
-		//std::cout << "RotateTo done. angle: " << angle << "\n";
 		target->setAngle(angle);
 	}
 	else
@@ -83,7 +78,5 @@ void Voxel::UI::RotateTo::update(const float delta)
 		auto curAngle = target->getAngle();
 
 		target->setAngle(curAngle + ((angle - curAngle) * (delta / (duration - (elapsedTime - delta)))));
-
-		//std::cout << "RotateTo. angle: " << target->getAngle() << "\n";
 	}
 }

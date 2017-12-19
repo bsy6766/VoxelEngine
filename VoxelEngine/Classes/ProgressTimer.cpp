@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "ProgressTimer.h"
 
 // voxel
@@ -5,9 +8,6 @@
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
 	: RenderNode(name)

@@ -1,7 +1,7 @@
-#include "Region.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
+#include "Region.h"
 
 // voxel
 #include "Voronoi.h"

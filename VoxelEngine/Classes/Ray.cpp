@@ -1,7 +1,7 @@
-#include "Ray.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
+#include "Ray.h"
 
 using namespace Voxel;
 

@@ -1,5 +1,7 @@
-#include "FileSystem.h"
+// pch
+#include "PreCompiled.h"
 
+#include "FileSystem.h"
 
 Voxel::FileSystem::FileSystem()
 	: workingDirectory(fs::current_path().string())

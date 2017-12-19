@@ -1,12 +1,12 @@
+// pch
+#include "PreCompiled.h"
+
 #include "Image.h"
 
 // voxel
 #include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
-
-// glm
-#include <glm/gtx/transform.hpp>
 
 Voxel::UI::Image::Image(const std::string& name)
 	: RenderNode(name)

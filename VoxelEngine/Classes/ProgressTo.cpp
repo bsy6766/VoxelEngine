@@ -1,8 +1,5 @@
 #include "ProgressTo.h"
 
-// cpp
-#include <iostream>
-
 // voxel
 #include "UIBase.h"
 #include "ProgressTimer.h"
@@ -44,11 +41,9 @@ Voxel::UI::ProgressTo * Voxel::UI::ProgressTo::create(const float duration, cons
 void Voxel::UI::ProgressTo::update(const float delta)
 {
 	elapsedTime += delta;
-	//std::cout << "ProgressTo: " << elapsedTime << " / " << duration << "\n";
 
 	if (elapsedTime >= duration)
 	{
-		//std::cout << "ProgressTo done. percentage: " << percentage << "\n";
 		target->setPercentage(percentage);
 	}
 	else
@@ -56,8 +51,6 @@ void Voxel::UI::ProgressTo::update(const float delta)
 		float curPercentage = target->getPercentage();
 
 		target->setPercentage(curPercentage + ((percentage - curPercentage) * (delta / (duration - (elapsedTime - delta)))));
-
-		//std::cout << "ProgressTo. percentage: " << target->getPercentage() << "\n";
 	}
 }
 
@@ -65,7 +58,6 @@ void Voxel::UI::ProgressTo::setTarget(TransformNode * progressTimer)
 {
 	if (Voxel::UI::ProgressTimer* pt = dynamic_cast<Voxel::UI::ProgressTimer*>(progressTimer))
 	{
-		//std::cout << "Adding progress timer as target of progress to\n";
 		this->target = pt;
 	}
 }

@@ -1,3 +1,6 @@
+// pch
+#include "PreCompiled.h"
+
 #include "SpriteSheet.h"
 
 // voxel
@@ -6,9 +9,6 @@
 #include "FileSystem.h"
 #include "Logger.h"
 #include "Config.h"
-
-// cpp
-#include <fstream>
 
 using namespace Voxel;
 using json = nlohmann::json;

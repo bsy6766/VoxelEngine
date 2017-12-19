@@ -1,8 +1,7 @@
-#include "InputHandler.h"
+// pch
+#include "PreCompiled.h"
 
-// cpp
-#include <iostream>
-#include <string>
+#include "InputHandler.h"
 
 // voxel
 #include "Setting.h"
