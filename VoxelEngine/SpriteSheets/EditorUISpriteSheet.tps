@@ -350,6 +350,26 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../Sprites/ui/Editor/no_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/no_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/no_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/no_button_idle.png</key>
+            <key type="filename">../Sprites/ui/Editor/yes_button_clicked.png</key>
+            <key type="filename">../Sprites/ui/Editor/yes_button_disabled.png</key>
+            <key type="filename">../Sprites/ui/Editor/yes_button_hovered.png</key>
+            <key type="filename">../Sprites/ui/Editor/yes_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>15,5,29,9</rect>
+                <key>scale9Paddings</key>
+                <rect>15,5,29,9</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_clicked.png</key>
             <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_disabled.png</key>
             <key type="filename">../Sprites/ui/Editor/return_to_main_menu_button_hovered.png</key>
