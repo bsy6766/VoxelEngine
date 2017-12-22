@@ -141,7 +141,7 @@ namespace Voxel
 		/**
 		*	Initailize GLFW window
 		*/
-		void initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync);
+		void initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int monitorIndex, const int windowMode, const bool vsync);
 
 		/**
 		*	Initialize GLEW

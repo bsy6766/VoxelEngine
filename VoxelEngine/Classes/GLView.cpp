@@ -73,7 +73,7 @@ void Voxel::GLView::init(const std::string& windowTitle)
 
 	// initialize and create window.
 	// Note: Should I save bit depth for each rgb channel?
-	initWindow(res.x, res.y, windowTitle, setting->getWindowMode(), setting->getVsync());
+	initWindow(res.x, res.y, windowTitle, setting->getMonitorIndex(), setting->getWindowMode(), setting->getVsync());
 
 	// Init cpu name
 	initCPUName();
@@ -182,13 +182,13 @@ void Voxel::GLView::initMonitorData()
 #endif
 }
 
-void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int windowMode, const bool vsync)
+void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, const std::string& windowTitle, const int monitorIndex, const int windowMode, const bool vsync)
 {
 	//set to OpenGL 4.3
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
 	//Set the color info
@@ -220,7 +220,22 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 		// Start from primary monitor
 		// Todo: Save monitor location. If valid, open window on saved monitor. Else, start from primary window
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_TRUE);
-		monitor = glfwGetPrimaryMonitor();
+
+		if (monitorIndex == 0)
+		{
+			monitor = glfwGetPrimaryMonitor();
+		}
+		else
+		{
+			monitor = getMonitorFromIndex(monitorIndex);
+
+			if (monitor == nullptr)
+			{
+				auto logger = &Voxel::Logger::getInstance();
+				logger->warn("[System] Failed to find monitor: " + std::to_string(monitorIndex) + ". Creating window on primary monitor.");
+				monitor = glfwGetPrimaryMonitor();
+			}
+		}
 	}
 	else if (windowMode == 2)
 	{
