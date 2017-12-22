@@ -24,6 +24,7 @@ Voxel::UI::Text::Text(const std::string& name)
 	, ibo(0)
 	, textSize(0)
 	, totalLines(0)
+	, state(State::IDLE)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_TEXT_BOUNDING_BOX
 	, lineIndicesSize(0)
 #endif
@@ -36,22 +37,19 @@ Voxel::UI::Text::~Text()
 
 Voxel::UI::Text * Voxel::UI::Text::create(const std::string & name, const std::string & text, const int fontID, const ALIGN align, const unsigned int lineBreakWidth)
 {
-	Text* newText = new Text(name);
+	auto newText = new Text(name);
 
-	newText->font = FontManager::getInstance().getFont(fontID);
-
-	if (newText->font != nullptr)
+	if (newText->init(text, fontID, align, lineBreakWidth))
 	{
-		if (newText->init(text, align, lineBreakWidth))
-		{
-			return newText;
-		}
+		return newText;
 	}
+	else
+	{
+		delete newText;
+		newText = nullptr;
 
-	delete newText;
-	newText = nullptr;
-
-	return nullptr;
+		return nullptr;
+	}
 }
 
 Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, const std::string & text, const int fontID, const glm::vec3 & outlineColor, const ALIGN align, const unsigned int lineBreakWidth)
@@ -65,7 +63,7 @@ Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, c
 		// Check if font supports outline
 		if (newText->font->isOutlineEnabled())
 		{
-			if (newText->initWithOutline(text, outlineColor, align, lineBreakWidth))
+			if (newText->initWithOutline(text, fontID, outlineColor, align, lineBreakWidth))
 			{
 				return newText;
 			}
@@ -78,8 +76,16 @@ Voxel::UI::Text * Voxel::UI::Text::createWithOutline(const std::string & name, c
 	return nullptr;
 }
 
-bool Voxel::UI::Text::init(const std::string & text, const ALIGN align, const unsigned int lineBreakWidth)
+bool Voxel::UI::Text::init(const std::string & text, const int fontID, const ALIGN align, const unsigned int lineBreakWidth)
 {
+	auto fm = &FontManager::getInstance();
+
+	if (fm == nullptr) return false;
+
+	this->font = fm->getFont(fontID);
+
+	if (this->font == nullptr) return false;
+
 	this->text = text;
 	this->align = align;
 	this->lineBreakWidth = lineBreakWidth;
@@ -89,7 +95,7 @@ bool Voxel::UI::Text::init(const std::string & text, const ALIGN align, const un
 	return buildMesh(true);
 }
 
-bool Voxel::UI::Text::initWithOutline(const std::string & text, const glm::vec3 & outlineColor, ALIGN align, const unsigned int lineBreakWidth)
+bool Voxel::UI::Text::initWithOutline(const std::string & text, const int fontID, const glm::vec3 & outlineColor, ALIGN align, const unsigned int lineBreakWidth)
 {
 	this->text = text;
 	this->align = align;
@@ -112,7 +118,16 @@ void Voxel::UI::Text::setText(const std::string & text)
 		//clear();
 		this->text = text;
 		this->contentSize.x = 0.0f;
+		this->contentSize.y = 0.0f;
 		this->boundingBox.size.x = 0.0f;
+		this->boundingBox.size.y = 0.0f;
+
+		updateModelMatrix();
+		updateBoundingBox();
+
+		lineSizes.clear();
+
+		totalLines = 1;
 	}
 	else
 	{
@@ -240,11 +255,207 @@ int Voxel::UI::Text::getCharIndexOnCursor(const glm::vec2 & cursorPosition)
 	return -1;
 }
 
+bool Voxel::UI::Text::updateTextMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+{
+	// check if progress timer is interactable
+	if (isInteractable())
+	{
+		// check bb
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			if (state == State::IDLE)
+			{
+				state = State::HOVERED;
+
+				if (onMouseEnter)
+				{
+					onMouseEnter(this);
+				}
+			}
+			else if (state == State::HOVERED)
+			{
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+				{
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			updateMouseMoveFalse();
+		}
+	}
+
+	return false;
+}
+
+void Voxel::UI::Text::updateMouseMoveFalse()
+{
+	if (state != State::IDLE)
+	{
+		state = State::IDLE;
+
+		if (onMouseExit)
+		{
+			onMouseExit(this);
+		}
+	}
+}
+
+bool Voxel::UI::Text::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+{
+	if (visibility)
+	{
+		// visible
+		if (children.empty())
+		{
+			// Has no children. update self
+			return updateTextMouseMove(mousePosition, mouseDelta);
+		}
+		else
+		{
+			// Has children
+			bool childHovered = false;
+
+			// Reverse iterate children because child who has higher global z order gets rendered above other siblings who has lower global z order
+			auto rit = children.rbegin();
+			for (; rit != children.rend();)
+			{
+				bool result = (rit->second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					// child hovered
+					childHovered = true;
+					break;
+				}
+
+				rit++;
+			}
+
+			if (childHovered)
+			{
+				// There was a child had mouse move event. Iterate remaining children and update
+
+				// Don't forget to increment iterator.
+				rit++;
+
+				for (; rit != children.rend(); rit++)
+				{
+					(rit->second)->updateMouseMoveFalse();
+				}
+
+				updateMouseMoveFalse();
+			}
+			else
+			{
+				// There was no mouse move event on child
+				childHovered = updateTextMouseMove(mousePosition, mouseDelta);
+			}
+
+			return childHovered;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::Text::updateMousePress(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool pressed = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::HOVERED)
+					{
+						state = State::CLICKED;
+						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!pressed)
+		{
+			pressed = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return pressed;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::Text::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool released = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::CLICKED)
+					{
+						state = State::IDLE;
+
+						released = true;
+
+						if (onMouseReleased)
+						{
+							onMouseReleased(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!released)
+		{
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vector<LineSize>& lineSizes, int & maxWidth)
 {
-	// Iterate per line. Find the maximum width and height
-	totalLines += lines.size();
+	// get white space advance
+	Glyph* glyph = font->getGlyph(32);
 
+	if (glyph == nullptr) return false;
+
+	const int whiteSpaceAdvnace = glyph->advance;
+
+	// Iterate per line. Find the maximum width and height
 	for (auto& line : lines)
 	{
 		// create line size
@@ -276,10 +487,7 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 
 		// get length of line
 		unsigned int len = line.size();
-
-		// create char pos vector
-		characterPositions.push_back(std::vector<float>());
-
+		
 		// Mesure size of the word.
 		unsigned int currentWordWith = 0;
 
@@ -325,10 +533,7 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 					charWidth = glyph->advance;
 				}
 			}
-
-			// add to vec
-			characterPositions.back().push_back(static_cast<float>(charWidth));
-
+			
 			if (!whitespace)
 			{
 				// if char is not whitespace, measure world size
@@ -359,7 +564,14 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 				{
 					// last char added was whitespace. This means all words in this sub line fits line break width. 
 					sls.width = currentLineWidth - charWidth;
-					sls.text = subLineText + " " + currentWord;
+					if (subLineText.empty())
+					{
+						sls.text = currentWord;
+					}
+					else
+					{
+						sls.text = subLineText + " " + currentWord;
+					}
 					currentWord = "";
 					currentLineWidth = 0;
 				}
@@ -367,6 +579,10 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 				{
 					// last char add wasn't whitesapce. sub line's width is current line with widhotu current word width
 					sls.width = currentLineWidth - currentWordWith;
+					if (subLineText.empty() == false)
+					{
+						sls.width -= whiteSpaceAdvnace;
+					}
 					sls.text = subLineText;
 					currentLineWidth = currentWordWith;
 				}
@@ -393,22 +609,10 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 			}
 
 			// Find max bearing Y. BearingY is the upper height of character from pen position.
-			/*
-			if (maxBearingY < glyph->bearingY)
-			{
-				maxBearingY = glyph->bearingY;
-			}
-			*/
 			maxBearingY = glm::max(maxBearingY, glyph->bearingY);
 			currentMaxBearingY = glm::max(currentMaxBearingY, glyph->bearingY);
 
 			// Find max botY. BotY is my defined value, which is the lower height of character from pen position
-			/*
-			if (maxBotY < glyph->botY)
-			{
-				maxBotY = glyph->botY;
-			}
-			*/
 			maxBotY = glm::max(maxBotY, glyph->botY);
 			currentMaxBotY = glm::max(currentMaxBotY, glyph->botY);
 
@@ -479,6 +683,8 @@ bool Voxel::UI::Text::computeLineSizes(std::vector<std::string>& lines, std::vec
 
 		// total width is sum of glyph's advance, which includes extra space for next character. Remove it
 		maxWidth = glm::max(maxX, maxWidth);
+
+		totalLines += lineSize.subLineSizes.size();
 	
 		// end of current line size
 	}
@@ -511,32 +717,18 @@ void Voxel::UI::Text::computePenPositions(std::vector<LineSize>& lineSizes, cons
 			else if (align == ALIGN::RIGHT)
 			{
 				// Aling text to right.
-				penPos.x = (static_cast<float>(boundingBox.size.x) * 0.5f) - static_cast<float>(lineSize.maxX);
+				penPos.x = (boundingBox.size.x * 0.5f) - static_cast<float>(sls.width);
 			}
 			else // center
 			{
 				// Aling text to center.
-				penPos.x = static_cast<float>(lineSize.maxX) * -0.5f;
+				penPos.x = static_cast<float>(sls.width) * -0.5f;
 			}
 
 			penPos.y = curY;
 			curY -= yAdvance;
 			sls.penPosition = penPos;
 		}
-
-		/*
-		// Y works same for same
-		//penPos.y = curY - lineSize.maxBearingY;
-		penPos.y = curY;
-		//penPos.y = curY - lineSpace;
-		// add pen position
-		penPositions.push_back(penPos);
-		// Update y to next line
-		// I might advance to next line with linespace value, but I have to modify the size of line then. TODO: Consider this
-		curY -= yAdvance;
-		// As I said, customizing for MunroSmall
-		//curY -= (lineSize.maxBearingY + lineSize.maxBotY + lineGapHeight);
-		*/
 	}
 }
 
@@ -557,9 +749,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		texture = font->getTexture();
 
 		totalLines = 0;
-
-		characterPositions.clear();
-
+		
 		// Step 0 done.
 
 
@@ -587,11 +777,11 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		// Step 2. Compute line sizes, max width and total height ------------
 
 		// This is where we store each line's size so we can properly reposition all character based on align type
-		std::vector<LineSize> lineSizes;
-
 		int maxWidth = 0;
 
 		// Compute line sizes
+		lineSizes.clear();
+
 		bool result = computeLineSizes(split, lineSizes, maxWidth);
 
 		if (!result)
@@ -621,16 +811,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 
 		// compute total height
 		//int totalHeight = (lineSizeCount * lineSpace) + font->getSize();
-		int totalHeight = 0;
-		
-		if (lineSizes.size() == 1)
-		{
-			totalHeight = font->getSize();
-		}
-		else
-		{
-			totalHeight = ((totalLineCount - 1) * lineSpace) + font->getSize();
-		}
+		int totalHeight = totalHeight = ((totalLineCount - 1) * lineSpace) + font->getSize();
 
 		/*
 		if (totalHeight % 2 == 1)
@@ -731,6 +912,10 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 					vertices.push_back(rightTop.x); vertices.push_back(leftBottom.y); vertices.push_back(0);		// right bottom
 					vertices.push_back(rightTop.x); vertices.push_back(rightTop.y); vertices.push_back(0);		// right top
 
+					// add char bounding box relative to origin
+					// Todo: Support character bounding box check for input field. 
+					//subLineSize.characterBoundingBoxes.push_back(Voxel::Shape::Rect(glm::vec2(leftBottom.x + (rightTop.x * 0.5f)), glm::abs(rightTop - leftBottom)));
+
 					// color
 					for (int j = 0; j < 4; j++)
 					{
@@ -763,6 +948,7 @@ bool Voxel::UI::Text::buildMesh(const bool reallocate)
 		loadBuffers(vertices, colors, uvVertices, indices, reallocate);
 
 		updateModelMatrix();
+		updateBoundingBox();
 
 		if (parent)
 		{

@@ -70,21 +70,23 @@ namespace Voxel
 			float maxValue;
 			float currentValue;
 
-			// On slider button clicked
-			std::function<void(float)> onSliderButtonPressed;
+			// On slider button pressed
+			std::function<void(Voxel::UI::Slider*)> onButtonPressed;
+			// On slider bar pressed
+			std::function<void(Voxel::UI::Slider*)> onBarPressed;
 			// On slider move
-			std::function<void(float)> onSliderMove;
+			std::function<void(Voxel::UI::Slider*)> onValueChange;
 			// On slider move is finished
-			std::function<void(float)> onSliderFinished;
+			std::function<void(Voxel::UI::Slider*)> onFinished;
 
 			// initilaize
 			bool init(const std::string& spriteSheetName, const std::string& barImageName, const std::string& buttonImageName, const Type type, const float minValue = 0, const float maxValue = 100);
 
 			// build bar
-			void buildBar(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indicies);
+			void loadBarBuffer(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indicies);
 
 			// build button
-			void buildButton(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indicies);
+			void loadButtonBuffer(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indicies);
 
 			// update button indices
 			void updateButtonIndexOffset();
@@ -110,8 +112,10 @@ namespace Voxel
 			*/
 			static Slider* create(const std::string& name, const std::string& spriteSheetName, const std::string& barImageName, const std::string& buttonImageName, const Type type, const float minValue = 0, const float maxValue = 100);
 
+			// enables
 			void enable();
 
+			// disable 
 			void disable();
 
 			void setValue(const float value);
@@ -119,13 +123,16 @@ namespace Voxel
 			float getValue() const;
 
 			// set callback for when slider button is pressed
-			void setOnSliderButtonPressed(const std::function<void(float)>& func);
+			void setOnButtonPressed(const std::function<void(Voxel::UI::Slider*)>& func);
+
+			// set callback for when slider button is pressed
+			void setOnBarPressed(const std::function<void(Voxel::UI::Slider*)>& func);
 
 			// set callback for when slider moves
-			void setOnSliderMove(const std::function<void(float)>& func);
+			void setOnValueChange(const std::function<void(Voxel::UI::Slider*)>& func);
 
 			// set callback for when slider move is finished (mosue release)
-			void setOnSliderFinished(const std::function<void(float)>& func);
+			void setOnFinished(const std::function<void(Voxel::UI::Slider*)>& func);
 			
 			// override
 			void updateBoundingBox() override;
@@ -133,25 +140,14 @@ namespace Voxel
 			// override
 			void updateModelMatrix() override;
 
-			// Update mouse move on button
-			bool updateButtonMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
-
 			// override
+			void updateMouseMoveFalse() override;
+			bool updateSliderMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
-
-			/**
-			*	Check if mouse clicked the button
-			*/
 			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
-
-			/**
-			*	Check if mouse released the button
-			*/
 			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
 
-			/**
-			*	Render self
-			*/
+			// render
 			void renderSelf() override;
 
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_SLIDER_BOUNDING_BOX

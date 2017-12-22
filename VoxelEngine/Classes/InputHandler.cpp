@@ -154,7 +154,6 @@ void Voxel::InputHandler::updateMouseButton(int button, int action, int mods)
 
 void Voxel::InputHandler::updateKeyboard(int key, int action, int mods)
 {
-
 	if (inputField)
 	{
 		// feed input field
@@ -644,11 +643,18 @@ bool Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 	{
 		if (key == GLFW_KEY_BACKSPACE)
 		{
-			inputField->removeLastCharacter();
+			if (mod & GLFW_MOD_CONTROL)
+			{
+				inputField->removeLastWord();
+			}
+			else
+			{
+				inputField->removeLastCharacter();
+			}
 		}
 		else if (key == GLFW_KEY_ENTER)
 		{
-			inputField->submitEdit();
+			inputField->finishEdit();
 		}
 		else if (key == GLFW_KEY_ESCAPE)
 		{
@@ -668,7 +674,7 @@ bool Voxel::InputHandler::updateInputFieldText(const int key, const int mod)
 		}
 
 		return true;
-	}
+	}	
 
 	return false;
 }

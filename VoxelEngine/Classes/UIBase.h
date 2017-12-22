@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <functional>
 
 // Voxel
 #include "ZOrder.h"
@@ -153,6 +154,19 @@ namespace Voxel
 
 			// calculate model matrix
 			virtual glm::mat4 getModelMatrix();
+						
+			// Mouse callbacks
+
+			// on mouse pressed on ui. Only called when press is valid
+			std::function<void(TransformNode* sender, const int)> onMousePressed;
+			// on mouse release on ui. Only called when release is valid
+			std::function<void(TransformNode* sender, const int)> onMouseReleased;
+			// on mouse enters ui
+			std::function<void(TransformNode* sender)> onMouseEnter;
+			// on mouse exits ui
+			std::function<void(TransformNode* sender)> onMouseExit;
+			// on mouse move.
+			std::function<void(TransformNode* sender)> onMouseMove;
 		public:
 			// Destructor
 			virtual ~TransformNode();
@@ -315,6 +329,13 @@ namespace Voxel
 			bool isDraggable() const;
 
 			/**
+			*	Check if ui is same as give ui
+			*	@param other Other ui to check.
+			*	@return true if it's same ui. Else, false
+			*/
+			bool equals(TransformNode* other);
+
+			/**
 			*	Add child to this ui node
 			*	@param child Child node to add.
 			*/
@@ -428,7 +449,7 @@ namespace Voxel
 			*	@param mouseDelta Amount of mouse moved.
 			*/
 			virtual bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
-
+			
 			/**
 			*	update mouse click
 			*	@param mousePosition Current position of mouse in screen space
@@ -444,9 +465,54 @@ namespace Voxel
 			virtual bool updateMouseRelease(const glm::vec2& mousePosition, const int button);
 
 			/**
+			*	Update mouse movement false
+			*	This is called when sibling ui who has higher global z order fires mouse move event.
+			*	This function treats the ui as not moved.
+			*/
+			virtual void updateMouseMoveFalse();
+
+			/**
 			*	Update ui boundary. Checks if ui is out of canvas screen
 			*/
 			virtual void updateBoundary(const Voxel::Shape::Rect& canvasBoundary);
+
+			/**
+			*	Set callback function for mouse press.
+			*	This callback is called when mouse is pressed on ui.
+			*	int param on callback tells which mouse button was clicked
+			*	@param func Callback func. 
+			*/
+			void setOnMousePressedCallback(const std::function<void(TransformNode* sender, const int)>& func);
+
+			/**
+			*	Set callback function for mouse release
+			*	This callback is called when mouse is released.
+			*	First parameter tells which button was released. Second parameter tells if it was released on ui.
+			*	This callback is called only if mouse was pressed on the ui at the first place.
+			*	@param func Callback func.
+			*/
+			void setOnMouseReleasedCallback(const std::function<void(TransformNode* sender, const int)>& func);
+
+			/**
+			*	Set callback function for mouse enter.
+			*	This callback is called when mouse enters the ui bounding box.
+			*	@param func Callback func
+			*/
+			void setOnMouseEnterCallback(const std::function<void(TransformNode* sender)>& func);
+
+			/**
+			*	Set callback function for mouse exit.
+			*	This callback is called when mouse exits the ui bounding box.
+			*	@param func Callback func
+			*/
+			void setOnMouseExitCallback(const std::function<void(TransformNode* sender)>& func);
+
+			/**
+			*	Set callback function for mouse move.
+			*	This callback function is called when mouse moves in ui's bounding box
+			*	@param func Callback func
+			*/
+			void setOnMouseMoveCallback(const std::function<void(TransformNode* sender)>& func);
 
 			/**
 			*	Run action.

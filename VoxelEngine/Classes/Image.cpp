@@ -10,7 +10,7 @@
 
 Voxel::UI::Image::Image(const std::string& name)
 	: RenderNode(name)
-	, imageState(State::IDLE)
+	, state(State::IDLE)
 {}
 
 Voxel::UI::Image::~Image()
@@ -85,97 +85,207 @@ Voxel::UI::Image * Voxel::UI::Image::createFromSpriteSheet(const std::string & n
 	}
 }
 
-bool Voxel::UI::Image::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
+bool Voxel::UI::Image::updateImageMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
 {
-	if (isDraggable())
+	// Update mouse move for image
+	if (isInteractable())
 	{
-		if (imageState == State::CLICKED)
-		{
-			addPosition(mouseDelta);
-			return true;
-		}
-	}
-	
-	// Else, not draggable, image wasn't clicked. Check if there was mouse move in child
-	bool result = Voxel::UI::TransformNode::updateMouseMove(mousePosition, mouseDelta);
-	if (result)
-	{
-		// there was move event on child.
-		return true;
-	}
-	else
-	{
-		// there wasn't any move event. Check self.
+		// interactable
 		if (boundingBox.containsPoint(mousePosition))
 		{
-			// mouse in bounding box
+			// mouse is in ui's bb
+			if (state == State::IDLE)
+			{
+				// was idle. hovered.
+				state = State::HOVERED;
+
+				if (onMouseEnter)
+				{
+					onMouseEnter(this);
+				}
+			}
+			else if (state == State::HOVERED)
+			{
+				// was hovering.
+				if (onMouseMove)
+				{
+					onMouseMove(this);
+				}
+			}
+			else if (state == State::CLICKED)
+			{
+				// was clicking.
+				if (isDraggable())
+				{
+					// drag
+					addPosition(mouseDelta);
+				}
+			}
+
 			return true;
 		}
-	}
+		else
+		{
+			// mouse is not in ui's bb
+			if (state == State::HOVERED)
+			{
+				// back to idle
+				state = State::IDLE;
 
+				if (onMouseExit)
+				{
+					onMouseExit(this);
+				}
+			}
+		}
+	}
+	// Else, not interactable
+
+	return false;
+}
+
+bool Voxel::UI::Image::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
+{
+	// Update mouse move for this ui
+	if (visibility)
+	{
+		// visible
+		if (children.empty())
+		{
+			// No children. update self.
+			return updateImageMouseMove(mousePosition, mouseDelta);
+		}
+		else
+		{
+			// check state
+			if (state == State::CLICKED && isDraggable())
+			{
+				// image is clicked and dragging. ignore evetns from children
+				return true;
+			}
+			else
+			{
+				// Image is either not clicked or not dragging.
+				bool childHovered = false;
+
+				// Check if one of child has mouse move event
+				for (auto& child : children)
+				{
+					bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+					if (result)
+					{
+						childHovered = true;
+					}
+				}
+
+				// check if there was event
+				if (childHovered)
+				{
+					// mouse is hovering one of children. Back to idle state.
+					if (state == State::HOVERED)
+					{
+						// was hovering. back to idle
+						state = State::IDLE;
+					}
+					else if (state == State::CLICKED)
+					{
+						// was clicking, was not dragging. back to idle
+						state = State::IDLE;
+					}
+				}
+				else
+				{
+					// There was no mouse move event on child
+					childHovered = updateImageMouseMove(mousePosition, mousePosition);
+				}
+
+				return childHovered;
+			}
+		}
+	}
+	// Else, not visible
+	
 	return false;
 }
 
 bool Voxel::UI::Image::updateMousePress(const glm::vec2 & mousePosition, const int button)
 {
-	if (isDraggable())
+	if (visibility)
 	{
-		if (imageState == State::IDLE)
-		{
-			// Check if mouse is in check box
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				imageState = State::CLICKED;
+		bool pressed = false;
 
-				return true;
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::HOVERED)
+					{
+						if (isDraggable())
+						{
+							state = State::CLICKED;
+						}
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+
+						pressed = true;
+					}
+				}
 			}
 		}
-	}
 
-	// Else, not draggable, wasn't idle (then it's clicked) or mouse wasn't in bounding box. But still mouse can be in image
-	if (boundingBox.containsPoint(mousePosition))
-	{
-		// mouse in image. Check if there was any child that was clicked.
-		Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
-		// No matter the result, it's click on this image, so return true.
-		return true;
+		if (!pressed)
+		{
+			pressed = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return pressed;
 	}
-	else
-	{
-		// didn't click image. Check children
-		return Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
-	}
+	// Else, not visible
+
+	return false;
 }
 
 bool Voxel::UI::Image::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
 {
-	if (isDraggable())
+	if (visibility)
 	{
-		if (imageState == State::CLICKED)
-		{
-			// Check if mouse is in check box
-			if (boundingBox.containsPoint(mousePosition))
-			{
-				imageState = State::IDLE;
+		bool released = false;
 
-				return true;
+		// check if button is interacble
+		if (isInteractable())
+		{
+			// it's interactable
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				// released with left mouse button
+				if (state != State::IDLE)
+				{
+					state = State::IDLE;
+					released = true;
+
+					if (onMouseReleased)
+					{
+						onMouseReleased(this, button);
+					}
+				}
 			}
 		}
+
+		if (!released)
+		{
+			// button was not clicked. check if there is another button in children that might possibly released
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
 	}
 
-	// Else, not draggable, wasn't clicked (then it's idle) or mouse wasn't in bounding box. But still mouse can be in image
-	if (boundingBox.containsPoint(mousePosition))
-	{
-		// mouse in image. Check if there was any child that was release.
-		Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
-		// No matter the result, it's release on this image, so return true.
-		return true;
-	}
-	else
-	{
-		// didn't click image. Check children
-		return Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
-	}
+	return false;
 }
 
 bool Voxel::UI::Image::init(const std::string& textureName)

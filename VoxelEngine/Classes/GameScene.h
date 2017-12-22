@@ -34,12 +34,13 @@ namespace Voxel
 	class Setting;
 	class WorldMap;
 	class GameMenu;
-		class Cursor;
+	class Cursor;
 
 	namespace UI
 	{
 		class Canvas;
 		class Text;
+		class Button;
 	}
 
 	/**
@@ -266,8 +267,8 @@ namespace Voxel
 		void toggleCursorMode(const bool mode);
 
 		// Game menu call back
-		void onReturnToGameClicked();
-		void onExitToMainMenuSceneClicked();
+		void onReturnToGameClicked(Voxel::UI::Button* sender);
+		void onExitToMainMenuSceneClicked(Voxel::UI::Button* sender);
 
 		/**
 		*	Set fog mode.

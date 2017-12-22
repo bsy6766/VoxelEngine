@@ -19,6 +19,7 @@ Voxel::UI::AnimatedImage::AnimatedImage(const std::string & name)
 	, repeat(false)
 	, stopped(false)
 	, paused(false)
+	, state(State::IDLE)
 {}
 
 Voxel::UI::AnimatedImage * Voxel::UI::AnimatedImage::create(const std::string & name, const std::string & spriteSheetName, const std::string& frameName, const int frameSize, const float interval, const bool repeat)
@@ -249,6 +250,196 @@ void Voxel::UI::AnimatedImage::update(const float delta)
 		// If debug, ui bounding box and animated image bounding box is enabled, create debug boudning box line
 		createDebugBoundingBoxLine();
 #endif
+	}
+}
+
+bool Voxel::UI::AnimatedImage::updateAnimatedImageMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+{
+	// check if progress timer is interactable
+	if (isInteractable())
+	{
+		// check bb
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			if (state == State::IDLE)
+			{
+				state = State::HOVERED;
+
+				if (onMouseEnter)
+				{
+					onMouseEnter(this);
+				}
+			}
+			else if (state == State::HOVERED)
+			{
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+				{
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			updateMouseMoveFalse();
+		}
+	}
+
+	return false;
+}
+
+void Voxel::UI::AnimatedImage::updateMouseMoveFalse()
+{
+	if (state != State::IDLE)
+	{
+		state = State::IDLE;
+
+		if (onMouseExit)
+		{
+			onMouseExit(this);
+		}
+	}
+}
+
+bool Voxel::UI::AnimatedImage::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+{
+	if (visibility)
+	{
+		// visible
+		if (children.empty())
+		{
+			// Has no children. update self
+			return updateAnimatedImageMouseMove(mousePosition, mouseDelta);
+		}
+		else
+		{
+			// Has children
+			bool childHovered = false;
+
+			// Reverse iterate children because child who has higher global z order gets rendered above other siblings who has lower global z order
+			auto rit = children.rbegin();
+			for (; rit != children.rend();)
+			{
+				bool result = (rit->second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					// child hovered
+					childHovered = true;
+					break;
+				}
+
+				rit++;
+			}
+
+			if (childHovered)
+			{
+				// There was a child had mouse move event. Iterate remaining children and update
+
+				// Don't forget to increment iterator.
+				rit++;
+
+				for (; rit != children.rend(); rit++)
+				{
+					(rit->second)->updateMouseMoveFalse();
+				}
+
+				updateMouseMoveFalse();
+			}
+			else
+			{
+				// There was no mouse move event on child
+				childHovered = updateAnimatedImageMouseMove(mousePosition, mouseDelta);
+			}
+
+			return childHovered;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::AnimatedImage::updateMousePress(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool pressed = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::HOVERED)
+					{
+						state = State::CLICKED;
+						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!pressed)
+		{
+			pressed = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return pressed;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::AnimatedImage::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool released = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::CLICKED)
+					{
+						state = State::IDLE;
+
+						released = true;
+
+						if (onMouseReleased)
+						{
+							onMouseReleased(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!released)
+		{
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
+	}
+	else
+	{
+		return false;
 	}
 }
 

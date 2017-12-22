@@ -22,6 +22,14 @@ namespace Voxel
 		*/
 		class AnimatedImage : public RenderNode
 		{
+		public:
+			enum class State
+			{
+				IDLE = 0,
+				HOVERED,
+				CLICKED,
+			};
+
 		private:
 			AnimatedImage() = delete;
 
@@ -55,6 +63,9 @@ namespace Voxel
 			// If animation is paused, then it can either call start() to start over animation or call resume() to resume animation.
 			bool paused;
 
+			// staet
+			State state;
+
 			/**
 			*	Initialize animated image
 			*	@param ss SpriteSheet pointer
@@ -73,6 +84,9 @@ namespace Voxel
 			*	@param indices Indices of image quad.
 			*/
 			virtual void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
+
+			// Update mouse move
+			bool updateAnimatedImageMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Desturctor
 			~AnimatedImage() = default;
@@ -116,6 +130,12 @@ namespace Voxel
 			*	Override bases update function
 			*/
 			void update(const float delta) override;
+
+			// Mouse event overrides
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
+			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+			void updateMouseMoveFalse() override;
 
 			/**
 			*	Render self

@@ -5,7 +5,6 @@
 
 // voxel
 #include "Texture2D.h"
-#include "Quad.h"
 #include "ProgramManager.h"
 #include "Program.h"
 #include "FontManager.h"
@@ -64,6 +63,11 @@ Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	, parent(nullptr)
 	, interaction(0)
 	, actionPaused(false)
+	, onMousePressed(nullptr)
+	, onMouseReleased(nullptr)
+	, onMouseEnter(nullptr)
+	, onMouseExit(nullptr)
+	, onMouseMove(nullptr)
 #if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
 	, bbVao(0)
 #endif
@@ -364,9 +368,21 @@ bool Voxel::UI::TransformNode::isDraggable() const
 	return interaction & InteractionFlag::DRAGGABLE;
 }
 
+bool Voxel::UI::TransformNode::equals(TransformNode * other)
+{
+	if (other)
+	{
+		return (id == other->getID() && name == other->getName());
+	}
+
+	return false;
+}
+
 bool Voxel::UI::TransformNode::addChild(TransformNode * child)
 {
 	if (child == nullptr) return false;
+	if (equals(child)) return false;
+
 	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
 	{
 		return false;
@@ -395,6 +411,9 @@ bool Voxel::UI::TransformNode::addChild(TransformNode * child)
 
 bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, int zOrder)
 {
+	if (child == nullptr) return false;
+	if (equals(child)) return false;
+
 	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
 	{
 		return false;
@@ -406,6 +425,7 @@ bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, int zO
 bool Voxel::UI::TransformNode::addChild(Voxel::UI::TransformNode * child, Voxel::ZOrder& zOrder)
 {
 	if (child == nullptr) return false;
+	if (equals(child)) return false;
 
 	if (auto canvasChild = dynamic_cast<Voxel::UI::Canvas*>(child))
 	{
@@ -747,6 +767,21 @@ glm::mat4 Voxel::UI::TransformNode::getModelMatrix()
 	return mat;
 }
 
+void Voxel::UI::TransformNode::updateMouseMoveFalse()
+{
+	if (visibility)
+	{
+		if (!children.empty())
+		{
+			bool moved = false;
+			for (auto& child : children)
+			{
+				(child.second)->updateMouseMoveFalse();
+			}
+		}
+	}
+}
+
 void Voxel::UI::TransformNode::updateModelMatrix()
 {
 	// Update model matrix
@@ -932,6 +967,31 @@ void Voxel::UI::TransformNode::updateBoundary(const Voxel::Shape::Rect& canvasBo
 	{
 		// UI completely out of canvas boundary. Move to neareast position.
 	}
+}
+
+void Voxel::UI::TransformNode::setOnMousePressedCallback(const std::function<void(TransformNode*, const int)>& func)
+{
+	onMousePressed = func;
+}
+
+void Voxel::UI::TransformNode::setOnMouseReleasedCallback(const std::function<void(TransformNode*, const int)>& func)
+{
+	onMouseReleased = func;
+}
+
+void Voxel::UI::TransformNode::setOnMouseEnterCallback(const std::function<void(TransformNode*)>& func)
+{
+	onMouseEnter = func;
+}
+
+void Voxel::UI::TransformNode::setOnMouseExitCallback(const std::function<void(TransformNode*)>& func)
+{
+	onMouseExit = func;
+}
+
+void Voxel::UI::TransformNode::setOnMouseMoveCallback(const std::function<void(TransformNode*)>& func)
+{
+	onMouseMove = func;
 }
 
 void Voxel::UI::TransformNode::runAction(Voxel::UI::Action * action)

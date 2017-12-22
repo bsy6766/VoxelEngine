@@ -1,6 +1,9 @@
 #ifndef CHECK_BOX_H
 #define CHECK_BOX_H
 
+// cpp
+#include <functional>
+
 // voxel
 #include "UIBase.h"
 #include "SpriteSheet.h"
@@ -32,29 +35,28 @@ namespace Voxel
 			CheckBox(const std::string& name);
 
 			// state
-			State prevCheckBoxState;
-			State checkBoxState;
+			State prevState;
+			State state;
 
 			// gl
 			unsigned int currentIndex;
 
-			/**
-			*	Initialize button
-			*/
+			// On checkbox selected callback
+			std::function<void(Voxel::UI::CheckBox* sender)> onSelected;
+			
+			// On checkbox deselected callback
+			std::function<void(Voxel::UI::CheckBox* sender)> onDeselected;
+
+			// On checkbox cancelled callback
+			std::function<void(Voxel::UI::CheckBox* sender)> onCancelled;
+
+			// initialize
 			bool init(SpriteSheet* ss, const std::string& checkBoxImageFileName);
 
-			/**
-			*	Build image.
-			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
-			*/
+			// Build gl.
 			void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
-			/**
-			*	Update current index based on state
-			*/
+			// Update current vertex index based on state
 			void updateCurrentIndex();
 
 			// update mouse move
@@ -71,44 +73,43 @@ namespace Voxel
 			*/
 			static CheckBox* create(const std::string& name, const std::string& spriteSheetName, const std::string& checkBoxImageFileName);
 
-			/**
-			*	Enable button.
-			*/
+			// Enable checkbox
 			void enable();
 
-			/**
-			*	Disable button
-			*/
+			// Disable checkbox
 			void disable();
 
-			/**
-			*	Select check box manually. Ignored when check box is disabled.
-			*/
+			// select check box
 			void select();
 
-			/**
-			*	Deselect check box manually. Ignored when check box is disabled.
-			*/
+			// Deselect check box
 			void deselect();
 
 			/**
-			*	Check if mouse is hovering button
+			*	Set callback function for when checkbox is selected
+			*	@param func Callback function to set
 			*/
+			void setOnSelectedCallbackFunc(const std::function<void(Voxel::UI::CheckBox*)>& func);
+
+			/**
+			*	Set callback function for when button is deselected
+			*	@param func Callback function to set
+			*/
+			void setOnDeselectedCallbackFunc(const std::function<void(Voxel::UI::CheckBox*)>& func);
+
+			/**
+			*	Set callback function for when button is cancelled
+			*	@param func Callback function to set
+			*/
+			void setOnCancelledCallbackFunc(const std::function<void(Voxel::UI::CheckBox*)>& func);
+
+			// Mouse event overrides
 			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
-
-			/**
-			*	Check if mouse clicked the button
-			*/
 			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
-
-			/**
-			*	Check if mouse released the button
-			*/
 			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+			void updateMouseMoveFalse() override;
 
-			/**
-			*	Render self
-			*/
+			// render
 			void renderSelf() override;
 		};
 	}

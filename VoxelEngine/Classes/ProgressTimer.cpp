@@ -8,41 +8,45 @@
 #include "ProgramManager.h"
 #include "Program.h"
 #include "Utility.h"
+#include "SpriteSheet.h"
 
 Voxel::UI::ProgressTimer::ProgressTimer(const std::string & name)
 	: RenderNode(name)
 	, percentage(100.0f)
 	, currentIndex(0)
+	, state(State::IDLE)
 {}
 
 Voxel::UI::ProgressTimer * Voxel::UI::ProgressTimer::create(const std::string & name, const std::string & spriteSheetName, const std::string & progressTimerImageFileName, const Type type, const Direction direction)
 {
 	auto newProgressTimer = new Voxel::UI::ProgressTimer(name);
 
+	if (newProgressTimer->init(spriteSheetName, progressTimerImageFileName, type, direction))
+	{
+		return newProgressTimer;
+	}
+	else
+	{
+		delete newProgressTimer;
+		return nullptr;
+	}
+}
+
+bool Voxel::UI::ProgressTimer::init(const std::string& spriteSheetName, const std::string & progressTimerImageFileName, const Type type, const Direction direction)
+{
 	auto& ssm = SpriteSheetManager::getInstance();
 
 	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
 
-	if (ss)
-	{
-		if (newProgressTimer->init(ss, progressTimerImageFileName, type, direction))
-		{
-			return newProgressTimer;
-		}
-	}
+	if (ss == nullptr) return false;
 
-	delete newProgressTimer;
-	return nullptr;
-}
-
-bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progressTimerImageFileName, const Type type, const Direction direction)
-{
 	texture = ss->getTexture();
 
-	if (texture == nullptr)
-	{
-		return false;
-	}
+	if (texture == nullptr) return false;
+
+	auto imageEntry = ss->getImageEntry(progressTimerImageFileName);
+
+	if (imageEntry == nullptr) return false;
 
 	this->type = type;
 
@@ -52,30 +56,26 @@ bool Voxel::UI::ProgressTimer::init(SpriteSheet * ss, const std::string & progre
 	std::vector<float> uvs;
 	std::vector<unsigned int> indices;
 
-	auto imageEntry = ss->getImageEntry(progressTimerImageFileName);
+	auto size = glm::vec2(imageEntry->width, imageEntry->height);
 
-	if (imageEntry)
-	{
-		auto size = glm::vec2(imageEntry->width, imageEntry->height);
+	auto& uvOrigin = imageEntry->uvOrigin;
+	auto& uvEnd = imageEntry->uvEnd;
+	
+	buildBuffers(size * -0.5f, size * 0.5f, uvOrigin, uvEnd, vertices, uvs, indices, direction);
 
-		auto& uvOrigin = imageEntry->uvOrigin;
-		auto& uvEnd = imageEntry->uvEnd;
+	loadBuffers(vertices, uvs, indices);
 
-		//frameSizes.at(i) = size;
+	boundingBox.center = position;
+	boundingBox.size = size;
 
-		buildMesh(size * -0.5f, size * 0.5f, uvOrigin, uvEnd, vertices, uvs, indices, direction);
+	contentSize = size;
 
-		build(vertices, uvs, indices);
+	setInteractable();
 
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return true;
 }
 
-void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction)
+void Voxel::UI::ProgressTimer::buildBuffers(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction)
 {
 	const float width = verticesEnd.x - verticesOrigin.x;
 	const float height = verticesEnd.y - verticesOrigin.y;
@@ -775,7 +775,7 @@ void Voxel::UI::ProgressTimer::buildMesh(const glm::vec2& verticesOrigin, const 
 	}
 }
 
-void Voxel::UI::ProgressTimer::build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::ProgressTimer::loadBuffers(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
 {
 	if (vao)
 	{
@@ -869,6 +869,196 @@ void Voxel::UI::ProgressTimer::setPercentage(const float percentage)
 float Voxel::UI::ProgressTimer::getPercentage() const
 {
 	return percentage;
+}
+
+bool Voxel::UI::ProgressTimer::updateProgressTimerMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
+{
+	// check if progress timer is interactable
+	if (isInteractable())
+	{
+		// check bb
+		if (boundingBox.containsPoint(mousePosition))
+		{
+			if (state == State::IDLE)
+			{
+				state = State::HOVERED;
+
+				if (onMouseEnter)
+				{
+					onMouseEnter(this);
+				}
+			}
+			else if (state == State::HOVERED)
+			{
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+				{
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			updateMouseMoveFalse();
+		}
+	}
+
+	return false;
+}
+
+void Voxel::UI::ProgressTimer::updateMouseMoveFalse()
+{
+	if (state != State::IDLE)
+	{
+		state = State::IDLE;
+
+		if (onMouseExit)
+		{
+			onMouseExit(this);
+		}
+	}
+}
+
+bool Voxel::UI::ProgressTimer::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+{
+	if (visibility)
+	{
+		// visible
+		if (children.empty())
+		{
+			// Has no children. update self
+			return updateProgressTimerMouseMove(mousePosition, mouseDelta);
+		}
+		else
+		{
+			// Has children
+			bool childHovered = false;
+
+			// Reverse iterate children because child who has higher global z order gets rendered above other siblings who has lower global z order
+			auto rit = children.rbegin();
+			for (; rit != children.rend();)
+			{
+				bool result = (rit->second)->updateMouseMove(mousePosition, mouseDelta);
+				if (result)
+				{
+					// child hovered
+					childHovered = true;
+					break;
+				}
+
+				rit++;
+			}
+
+			if (childHovered)
+			{
+				// There was a child had mouse move event. Iterate remaining children and update
+
+				// Don't forget to increment iterator.
+				rit++;
+
+				for (; rit != children.rend(); rit++)
+				{
+					(rit->second)->updateMouseMoveFalse();
+				}
+
+				updateMouseMoveFalse();
+			}
+			else
+			{
+				// There was no mouse move event on child
+				childHovered = updateProgressTimerMouseMove(mousePosition, mouseDelta);
+			}
+
+			return childHovered;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::ProgressTimer::updateMousePress(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool pressed = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::HOVERED)
+					{
+						state = State::CLICKED;
+						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!pressed)
+		{
+			pressed = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+		}
+
+		return pressed;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Voxel::UI::ProgressTimer::updateMouseRelease(const glm::vec2 & mousePosition, const int button)
+{
+	if (visibility)
+	{
+		bool released = false;
+
+		if (isInteractable())
+		{
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				if (boundingBox.containsPoint(mousePosition))
+				{
+					if (state == State::CLICKED)
+					{
+						state = State::IDLE;
+
+						released = true;
+
+						if (onMouseReleased)
+						{
+							onMouseReleased(this, button);
+						}
+					}
+				}
+			}
+		}
+
+		if (!released)
+		{
+			released = Voxel::UI::TransformNode::updateMouseRelease(mousePosition, button);
+		}
+
+		return released;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void Voxel::UI::ProgressTimer::renderSelf()

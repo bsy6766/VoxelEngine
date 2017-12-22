@@ -9,3 +9,4 @@
 #include "ProgressTimer.h"
 #include "InputField.h"
 #include "Slider.h"
+#include "ColorPicker.h"

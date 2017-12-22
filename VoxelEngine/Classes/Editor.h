@@ -194,18 +194,17 @@ namespace Voxel
 
 		// callback
 		void onFPSCount(int fps);
-		void onFileButtonClicked();
-		void onEditButtonClicked();
-		void onReturnToMainMenuButtonClicked();
-		void onExitButtonClicked();
-		void onNewButtonClicked();
-		void onNewCreateButtonClicked();
-		void onNewCancelButtonClicked();
-		void onNewFileNameEdit(const std::string text);
-		void onNewFileNameEditSubmitted(const std::string text);
-		void onDimensionXSliderMove(float value);
-		void onDimensionYSliderMove(float value);
-		void onDimensionZSliderMove(float value);
+		void onFileButtonClicked(Voxel::UI::Button* sender);
+		void onEditButtonClicked(Voxel::UI::Button* sender);
+		void onReturnToMainMenuButtonClicked(Voxel::UI::Button* sender);
+		void onExitButtonClicked(Voxel::UI::Button* sender);
+		void onNewButtonClicked(Voxel::UI::Button* sender);
+		void onNewCreateButtonClicked(Voxel::UI::Button* sender);
+		void onNewCancelButtonClicked(Voxel::UI::Button* sender);
+		void onNewFileNameEdit(Voxel::UI::InputField* sender, const std::string text);
+		void onDimensionXSliderMove(Voxel::UI::Slider* sender);
+		void onDimensionYSliderMove(Voxel::UI::Slider* sender);
+		void onDimensionZSliderMove(Voxel::UI::Slider* sender);
 	public:
 		Editor();
 		~Editor();

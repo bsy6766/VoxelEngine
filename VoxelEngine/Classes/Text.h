@@ -28,7 +28,15 @@ namespace Voxel
 				CENTER,
 				RIGHT
 			};
-		private:
+
+			enum class State
+			{
+				IDLE = 0,
+				HOVERED,
+				CLICKED,
+				LAST_STATE,	// for derived class
+			};
+		protected:
 			// Sub line size. 
 			struct SubLineSize
 			{
@@ -45,6 +53,8 @@ namespace Voxel
 				std::string text;
 				// pen position
 				glm::vec2 penPosition;
+				// Character bounding box
+				//std::vector<Voxel::Shape::Rect> characterBoundingBoxes;
 			};
 			// Defines line size. For mesh building only
 			struct LineSize
@@ -61,7 +71,7 @@ namespace Voxel
 				// sub lines
 				std::vector<SubLineSize> subLineSizes;
 			};
-		private:
+		protected:
 			Text() = delete;
 
 			// Constructor
@@ -98,21 +108,24 @@ namespace Voxel
 			// total lines
 			unsigned int totalLines;
 
-			// character positions. Character posistions are relative to center of each line. Only stores x value for each line
-			std::vector<std::vector<float>> characterPositions;
+			// line sizes
+			std::vector<LineSize> lineSizes;
 
+			// state
+			State state;
+			
 			// Line break width. Text will break text in to multiple lines to fit text in certain width. If 0, it doesn't break.
 			unsigned int lineBreakWidth;
 
 			/**
 			*	Initialize text.
 			*/
-			bool init(const std::string& text, const ALIGN align, const unsigned int lineBreakWidth);
+			bool init(const std::string& text, const int fontID, const ALIGN align, const unsigned int lineBreakWidth);
 
 			/**
 			*	Initialize text with outline
 			*/
-			bool initWithOutline(const std::string& text, const glm::vec3& outlineColor, ALIGN align, const unsigned int lineBreakWidth);
+			bool initWithOutline(const std::string& text, const int fontID, const glm::vec3& outlineColor, ALIGN align, const unsigned int lineBreakWidth);
 
 			/**
 			*	Computes the origin point for each line
@@ -150,6 +163,8 @@ namespace Voxel
 			*/
 			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& colors, const std::vector<float>& uvs, const std::vector<unsigned int>& indices, const bool reallocate);
 			
+			// Update text mouse move
+			bool updateTextMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Destructor
 			~Text();
@@ -211,7 +226,7 @@ namespace Voxel
 			*	Get outline color
 			*/
 			glm::vec3 getOutlineColor() const;
-
+			
 			/**
 			*	Clear text.
 			*/
@@ -221,6 +236,12 @@ namespace Voxel
 			*	Get character index from mouse point
 			*/
 			int getCharIndexOnCursor(const glm::vec2& cursorPosition);
+
+			// Mouse event overrides
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
+			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+			void updateMouseMoveFalse() override;
 
 			/**
 			*	Render self

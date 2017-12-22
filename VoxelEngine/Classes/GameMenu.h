@@ -48,10 +48,10 @@ namespace Voxel
 		void reset();
 
 		// callbacks
-		void onOptionClicked();
-		void onControlsClicked();
-		void onExitGameClicked();
-		void onRetrunToMenuClicked();
+		void onOptionClicked(Voxel::UI::Button* sender);
+		void onControlsClicked(Voxel::UI::Button* sender);
+		void onExitGameClicked(Voxel::UI::Button* sender);
+		void onRetrunToMenuClicked(Voxel::UI::Button* sender);
 	public:
 		// Constructor
 		GameMenu();

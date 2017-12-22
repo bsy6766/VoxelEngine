@@ -49,20 +49,34 @@ void Voxel::MenuScene::init()
 	buttonBg->setOpacity(0.0f);
 	canvas->addChild(buttonBg);
 	
-	const float btnY = 300.0f;
+	float btnY = 250.0f; 
+#if V_DEBUG
+#if V_DEBUG_EDITOR
+	btnY += 50.0f;
+#endif
+#if V_DEBUG_UI_TEST
+	btnY += 50.0f;
+#endif
+#endif
 	float offset = 50.0f;
 
 	// buttons
 	buttons.at(ButtonIndex::PLAY) = Voxel::UI::Button::create("gBtn", ss, "play_button.png");
-	buttons.at(ButtonIndex::PLAY)->setOnButtonClickCallbackFunc(std::bind(&Voxel::MenuScene::onPlayClicked, this));
-#if V_DEBUG && V_DEBUG_EDITOR
+	buttons.at(ButtonIndex::PLAY)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onPlayClicked, this, std::placeholders::_1));
+#if V_DEBUG 
+#if V_DEBUG_EDITOR
 	buttons.at(ButtonIndex::EDITOR) = Voxel::UI::Button::create("eBtn", ss, "editor_button.png");
-	buttons.at(ButtonIndex::EDITOR)->setOnButtonClickCallbackFunc(std::bind(&Voxel::MenuScene::onEditorClicked, this));
+	buttons.at(ButtonIndex::EDITOR)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onEditorClicked, this, std::placeholders::_1));
+#endif
+#if V_DEBUG_UI_TEST
+	buttons.at(ButtonIndex::UI_TEST) = Voxel::UI::Button::create("uiTestBtn", ss, "ui_test_button.png");
+	buttons.at(ButtonIndex::UI_TEST)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onUITestClicked, this, std::placeholders::_1));
+#endif
 #endif
 	buttons.at(ButtonIndex::OPTIONS) = Voxel::UI::Button::create("oBtn", ss, "options_button.png");
 	buttons.at(ButtonIndex::CREDITS) = Voxel::UI::Button::create("cBtn", ss, "credits_button.png");
 	buttons.at(ButtonIndex::EXIT_GAME) = Voxel::UI::Button::create("egBtn", ss, "exit_game_button.png");
-	buttons.at(ButtonIndex::EXIT_GAME)->setOnButtonClickCallbackFunc(std::bind(&Voxel::MenuScene::onExitGameClicked, this));
+	buttons.at(ButtonIndex::EXIT_GAME)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onExitGameClicked, this, std::placeholders::_1));
 
 	for (auto btn : buttons)
 	{
@@ -153,16 +167,22 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
-		auto temp = Voxel::UI::Text::createWithOutline("temp", "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s,\nwhen an unknown printer took a galley of type and scrambled it to make a type specimen book.", 2, glm::vec3(0, 0, 1), Voxel::UI::Text::ALIGN::LEFT, 225);
-		canvas->addChild(temp);
+		auto if2 = Voxel::UI::InputField::create("if2L", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::CENTER, 100);
+		canvas->addChild(if2);
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{
-
+		auto if2 = Voxel::UI::InputField::create("if2C", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::LEFT, 100);
+		if2->setPosition(100, 100);
+		if2->setPivot(-0.5f, 0.0f);
+		canvas->addChild(if2);
 	}
 	else if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-
+		auto if2 = Voxel::UI::InputField::create("if2R", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::RIGHT, 100);
+		if2->setPosition(-100, 100);
+		if2->setPivot(0.5f, 0.0f);
+		canvas->addChild(if2);
 	}
 }
 
@@ -262,12 +282,12 @@ void Voxel::MenuScene::updateMouseScrollInput()
 void Voxel::MenuScene::updateControllerInput(const float delta)
 {}
 
-void Voxel::MenuScene::onPlayClicked()
+void Voxel::MenuScene::onPlayClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::GAME_SCENE, 1.5f);
 }
 
-void Voxel::MenuScene::onExitGameClicked()
+void Voxel::MenuScene::onExitGameClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getGLView()->close();
 }
@@ -283,9 +303,17 @@ void Voxel::MenuScene::render()
 	}
 }
 
-#if V_DEBUG && V_DEBUG_EDITOR
-void Voxel::MenuScene::onEditorClicked()
+#if V_DEBUG
+#if V_DEBUG_EDITOR
+void Voxel::MenuScene::onEditorClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::EDITOR_SCENE, 0.5f);
 }
+#endif
+#if V_DEBUG_UI_TEST
+void Voxel::MenuScene::onUITestClicked(Voxel::UI::Button* sender)
+{
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::UI_TEST_SCENE, 0.5f);
+}
+#endif
 #endif

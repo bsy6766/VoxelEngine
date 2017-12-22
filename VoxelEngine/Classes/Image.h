@@ -24,9 +24,10 @@ namespace Voxel
 			enum class State
 			{
 				IDLE = 0,
+				HOVERED,
 				CLICKED,
 			};
-		private:
+		protected:
 			Image() = delete;
 
 			/**
@@ -37,7 +38,7 @@ namespace Voxel
 			Image(const std::string& name);
 
 			// Image state. 
-			State imageState;
+			State state;
 
 			/**
 			*	Initialize image
@@ -76,6 +77,9 @@ namespace Voxel
 			*	@param indices Indices of image quad. Single image has 6 indices
 			*/
 			virtual void build(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices);
+
+			// update mouse move
+			bool updateImageMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Destructor.
 			~Image();

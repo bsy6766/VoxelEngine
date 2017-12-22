@@ -34,7 +34,7 @@ namespace Voxel
 			Button(const std::string& name);
 
 			// Button state. IDLE is default
-			State buttonState;
+			State state;
 
 			// frame sizes incase button images are different
 			std::array<glm::vec2, 4> frameSizes;
@@ -43,7 +43,9 @@ namespace Voxel
 			unsigned int currentIndex;
 
 			// On button clicked callback
-			std::function<void()> onButtonClicked;
+			std::function<void(Voxel::UI::Button*)> onTriggered;
+			// On button cancelled
+			std::function<void(Voxel::UI::Button*)> onCancelled;
 
 			/**
 			*	Initialize button
@@ -59,7 +61,7 @@ namespace Voxel
 			virtual void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
 			// update mouse move
-			bool updateMouseMove(const glm::vec2& mousePosition);
+			bool updateButtonMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Destructor
 			~Button() = default;
@@ -76,40 +78,31 @@ namespace Voxel
 			*/
 			static Button* create(const std::string& name, const std::string& spriteSheetName, const std::string& buttonImageFileName);
 
-			/**
-			*	Enable button.
-			*/
+			// enable button
 			void enable();
 
-			/**
-			*	Disable button
-			*/
+			// disable button
 			void disable();
 
 			/**
-			*	Set callback function
-			*	@param func A std::function of function
+			*	Set callback function for when button is triggered
+			*	@param func Callback function to set
 			*/
-			void setOnButtonClickCallbackFunc(const std::function<void()>& func);
+			void setOnTriggeredCallbackFunc(const std::function<void(Voxel::UI::Button*)>& func);
 
 			/**
-			*	Check if mouse is hovering button
+			*	Set callback function for when button is cancelled
+			*	@param func Callback function to set
 			*/
+			void setOnCancelledCallbackFunc(const std::function<void(Voxel::UI::Button*)>& func);
+
+			// Mouse event overrides
 			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
-
-			/**
-			*	Check if mouse clicked the button
-			*/
 			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
-
-			/**
-			*	Check if mouse released the button
-			*/
 			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+			void updateMouseMoveFalse() override;
 
-			/**
-			*	Render self
-			*/
+			// render
 			void renderSelf() override;
 		};
 	}

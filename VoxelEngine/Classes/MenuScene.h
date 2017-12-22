@@ -20,8 +20,13 @@ namespace Voxel
 		enum ButtonIndex : unsigned int
 		{
 			PLAY = 0,
-#if V_DEBUG && V_DEBUG_EDITOR
+#if V_DEBUG
+#if V_DEBUG_EDITOR
 			EDITOR,
+#endif
+#if V_DEBUG_UI_TEST
+			UI_TEST,
+#endif
 #endif
 			OPTIONS,
 			CREDITS,
@@ -74,10 +79,15 @@ namespace Voxel
 		void updateControllerInput(const float delta);
 		
 		// callbacks
-		void onPlayClicked();
-		void onExitGameClicked();
-#if V_DEBUG && V_DEBUG_EDITOR
-		void onEditorClicked();
+		void onPlayClicked(Voxel::UI::Button* sender);
+		void onExitGameClicked(Voxel::UI::Button* sender);
+#if V_DEBUG
+#if V_DEBUG_EDITOR
+		void onEditorClicked(Voxel::UI::Button* sender);
+#endif
+#if V_DEBUG_UI_TEST
+		void onUITestClicked(Voxel::UI::Button* sender);
+#endif
 #endif
 	public:
 		// Constructor

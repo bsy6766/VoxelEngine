@@ -12,9 +12,10 @@
 
 Voxel::UI::Button::Button(const std::string & name)
 	: RenderNode(name)
-	, buttonState(State::IDLE)
+	, state(State::IDLE)
 	, currentIndex(0)
-	, onButtonClicked(nullptr)
+	, onTriggered(nullptr)
+	, onCancelled(nullptr)
 {}
 
 Voxel::UI::Button* Voxel::UI::Button::create(const std::string & name, const std::string & spriteSheetName, const std::string & buttonImageFileName)
@@ -158,22 +159,23 @@ void Voxel::UI::Button::build(const std::vector<float>& vertices, const std::vec
 
 void Voxel::UI::Button::enable()
 {
-	buttonState = State::IDLE;
+	state = State::IDLE;
 	currentIndex = 0;
 }
 
 void Voxel::UI::Button::disable()
 {
-	buttonState = State::DISABLED;
+	state = State::DISABLED;
 	currentIndex = 18;
 }
 
-void Voxel::UI::Button::setOnButtonClickCallbackFunc(const std::function<void()>& func)
+void Voxel::UI::Button::setOnTriggeredCallbackFunc(const std::function<void(Voxel::UI::Button*)>& func)
 {
-	onButtonClicked = func;
+	onTriggered = func;
 }
 
-bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
+
+bool Voxel::UI::Button::updateButtonMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
 {
 	// check if button is interacble
 	if (isInteractable())
@@ -181,24 +183,33 @@ bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
 		// check bb
 		if (boundingBox.containsPoint(mousePosition))
 		{
-			if (buttonState == State::IDLE)
+			if (state == State::IDLE)
 			{
 				// idle. hover it
-				buttonState = State::HOVERED;
+				state = State::HOVERED;
 				currentIndex = 6;
+
+				if (onMouseEnter)
+				{
+					onMouseEnter(this);
+				}
+			}
+			else if (state == State::HOVERED)
+			{
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+				{
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
+				}
 			}
 			// else, nothing to do
 			return true;
 		}
 		else
 		{
-			// mouse is not in bounding box. Hover it
-			if (buttonState == State::HOVERED || buttonState == State::CLICKED)
-			{
-				// Hovered or clicked. Set back to idle
-				buttonState = State::IDLE;
-				currentIndex = 0;
-			}
+			updateMouseMoveFalse();
 		}
 		// else, nothing to do
 	}
@@ -207,43 +218,81 @@ bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition)
 	return false;
 }
 
+void Voxel::UI::Button::updateMouseMoveFalse()
+{
+	// mouse is not in bounding box. Hover it
+	if (state == State::HOVERED || state == State::CLICKED)
+	{
+		// Hovered or clicked. Set back to idle
+		if (state == State::CLICKED)
+		{
+			state = State::IDLE;
+
+			if (onCancelled)
+			{
+				onCancelled(this);
+			}
+		}
+
+		state = State::IDLE;
+
+		if (onMouseExit)
+		{
+			onMouseExit(this);
+		}
+
+		currentIndex = 0;
+	}
+}
+
 bool Voxel::UI::Button::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2& mouseDelta)
 {
 	if (visibility)
 	{
+		// visible
 		if (children.empty())
 		{
-			return updateMouseMove(mousePosition);
+			// Has no children. update self
+			return updateButtonMouseMove(mousePosition, mouseDelta);
 		}
 		else
 		{
+			// Has children
 			bool childHovered = false;
 
-			// first check if there was mouse move event on children
-			for (auto& child : children)
+			// Reverse iterate children because child who has higher global z order gets rendered above other siblings who has lower global z order
+			auto rit = children.rbegin();
+			for(; rit != children.rend();)
 			{
-				bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
+				bool result = (rit->second)->updateMouseMove(mousePosition, mouseDelta);
 				if (result)
 				{
+					// child hovered
 					childHovered = true;
-				}
+					break;
+				} 
+				
+				rit++;
 			}
 
-			// check if there was event
 			if (childHovered)
 			{
-				// Mouse hvoers child. 
-				if (buttonState == State::HOVERED || buttonState == State::CLICKED)
+				// There was a child had mouse move event. Iterate remaining children and update
+
+				// Don't forget to increment iterator.
+				rit++;
+
+				for (; rit != children.rend(); rit++)
 				{
-					// Hovered or clicked. Set back to idle
-					buttonState = State::IDLE;
-					currentIndex = 0;
+					(rit->second)->updateMouseMoveFalse();
 				}
+
+				updateMouseMoveFalse();
 			}
 			else
 			{
 				// There was no mouse move event on child
-				childHovered = updateMouseMove(mousePosition);
+				childHovered = updateButtonMouseMove(mousePosition, mouseDelta);
 			}
 
 			return childHovered;
@@ -259,7 +308,7 @@ bool Voxel::UI::Button::updateMousePress(const glm::vec2 & mousePosition, const 
 {
 	if (visibility)
 	{
-		bool clicked = false;
+		bool pressed = false;
 
 		// check if button is interacble
 		if (isInteractable())
@@ -271,25 +320,30 @@ bool Voxel::UI::Button::updateMousePress(const glm::vec2 & mousePosition, const 
 				if (boundingBox.containsPoint(mousePosition))
 				{
 					// mouse is in bounding box
-					if (buttonState == State::HOVERED)
+					if (state == State::HOVERED)
 					{
 						// was hovering. click
-						buttonState = State::CLICKED;
+						state = State::CLICKED;
 						currentIndex = 12;
-						clicked = true;
+						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
 					}
 					// else, disabled or not hovering
 				}
 			}
 		}
 
-		if (!clicked)
+		if (!pressed)
 		{
 			// button was not clicked. check if there is another button in children that might possibly clicked
-			clicked = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
+			pressed = Voxel::UI::TransformNode::updateMousePress(mousePosition, button);
 		}
 
-		return clicked;
+		return pressed;
 	}
 	else
 	{
@@ -313,16 +367,22 @@ bool Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, cons
 				if (boundingBox.containsPoint(mousePosition))
 				{
 					// mouse is in bounding box
-					if (buttonState == State::CLICKED)
+					if (state == State::CLICKED)
 					{
-						buttonState = State::IDLE;
+						state = State::IDLE;
 						currentIndex = 0;
-						released = true;
 
 						// button clicked!
-						if (onButtonClicked)
+						if (onTriggered)
 						{
-							onButtonClicked();
+							onTriggered(this);
+						}
+
+						released = true;
+
+						if (onMouseReleased)
+						{
+							onMouseReleased(this, button);
 						}
 					}
 					// else, disabled or not hovering
@@ -342,6 +402,11 @@ bool Voxel::UI::Button::updateMouseRelease(const glm::vec2 & mousePosition, cons
 	{
 		return false;
 	}
+}
+
+void Voxel::UI::Button::setOnCancelledCallbackFunc(const std::function<void(Voxel::UI::Button*)>& func)
+{
+	onCancelled = func;
 }
 
 void Voxel::UI::Button::renderSelf()

@@ -2,7 +2,6 @@
 #define PROGRESS_TIMER_H
 
 // voxel
-#include "SpriteSheet.h"
 #include "UIBase.h"
 
 namespace Voxel
@@ -28,6 +27,13 @@ namespace Voxel
 				CLOCK_WISE = 0,
 				COUNTER_CLOCK_WISE
 			};
+
+			enum class State
+			{
+				IDLE = 0,
+				HOVERED,
+				CLICKED,
+			};
 		private:
 			// Constructor
 			ProgressTimer() = delete;
@@ -41,36 +47,29 @@ namespace Voxel
 
 			// type of progress bar
 			Type type;
+			
+			// state
+			State state;
+			
+			// Initialize progress timer
+			bool init(const std::string& spriteSheetName, const std::string& progressTimerImageFileName, const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
 
-			/**
-			*	Initialize button
-			*/
-			bool init(SpriteSheet* ss, const std::string& progressTimerImageFileName, const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
+			// build mesh
+			void buildBuffers(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction);
 
-			void buildMesh(const glm::vec2& verticesOrigin, const glm::vec2& verticesEnd, const glm::vec2& uvOrigin, const glm::vec2& uvEnd, std::vector<float>& vertices, std::vector<float>& uvs, std::vector<unsigned int>& indices, const Direction direction);
+			// build buffer base on type and direction
+			void loadBuffers(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
 
-			/**
-			*	Build image.
-			*	Initialize vao.
-			*	@param vertices Vertices of image quad
-			*	@param uvs Texture coordinates of image quad
-			*	@param indices Indices of image quad
-			*/
-			void build(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices);
-
-			/**
-			*	Updates current index based on progress timer.
-			*	Background, percentage and type affects index.
-			*/
+			// Update vertex index based on percetnage
 			void updateCurrentIndex();
 
+			// update mouse move
+			bool updateProgressTimerMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Desturctor
 			~ProgressTimer() = default;
 
-			/**
-			*	Create progress timer
-			*/
+			// create progress timer
 			static ProgressTimer* create(const std::string& name, const std::string& spriteSheetName, const std::string& progressTimerImageFileName, const Type type = Type::HORIZONTAL, const Direction direction = Direction::CLOCK_WISE);
 
 			/**
@@ -79,14 +78,16 @@ namespace Voxel
 			*/
 			void setPercentage(const float percentage);
 
-			/**
-			*	Get percentage
-			*/
+			// get percentage
 			float getPercentage() const;
 
-			/**
-			*	Render self
-			*/
+			// Mouse event overrides
+			void updateMouseMoveFalse() override;
+			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;
+			bool updateMousePress(const glm::vec2& mousePosition, const int button) override;
+			bool updateMouseRelease(const glm::vec2& mousePosition, const int button) override;
+
+			// render
 			void renderSelf() override;
 		};
 	}

@@ -3,6 +3,37 @@
 
 #include "Schematic.h"
 
+Voxel::SchematicBlock::SchematicBlock()
+	: pos(0)
+	, color(0.0f)
+{}
+
+
+
+
+
+Voxel::SchematicMesh::SchematicMesh()
+	: vao(0)
+{}
+
+Voxel::SchematicMesh::~SchematicMesh()
+{
+	if (vao)
+	{
+		glDeleteVertexArrays(1, &vao);
+		vao = 0;
+	}
+}
+
+void Voxel::SchematicMesh::buildMesh(const std::vector<std::vector<std::vector<SchematicBlock*>>>& blocks)
+{
+	// greedy mesh?
+}
+
+
+
+
+
 Voxel::Schematic::Schematic(const glm::ivec3 & dimension)
 	: dimension(dimension)
 {
@@ -36,4 +67,33 @@ Voxel::Schematic::~Schematic()
 	blocks.clear();
 }
 
+bool Voxel::Schematic::isPosInRange(const glm::ivec3 & pos)
+{
+	return (0 <= pos.x && pos.x < dimension.x) && (0 <= pos.y && pos.y < dimension.y) && (0 <= pos.z && pos.z < dimension.z);
+}
 
+
+bool Voxel::Schematic::addBlock(const glm::ivec3 & pos, const glm::vec3 & color)
+{
+	if (isPosInRange(pos))
+	{
+		auto newBlock = new SchematicBlock();
+		newBlock->pos = pos;
+		newBlock->color = glm::clamp(color, 0.0f, 1.0f);
+
+		blocks.at(pos.y).at(pos.x).at(pos.z) = newBlock;
+
+		return true;
+	}
+
+	return false;
+}
+
+Voxel::SchematicMesh * Voxel::Schematic::buildMesh()
+{
+	SchematicMesh* mesh = new SchematicMesh();
+
+	mesh->buildMesh(blocks);
+
+	return mesh;
+}

@@ -1684,14 +1684,14 @@ void Voxel::GameScene::toggleCursorMode(const bool mode)
 	}
 }
 
-void Voxel::GameScene::onReturnToGameClicked()
+void Voxel::GameScene::onReturnToGameClicked(Voxel::UI::Button* sender)
 {
 	gameMenu->close();
 	gameState = GameState::IDLE;
 	toggleCursorMode(false);
 }
 
-void Voxel::GameScene::onExitToMainMenuSceneClicked()
+void Voxel::GameScene::onExitToMainMenuSceneClicked(Voxel::UI::Button* sender)
 {
 	cursor->setVisibility(false);
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);

@@ -16,6 +16,7 @@
 #include "Ray.h"
 #include "Quad.h"
 #include "FileSystem.h"
+#include "Schematic.h"
 
 
 using namespace Voxel;
@@ -267,31 +268,32 @@ void Voxel::Editor::initMenuBar()
 	menuBar->setPivot(glm::vec2(-0.5f, 0.5f));
 	menuBar->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	menuBar->setPosition(0.0f, 0.0f);
+	menuBar->setInteractable();
 	canvas->addChild(menuBar);
 
 	fileBtn = Voxel::UI::Button::create("fBtn", ss, "file_button.png");
 	fileBtn->setPosition(26.0f, -14.0f);
 	fileBtn->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
-	fileBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onFileButtonClicked, this));
+	fileBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onFileButtonClicked, this, std::placeholders::_1));
 	menuBar->addChild(fileBtn);
 
 	editBtn = Voxel::UI::Button::create("eBtn", ss, "edit_button.png");
 	editBtn->setPosition(72.0f, -14.0f);
 	editBtn->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	editBtn->disable();
-	editBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onEditButtonClicked, this));
+	editBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onEditButtonClicked, this, std::placeholders::_1));
 	menuBar->addChild(editBtn);
 
 	exitGameBtn = Voxel::UI::Button::create("exitBtn", ss, "exit_game_button.png");
 	exitGameBtn->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
 	exitGameBtn->setPosition(glm::vec2(-26.0f, -14.0f));
-	exitGameBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onExitButtonClicked, this));
+	exitGameBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onExitButtonClicked, this, std::placeholders::_1));
 	menuBar->addChild(exitGameBtn);
 
 	returnToMainMenuBtn = Voxel::UI::Button::create("rtmmBtn", ss, "return_to_main_menu_button.png");
 	returnToMainMenuBtn->setCoordinateOrigin(glm::vec2(0.5f, 0.5f));
 	returnToMainMenuBtn->setPosition(glm::vec2(-141.0f, -14.0f));
-	returnToMainMenuBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onReturnToMainMenuButtonClicked, this));
+	returnToMainMenuBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onReturnToMainMenuButtonClicked, this, std::placeholders::_1));
 	menuBar->addChild(returnToMainMenuBtn);
 }
 
@@ -309,7 +311,7 @@ void Voxel::Editor::initFileDropDownMenu()
 	auto newBtn = Voxel::UI::Button::create("nBtn", ss, "file_new_button.png");
 	newBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	newBtn->setPosition(0.0f, -14.0f);
-	newBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewButtonClicked, this));
+	newBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onNewButtonClicked, this, std::placeholders::_1));
 	fileDropDownBg->addChild(newBtn);
 
 	auto openBtn = Voxel::UI::Button::create("oBtn", ss, "file_open_button.png");
@@ -341,10 +343,9 @@ void Voxel::Editor::initNewCreateWindow()
 
 	newFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
 	newFileNameInputField->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
-	newFileNameInputField->setAlign(Voxel::UI::InputField::Align::LEFT);
+	newFileNameInputField->setPivot(-0.5f, 0.0f);
 	newFileNameInputField->setPosition(8.0f, -33.0f);
-	newFileNameInputField->setOnEditCallback(std::bind(&Voxel::Editor::onNewFileNameEdit, this, std::placeholders::_1));
-	newFileNameInputField->setOnEditSubmitted(std::bind(&Voxel::Editor::onNewFileNameEditSubmitted, this, std::placeholders::_1));
+	newFileNameInputField->setOnEditCallback(std::bind(&Voxel::Editor::onNewFileNameEdit, this, std::placeholders::_1, std::placeholders::_2));
 	newCreateWindow->addChild(newFileNameInputField);
 
 	auto newLabel = Voxel::UI::Text::create("newLabel", "NEW", 1);
@@ -355,14 +356,14 @@ void Voxel::Editor::initNewCreateWindow()
 	createBtn = Voxel::UI::Button::create("cBtn", ss, "new_create_button.png");
 	createBtn->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	createBtn->setPosition(35.0f, 15.0f);
-	createBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewCreateButtonClicked, this));
+	createBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onNewCreateButtonClicked, this, std::placeholders::_1));
 	createBtn->disable();
 	newCreateWindow->addChild(createBtn);
 
 	auto cancelBtn = Voxel::UI::Button::create("clBtn", ss, "new_cancel_button.png");
 	cancelBtn->setCoordinateOrigin(glm::vec2(0.5f, -0.5f));
 	cancelBtn->setPosition(-35.0f, 15.0f);
-	cancelBtn->setOnButtonClickCallbackFunc(std::bind(&Editor::onNewCancelButtonClicked, this));
+	cancelBtn->setOnTriggeredCallbackFunc(std::bind(&Editor::onNewCancelButtonClicked, this, std::placeholders::_1));
 	newCreateWindow->addChild(cancelBtn);
 
 	dimensionLabel = Voxel::UI::Text::create("dimLabel", "Dimension", 1);
@@ -392,19 +393,19 @@ void Voxel::Editor::initNewCreateWindow()
 	dimensionXSlider = Voxel::UI::Slider::create("dimXSlider", ss, "dimension_slider_bar.png", "dimension_slider_button.png", Voxel::UI::Slider::Type::HORIZONTAL, 1, 100);
 	dimensionXSlider->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	dimensionXSlider->setPosition(154.0f, -66.0f);
-	dimensionXSlider->setOnSliderMove(std::bind(&Editor::onDimensionXSliderMove, this, std::placeholders::_1));
+	dimensionXSlider->setOnValueChange(std::bind(&Editor::onDimensionXSliderMove, this, std::placeholders::_1));
 	newCreateWindow->addChild(dimensionXSlider);
 
 	dimensionYSlider = Voxel::UI::Slider::create("dimYSlider", ss, "dimension_slider_bar.png", "dimension_slider_button.png", Voxel::UI::Slider::Type::HORIZONTAL, 1, 100);
 	dimensionYSlider->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	dimensionYSlider->setPosition(154.0f, -84.0f);
-	dimensionYSlider->setOnSliderMove(std::bind(&Editor::onDimensionYSliderMove, this, std::placeholders::_1));
+	dimensionYSlider->setOnValueChange(std::bind(&Editor::onDimensionYSliderMove, this, std::placeholders::_1));
 	newCreateWindow->addChild(dimensionYSlider);
 
 	dimensionZSlider = Voxel::UI::Slider::create("dimZSlider", ss, "dimension_slider_bar.png", "dimension_slider_button.png", Voxel::UI::Slider::Type::HORIZONTAL, 1, 100);
 	dimensionZSlider->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	dimensionZSlider->setPosition(154.0f, -102.0f);
-	dimensionZSlider->setOnSliderMove(std::bind(&Editor::onDimensionZSliderMove, this, std::placeholders::_1));
+	dimensionZSlider->setOnValueChange(std::bind(&Editor::onDimensionZSliderMove, this, std::placeholders::_1));
 	newCreateWindow->addChild(dimensionZSlider);
 }
 
@@ -542,6 +543,8 @@ void Voxel::Editor::updateKey()
 	// debug
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
+		auto cp = Voxel::UI::ColorPicker::create("cp", glm::vec2(256.0f, 256.0f), "EditorUISpriteSheet", "color_picker_icon.png");
+		canvas->addChild(cp, 99);
 	}
 	else if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
@@ -562,7 +565,7 @@ void Voxel::Editor::updateKey()
 		}
 		else if (newCreateWindow->getVisibility())
 		{
-			onNewCancelButtonClicked();
+			onNewCancelButtonClicked(nullptr);
 		}
 	}
 
@@ -668,11 +671,11 @@ bool Voxel::Editor::updateMouseMove(const float delta)
 		}
 		else if (fileBtnCheck)
 		{
-			onFileButtonClicked();
+			onFileButtonClicked(nullptr);
 		}
 		else if (editBtnCheck)
 		{
-			onEditButtonClicked();
+			onEditButtonClicked(nullptr);
 		}
 	}
 	else
@@ -712,27 +715,31 @@ bool Voxel::Editor::updateMouseMove(const float delta)
 		else
 		{
 			// raycast floor
-			glm::vec3 intersectingPoint;
-			bool result = raycastFloor(intersectingPoint);
 
-			if (result)
+			if (schematicState != SchematicState::NONE)
 			{
-				//std::cout << "Intersecting: " << Utility::Log::vec3ToStr(intersectingPoint) << "\n";
-				faceIndicatorCubeFace = Cube::Face::TOP;
-				faceIndicatorVisibility = true;
+				glm::vec3 intersectingPoint;
+				bool result = raycastFloor(intersectingPoint);
 
-				curFaceIndicatorPos = intersectingFloorPointToCoordinate(intersectingPoint);
+				if (result)
+				{
+					//std::cout << "Intersecting: " << Utility::Log::vec3ToStr(intersectingPoint) << "\n";
+					faceIndicatorCubeFace = Cube::Face::TOP;
+					faceIndicatorVisibility = true;
 
-				//std::cout << "coordinate: " << Utility::Log::vec3ToStr(curFaceIndicatorPos) << "\n";
+					curFaceIndicatorPos = intersectingFloorPointToCoordinate(intersectingPoint);
 
-				inspectorCursorBlockPos->setText("Cursor (" + std::to_string(curFaceIndicatorPos.x) + ", " + std::to_string(curFaceIndicatorPos.y) + ", " + std::to_string(curFaceIndicatorPos.z) + ")");
+					//std::cout << "coordinate: " << Utility::Log::vec3ToStr(curFaceIndicatorPos) << "\n";
 
-				updateFaceIndicatorModelMat();
-			}
-			else
-			{
-				faceIndicatorVisibility = false;
-				inspectorCursorBlockPos->setText("Cursor (-, -, -)");
+					inspectorCursorBlockPos->setText("Cursor (" + std::to_string(curFaceIndicatorPos.x) + ", " + std::to_string(curFaceIndicatorPos.y) + ", " + std::to_string(curFaceIndicatorPos.z) + ")");
+
+					updateFaceIndicatorModelMat();
+				}
+				else
+				{
+					faceIndicatorVisibility = false;
+					inspectorCursorBlockPos->setText("Cursor (-, -, -)");
+				}
 			}
 		}
 	}
@@ -757,13 +764,40 @@ bool Voxel::Editor::updateMousePress()
 		// Didn't press mouse over ui
 		if (mouseState == MouseState::IDLE)
 		{
-			if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+			if (schematicState != SchematicState::NONE)
 			{
-				mouseState = MouseState::CLICKED_RIGHT_BUTTON;
-			}
-			else if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
-			{
-				mouseState = MouseState::CLICKED_MIDDLE_BUTTON;
+				bool leftClickResult = false;
+				// handle left click first.
+				if (input->getMouseDown(GLFW_MOUSE_BUTTON_1, true))
+				{
+					std::cout << "place block\n";
+					if (curFaceIndicatorPos.y == -1)
+					{
+						std::cout << "Clicked on floor\n";
+
+						if (schematic)
+						{
+							schematic->addBlock(curFaceIndicatorPos, glm::vec3(1.0f));
+						}
+					}
+					else
+					{
+						std::cout << "Clicked on object\n";
+					}
+
+				}
+
+				if (!leftClickResult)
+				{
+					if (input->getMouseDown(GLFW_MOUSE_BUTTON_2, true))
+					{
+						mouseState = MouseState::CLICKED_RIGHT_BUTTON;
+					}
+					else if (input->getMouseDown(GLFW_MOUSE_BUTTON_3, true))
+					{
+						mouseState = MouseState::CLICKED_MIDDLE_BUTTON;
+					}
+				}
 			}
 		}
 	}
@@ -997,29 +1031,29 @@ void Voxel::Editor::onFPSCount(int fps)
 	}
 }
 
-void Voxel::Editor::onFileButtonClicked()
+void Voxel::Editor::onFileButtonClicked(Voxel::UI::Button* sender)
 {
 	fileDropDownBg->setVisibility(true);
 	menuBarDropDowned = true;
 }
 
-void Voxel::Editor::onEditButtonClicked()
+void Voxel::Editor::onEditButtonClicked(Voxel::UI::Button* sender)
 {
 	fileDropDownBg->setVisibility(false);
 	menuBarDropDowned = true;
 }
 
-void Voxel::Editor::onReturnToMainMenuButtonClicked()
+void Voxel::Editor::onReturnToMainMenuButtonClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);
 }
 
-void Voxel::Editor::onExitButtonClicked()
+void Voxel::Editor::onExitButtonClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getGLView()->close();
 }
 
-void Voxel::Editor::onNewButtonClicked()
+void Voxel::Editor::onNewButtonClicked(Voxel::UI::Button* sender)
 {
 	newCreateWindow->setVisibility(true);
 	fileDropDownBg->setVisibility(false);
@@ -1039,7 +1073,7 @@ void Voxel::Editor::onNewButtonClicked()
 	dimensionZSlider->setValue(1);
 }
 
-void Voxel::Editor::onNewCreateButtonClicked()
+void Voxel::Editor::onNewCreateButtonClicked(Voxel::UI::Button* sender)
 {
 	// Attempt to create new file.
 	bool result = attempToCreateFile();
@@ -1077,7 +1111,7 @@ void Voxel::Editor::onNewCreateButtonClicked()
 	}
 }
 
-void Voxel::Editor::onNewCancelButtonClicked()
+void Voxel::Editor::onNewCancelButtonClicked(Voxel::UI::Button* sender)
 {
 	// reset input field
 	// hide window
@@ -1093,7 +1127,7 @@ void Voxel::Editor::onNewCancelButtonClicked()
 	newFileNameInputField->setToDefaultText();
 }
 
-void Voxel::Editor::onNewFileNameEdit(const std::string text)
+void Voxel::Editor::onNewFileNameEdit(Voxel::UI::InputField* sender, const std::string text)
 {
 	if (text.empty() == false)
 	{
@@ -1107,25 +1141,19 @@ void Voxel::Editor::onNewFileNameEdit(const std::string text)
 	newFileName = text;
 }
 
-void Voxel::Editor::onNewFileNameEditSubmitted(const std::string text)
+void Voxel::Editor::onDimensionXSliderMove(Voxel::UI::Slider* sender)
 {
-	newFileName = text;
-	onNewCreateButtonClicked();
+	dimensionXLabel->setText("X: " + std::to_string((int)sender->getValue()));
 }
 
-void Voxel::Editor::onDimensionXSliderMove(float value)
+void Voxel::Editor::onDimensionYSliderMove(Voxel::UI::Slider* sender)
 {
-	dimensionXLabel->setText("X: " + std::to_string((int)value));
+	dimensionYLabel->setText("Y: " + std::to_string((int)sender->getValue()));
 }
 
-void Voxel::Editor::onDimensionYSliderMove(float value)
+void Voxel::Editor::onDimensionZSliderMove(Voxel::UI::Slider* sender)
 {
-	dimensionYLabel->setText("Y: " + std::to_string((int)value));
-}
-
-void Voxel::Editor::onDimensionZSliderMove(float value)
-{
-	dimensionZLabel->setText("Z: " + std::to_string((int)value));
+	dimensionZLabel->setText("Z: " + std::to_string((int)sender->getValue()));
 }
 
 void Voxel::Editor::render()

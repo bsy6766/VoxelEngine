@@ -308,6 +308,14 @@ namespace Voxel
 					ext = fileName.substr(lastindex);
 				}
 			}
+
+			// trim from end (in place)
+			static inline void rtrim(std::string &s) 
+			{
+				s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+					return !(ch == 32);
+				}).base(), s.end());
+			}
 		}
 
 		namespace Polygon

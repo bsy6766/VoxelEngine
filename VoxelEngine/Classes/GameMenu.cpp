@@ -61,28 +61,28 @@ void Voxel::GameMenu::initGameMenu(GameScene * gameScenePtr)
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY);
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&GameScene::onReturnToGameClicked, gameScenePtr));
+	returnToGameBtn->setOnTriggeredCallbackFunc(std::bind(&GameScene::onReturnToGameClicked, gameScenePtr, std::placeholders::_1));
 	gameMenu->addChild(returnToGameBtn);
 
 	auto optionBtn = Voxel::UI::Button::create("oBtn", ss, "game_menu_option_button.png");
 	optionBtn->setScale(2.0f);
 	optionBtn->setPosition(0.0f, btnY - btnYOffset);
 	optionBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	optionBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onOptionClicked, this));
+	optionBtn->setOnTriggeredCallbackFunc(std::bind(&GameMenu::onOptionClicked, this, std::placeholders::_1));
 	gameMenu->addChild(optionBtn);
 
 	auto exitToMainMenuScene = Voxel::UI::Button::create("etmBtn", ss, "exit_to_main_menu_button.png");
 	exitToMainMenuScene->setScale(2.0f);
 	exitToMainMenuScene->setPosition(0.0f, btnY - (btnYOffset * 2.5f));
 	exitToMainMenuScene->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	exitToMainMenuScene->setOnButtonClickCallbackFunc(std::bind(&GameScene::onExitToMainMenuSceneClicked, gameScenePtr));
+	exitToMainMenuScene->setOnTriggeredCallbackFunc(std::bind(&GameScene::onExitToMainMenuSceneClicked, gameScenePtr, std::placeholders::_1));
 	gameMenu->addChild(exitToMainMenuScene);
 
 	auto exitGameBtn = Voxel::UI::Button::create("exitGameBtn", ss, "game_menu_exit_game_button.png");
 	exitGameBtn->setScale(2.0f);
 	exitGameBtn->setPosition(0.0f, btnY - (btnYOffset * 4.0f));
 	exitGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	exitGameBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onExitGameClicked, this));
+	exitGameBtn->setOnTriggeredCallbackFunc(std::bind(&GameMenu::onExitGameClicked, this, std::placeholders::_1));
 	gameMenu->addChild(exitGameBtn);
 }
 
@@ -119,7 +119,7 @@ void Voxel::GameMenu::initOptionMenu(GameScene * gameScenePtr)
 	controlsBtn->setScale(2.0f);
 	controlsBtn->setPosition(0.0f, btnY - btnYOffset);
 	controlsBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	controlsBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onControlsClicked, this));
+	controlsBtn->setOnTriggeredCallbackFunc(std::bind(&GameMenu::onControlsClicked, this, std::placeholders::_1));
 	optionsMenu->addChild(controlsBtn);
 
 	auto videoButton = Voxel::UI::Button::create("vBtn", ss, "option_video_button.png");
@@ -138,14 +138,14 @@ void Voxel::GameMenu::initOptionMenu(GameScene * gameScenePtr)
 	returnToMenuBtn->setScale(2.0f);
 	returnToMenuBtn->setPosition(0.0f, btnY - (btnYOffset * 4.0f));
 	returnToMenuBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	returnToMenuBtn->setOnButtonClickCallbackFunc(std::bind(&GameMenu::onRetrunToMenuClicked, this));
+	returnToMenuBtn->setOnTriggeredCallbackFunc(std::bind(&GameMenu::onRetrunToMenuClicked, this, std::placeholders::_1));
 	optionsMenu->addChild(returnToMenuBtn);
 
 	auto returnToGameBtn = Voxel::UI::Button::create("rtgBtn", ss, "return_to_game_button.png");
 	returnToGameBtn->setScale(2.0f);
 	returnToGameBtn->setPosition(0.0f, btnY - (btnYOffset * 5.5f));
 	returnToGameBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
-	returnToGameBtn->setOnButtonClickCallbackFunc(std::bind(&GameScene::onReturnToGameClicked, gameScenePtr));
+	returnToGameBtn->setOnTriggeredCallbackFunc(std::bind(&GameScene::onReturnToGameClicked, gameScenePtr, std::placeholders::_1));
 	optionsMenu->addChild(returnToGameBtn);
 }
 
@@ -155,23 +155,23 @@ void Voxel::GameMenu::reset()
 	optionsMenu->setVisibility(false);
 }
 
-void Voxel::GameMenu::onOptionClicked()
+void Voxel::GameMenu::onOptionClicked(Voxel::UI::Button* sender)
 {
 	// view option menu
 	gameMenu->setVisibility(false);
 	optionsMenu->setVisibility(true);
 }
 
-void Voxel::GameMenu::onControlsClicked()
+void Voxel::GameMenu::onControlsClicked(Voxel::UI::Button* sender)
 {
 }
 
-void Voxel::GameMenu::onExitGameClicked()
+void Voxel::GameMenu::onExitGameClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getGLView()->close();
 }
 
-void Voxel::GameMenu::onRetrunToMenuClicked()
+void Voxel::GameMenu::onRetrunToMenuClicked(Voxel::UI::Button* sender)
 {
 	reset();
 }

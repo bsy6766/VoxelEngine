@@ -26,9 +26,10 @@ Voxel::UI::Slider::Slider(const std::string & name)
 	, barSize(0.0f)
 	, barBoundingBox(glm::vec2(0.0f), glm::vec2(0.0f))
 	, buttonIndexOffset(0)
-	, onSliderButtonPressed(nullptr)
-	, onSliderFinished(nullptr)
-	, onSliderMove(nullptr)
+	, onButtonPressed(nullptr)
+	, onBarPressed(nullptr)
+	, onFinished(nullptr)
+	, onValueChange(nullptr)
 {}
 
 Voxel::UI::Slider::~Slider()
@@ -62,6 +63,8 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 		}
 
 		texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
+		this->type = type;
 
 		this->minValue = minValue;
 		this->maxValue = maxValue;
@@ -156,7 +159,7 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 					}
 					else
 					{
-
+						buttonBoundingBox.center.y = barBoundingBox.size.y * -0.5f;
 					}
 
 					buttonBoundingBox.size = size;
@@ -170,9 +173,9 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 
 		program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 		
-		buildBar(barVertices, barUVs, barIndices);
+		loadBarBuffer(barVertices, barUVs, barIndices);
 
-		buildButton(buttonVertices, buttonUVs, buttonIndices);
+		loadButtonBuffer(buttonVertices, buttonUVs, buttonIndices);
 
 		boundingBox.center = position;
 		//boundingBox.size = glm::vec2(glm::max(barBoundingBox.size.x, buttonBoundingBox.size.x), glm::max(barBoundingBox.size.y, buttonBoundingBox.size.y));
@@ -191,7 +194,7 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 	}
 }
 
-void Voxel::UI::Slider::buildBar(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices)
+void Voxel::UI::Slider::loadBarBuffer(const std::array<float, 12>& vertices, const std::array<float, 8>& uvs, const std::array<unsigned int, 6>& indices)
 {
 	if (barVao)
 	{
@@ -231,7 +234,7 @@ void Voxel::UI::Slider::buildBar(const std::array<float, 12>& vertices, const st
 	glDeleteBuffers(1, &ibo);
 }
 
-void Voxel::UI::Slider::buildButton(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
+void Voxel::UI::Slider::loadButtonBuffer(const std::vector<float>& vertices, const std::vector<float>& uvs, const std::vector<unsigned int>& indices)
 {
 	if (buttonVao)
 	{
@@ -357,7 +360,7 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 		{
 			// center
 			buttonBoundingBox.center.x = barBoundingBox.center.x;
-			newValue = maxValue / 2;
+			newValue = maxValue * 0.5f;
 		}
 		else
 		{
@@ -380,20 +383,55 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 	else
 	{
 		// vertical
-		return 0;
-	}
-
-	if (newValue != currentValue)
-	{
-		if (onSliderMove)
+		if (mousePosition.y <= barBoundingBox.getMin().y)
 		{
-			onSliderMove(newValue);
-		}
+			buttonBoundingBox.center.y = (barBoundingBox.size.y * -0.5f) + barBoundingBox.center.y;
 
-	//	std::cout << "v = " << newValue << "\n";
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX && V_DEBUG_DRAW_SLIDER_BOUNDING_BOX
-		createDebugBoundingBoxLine();
-#endif
+			if (reversedValue)
+			{
+				newValue = maxValue;
+			}
+			else
+			{
+				newValue = minValue;
+			}
+		}
+		else if (mousePosition.y >= barBoundingBox.getMax().y)
+		{
+			buttonBoundingBox.center.y = (barBoundingBox.size.y * 0.5f) + barBoundingBox.center.y;
+
+			if (reversedValue)
+			{
+				newValue = minValue;
+			}
+			else
+			{
+				newValue = maxValue;
+			}
+		}
+		else if (mousePosition.y == barBoundingBox.center.y)
+		{
+			// center
+			buttonBoundingBox.center.y = barBoundingBox.center.y;
+			newValue = maxValue * 0.5f;
+		}
+		else
+		{
+			const float distFromCenterToMp = mousePosition.y - barBoundingBox.center.y;
+
+			buttonBoundingBox.center.y = distFromCenterToMp + barBoundingBox.center.y;
+
+			const float mpRange = mousePosition.y - barBoundingBox.getMin().y;
+
+			const float ratio = mpRange / barBoundingBox.size.y;
+
+			newValue = (ratio * (maxValue - minValue)) + minValue;
+
+			if (reversedValue)
+			{
+				newValue = maxValue - newValue;
+			}
+		}
 	}
 
 	return newValue;
@@ -401,11 +439,17 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 
 void Voxel::UI::Slider::updateButtonPos()
 {
+	buttonBoundingBox.center = barBoundingBox.center;
+
 	if (type == Type::HORIZONTAL)
 	{
-		buttonBoundingBox.center = barBoundingBox.center;
 		buttonBoundingBox.center.x -= (barSize.x * scale.x * 0.5f);
 		buttonBoundingBox.center.x += (((currentValue - minValue) / (maxValue - minValue)) * barBoundingBox.size.x);
+	}
+	else
+	{
+		buttonBoundingBox.center.y -= (barSize.y * scale.y * 0.5f);
+		buttonBoundingBox.center.y += (((currentValue - minValue) / (maxValue - minValue)) * barBoundingBox.size.y);
 	}
 }
 
@@ -415,35 +459,48 @@ void Voxel::UI::Slider::updateBoundingBox()
 	Voxel::UI::TransformNode::updateBoundingBox();
 
 	// Update both bounding box
+	if (parent)
+	{
+		auto screenPos = glm::vec2(getParentMatrix() * glm::vec4(position, 1.0f, 1.0f));
+		auto shiftPos = screenPos + (pivot * contentSize * scale * -1.0f);
+
+		barBoundingBox.center = shiftPos;
+	}
+	else
+	{
+		barBoundingBox.center = position;
+	}
+
+	barBoundingBox.size = barSize * scale;
+
+	updateButtonPos();
+
+	buttonBoundingBox.size = buttonSize * scale;
 }
 
 void Voxel::UI::Slider::updateModelMatrix()
 {
 	Voxel::UI::TransformNode::updateModelMatrix();
+}
 
-	if (parent)
+void Voxel::UI::Slider::updateMouseMoveFalse()
+{
+	// If it was hovering, set back to idle
+	if (state == State::BAR_HOVERED || state == State::BUTTON_HOVERED)
 	{
-		auto parentSize = parent->getContentSize() * 0.5f;
-		auto newBarPos = glm::vec2(position.x - parentSize.x, position.y + parentSize.y);
-		barBoundingBox.center = newBarPos;
-		barBoundingBox.size = barSize * scale;
+		//std::cout << "Was hovering, out of slider. back to idle\n";
+		state = State::IDLE;
 
-		updateButtonPos();
+		updateButtonIndexOffset();
 
-		buttonBoundingBox.size = buttonSize * scale;
-	}
-	else
-	{
-		barBoundingBox.center = position;
-		barBoundingBox.size = barSize * scale;
-
-		updateButtonPos();
-
-		buttonBoundingBox.size = buttonSize * scale;
+		if (onMouseExit)
+		{
+			onMouseExit(this);
+		}
 	}
 }
 
-bool Voxel::UI::Slider::updateButtonMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
+bool Voxel::UI::Slider::updateSliderMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
 {
 	// check if slider is interacble
 	if (isInteractable())
@@ -458,6 +515,11 @@ bool Voxel::UI::Slider::updateButtonMouseMove(const glm::vec2 & mousePosition, c
 			if (newValue != currentValue)
 			{
 				currentValue = newValue;
+
+				if (onValueChange)
+				{
+					onValueChange(this);
+				}
 			}
 
 			return true;
@@ -469,11 +531,25 @@ bool Voxel::UI::Slider::updateButtonMouseMove(const glm::vec2 & mousePosition, c
 			{
 				if (state == State::IDLE || state == State::BAR_HOVERED)
 				{
-					//std::cout << "Mouse on button\n";
+					if (state == State::IDLE)
+					{
+						if (onMouseEnter)
+						{
+							onMouseEnter(this);
+						}
+					}
 
 					state = State::BUTTON_HOVERED;
 
 					updateButtonIndexOffset();
+				}
+
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+				{
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
 				}
 
 				return true;
@@ -485,27 +561,32 @@ bool Voxel::UI::Slider::updateButtonMouseMove(const glm::vec2 & mousePosition, c
 				{
 					if (state == State::IDLE || state == State::BUTTON_HOVERED)
 					{
-						//std::cout << "Mouse on bar\n";
+						if (state == State::IDLE)
+						{
+							if (onMouseEnter)
+							{
+								onMouseEnter(this);
+							}
+						}
 
 						state = State::BAR_HOVERED;
 
 						updateButtonIndexOffset();
 					}
 
+					if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+					{
+						if (onMouseMove)
+						{
+							onMouseMove(this);
+						}
+					}
+
 					return true;
 				}
 				else
 				{
-					// If it was hovering, set back to idle
-					if (state == State::BAR_HOVERED || state == State::BUTTON_HOVERED)
-					{
-						//std::cout << "Was hovering, out of slider. back to idle\n";
-						state = State::IDLE;
-
-						updateButtonIndexOffset();
-					}
-
-					return true;
+					updateMouseMoveFalse();
 				}
 			}
 
@@ -521,53 +602,69 @@ bool Voxel::UI::Slider::updateMouseMove(const glm::vec2 & mousePosition, const g
 {
 	if (visibility)
 	{
-		if (children.empty())
+		// check state first. If slider was clicked and changing value, ignore all child update
+		if (state == State::BUTTON_CLICKED || state == State::BAR_CLICKED)
 		{
-			return updateButtonMouseMove(mousePosition, mouseDelta);
+			return updateSliderMouseMove(mousePosition, mouseDelta);
 		}
 		else
 		{
-			bool childHovered = false;
-
-			// first check if there was mouse move envent on children
-			for (auto& child : children)
+			// not clicking
+			if (children.empty())
 			{
-				bool result = (child.second)->updateMouseMove(mousePosition, mouseDelta);
-				if (result)
-				{
-					childHovered = true;
-				}
-			}
-
-			// check if there was hover event
-			if (childHovered)
-			{
-				// Mouse hovered child
-				if (state != State::IDLE)
-				{
-					// back to idle
-					if (state == State::BUTTON_CLICKED)
-					{
-						// call on cancel?
-					}
-
-					state = State::IDLE;
-
-					updateButtonIndexOffset();
-				}
+				// Has no children. update self
+				return updateSliderMouseMove(mousePosition, mouseDelta);
 			}
 			else
 			{
-				// there was no hover event on child
-				childHovered = updateButtonMouseMove(mousePosition, mouseDelta);
-			}
+				// Has children
+				bool childHovered = false;
 
-			return childHovered;
+				// Reverse iterate children because child who has higher global z order gets rendered above other siblings who has lower global z order
+				auto rit = children.rbegin();
+				for (; rit != children.rend();)
+				{
+					bool result = (rit->second)->updateMouseMove(mousePosition, mouseDelta);
+					if (result)
+					{
+						// child hovered.
+						// Known issue: When sliders have other ui object as sibling, changing value gets blocked by slibling's update mouse event.
+						// Todo: fix it?
+						childHovered = true;
+						break;
+					}
+
+					rit++;
+				}
+
+				if (childHovered)
+				{
+					// There was a child had mouse move event. Iterate remaining children and update
+
+					// Don't forget to increment iterator.
+					rit++;
+
+					for (; rit != children.rend(); rit++)
+					{
+						(rit->second)->updateMouseMoveFalse();
+					}
+
+					updateMouseMoveFalse();
+				}
+				else
+				{
+					// There was no mouse move event on child
+					childHovered = updateSliderMouseMove(mousePosition, mouseDelta);
+				}
+
+				return childHovered;
+			}
 		}
 	}
-	// Else, not visible
-
-	return false;
+	else
+	{
+		return false;
+	}
 }
 
 bool Voxel::UI::Slider::updateMousePress(const glm::vec2 & mousePosition, const int button)
@@ -589,22 +686,31 @@ bool Voxel::UI::Slider::updateMousePress(const glm::vec2 & mousePosition, const 
 					if (state == State::BUTTON_HOVERED)
 					{
 						state = State::BUTTON_CLICKED;
-						//std::cout << "button clicked\n";
 
 						auto newValue = getValueOnMousePosition(mousePosition);
 
 						if (newValue != currentValue)
 						{
 							currentValue = newValue;
-						}
 
-						if (onSliderButtonPressed)
-						{
-							onSliderButtonPressed(currentValue);
+							if (onValueChange)
+							{
+								onValueChange(this);
+							}
 						}
 
 						updateButtonIndexOffset();
 						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+
+						if (onButtonPressed)
+						{
+							onButtonPressed(this);
+						}
 					}
 				}
 				else if (barBoundingBox.containsPoint(mousePosition))
@@ -613,17 +719,30 @@ bool Voxel::UI::Slider::updateMousePress(const glm::vec2 & mousePosition, const 
 					if (state == State::BAR_HOVERED)
 					{
 						state = State::BAR_CLICKED;
-						//std::cout << "bar clicked\n";
 						auto newValue = getValueOnMousePosition(mousePosition);
 
 						if (newValue != currentValue)
 						{
-							//std::cout << "newValue = " << newValue << "\n";
 							currentValue = newValue;
+
+							if (onValueChange)
+							{
+								onValueChange(this);
+							}
 						}
 
 						updateButtonIndexOffset();
 						pressed = true;
+
+						if (onMousePressed)
+						{
+							onMousePressed(this, button);
+						}
+
+						if (onBarPressed)
+						{
+							onBarPressed(this);
+						}
 					}
 				}
 				// Else, didn't click either bar or button
@@ -661,14 +780,18 @@ bool Voxel::UI::Slider::updateMouseRelease(const glm::vec2 & mousePosition, cons
 				if (state == State::BAR_CLICKED || state == State::BUTTON_CLICKED)
 				{
 					// finish
-					//std::cout << "Slider fishied\n";
 					state = State::IDLE;
 					updateButtonIndexOffset();
 					released = true;
 
-					if (onSliderFinished)
+					if (onMouseReleased)
 					{
-						onSliderFinished(currentValue);
+						onMouseReleased(this, button);
+					}
+
+					if (onFinished)
+					{
+						onFinished(this);
 					}
 				}
 			}
@@ -695,10 +818,7 @@ void Voxel::UI::Slider::setValue(const float value)
 	{
 		currentValue = value;
 
-		if (type == Type::HORIZONTAL)
-		{
-			updateButtonPos();
-		}
+		updateButtonPos();
 	}
 }
 
@@ -707,21 +827,25 @@ float Voxel::UI::Slider::getValue() const
 	return currentValue;
 }
 
-void Voxel::UI::Slider::setOnSliderButtonPressed(const std::function<void(float)>& func)
+void Voxel::UI::Slider::setOnButtonPressed(const std::function<void(Voxel::UI::Slider*)>& func)
 {
-	onSliderButtonPressed = func;
+	onButtonPressed = func;
 }
 
-void Voxel::UI::Slider::setOnSliderMove(const std::function<void(float)>& func)
+void Voxel::UI::Slider::setOnBarPressed(const std::function<void(Voxel::UI::Slider*)>& func)
 {
-	onSliderMove = func;
+	onBarPressed = func;
 }
 
-void Voxel::UI::Slider::setOnSliderFinished(const std::function<void(float)>& func)
+void Voxel::UI::Slider::setOnValueChange(const std::function<void(Voxel::UI::Slider*)>& func)
 {
-	onSliderFinished = func;
+	onValueChange = func;
 }
 
+void Voxel::UI::Slider::setOnFinished(const std::function<void(Voxel::UI::Slider*)>& func)
+{
+	onFinished = func;
+}
 
 void Voxel::UI::Slider::renderSelf()
 {
@@ -745,6 +869,10 @@ void Voxel::UI::Slider::renderSelf()
 	if (type == Type::HORIZONTAL)
 	{
 		program->setUniformMat4("modelMat", glm::scale(modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(buttonBoundingBox.center.x - barBoundingBox.center.x, 0.0f, 0.0f)), glm::vec3(scale, 1)));
+	}
+	else
+	{
+		program->setUniformMat4("modelMat", glm::scale(modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, buttonBoundingBox.center.y - barBoundingBox.center.y, 0.0f)), glm::vec3(scale, 1)));
 	}
 
 	if (buttonVao)
