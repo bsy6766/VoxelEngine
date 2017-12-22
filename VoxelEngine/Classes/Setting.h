@@ -78,15 +78,16 @@ namespace Voxel
 		}
 		
 		// ============================ Video setting ==========================
-		int getWindowMode();
-		glm::ivec2 getResolution();
-		bool getVsync();
-		int getRenderDistance();
-		int getFieldOfView();
-		int getBlockShadeMode();
+		int getWindowMode() const;
+		int getMonitorIndex() const;
+		glm::ivec2 getResolution() const;
+		bool getVsync() const;
+		int getRenderDistance() const;
+		int getFieldOfView() const;
+		int getBlockShadeMode() const;
 		// =====================================================================
 
-		bool getAutoJumpMode();
+		bool getAutoJumpMode() const;
 		void setAutoJumpMode(const bool mode);
 
 		std::string getString(const std::string& key);

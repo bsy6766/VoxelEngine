@@ -16,6 +16,7 @@ Setting::Setting()
 	: modified(false)
 	// Video setting
 	, windowMode(1)
+	, monitorIndex(0)
 	, resolution(0)
 	, vsync(false)
 	, renderDistance(0)
@@ -47,6 +48,7 @@ Setting::Setting()
 		// localization
 		localizationTag = Localization::toTag(userSetting->getString("localization"));
 		windowMode = userSetting->getInt("videoSetting.window.mode");
+		monitorIndex = userSetting->getInt("videoSetting.monitorIndex");
 		int w = userSetting->getInt("videoSetting.window.resolution.width");
 		int h = userSetting->getInt("videoSetting.window.resolution.height");
 		resolution = glm::ivec2(w, h);
@@ -69,6 +71,7 @@ Setting::Setting()
 		// set setting
 		userSetting->setString("localization", Voxel::Localization::toString(localizationTag));
 		userSetting->setInt("videoSetting.window.mode", windowMode);
+		userSetting->setInt("videoSetting.monitorIndex", monitorIndex);
 		userSetting->setInt("videoSetting.window.resolution.width", resolution.x);
 		userSetting->setInt("videoSetting.window.resolution.height", resolution.y);
 		userSetting->setBool("videoSetting.vsync", vsync);
@@ -137,37 +140,42 @@ void Voxel::Setting::setVideoModeToDefault()
 	blockShadeMode = 2;
 }
 
-int Voxel::Setting::getWindowMode()
+int Voxel::Setting::getWindowMode() const
 {
 	return windowMode;
 }
 
-glm::ivec2 Voxel::Setting::getResolution()
+int Voxel::Setting::getMonitorIndex() const
+{
+	return monitorIndex;
+}
+
+glm::ivec2 Voxel::Setting::getResolution() const
 {
 	return resolution;
 }
 
-bool Voxel::Setting::getVsync()
+bool Voxel::Setting::getVsync() const
 {
 	return vsync;
 }
 
-int Voxel::Setting::getRenderDistance()
+int Voxel::Setting::getRenderDistance() const
 {
 	return renderDistance;
 }
 
-int Voxel::Setting::getFieldOfView()
+int Voxel::Setting::getFieldOfView() const
 {
 	return fieldOfView;
 }
 
-int Voxel::Setting::getBlockShadeMode()
+int Voxel::Setting::getBlockShadeMode() const
 {
 	return blockShadeMode;
 }
 
-bool Voxel::Setting::getAutoJumpMode()
+bool Voxel::Setting::getAutoJumpMode() const
 {
 	return autoJump;
 }
