@@ -57,7 +57,7 @@
         {
             "frame": {
                 "y": 100, 
-                "x": 1, 
+                "x": 323, 
                 "w": 156, 
                 "h": 31
             }, 
@@ -66,7 +66,7 @@
         {
             "frame": {
                 "y": 100, 
-                "x": 1, 
+                "x": 323, 
                 "w": 156, 
                 "h": 31
             }, 
@@ -164,8 +164,8 @@
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 159, 
+                "y": 133, 
+                "x": 1, 
                 "w": 114, 
                 "h": 31
             }, 
@@ -173,12 +173,48 @@
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 159, 
+                "y": 133, 
+                "x": 1, 
                 "w": 114, 
                 "h": 31
             }, 
             "filename": "play_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 1, 
+                "w": 159, 
+                "h": 31
+            }, 
+            "filename": "ui_test_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 481, 
+                "w": 3, 
+                "h": 3
+            }, 
+            "filename": "ui_test_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 162, 
+                "w": 159, 
+                "h": 31
+            }, 
+            "filename": "ui_test_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 100, 
+                "x": 162, 
+                "w": 159, 
+                "h": 31
+            }, 
+            "filename": "ui_test_button_idle.png"
         }
     ], 
     "texture": {
