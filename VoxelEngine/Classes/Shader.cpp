@@ -8,9 +8,16 @@
 
 using namespace Voxel;
 
+Voxel::Shader::Shader()
+	: shaderObject(0)
+{}
+
 Voxel::Shader::~Shader()
 {
-	glDeleteShader(shaderObject);
+	if (shaderObject)
+	{
+		glDeleteShader(shaderObject);
+	}
 }
 
 Shader * Shader::create(const std::string & filePath, GLenum shaderType)

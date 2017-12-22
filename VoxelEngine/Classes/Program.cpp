@@ -6,15 +6,25 @@
 // voxel
 #include "Shader.h"
 #include "ErrorCode.h"
+#include "Logger.h"
+#include "Config.h"
 
 using namespace Voxel;
 using namespace glm;
 
 GLuint Program::lastProgramObject = 0;
 
+Voxel::Program::Program()
+	: programObject(0)
+{
+}
+
 Program::~Program()
 {
-	glDeleteProgram(programObject);
+	if (programObject)
+	{
+		glDeleteProgram(programObject);
+	}
 }
 
 Program * Program::create(Shader * vertexShader, Shader * fragmentShader)
@@ -136,7 +146,7 @@ void Voxel::Program::findAllUniforms()
 	}
 }
 
-GLuint Program::getObject()
+GLuint Program::getObject() const
 {
 	return programObject;
 }
@@ -145,13 +155,13 @@ GLint Program::getAttribLocation(const GLchar * attributeName)
 {
 	if (!attributeName)
 	{
-		throw std::runtime_error("Attribute name was null");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_ATTRIBUTE_NAME_IS_EMPTY) + "\nAttribute name: " + std::string(attributeName));
 	}
 
 	GLint location = glGetAttribLocation(programObject, attributeName);
 	if (location == -1)
 	{
-		throw std::runtime_error(std::string("Program attribute not found: ") + attributeName);
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_ATTRIBUTE_NAME_DOES_NOT_EXISTS) + "\nAttribute name: " + std::string(attributeName));
 	}
 
 	return location;
@@ -161,13 +171,13 @@ GLint Program::getUniformLocation(const GLchar * uniformName)
 {
 	if (!uniformName)
 	{
-		throw std::runtime_error("Uniform name was null");
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_UNIFORM_NAME_IS_EMPTY) + "\nUniform: " + std::string(uniformName));
 	}
 
 	GLint location = glGetUniformLocation(programObject, uniformName);
 	if (location == -1)
 	{
-		throw std::runtime_error(std::string("Program uniform not found: ") + uniformName);
+		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_UNIFORM_DOES_NOT_EXISTS) + "\nUniform: " + std::string(uniformName));
 	}
 
 	return location;
@@ -178,7 +188,9 @@ void Voxel::Program::setUniformBool(const GLint location, const bool boolean)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform boolean location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform boolean location: " + std::to_string(location) + ", bool: " + std::string(boolean ? "True" : "False"));
+#endif
 		return;
 	}
 	else
@@ -221,7 +233,9 @@ void Voxel::Program::setUniformInt(const GLint location, const int integer)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform int location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform int location: " + std::to_string(location) + ", int: " + std::to_string(integer));
+#endif
 		return;
 	}
 	else
@@ -264,7 +278,9 @@ void Voxel::Program::setUniformFloat(const GLint location, const float val)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform float location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform float location: " + std::to_string(location) + ", float: " + std::to_string(val));
+#endif
 		return;
 	}
 	else
@@ -307,7 +323,9 @@ void Voxel::Program::setUniformVec2(const GLint location, const glm::vec2 & val)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform vec2 location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform vec2 location: " + std::to_string(location) + ", vec2: (" + std::to_string(val.x) + ", " + std::to_string(val.y) + ")");
+#endif
 		return;
 	}
 	else
@@ -352,7 +370,9 @@ void Voxel::Program::setUniformVec3(const GLint location, const glm::vec3 & val)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform vec3 location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform vec3 location: " + std::to_string(location) + ", vec3: (" + std::to_string(val.x) + ", " + std::to_string(val.y) + ", " + std::to_string(val.z) + ")");
+#endif
 		return;
 	}
 	else
@@ -398,7 +418,9 @@ void Voxel::Program::setUniformVec4(const GLint location, const glm::vec4 & val)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform vec4 location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform vec4 location: " + std::to_string(location) + ", vec4: (" + std::to_string(val.x) + ", " + std::to_string(val.y) + ", " + std::to_string(val.z) + ", " + std::to_string(val.w) + ")");
+#endif
 		return;
 	}
 	else
@@ -445,7 +467,9 @@ void Program::setUniformMat4(const GLint location, const mat4 & mat)
 	auto find_it = uniformValues.find(location);
 	if (find_it == uniformValues.end())
 	{
-		std::cout << "[Program] Failed to find uniform vec4 location: " << location << std::endl;
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		Voxel::Logger::getInstance().consoleError("[Program] Failed to find uniform mat4 location: " + std::to_string(location));
+#endif
 		return;
 	}
 	else

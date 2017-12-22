@@ -31,6 +31,7 @@ namespace Voxel
 			SKYBOX_SHADER,
 			UI_TEXTURE_SHADER,
 			UI_TEXT_SHADER,
+			UI_COLOR_PICKER_SHADER,
 			SHADER_MAX_COUNT
 		};
 	private:

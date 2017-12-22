@@ -15,8 +15,6 @@ namespace Voxel
 	*/
 	class Shader
 	{
-	protected:
-		Shader() = default;
 	private:
 		// OpenGL object
 		GLuint shaderObject;
@@ -24,12 +22,24 @@ namespace Voxel
 		// initialize shader. Returns false if fails
 		bool init(const std::string& filePath, GLenum shaderType);
 
+		// Check compile error. Throws runtime error if fails.
 		void checkCompileError();
 	public:
+		// Constructor
+		Shader();
+
+		// Destructor
 		~Shader();
 
+		/**
+		*	Create opengl shader
+		*	@param filePath Shader file path
+		*	@param shaderType Type of shader (Vertex, Geometry, Fragment)
+		*	@return Shader instance if successfully created shader object. Else, false.
+		*/
 		static Shader* create(const std::string& filePath, GLenum shaderType);
 
+		// Get shader object.
 		GLuint getObject();
 	};
 }

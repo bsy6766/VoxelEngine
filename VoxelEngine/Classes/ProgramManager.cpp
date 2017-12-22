@@ -53,6 +53,11 @@ void Voxel::ProgramManager::initPrograms()
 	auto voxelShaderPolygonSideProgram = Program::create(voxelShaderPolygonSideVert, voxelShaderPolygonSideFrag);
 	programs.emplace(PROGRAM_NAME::POLYGON_SIDE_SHADER, voxelShaderPolygonSideProgram);
 
+	auto voxelShaderColorPickerVert = shaderManager.createShader("voxelShaderColorPicker", "shaders/voxelShaderColorPicker.vert", GL_VERTEX_SHADER);
+	auto voxelShaderColorPickerFrag = shaderManager.createShader("voxelShaderColorPicker", "shaders/voxelShaderColorPicker.frag", GL_FRAGMENT_SHADER);
+	auto voxelShaderColorPickerProgram = Program::create(voxelShaderColorPickerVert, voxelShaderColorPickerFrag);
+	programs.emplace(PROGRAM_NAME::UI_COLOR_PICKER_SHADER, voxelShaderColorPickerProgram);
+	
 	// Don't need shader anymore if it's attached to program
 	shaderManager.releaseAll();
 }
@@ -91,6 +96,9 @@ void Voxel::ProgramManager::updateUIProjMat(const glm::mat4 & uiProjMat)
 
 	programs.at(PROGRAM_NAME::UI_TEXT_SHADER)->use(true);
 	programs.at(PROGRAM_NAME::UI_TEXT_SHADER)->setUniformMat4("projMat", uiProjMat);
+
+	programs.at(PROGRAM_NAME::UI_COLOR_PICKER_SHADER)->use(true);
+	programs.at(PROGRAM_NAME::UI_COLOR_PICKER_SHADER)->setUniformMat4("projMat", uiProjMat);
 }
 
 void ProgramManager::releaseAll()

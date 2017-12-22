@@ -39,9 +39,10 @@ namespace Voxel
 	*/
 	class Program
 	{
-	protected:
-		Program() = default;
 	private:
+		// Constructor
+		Program();
+
 		// OpenGL object
 		GLuint programObject;
 
@@ -50,6 +51,8 @@ namespace Voxel
 
 		// Uniform location by name
 		std::unordered_map<std::string, GLint> uniformLocations;
+
+		// Uniform locations by location id
 		std::unordered_map<GLint, UniformValue> uniformValues;
 
 		// Initialize program
@@ -60,12 +63,23 @@ namespace Voxel
 
 		// Check if link failed
 		void checkLinkError();
+
 	public:
+		// Destructor
 		~Program();
+
+		/**
+		*	Creates opengl program
+		*	@param vertexShader Vertex shader to link
+		*	@param fragmetnShader Fragment shader to link
+		*	@return Program instance if program is successfully created. Else, nullptr;
+		*/
 		static Program* create(Shader* vertexShader, Shader* fragmentShader);
 
-		GLuint getObject();
+		// Get program object
+		GLuint getObject() const;
 
+		// Get attribute location by name
 		GLint getAttribLocation(const GLchar* attributeName);
 		GLint getUniformLocation(const GLchar* uniformName);
 
