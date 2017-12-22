@@ -107,9 +107,12 @@ bool Voxel::UI::Image::updateImageMouseMove(const glm::vec2 & mousePosition, con
 			else if (state == State::HOVERED)
 			{
 				// was hovering.
-				if (onMouseMove)
+				if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
 				{
-					onMouseMove(this);
+					if (onMouseMove)
+					{
+						onMouseMove(this);
+					}
 				}
 			}
 			else if (state == State::CLICKED)
@@ -196,7 +199,7 @@ bool Voxel::UI::Image::updateMouseMove(const glm::vec2 & mousePosition, const gl
 				else
 				{
 					// There was no mouse move event on child
-					childHovered = updateImageMouseMove(mousePosition, mousePosition);
+					childHovered = updateImageMouseMove(mousePosition, mouseDelta);
 				}
 
 				return childHovered;
