@@ -10,15 +10,6 @@ namespace Voxel
 		class Canvas;
 	}
 
-	/*
-	namespace NewUI
-	{
-		class UINode;
-		class Canvas;
-	}
-	*/
-
-
 	/**
 	*	@class ZOrder
 	*	@brief Used in 2D rendering to sort the order of rendering.
@@ -29,29 +20,32 @@ namespace Voxel
 	*/
 	class ZOrder
 	{
+		// Friends
 		friend struct ZOrderComp;
 		friend class UI::TransformNode;
 		friend class UI::Canvas;
-		//friend class NewUI::UINode;
-		//friend class NewUI::Canvas;
+
 	private:
 		// Global Z order
 		int globalZOrder;
 
 		// Local Z order
 		int localZOrder;
+		
+		/**
+		*	Private constructor for firends.
+		*	Only friends can create ZOrder instance with specific local order
+		*	@param global Global z order
+		*	@param local Local z order
+		*/
+		ZOrder(const int global, const int local) : globalZOrder(global), localZOrder(local) {}
 
-		// True if initialized
-		bool initialized;
-
-		// For canvas and uinode
-		ZOrder(const int global, const int local) : globalZOrder(global), localZOrder(local), initialized(true) {}
 	public:
 		// constructor
-		ZOrder() : globalZOrder(0), localZOrder(0), initialized(false) {}
+		ZOrder() : globalZOrder(0), localZOrder(0) {}
 
 		// constructor with global
-		ZOrder(const int zOrder) : globalZOrder(zOrder), localZOrder(0), initialized(false) {}
+		ZOrder(const int zOrder) : globalZOrder(zOrder), localZOrder(0) {}
 
 		// default destructor
 		~ZOrder() = default;
@@ -84,24 +78,7 @@ namespace Voxel
 				return false;
 			}
 		}
-
-		/**
-		*	Check if this z order was initailized
-		*	@return True if this ZOrder is initialized. Else, false.
-		*/
-		bool isInitialized() const { return this->initialized; }
-
-		/**
-		*	Sets z order.
-		*	@param [in] global A global z order
-		*/
-		/*
-		void setZOrder(const int global)
-		{
-			this->globalZOrder = global;
-		}
-		*/
-		
+				
 		/**
 		*	Checks if global z order is MAX_INT
 		*	return True if global z order is MAX_INT. Else, false.
@@ -126,19 +103,24 @@ namespace Voxel
 	{
 		bool operator()(const ZOrder& lhs, const ZOrder& rhs) const
 		{
+			// Check global order first
 			if (lhs.globalZOrder == rhs.globalZOrder)
 			{
+				// global is same. Check local
 				if (lhs.localZOrder == rhs.localZOrder)
 				{
+					// local is same. 
 					return false;
 				}
 				else
 				{
+					// compare local
 					return lhs.localZOrder < rhs.localZOrder;
 				}
 			}
 			else
 			{
+				// compare global
 				return lhs.globalZOrder < rhs.globalZOrder;
 			}
 		}
