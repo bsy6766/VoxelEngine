@@ -8,7 +8,14 @@
 #include "SpriteSheet.h"
 #include "MenuScene.h"
 #include "GameScene.h"
+#if V_DEBUG
+#if V_DEBUG_EDITOR
 #include "Editor.h"
+#endif
+#if V_DEBUG_UI_TEST
+#include "UITestScene.h"
+#endif
+#endif
 
 Voxel::Director::Director()
 	: currentScene(nullptr)
@@ -69,12 +76,24 @@ Voxel::Scene * Voxel::Director::createScene(const SceneName sceneName)
 		newScene->init();
 	}
 		break;
+#if V_DEBUG
+#if V_DEBUG_EDITOR
 	case Voxel::Director::SceneName::EDITOR_SCENE:
 	{
 		newScene = new Editor();
 		newScene->init();
 	}
-		break;
+	break;
+#endif
+#if V_DEBUG_UI_TEST
+	case Voxel::Director::SceneName::UI_TEST_SCENE:
+	{
+		newScene = new UITestScene();
+		newScene->init();
+	}
+	break;
+#endif
+#endif
 	case Voxel::Director::SceneName::NONE:
 	default:
 		newScene = nullptr;

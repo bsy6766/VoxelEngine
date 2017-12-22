@@ -37,8 +37,13 @@ namespace Voxel
 			TITLE_SCENE,	// Show title of the game
 			MENU_SCENE,		// Show menu of the game. Manage character, world, saves, option, etc.
 			GAME_SCENE,		// Gameplay
-#if V_DEBUG && V_DEBUG_EDITOR
+#if V_DEBUG 
+#if V_DEBUG_EDITOR
 			EDITOR_SCENE,	// Debug editor
+#endif
+#if V_DEBUG_UI_TEST
+			UI_TEST_SCENE,
+#endif
 #endif
 		};
 
