@@ -125,6 +125,152 @@ namespace Voxel
 			return glm::vec3(static_cast<float>(color.r) / 255.0f, static_cast<float>(color.g) / 255.0f, static_cast<float>(color.b) / 255.0f);
 		}
 
+		static inline glm::vec3 HSV2RGB(float h, float s, float v)
+		{
+			/*
+			float hh, p, q, t, ff;
+
+			int i;
+
+			glm::vec3 out(0.0f);
+
+			hh = h * 360.0f;
+			if (hh >= 360.0f) hh = 0.0f;
+			hh /= 60.0f;
+			i = (int)hh;
+			ff = hh - i;
+			p = v * (1.0f - s);
+			q = v * (1.0f - (s * ff));
+			t = v * (1.0f - (s * (1.0f - ff)));
+
+			switch (i) {
+			case 0:
+				out.x = v;
+				out.y = t;
+				out.z = p;
+				break;
+			case 1:
+				out.x = q;
+				out.y = v;
+				out.z = p;
+				break;
+			case 2:
+				out.x = p;
+				out.y = v;
+				out.z = t;
+				break;
+
+			case 3:
+				out.x = p;
+				out.y = q;
+				out.z = v;
+				break;
+			case 4:
+				out.x = t;
+				out.y = p;
+				out.z = v;
+				break;
+			case 5:
+			default:
+				out.x = v;
+				out.y = p;
+				out.z = q;
+				break;
+			}
+			return out;
+			*/
+
+			/*
+			float r = 0, g = 0, b = 0;
+
+			if (s == 0)
+			{
+				r = v;
+				g = v;
+				b = v;
+			}
+			else
+			{
+				int i;
+				float f, p, q, t;
+
+				if (h == 360.0f)
+					h = 0.0f;
+				else
+					h = h / 60.0f;
+
+				i = (int)trunc(h);
+				f = h - i;
+
+				p = v * (1.0f - s);
+				q = v * (1.0f - (s * f));
+				t = v * (1.0f - (s * (1.0f - f)));
+
+				switch (i)
+				{
+				case 0:
+					r = v;
+					g = t;
+					b = p;
+					break;
+
+				case 1:
+					r = q;
+					g = v;
+					b = p;
+					break;
+
+				case 2:
+					r = p;
+					g = v;
+					b = t;
+					break;
+
+				case 3:
+					r = p;
+					g = q;
+					b = v;
+					break;
+
+				case 4:
+					r = t;
+					g = p;
+					b = v;
+					break;
+
+				default:
+					r = v;
+					g = p;
+					b = q;
+					break;
+				}
+
+			}
+
+			return glm::vec3(r, g, b);
+			*/
+
+
+			float r, g, b;
+
+			int i = (int)glm::floor(h * 6.0f);
+			float f = h * 6.0f - i;
+			float p = v * (1.0f - s);
+			float q = v * (1.0f - f * s);
+			float t = v * (1.0f- (1.0f - f) * s);
+
+			switch (i % 6) {
+			case 0: r = v, g = t, b = p; break;
+			case 1: r = q, g = v, b = p; break;
+			case 2: r = p, g = v, b = t; break;
+			case 3: r = p, g = q, b = v; break;
+			case 4: r = t, g = p, b = v; break;
+			case 5: r = v, g = p, b = q; break;
+			}
+
+			return glm::vec3(r, g, b);
+		}
+
 		static inline glm::uvec3 getColorU3FromBlockID(const Block::BLOCK_ID blockID)
 		{
 			glm::uvec3 color;

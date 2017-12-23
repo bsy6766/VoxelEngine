@@ -10,6 +10,7 @@
 #include "InputHandler.h"
 #include "UIActions.h"
 #include "Director.h"
+#include "Color.h"
 
 Voxel::MenuScene::MenuScene()
 	: Scene()
@@ -167,22 +168,19 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
-		auto if2 = Voxel::UI::InputField::create("if2L", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::CENTER, 100);
-		canvas->addChild(if2);
+		float h = 200.0f / 360.0f;
+		float s = 0.5f;
+		float b = 0.25f;
+
+		glm::vec3 rgb = Color::HSV2RGB(h, s, b);
+
+		std::cout << Utility::Log::vec3ToStr(rgb * 255.0f) << "\n";
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{
-		auto if2 = Voxel::UI::InputField::create("if2C", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::LEFT, 100);
-		if2->setPosition(100, 100);
-		if2->setPivot(-0.5f, 0.0f);
-		canvas->addChild(if2);
 	}
 	else if (input->getKeyDown(GLFW_KEY_Y, true))
 	{
-		auto if2 = Voxel::UI::InputField::create("if2R", "Enter text here..!", "DebugSpriteSheet", 1, "debug_input_field_cursor.png", Voxel::UI::Text::ALIGN::RIGHT, 100);
-		if2->setPosition(-100, 100);
-		if2->setPivot(0.5f, 0.0f);
-		canvas->addChild(if2);
 	}
 }
 
