@@ -2,7 +2,7 @@
     "frames": [
         {
             "frame": {
-                "y": 5, 
+                "y": 263, 
                 "x": 1, 
                 "w": 1, 
                 "h": 1
@@ -11,8 +11,8 @@
         }, 
         {
             "frame": {
-                "y": 5, 
-                "x": 4, 
+                "y": 266, 
+                "x": 1, 
                 "w": 1, 
                 "h": 1
             }, 
@@ -20,8 +20,8 @@
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 5, 
+                "y": 269, 
+                "x": 1, 
                 "w": 1, 
                 "h": 1
             }, 
@@ -29,17 +29,26 @@
         }, 
         {
             "frame": {
-                "y": 1, 
+                "y": 259, 
                 "x": 1, 
                 "w": 2, 
                 "h": 2
             }, 
             "filename": "2x2_black.png"
+        }, 
+        {
+            "frame": {
+                "y": 1, 
+                "x": 1, 
+                "w": 255, 
+                "h": 256
+            }, 
+            "filename": "256x256_whtie_circle.png"
         }
     ], 
     "texture": {
         "path": "GlobalSpriteSheet.png", 
-        "height": 8, 
-        "width": 8
+        "height": 512, 
+        "width": 512
     }
 }
