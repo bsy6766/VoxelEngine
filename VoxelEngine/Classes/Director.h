@@ -41,6 +41,9 @@ namespace Voxel
 #if V_DEBUG_EDITOR
 			EDITOR_SCENE,	// Debug editor
 #endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+			PARTICLE_SYSTEM_EDITOR_SCENE,
+#endif
 #if V_DEBUG_UI_TEST
 			UI_TEST_SCENE,
 #endif

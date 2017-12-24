@@ -55,10 +55,15 @@ void Voxel::MenuScene::init()
 #if V_DEBUG_EDITOR
 	btnY += 50.0f;
 #endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+	btnY += 50.0f;
+	buttonBg->setScale(glm::vec2(600.0f, 50.0f));
+#endif
 #if V_DEBUG_UI_TEST
 	btnY += 50.0f;
 #endif
 #endif
+
 	float offset = 50.0f;
 
 	// buttons
@@ -68,6 +73,10 @@ void Voxel::MenuScene::init()
 #if V_DEBUG_EDITOR
 	buttons.at(ButtonIndex::EDITOR) = Voxel::UI::Button::create("eBtn", ss, "editor_button.png");
 	buttons.at(ButtonIndex::EDITOR)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onEditorClicked, this, std::placeholders::_1));
+#endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+	buttons.at(ButtonIndex::PARTICLE_SYSTEM_EDITOR) = Voxel::UI::Button::create("pseBtn", ss, "particle_system_editor_button.png");
+	buttons.at(ButtonIndex::PARTICLE_SYSTEM_EDITOR)->setOnTriggeredCallbackFunc(std::bind(&Voxel::MenuScene::onParticleSystemEditorClicked, this, std::placeholders::_1));
 #endif
 #if V_DEBUG_UI_TEST
 	buttons.at(ButtonIndex::UI_TEST) = Voxel::UI::Button::create("uiTestBtn", ss, "ui_test_button.png");
@@ -124,10 +133,14 @@ void Voxel::MenuScene::onEnter()
 }
 
 void Voxel::MenuScene::onEnterFinished()
-{}
+{
+	Application::getInstance().getGLView()->setVsync(true);
+}
 
 void Voxel::MenuScene::onExit()
-{}
+{
+	Application::getInstance().getGLView()->setVsync(false);
+}
 
 void Voxel::MenuScene::onExitFinished()
 {}
@@ -301,6 +314,12 @@ void Voxel::MenuScene::render()
 void Voxel::MenuScene::onEditorClicked(Voxel::UI::Button* sender)
 {
 	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::EDITOR_SCENE, 0.5f);
+}
+#endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+void Voxel::MenuScene::onParticleSystemEditorClicked(Voxel::UI::Button * sender)
+{
+
 }
 #endif
 #if V_DEBUG_UI_TEST

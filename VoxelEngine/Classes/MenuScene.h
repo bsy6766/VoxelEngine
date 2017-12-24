@@ -24,6 +24,9 @@ namespace Voxel
 #if V_DEBUG_EDITOR
 			EDITOR,
 #endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+			PARTICLE_SYSTEM_EDITOR,
+#endif
 #if V_DEBUG_UI_TEST
 			UI_TEST,
 #endif
@@ -84,6 +87,9 @@ namespace Voxel
 #if V_DEBUG
 #if V_DEBUG_EDITOR
 		void onEditorClicked(Voxel::UI::Button* sender);
+#endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+		void onParticleSystemEditorClicked(Voxel::UI::Button* sender);
 #endif
 #if V_DEBUG_UI_TEST
 		void onUITestClicked(Voxel::UI::Button* sender);

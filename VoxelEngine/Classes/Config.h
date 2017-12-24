@@ -36,6 +36,13 @@
 #define V_DEBUG_EDITOR 1
 #endif
 
+/**
+*	@def V_DEBUG_PARTICLE_SYSTEM_EDITOR
+*	If enabled, can use particle system editor. Particle system editor is not included in the main game.
+*/
+#ifndef V_DEBUG_PARTICLE_SYSTEM_EDITOR
+#define V_DEBUG_PARTICLE_SYSTEM_EDITOR 1
+#endif
 
 /**
 *	@def V_DEBUG_CAMERA_MODE

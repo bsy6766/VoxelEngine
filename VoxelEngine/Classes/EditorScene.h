@@ -30,7 +30,7 @@ namespace Voxel
 	*	Editor is will be only available for debug purpose. Won't be incldued in final release.
 	*	However, schematic will be used.
 	*/
-	class Editor : public Scene
+	class EditorScene : public Scene
 	{
 	private:
 		enum MenuBarIndex : unsigned int
@@ -206,8 +206,8 @@ namespace Voxel
 		void onDimensionYSliderMove(Voxel::UI::Slider* sender);
 		void onDimensionZSliderMove(Voxel::UI::Slider* sender);
 	public:
-		Editor();
-		~Editor();
+		EditorScene();
+		~EditorScene();
 
 		// overrides
 		void init() override;

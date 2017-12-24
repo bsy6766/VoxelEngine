@@ -10,7 +10,10 @@
 #include "GameScene.h"
 #if V_DEBUG
 #if V_DEBUG_EDITOR
-#include "Editor.h"
+#include "EditorScene.h"
+#endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+#include "ParticleSystemEditorScene.h"
 #endif
 #if V_DEBUG_UI_TEST
 #include "UITestScene.h"
@@ -80,8 +83,16 @@ Voxel::Scene * Voxel::Director::createScene(const SceneName sceneName)
 #if V_DEBUG_EDITOR
 	case Voxel::Director::SceneName::EDITOR_SCENE:
 	{
-		newScene = new Editor();
+		newScene = new EditorScene();
 		newScene->init();
+	}
+	break;
+#endif
+#if V_DEBUG_PARTICLE_SYSTEM_EDITOR
+	case Voxel::Director::SceneName::PARTICLE_SYSTEM_EDITOR_SCENE:
+	{
+		//newScene = new Editor();
+		//newScene->init();
 	}
 	break;
 #endif
