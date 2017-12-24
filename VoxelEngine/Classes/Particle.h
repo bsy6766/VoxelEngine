@@ -20,12 +20,18 @@ namespace Voxel
 			// Constructor
 			Particle();
 
+			// current position
+			glm::vec2 pos;
+
 			// Color
 			glm::vec4 startColor;
 			glm::vec4 endColor;
 
 			// speed
 			float speed;
+
+			// dir vec
+			glm::vec2 dirVec;
 
 			// accel
 			float accelRad;
@@ -42,6 +48,8 @@ namespace Voxel
 			// angle (rotation)
 			float startAngle;
 			float endAngle;
+
+			void normalizePoint(glm::vec2& radial);
 		public:
 			~Particle() = default;
 		};

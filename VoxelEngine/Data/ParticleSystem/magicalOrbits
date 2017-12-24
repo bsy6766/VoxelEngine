@@ -1,8 +1,8 @@
 name "Magical Orbits"
-duration 10
-totalParticles 10
+duration -1
+totalParticles 20
 particleLifeSpan 1
-particleLifeSpanVar 0
+particleLifeSpanVar 0.3
 blendSrc 770
 blendDest 771
 position
@@ -28,22 +28,27 @@ color
 		r 0
 		g 0
 		b 0
-speed 20
+speed 70
 speedVar 5
 gravity
-	x 0
-	y 0
+	x 500
+	y 250
 accel
 	tan 30
 	tanVar 0
 	rad 80
 	radVar 0
-emitAngle 90
-emitAngleVar 360
+emitAngle 146
+emitAngleVar 50
 size
-	start 20
+	start 32
+	startVar 0
+	end 0
+	endVar 0
+angle
+	start 0
 	startVar 0
 	end 0
 	endVar 0
 spriteSheetName GlobalSpriteSheet
-textureName 256x256_whtie_circle.png
+textureName 32x32_white_circle.png

@@ -152,6 +152,18 @@ namespace Voxel
 			// end size variance
 			float endSizeVar;
 
+			// start angle
+			float startAngle;
+
+			// start angle variance
+			float startAngleVar;
+
+			// end angle
+			float endAngle;
+
+			// end angle variance
+			float endAngleVar;
+
 			// blend src
 			unsigned int blendSrc;
 
@@ -166,6 +178,10 @@ namespace Voxel
 
 			// random generator
 			Random* rand;
+
+			// gl
+			GLuint posbo;
+			GLuint cbo;
 
 			// initialize
 			bool init(Voxel::DataTree* particleSystemDataTree);

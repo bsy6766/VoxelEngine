@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec3 vert;		// Contains only 1 quad (4 vec3)
 layout(location = 1) in vec2 uvVert;	// Contains only 1 quad (4 vec2)
+layout(location = 2) in vec2 posVert;
 
 uniform mat4 projMat;		// Main camera's projection matrix
 uniform mat4 modelMat;		// Particle system's model matrix
@@ -13,7 +14,11 @@ out vec4 particleSystemColor;
 
 void main()
 {
-	gl_Position = projMat * modelMat * vec4(vert, 1.0);
+	vec3 finalVert = vert;
+	finalVert.x += posVert.x;
+	finalVert.y += posVert.y;
+
+	gl_Position = projMat * modelMat * vec4(finalVert.xyz, 1.0);
 
 	fragTexCoord = uvVert;
 
