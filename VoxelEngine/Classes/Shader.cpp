@@ -10,6 +10,7 @@ using namespace Voxel;
 
 Voxel::Shader::Shader()
 	: shaderObject(0)
+	, shaderType(Type::VERTEX)
 {}
 
 Voxel::Shader::~Shader()
@@ -20,7 +21,7 @@ Voxel::Shader::~Shader()
 	}
 }
 
-Shader * Shader::create(const std::string & filePath, GLenum shaderType)
+Shader * Shader::create(const std::string & filePath, const Type shaderType)
 {
 	Shader* newShader = new Shader();
 	if (newShader->init(filePath, shaderType))
@@ -34,7 +35,7 @@ Shader * Shader::create(const std::string & filePath, GLenum shaderType)
 	}
 }
 
-bool Shader::init(const std::string & filePath, GLenum shaderType)
+bool Shader::init(const std::string & filePath, const Type shaderType)
 {
 	// read file from path
 	std::ifstream fs;
@@ -57,7 +58,20 @@ bool Shader::init(const std::string & filePath, GLenum shaderType)
 		throw std::runtime_error(std::to_string(Voxel::Error::Code::ERROR_SHADER_FILE_IS_EMPTY) + "\nFile empty: " + filePath);
 	}
 
-	shaderObject = glCreateShader(shaderType);
+	this->shaderType = shaderType;
+
+	if (shaderType == Type::VERTEX)
+	{
+		shaderObject = glCreateShader(GL_VERTEX_SHADER);
+	}
+	else if (shaderType == Type::GEOMETRY)
+	{
+		shaderObject = glCreateShader(GL_GEOMETRY_SHADER);
+	}
+	else
+	{
+		shaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+	}
 
 	const char* code = shaderCode.c_str();
 
@@ -82,7 +96,7 @@ void Shader::checkCompileError()
 
 	if (status == GL_FALSE)
 	{
-		std::string msg("Compile failure in vertex shader:\n");
+		std::string msg("Compile failure in " + std::string((shaderType == Type::VERTEX) ? "vertex" : ((shaderType == Type::GEOMETRY) ? "geometry" : "fragment")) + " shader:\n");
 
 		GLint infoLogLength;
 		glGetShaderiv(shaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);

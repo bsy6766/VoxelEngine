@@ -8,10 +8,11 @@
 // gl
 #include <GL\glew.h>
 
+// voxel
+#include "Shader.h"
+
 namespace Voxel
 {
-	class Shader;
-
 	/**
 	*	@class ShaderManager
 	*	@brief Manage all shaders in application.
@@ -56,7 +57,7 @@ namespace Voxel
 		*	@param filePath Shader file path.
 		*	@param shaderType Type of shader
 		*/
-		Shader* createShader(const std::string& name, const std::string& filePath, GLenum shaderType);
+		Shader* createShader(const std::string& name, const std::string& filePath, const Shader::Type shaderType);
 
 		/**
 		*	Add vertex shader

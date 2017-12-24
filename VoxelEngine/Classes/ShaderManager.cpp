@@ -1,8 +1,10 @@
 // pch
 #include "PreCompiled.h"
 
+// voxel
 #include "ShaderManager.h"
-#include "Shader.h"
+#include "Logger.h"
+#include "Config.h"
 
 using namespace Voxel;
 
@@ -11,47 +13,39 @@ ShaderManager::~ShaderManager()
 	releaseAll();
 }
 
-Shader * ShaderManager::createShader(const std::string& name, const std::string & filePath, GLenum shaderType)
+Shader * ShaderManager::createShader(const std::string& name, const std::string & filePath, const Shader::Type shaderType)
 {
-	if (shaderType == GL_VERTEX_SHADER)
+	Shader* newShader = Shader::create(filePath, shaderType);
+
+	if (newShader)
 	{
-		Shader* newShader = Shader::create(filePath, shaderType);
-		if (newShader)
+		if (shaderType == Shader::Type::VERTEX)
 		{
-			if (addVertexShader(name, newShader))
-			{
-				return newShader;
-			}
-			else
-			{
-				return nullptr;
-			}
+			addVertexShader(name, newShader);
 		}
-		else
+		else if (shaderType == Shader::Type::GEOMETRY)
 		{
+			// I don't use geomtry shader yet.
 			delete newShader;
 			return nullptr;
 		}
-	}
-	else if (shaderType == GL_FRAGMENT_SHADER)
-	{
-		Shader* newShader = Shader::create(filePath, shaderType);
-		if (newShader)
+		else if (shaderType == Shader::Type::FRAGMENT)
 		{
-			if (addFragmentShader(name, newShader))
-			{
-				return newShader;
-			}
-			else
-			{
-				return nullptr;
-			}
+			addFragmentShader(name, newShader);
 		}
 		else
 		{
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+			auto logger = &Voxel::Logger::getInstance();
+
+			logger->consoleWarn("[ShaderManager] Trying to create shader type that is invalid. Shader::Type value: " + std::to_string(static_cast<int>(shaderType)));
+#endif
+
 			delete newShader;
 			return nullptr;
 		}
+
+		return newShader;
 	}
 	else
 	{
@@ -65,6 +59,13 @@ bool ShaderManager::addVertexShader(const std::string & name, Shader * vertexSha
 	if (find_it == vertexShaders.end())
 	{
 		vertexShaders.emplace(name, vertexShader);
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+
+		logger->consoleInfo("[ShaderManager] Successfully added vertex shader: " + name + " with shader object: " + std::to_string(vertexShader->getObject()));
+#endif
+
 		return true;
 	}
 	else
@@ -79,6 +80,13 @@ bool ShaderManager::addFragmentShader(const std::string & name, Shader * fragmen
 	if (find_it == fragmentShaders.end())
 	{
 		fragmentShaders.emplace(name, fragmentShader);
+
+#if V_DEBUG && V_DEBUG_LOG_CONSOLE
+		auto logger = &Voxel::Logger::getInstance();
+
+		logger->consoleInfo("[ShaderManager] Successfully added fragment shader: " + name + " with shader object: " + std::to_string(fragmentShader->getObject()));
+#endif
+
 		return true;
 	}
 	else
