@@ -26,6 +26,7 @@ namespace Voxel
 		void initNinePatchImages();
 		void initInputField();
 		void initUIHierarchy();
+		void initColorPicker();
 
 		Voxel::UI::Button* addButton(const std::string& name, const glm::vec2& pos, const bool disable, Voxel::UI::TransformNode* parent);
 		Voxel::UI::CheckBox* addCheckbox(const std::string& name, const glm::vec2& pos, const bool disable, Voxel::UI::TransformNode* parent);
@@ -48,6 +49,11 @@ namespace Voxel
 		// exit & return to menu
 		Voxel::UI::Button* exitButton;
 		Voxel::UI::Button* returnToMainMenuButton;
+
+		// color slider
+		Voxel::UI::ColorPicker* cp;
+		Voxel::UI::Slider* cpSlider;
+		Voxel::UI::Button* setBgColorButton;
 
 		// FPS label
 		Voxel::UI::Text* fpsLabel;

@@ -19,6 +19,8 @@ Voxel::UITestScene::UITestScene()
 	, fpsLabel(nullptr)
 	, canvas(nullptr)
 	, uiInfo(nullptr)
+	, cp(nullptr)
+	, cpSlider(nullptr)
 {}
 
 Voxel::UITestScene::~UITestScene()
@@ -140,12 +142,7 @@ void Voxel::UITestScene::init()
 	cpLabel->setScale(2.0f);
 	canvas->addChild(cpLabel);
 
-	auto cpBg = NinePatchImage::create("cpBg", "DebugSpriteSheet", "debug_color_picker_bg.png", 4.0f, 4.0f, 4.0f, 4.0f, glm::vec2(256.0f));
-	cpBg->setPosition(98.0f, -396.0f);
-	canvas->addChild(cpBg);
-
-	auto cp = ColorPicker::create("cp", glm::vec2(256.0f), "DebugSpriteSheet", "debug_color_picker_icon.png");
-	cpBg->addChild(cp);
+	initColorPicker();
 
 	const std::string ss = "DebugSpriteSheet";
 
@@ -300,20 +297,28 @@ void Voxel::UITestScene::initProgressTimers(const float labelsY)
 	radialPGWAction->runAction(radialSeq);
 
 	addProgRadial("rPG0", glm::vec2(rX + rOffset, rY), 0, false, canvas);
-	addProgRadial("rPG25", glm::vec2(rX + (rOffset * 2.0f), rY), 25, false, canvas);
-	addProgRadial("rPG50", glm::vec2(rX + (rOffset * 3.0f), rY), 50, false, canvas);
-	addProgRadial("rPG75", glm::vec2(rX + (rOffset * 4.0f), rY), 75, false, canvas);
-	addProgRadial("rPG100", glm::vec2(rX + (rOffset * 5.0f), rY), 100, false, canvas);
+	addProgRadial("rPG12", glm::vec2(rX + (rOffset * 2.0f), rY), 12.5f, false, canvas);
+	addProgRadial("rPG25", glm::vec2(rX + (rOffset * 3.0f), rY), 25.0f, false, canvas);
+	addProgRadial("rPG37", glm::vec2(rX + (rOffset * 4.0f), rY), 37.5f, false, canvas);
+	addProgRadial("rPG50", glm::vec2(rX + (rOffset * 5.0f), rY), 50.0f, false, canvas);
+	addProgRadial("rPG62", glm::vec2(rX + (rOffset * 6.0f), rY), 62.5f, false, canvas);
+	addProgRadial("rPG75", glm::vec2(rX + (rOffset * 7.0f), rY), 75.0f, false, canvas);
+	addProgRadial("rPG87", glm::vec2(rX + (rOffset * 8.0f), rY), 87.5f, false, canvas);
+	addProgRadial("rPG100", glm::vec2(rX + (rOffset * 9.0f), rY), 100, false, canvas);
 
 	auto radialCcwPGWAction = addProgRadial("radialCcwPGWAction", glm::vec2(rX, rY - rOffset), 0, false, canvas);
 	auto radialCcwSeq = Voxel::UI::RepeatForever::create(Voxel::UI::Sequence::create({ Voxel::UI::ProgressTo::create(1.0f, 100), Voxel::UI::Delay::create(0.5f), Voxel::UI::ProgressTo::create(1.0f, 0), Voxel::UI::Delay::create(0.5f) }));
 	radialCcwPGWAction->runAction(radialCcwSeq);
 
 	addProgRadial("rCcwPG0", glm::vec2(rX + rOffset, rY - rOffset), 0, true, canvas);
-	addProgRadial("rCcwPG25", glm::vec2(rX + (rOffset * 2.0f), rY - rOffset), 25, true, canvas);
-	addProgRadial("rCcwPG50", glm::vec2(rX + (rOffset * 3.0f), rY - rOffset), 50, true, canvas);
-	addProgRadial("rCcwPG75", glm::vec2(rX + (rOffset * 4.0f), rY - rOffset), 75, true, canvas);
-	addProgRadial("CcwrPG100", glm::vec2(rX + (rOffset * 5.0f), rY - rOffset), 100, true, canvas);
+	addProgRadial("rCcwPG12", glm::vec2(rX + (rOffset * 2.0f), rY - rOffset), 12.5f, true, canvas);
+	addProgRadial("rCcwPG25", glm::vec2(rX + (rOffset * 3.0f), rY - rOffset), 25.0f, true, canvas);
+	addProgRadial("rCcwPG37", glm::vec2(rX + (rOffset * 4.0f), rY - rOffset), 37.5f, true, canvas);
+	addProgRadial("rCcwPG50", glm::vec2(rX + (rOffset * 5.0f), rY - rOffset), 50.0f, true, canvas);
+	addProgRadial("rCcwPG62", glm::vec2(rX + (rOffset * 6.0f), rY - rOffset), 62.5f, true, canvas);
+	addProgRadial("rCcwPG75", glm::vec2(rX + (rOffset * 7.0f), rY - rOffset), 75.0f, true, canvas);
+	addProgRadial("rCcwPG87", glm::vec2(rX + (rOffset * 8.0f), rY - rOffset), 87.5f, true, canvas);
+	addProgRadial("rCcwPG100", glm::vec2(rX + (rOffset * 9.0f), rY - rOffset), 100, true, canvas);
 }
 
 void Voxel::UITestScene::initSliders() 
@@ -652,6 +657,45 @@ void Voxel::UITestScene::initUIHierarchy()
 	auto ui11 = addUIHiers("uiHier11", glm::vec2(offset * 2.0f, -offset), 11, 1, ui9);
 }
 
+void Voxel::UITestScene::initColorPicker()
+{
+	setBgColorButton = Button::create("setBGColor", "DebugSpriteSheet", "debug_square_button.png");
+	setBgColorButton->setPosition(208.0f, -247.0f);
+	setBgColorButton->setOnMouseEnterCallback(std::bind(&UITestScene::onMouseEnter, this, std::placeholders::_1));
+	setBgColorButton->setOnMouseExitCallback(std::bind(&UITestScene::onMouseExit, this, std::placeholders::_1));
+	setBgColorButton->setOnMouseMoveCallback(std::bind(&UITestScene::onMouseMove, this, std::placeholders::_1));
+	setBgColorButton->setOnMousePressedCallback(std::bind(&UITestScene::onMousePressed, this, std::placeholders::_1, std::placeholders::_2));
+	setBgColorButton->setOnMouseReleasedCallback(std::bind(&UITestScene::onMouseReleased, this, std::placeholders::_1, std::placeholders::_2));
+	setBgColorButton->setOnTriggeredCallbackFunc(std::bind(&UITestScene::onButtonTriggered, this, std::placeholders::_1));
+	setBgColorButton->setOnCancelledCallbackFunc(std::bind(&UITestScene::onButtonCancelled, this, std::placeholders::_1));
+	canvas->addChild(setBgColorButton);
+
+	auto cpBg = NinePatchImage::create("cpBg", "DebugSpriteSheet", "debug_color_picker_bg.png", 4.0f, 4.0f, 4.0f, 4.0f, glm::vec2(256.0f));
+	cpBg->setPosition(98.0f, -396.0f);
+	canvas->addChild(cpBg);
+
+	cp = ColorPicker::create("cp", glm::vec2(256.0f), "DebugSpriteSheet", "debug_color_picker_icon.png"); 
+	cp->setOnMouseEnterCallback(std::bind(&UITestScene::onMouseEnter, this, std::placeholders::_1));
+	cp->setOnMouseExitCallback(std::bind(&UITestScene::onMouseExit, this, std::placeholders::_1));
+	cp->setOnMouseMoveCallback(std::bind(&UITestScene::onMouseMove, this, std::placeholders::_1));
+	cp->setOnMousePressedCallback(std::bind(&UITestScene::onMousePressed, this, std::placeholders::_1, std::placeholders::_2));
+	cp->setOnMouseReleasedCallback(std::bind(&UITestScene::onMouseReleased, this, std::placeholders::_1, std::placeholders::_2));
+	cpBg->addChild(cp);
+
+	cpSlider = Slider::create("cpSlider", "DebugSpriteSheet", "debug_color_slider.png", "debug_color_slider_button.png", Slider::Type::VERTICAL, 0.0f, 360.0f);
+	cpSlider->setPosition(256.0f, -396.0f);
+	cpSlider->setOnMouseEnterCallback(std::bind(&UITestScene::onMouseEnter, this, std::placeholders::_1));
+	cpSlider->setOnMouseExitCallback(std::bind(&UITestScene::onMouseExit, this, std::placeholders::_1));
+	cpSlider->setOnMouseMoveCallback(std::bind(&UITestScene::onMouseMove, this, std::placeholders::_1));
+	cpSlider->setOnMousePressedCallback(std::bind(&UITestScene::onMousePressed, this, std::placeholders::_1, std::placeholders::_2));
+	cpSlider->setOnMouseReleasedCallback(std::bind(&UITestScene::onMouseReleased, this, std::placeholders::_1, std::placeholders::_2));
+	cpSlider->setOnButtonPressed(std::bind(&UITestScene::onSliderButtonPrssed, this, std::placeholders::_1));
+	cpSlider->setOnBarPressed(std::bind(&UITestScene::onSliderBarPressed, this, std::placeholders::_1));
+	cpSlider->setOnValueChange(std::bind(&UITestScene::onSliderValueChange, this, std::placeholders::_1));
+	cpSlider->setOnFinished(std::bind(&UITestScene::onSliderFinished, this, std::placeholders::_1));
+	canvas->addChild(cpSlider);
+}
+
 Voxel::UI::Button* Voxel::UITestScene::addButton(const std::string & name, const glm::vec2 & pos, const bool disable, Voxel::UI::TransformNode * parent)
 {
 	auto newButton = Button::create(name, "DebugSpriteSheet", "debug_button.png");
@@ -976,6 +1020,11 @@ void Voxel::UITestScene::onReturnToMainMenuClicked(Voxel::UI::Button* sender)
 void Voxel::UITestScene::onButtonTriggered(Voxel::UI::Button * sender)
 {
 	std::cout << "Button \"" + sender->getName() + "\" triggered\n";
+
+	if (sender->getID() == setBgColorButton->getID())
+	{
+		Application::getInstance().getGLView()->setClearColor(cp->getRGB());
+	}
 }
 
 void Voxel::UITestScene::onButtonCancelled(Voxel::UI::Button * sender)
@@ -1011,6 +1060,11 @@ void Voxel::UITestScene::onSliderBarPressed(Voxel::UI::Slider * sender)
 void Voxel::UITestScene::onSliderValueChange(Voxel::UI::Slider * sender)
 {
 	std::cout << "Slider \"" + sender->getName() + "\" value changed to " + std::to_string(sender->getValue()) + "\n";
+
+	if (sender->getID() == cpSlider->getID())
+	{
+		cp->setH(cpSlider->getValue());
+	}
 }
 
 void Voxel::UITestScene::onSliderFinished(Voxel::UI::Slider * sender)
