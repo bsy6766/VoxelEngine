@@ -21,25 +21,22 @@ namespace Voxel
 		*	@class Random
 		*	@brief General random generator. All functions and members are static.
 		*/
+		/*
 		class Random
 		{
 		public:
 			struct Seed
 			{
+			public:
 				size_t number;
 				std::string str;
 			};
 
-			struct Generator
+			struct Engine
 			{
+			public:
 				Seed seed;
 				std::mt19937 engine;
-				std::uniform_int_distribution<int> dist;
-
-				int get()
-				{
-					return dist(engine);
-				}
 			};
 		private:
 			// Seed in humber. Hashed from seed string
@@ -48,10 +45,13 @@ namespace Voxel
 			// Seed string.
 			static std::string seedString;
 
-			// Generator. Uses mt19937.
+
+			// Random engine. Uses mt19937.
 #ifdef _WIN64
 			static std::mt19937_64 generator;
 #else
+			// General random engine. Use this engine to generate random number
+			static std::mt19937 generalEngine;
 			static std::mt19937 generator;
 #endif
 
@@ -191,6 +191,7 @@ namespace Voxel
 			}
 
 		};
+			*/
 
 		typedef std::chrono::steady_clock::time_point tp;
 
