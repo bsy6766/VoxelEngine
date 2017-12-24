@@ -1096,7 +1096,6 @@ bool Voxel::DebugConsole::executeCommand(const std::string & command)
 					auto arg1 = split.at(1);
 					if (arg1 == "reset")
 					{
-						Voxel::Utility::Random::resetGenerator();
 						executedCommandHistory.push_back("Reseting random generator");
 						addCommandHistory(command);
 						return true;

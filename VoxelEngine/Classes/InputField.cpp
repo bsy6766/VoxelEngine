@@ -577,7 +577,7 @@ void Voxel::UI::InputField::appendStr(const std::string & str)
 {
 	if (textMaxLength >= 0)
 	{
-		if (text.size() >= textMaxLength)
+		if (static_cast<int>(text.size()) >= textMaxLength)
 		{
 			return;
 		}

@@ -47,17 +47,14 @@ void Voxel::UI::FadeTo::setTarget(TransformNode * target)
 void Voxel::UI::FadeTo::update(const float delta)
 {
 	elapsedTime += delta;
-	//std::cout << "FadeTo: " << elapsedTime << " / " << duration << "\n";
-
+	
 	if (elapsedTime >= duration)
 	{
 		target->setOpacity(opacity);
-		//std::cout << "FadeTo done. opacity: " << opacity << "\n";
 	}
 	else
 	{
 		const float curOpacity = target->getOpacity();
-		//std::cout << "FadeTo. opacity: " << newOpacity << "\n";
 		target->setOpacity(curOpacity + ((opacity - curOpacity) * (delta / (duration - (elapsedTime - delta)))));
 	}
 }
