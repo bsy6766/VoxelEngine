@@ -7,6 +7,7 @@
 // voxel
 #include "Utility.h"
 #include "Block.h"
+#include "Random.h"
 
 namespace Voxel
 {
@@ -105,19 +106,21 @@ namespace Voxel
 		const glm::uvec3 DIFFICULTY_6 = glm::uvec3(255, 52, 52);
 		const glm::uvec3 DIFFICULTY_7 = glm::uvec3(184, 0, 0);
 
+		static Voxel::Random rand;
+
 		// Random color
 		static inline glm::vec3 getRandomColor()
 		{
-			return glm::vec3(Utility::Random::randomReal(0.4f, 0.7f), 
-							Utility::Random::randomReal(0.4f, 0.7f), 
-							Utility::Random::randomReal(0.4f, 0.7f));
+			return glm::vec3(rand.randRangeFloat(0.4f, 0.7f), 
+				rand.randRangeFloat(0.4f, 0.7f),
+				rand.randRangeFloat(0.4f, 0.7f));
 		}
 
 		static inline glm::uvec3 getRandomColor255()
 		{
-			return glm::uvec3(Utility::Random::randomInt(50, 200),
-				Utility::Random::randomInt(50, 200),
-				Utility::Random::randomInt(50, 200));
+			return glm::uvec3(rand.randRangeInt(50, 200),
+				rand.randRangeInt(50, 200),
+				rand.randRangeInt(50, 200));
 		}
 
 		static inline glm::vec3 colorU3TocolorV3(const glm::uvec3& color)
