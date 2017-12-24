@@ -85,18 +85,10 @@ namespace Voxel
 			// icon uses Rendernodes' texture, program.
 			glm::mat4 iconModelMat;
 			glm::vec3 iconColor;
+			glm::vec2 iconPos;
 
 			// state
 			State state;
-
-			// set h
-			void setH(const float h);
-			
-			// get hsb(hsv)
-			glm::vec3 getHSB() const;
-
-			// get rgb
-			glm::vec3 getRGB() const;
 
 			// init
 			bool init(const glm::vec2& palleteSize, const std::string& spriteSheetName, const std::string& palleteIconImageName);
@@ -121,6 +113,18 @@ namespace Voxel
 		public:
 
 			static ColorPicker* create(const std::string& name, const glm::vec2& palleteSize, const std::string& spriteSheetName, const std::string& palleteIconImageName);
+
+			// set h
+			void setH(const float h);
+
+			// get hsb(hsv)
+			glm::vec3 getHSB() const;
+
+			// get rgb
+			glm::vec3 getRGB() const;
+
+			// override
+			void updateModelMatrix() override;
 
 			// update mouse move
 			bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta) override;

@@ -13,14 +13,15 @@
 Voxel::UI::ColorPicker::ColorPicker(const std::string& name)
 	: RenderNode(name)
 	, h(0.0f)
-	, s(0.0f)
-	, b(0.0f)
+	, s(0.5f)
+	, b(0.5f)
 	, palleteColor(1.0f, 0.0f, 0.0f, 1.0f)
 	, palleteVao(0)
 	, palleteSize(0.0f)
 	, palleteProgram(nullptr)
 	, iconModelMat(1.0f)
 	, iconColor(1.0f)
+	, iconPos(0.0f)
 	, state(State::IDLE)
 {}
 
@@ -259,9 +260,9 @@ void Voxel::UI::ColorPicker::updateIconPos(const glm::vec2 & mousePosition)
 		resolvedPos.y = max.y;
 	}
 
-	auto d = resolvedPos - boundingBox.center;
+	iconPos = resolvedPos - boundingBox.center;
 
-	iconModelMat = modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(d, 0.0f));
+	iconModelMat = modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(iconPos, 0.0f));
 }
 
 void Voxel::UI::ColorPicker::updateColor()
@@ -355,6 +356,8 @@ bool Voxel::UI::ColorPicker::updateColorPickerMouseMove(const glm::vec2 & mouseP
 			{
 				if (state == State::HOVERED)
 				{
+					state = State::IDLE;
+
 					if (onMouseExit)
 					{
 						onMouseExit(this);
@@ -368,6 +371,13 @@ bool Voxel::UI::ColorPicker::updateColorPickerMouseMove(const glm::vec2 & mouseP
 	// Else, not interactable
 
 	return false;
+}
+
+void Voxel::UI::ColorPicker::updateModelMatrix()
+{
+	Voxel::UI::TransformNode::updateModelMatrix();
+
+	iconModelMat = modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(iconPos, 0.0f));
 }
 
 bool Voxel::UI::ColorPicker::updateMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
@@ -525,7 +535,7 @@ glm::vec3 Voxel::UI::ColorPicker::getHSB() const
 
 glm::vec3 Voxel::UI::ColorPicker::getRGB() const
 {
-	return Color::HSV2RGB(h, s, b);
+	return Color::HSV2RGB(h / 360.0f, s, b);
 }
 
 void Voxel::UI::ColorPicker::renderSelf()
