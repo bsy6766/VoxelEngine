@@ -1,0 +1,49 @@
+name "Magical Orbits"
+duration 10
+totalParticles 10
+particleLifeSpan 1
+particleLifeSpanVar 0
+blendSrc 770
+blendDest 771
+position
+	x 0
+	y 0
+positionVar
+	x 0
+	y 0
+color
+	start
+		r 0
+		g 0
+		b 0
+	startVar
+		r 0
+		g 0
+		b 0
+	end
+		r 0
+		g 0
+		b 0
+	endVar
+		r 0
+		g 0
+		b 0
+speed 20
+speedVar 5
+gravity
+	x 0
+	y 0
+accel
+	tan 30
+	tanVar 0
+	rad 80
+	radVar 0
+emitAngle 90
+emitAngleVar 360
+size
+	start 20
+	startVar 0
+	end 0
+	endVar 0
+spriteSheetName GlobalSpriteSheet
+textureName 256x256_whtie_circle.png

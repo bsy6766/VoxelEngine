@@ -168,13 +168,8 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
-		float h = 200.0f / 360.0f;
-		float s = 0.5f;
-		float b = 0.25f;
-
-		glm::vec3 rgb = Color::HSV2RGB(h, s, b);
-
-		std::cout << Utility::Log::vec3ToStr(rgb * 255.0f) << "\n";
+		auto ps = Voxel::UI::ParticleSystem::create("Magical Orbits", "Data/ParticleSystem/magicalOrbits");
+		canvas->addChild(ps);
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{
