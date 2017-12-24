@@ -794,8 +794,6 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 		modelMat = getModelMatrix();
 	}
 
-	//boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
 	// Check if this node has children
 	if (hasChildren())
 	{
@@ -810,9 +808,7 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 void Voxel::UI::TransformNode::updateModelMatrix(const glm::mat4 & parentMatrix)
 {
 	modelMat = parentMatrix * getModelMatrix();
-
-	//boundingBox.center = glm::vec2(modelMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
+	
 	// Check if this node has children
 	if (hasChildren())
 	{
@@ -835,12 +831,33 @@ void Voxel::UI::TransformNode::update(const float delta)
 			{
 				if ((*it)->isDone())
 				{
+					// action is done. remove it
 					delete (*it);
 					it = actions.erase(it);
 				}
 				else
 				{
+					// update action
 					(*it)->update(delta);
+
+					// check time
+					auto et = (*it)->getExceededTime();
+
+					int threshold = 10;
+
+					while (et > 0.0f)
+					{
+						(*it)->update(et);
+						et = (*it)->getExceededTime();
+
+						threshold--;
+
+						if (threshold <= 0)
+						{
+							et = 0.0f;
+						}
+					}
+
 					++it;
 				}
 			}
