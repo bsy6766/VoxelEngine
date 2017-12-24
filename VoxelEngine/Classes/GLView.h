@@ -274,6 +274,9 @@ namespace Voxel
 		// Set glfw cursor mode.
 		void setCursorMode(const int mode);
 
+		// calibrate time.
+		void calibrateTime();
+
 		// Close glfw window
 		void close();
 

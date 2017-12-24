@@ -490,6 +490,25 @@ int Voxel::GLView::getFPS()
 
 double Voxel::GLView::getElaspedTime()
 {
+	/*
+	// KnownIssue: Time keeps goes on even if program is halted by dubugger.
+	// previousTime stays the same but currentTime becomes equal to the amount of time spent during dubugging + previous current time.
+	// As a result, elapsedTime gets huge (may go to infinite) and screws up all the updates, especially UI actions.
+	// This won't happen on release because there is no dubugging session, but elapsed time might go nuts.
+	// My thought is that get average tick time based on fps (i.e 1 / 60 on 60 fps) and if it's bigger than that, reset time
+	if (std::isinf(elaspedTime)) 
+	{
+		// If program halts, elapsed time stacks up to infinite number
+		previousTime = currentTime = glfwGetTime();
+		elapsedTime = 0.0f;
+	}
+
+	if (elapsedTime > (1.0f / static_cast<float>(fps)))
+	{
+		calibrateTime();
+	}
+	*/
+
 	return elapsedTime;
 }
 
@@ -789,6 +808,12 @@ void Voxel::GLView::setClearColor(const glm::vec3 & color)
 void Voxel::GLView::setCursorMode(const int mode)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, mode);
+}
+
+void Voxel::GLView::calibrateTime()
+{
+	previousTime = currentTime = glfwGetTime();
+	elapsedTime = 0.0f;
 }
 
 void Voxel::GLView::close()
