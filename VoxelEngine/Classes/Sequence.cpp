@@ -149,7 +149,7 @@ bool Voxel::UI::Sequence::isDone() const
 	return (first ? first->isDone() : true) && (second ? second->isDone() : true);
 }
 
-float Voxel::UI::Sequence::getExceededTime() const
+float Voxel::UI::Sequence::getExceededTime()
 {
 	if (first)
 	{
@@ -239,7 +239,7 @@ void Voxel::UI::Sequence::update(const float delta)
 					else
 					{
 						// second is not done
-						second->update(delta + first->getExceededTime());
+						second->update(first->getExceededTime());
 					}
 				}
 			}

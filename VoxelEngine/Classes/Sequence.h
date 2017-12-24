@@ -60,7 +60,7 @@ namespace Voxel
 			bool isDone() const override;
 
 			// Get exceeded time
-			float getExceededTime() const override;
+			float getExceededTime() override;
 
 			// reset
 			void reset() override;
