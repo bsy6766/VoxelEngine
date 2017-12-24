@@ -72,7 +72,7 @@
             </struct>
         </struct>
         <key>shapePadding</key>
-        <uint>0</uint>
+        <uint>2</uint>
         <key>jpgQuality</key>
         <uint>80</uint>
         <key>pngOptimizationLevel</key>
@@ -86,7 +86,7 @@
         <key>textureFormat</key>
         <enum type="SettingsBase::TextureFormat">png</enum>
         <key>borderPadding</key>
-        <uint>0</uint>
+        <uint>2</uint>
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
@@ -197,6 +197,32 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">../Sprites/debug/debug_1.png</key>
+            <key type="filename">../Sprites/debug/debug_10.png</key>
+            <key type="filename">../Sprites/debug/debug_11.png</key>
+            <key type="filename">../Sprites/debug/debug_2.png</key>
+            <key type="filename">../Sprites/debug/debug_3.png</key>
+            <key type="filename">../Sprites/debug/debug_4.png</key>
+            <key type="filename">../Sprites/debug/debug_5.png</key>
+            <key type="filename">../Sprites/debug/debug_6.png</key>
+            <key type="filename">../Sprites/debug/debug_7.png</key>
+            <key type="filename">../Sprites/debug/debug_8.png</key>
+            <key type="filename">../Sprites/debug/debug_9.png</key>
+            <key type="filename">../Sprites/debug/debug_square_0.png</key>
+            <key type="filename">../Sprites/debug/debug_square_1.png</key>
+            <key type="filename">../Sprites/debug/debug_square_2.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9Paddings</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/debug/debug_anim_frame_0.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -297,6 +323,49 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../Sprites/debug/debug_color_picker_bg.png</key>
+            <key type="filename">../Sprites/debug/debug_color_picker_icon.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,3,6,6</rect>
+                <key>scale9Paddings</key>
+                <rect>3,3,6,6</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_color_slider.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>6,65,12,130</rect>
+                <key>scale9Paddings</key>
+                <rect>6,65,12,130</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_color_slider_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/debug_color_slider_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/debug_color_slider_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/debug_color_slider_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>9,3,18,5</rect>
+                <key>scale9Paddings</key>
+                <rect>9,3,18,5</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/debug/debug_cross_hair.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -324,9 +393,11 @@
                 <false/>
             </struct>
             <key type="filename">../Sprites/debug/debug_fade_image.png</key>
+            <key type="filename">../Sprites/debug/debug_move_image.png</key>
             <key type="filename">../Sprites/debug/debug_progress_radial_bg.png</key>
             <key type="filename">../Sprites/debug/debug_rotate_image.png</key>
             <key type="filename">../Sprites/debug/debug_scale_image.png</key>
+            <key type="filename">../Sprites/debug/debug_tint_image.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -352,6 +423,35 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../Sprites/debug/debug_hor_slider_bar.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>46,4,92,8</rect>
+                <key>scale9Paddings</key>
+                <rect>46,4,92,8</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_hor_slider_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/debug_hor_slider_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/debug_hor_slider_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/debug_hor_slider_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,6,4,12</rect>
+                <key>scale9Paddings</key>
+                <rect>2,6,4,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/debug/debug_image.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -365,6 +465,19 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">../Sprites/debug/debug_input_field_bg.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>63,8,125,15</rect>
+                <key>scale9Paddings</key>
+                <rect>63,8,125,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">../Sprites/debug/debug_input_field_cursor.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -375,6 +488,19 @@
                 <rect>1,4,1,7</rect>
                 <key>scale9Paddings</key>
                 <rect>1,4,1,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_nine_patch_image.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>11,11,22,22</rect>
+                <key>scale9Paddings</key>
+                <rect>11,11,22,22</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -443,31 +569,111 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../Sprites/debug/debug_scale_window.png</key>
+            <key type="filename">../Sprites/debug/debug_red_boundary.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>25,25,50,50</rect>
+                <rect>2,2,4,4</rect>
                 <key>scale9Paddings</key>
-                <rect>25,25,50,50</rect>
+                <rect>2,2,4,4</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../Sprites/debug/debug_square_0.png</key>
-            <key type="filename">../Sprites/debug/debug_square_1.png</key>
-            <key type="filename">../Sprites/debug/debug_square_2.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_0.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_1.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_2.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_3.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_4.png</key>
+            <key type="filename">../Sprites/debug/debug_slime_5.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>16,16,32,32</rect>
+                <rect>4,2,7,5</rect>
                 <key>scale9Paddings</key>
-                <rect>16,16,32,32</rect>
+                <rect>4,2,7,5</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_square_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/debug_square_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/debug_square_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/debug_square_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,8,15,15</rect>
+                <key>scale9Paddings</key>
+                <rect>8,8,15,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_ver_slider_bar.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>4,46,8,92</rect>
+                <key>scale9Paddings</key>
+                <rect>4,46,8,92</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/debug_ver_slider_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/debug_ver_slider_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/debug_ver_slider_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/debug_ver_slider_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>6,2,12,4</rect>
+                <key>scale9Paddings</key>
+                <rect>6,2,12,4</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/exit_game_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/exit_game_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/exit_game_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/exit_game_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>11,6,22,12</rect>
+                <key>scale9Paddings</key>
+                <rect>11,6,22,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../Sprites/debug/return_to_main_menu_button_clicked.png</key>
+            <key type="filename">../Sprites/debug/return_to_main_menu_button_disabled.png</key>
+            <key type="filename">../Sprites/debug/return_to_main_menu_button_hovered.png</key>
+            <key type="filename">../Sprites/debug/return_to_main_menu_button_idle.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>46,6,91,12</rect>
+                <key>scale9Paddings</key>
+                <rect>46,6,91,12</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

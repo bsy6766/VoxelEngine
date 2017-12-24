@@ -2,224 +2,260 @@
     "frames": [
         {
             "frame": {
-                "y": 67, 
-                "x": 1, 
+                "y": 81, 
+                "x": 575, 
                 "w": 174, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "credits_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "credits_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 67, 
-                "x": 177, 
+                "y": 81, 
+                "x": 753, 
                 "w": 174, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "credits_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 67, 
-                "x": 177, 
+                "y": 81, 
+                "x": 753, 
                 "w": 174, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "credits_button_idle.png"
         }, 
         {
             "frame": {
-                "y": 67, 
-                "x": 353, 
+                "y": 83, 
+                "x": 329, 
                 "w": 156, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "editor_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "editor_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 323, 
+                "y": 120, 
+                "x": 489, 
                 "w": 156, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "editor_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 323, 
+                "y": 120, 
+                "x": 489, 
                 "w": 156, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "editor_button_idle.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 1, 
+                "y": 3, 
+                "x": 575, 
                 "w": 238, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "exit_game_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "exit_game_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 241, 
+                "y": 42, 
+                "x": 575, 
                 "w": 238, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "exit_game_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 241, 
+                "y": 42, 
+                "x": 575, 
                 "w": 238, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "exit_game_button_idle.png"
         }, 
         {
             "frame": {
-                "y": 34, 
-                "x": 1, 
+                "y": 3, 
+                "x": 817, 
                 "w": 186, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "options_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "options_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 34, 
-                "x": 189, 
+                "y": 42, 
+                "x": 817, 
                 "w": 186, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "options_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 34, 
-                "x": 189, 
+                "y": 42, 
+                "x": 817, 
                 "w": 186, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "options_button_idle.png"
         }, 
         {
             "frame": {
-                "y": 34, 
-                "x": 377, 
+                "y": 3, 
+                "x": 3, 
+                "w": 568, 
+                "h": 36
+            }, 
+            "filename": "particle_system_editor_button_clicked.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
+            }, 
+            "filename": "particle_system_editor_button_disabled.png"
+        }, 
+        {
+            "frame": {
+                "y": 43, 
+                "x": 3, 
+                "w": 568, 
+                "h": 36
+            }, 
+            "filename": "particle_system_editor_button_hovered.png"
+        }, 
+        {
+            "frame": {
+                "y": 43, 
+                "x": 3, 
+                "w": 568, 
+                "h": 36
+            }, 
+            "filename": "particle_system_editor_button_idle.png"
+        }, 
+        {
+            "frame": {
+                "y": 120, 
+                "x": 649, 
                 "w": 114, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "play_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "play_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 133, 
-                "x": 1, 
+                "y": 120, 
+                "x": 767, 
                 "w": 114, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "play_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 133, 
-                "x": 1, 
+                "y": 120, 
+                "x": 767, 
                 "w": 114, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "play_button_idle.png"
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 1, 
+                "y": 83, 
+                "x": 3, 
                 "w": 159, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "ui_test_button_clicked.png"
         }, 
         {
             "frame": {
-                "y": 1, 
-                "x": 481, 
-                "w": 3, 
-                "h": 3
+                "y": 3, 
+                "x": 1007, 
+                "w": 2, 
+                "h": 2
             }, 
             "filename": "ui_test_button_disabled.png"
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 162, 
+                "y": 83, 
+                "x": 166, 
                 "w": 159, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "ui_test_button_hovered.png"
         }, 
         {
             "frame": {
-                "y": 100, 
-                "x": 162, 
+                "y": 83, 
+                "x": 166, 
                 "w": 159, 
-                "h": 31
+                "h": 35
             }, 
             "filename": "ui_test_button_idle.png"
         }
     ], 
     "texture": {
         "path": "MenuSceneUISpriteSheet.png", 
-        "height": 512, 
-        "width": 512
+        "height": 1024, 
+        "width": 1024
     }
 }
