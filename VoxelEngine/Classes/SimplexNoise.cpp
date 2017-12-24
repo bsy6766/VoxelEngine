@@ -11,7 +11,6 @@ std::unique_ptr<SimplexNoise> Manager::temperatureNoise = nullptr;
 std::unique_ptr<SimplexNoise> Manager::moistureNoise = nullptr;
 std::unique_ptr<SimplexNoise> Manager::colorNoise = nullptr;
 
-
 const float SimplexNoise::F2 = 0.366025403f;
 const float SimplexNoise::G2 = 0.211324865f;
 
@@ -116,9 +115,7 @@ float Voxel::Noise::SimplexNoise::noise(const glm::vec2 & v)
 
 void Voxel::Noise::SimplexNoise::init(const std::string & seed)
 {
-	rand.seedString = seed;
-	rand.seedNumber = std::hash<std::string>{}(seed);
-	rand.generator.seed(static_cast<unsigned int>(rand.seedNumber));
+	rand.setSeed(seed);
 
 	randomize();
 }
@@ -127,7 +124,7 @@ void Voxel::Noise::SimplexNoise::randomize()
 {
 	for (int i = 0; i < 256; i++)
 	{
-		perm[i] = perm[i + 256] = rand.randomInt(1, 255);
+		perm[i] = perm[i + 256] = rand.randRangeInt(1, 255);
 	}
 }
 

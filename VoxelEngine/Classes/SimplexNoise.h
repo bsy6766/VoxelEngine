@@ -9,6 +9,7 @@
 
 // glm
 #include <glm\glm.hpp>
+#include "Random.h"
 
 namespace Voxel
 {
@@ -39,35 +40,7 @@ namespace Voxel
 			static SimplexNoise* getMoistureNoise();
 			static SimplexNoise* getColorNoise();
 		};
-
-		/**
-		*	@struct Random
-		*	@Brief Simple struct that contains seed and random generator
-		*/
-		struct Random
-		{
-			size_t seedNumber;
-			std::string seedString;
-
-			std::mt19937 generator;
-
-			Random()
-				:seedNumber(0)
-				, seedString("")
-			{}
-
-			inline int randomInt(int min, int max)
-			{
-				if (min > max)
-				{
-					std::swap(min, max);
-				}
-
-				std::uniform_int_distribution<int> dist(min, max);
-				return dist(generator);
-			}
-		};
-
+		
 		class SimplexNoise
 		{
 		private:
@@ -82,7 +55,7 @@ namespace Voxel
 			std::array<int, 512> perm;
 
 			// Random generator
-			Random rand;
+			Voxel::Random rand;
 
 			// Gradient direction
 			static const int grad3[12][3];
