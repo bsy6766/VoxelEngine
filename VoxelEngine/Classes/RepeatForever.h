@@ -39,6 +39,9 @@ namespace Voxel
 			// reset
 			void reset() override;
 
+			// override
+			float getExceededTime() override;
+
 			// Set target to both actions
 			void setTarget(TransformNode* target) override;
 

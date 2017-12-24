@@ -64,6 +64,14 @@ void Voxel::UI::Repeat::reset()
 	}
 }
 
+float Voxel::UI::Repeat::getExceededTime()
+{
+	if (action)
+	{
+		return action->getExceededTime();
+	}
+}
+
 void Voxel::UI::Repeat::setTarget(TransformNode * target)
 {
 	if (target)
