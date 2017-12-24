@@ -26,11 +26,15 @@ bool Voxel::UI::Action::isDone() const
 	}
 }
 
-float Voxel::UI::Action::getExceededTime() const
+float Voxel::UI::Action::getExceededTime()
 {
 	if (elapsedTime >= duration)
 	{
-		return elapsedTime - duration;
+		float val = elapsedTime - duration;
+		
+		elapsedTime = duration;
+
+		return val;
 	}
 	else
 	{

@@ -36,7 +36,7 @@ namespace Voxel
 			virtual bool isDone() const;
 
 			// Get exceeded time.
-			virtual float getExceededTime() const;
+			virtual float getExceededTime();
 
 			// Get duration
 			float getDuration() const;
