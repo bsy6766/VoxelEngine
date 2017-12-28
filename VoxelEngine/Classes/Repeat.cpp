@@ -70,6 +70,10 @@ float Voxel::UI::Repeat::getExceededTime()
 	{
 		return action->getExceededTime();
 	}
+	else
+	{
+		return 0.0f;
+	}
 }
 
 void Voxel::UI::Repeat::setTarget(TransformNode * target)
