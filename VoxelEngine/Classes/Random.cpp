@@ -14,8 +14,13 @@ Voxel::Random::Random(const std::string& seedStr)
 	engine = std::mt19937(seed);
 }
 
-int Voxel::Random::randRangeInt(const int min, const int max)
+int Voxel::Random::randRangeInt(int min, int max)
 {
+	if (min > max)
+	{
+		std::swap(min, max);
+	}
+
 	return (std::uniform_int_distribution<>(min, max))(engine);
 }
 
@@ -24,8 +29,13 @@ int Voxel::Random::rand100()
 	return (std::uniform_int_distribution<>(0, 100))(engine);
 }
 
-float Voxel::Random::randRangeFloat(const float min, const float max)
+float Voxel::Random::randRangeFloat(float min, float max)
 {
+	if (min > max)
+	{
+		std::swap(min, max);
+	}
+
 	return (std::uniform_real_distribution<float>(min, max))(engine);
 }
 
