@@ -33,23 +33,6 @@ namespace Voxel
 	class EditorScene : public Scene
 	{
 	private:
-		enum MenuBarIndex : unsigned int
-		{
-			FILE,
-			EDIT,
-			MAX_MENU_BAR_BUTTON,
-		};
-
-		enum FileDropDownIndex : unsigned int
-		{
-			NEW,
-			OPEN,
-			SAVE,
-			SAVE_AS,
-			RETURN_TO_MAIN_MENU,
-			MAX_FILE_DROP_DOWN_BUTTON,
-		};
-
 		enum class MouseState
 		{
 			IDLE = 0,					// doing nothing
