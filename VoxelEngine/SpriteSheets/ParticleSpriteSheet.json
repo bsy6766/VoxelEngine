@@ -3,7 +3,7 @@
         {
             "frame": {
                 "y": 983, 
-                "x": 147, 
+                "x": 183, 
                 "w": 16, 
                 "h": 16
             }, 
@@ -12,7 +12,16 @@
         {
             "frame": {
                 "y": 1003, 
-                "x": 147, 
+                "x": 183, 
+                "w": 16, 
+                "h": 16
+            }, 
+            "filename": "16x16_white_square.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 203, 
                 "w": 16, 
                 "h": 16
             }, 
@@ -20,8 +29,8 @@
         }, 
         {
             "frame": {
-                "y": 983, 
-                "x": 167, 
+                "y": 1003, 
+                "x": 203, 
                 "w": 16, 
                 "h": 16
             }, 
@@ -29,8 +38,8 @@
         }, 
         {
             "frame": {
-                "y": 1003, 
-                "x": 167, 
+                "y": 983, 
+                "x": 223, 
                 "w": 16, 
                 "h": 16
             }, 
@@ -61,12 +70,21 @@
                 "w": 32, 
                 "h": 32
             }, 
-            "filename": "32x32_white_star.png"
+            "filename": "32x32_white_square.png"
         }, 
         {
             "frame": {
                 "y": 983, 
                 "x": 111, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "32x32_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 147, 
                 "w": 32, 
                 "h": 32
             }, 
@@ -97,12 +115,21 @@
                 "w": 64, 
                 "h": 64
             }, 
-            "filename": "64x64_white_star.png"
+            "filename": "64x64_white_square.png"
         }, 
         {
             "frame": {
                 "y": 915, 
                 "x": 207, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "64x64_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 927, 
                 "w": 64, 
                 "h": 64
             }, 
@@ -129,7 +156,16 @@
         {
             "frame": {
                 "y": 3, 
-                "x": 535, 
+                "x": 795, 
+                "w": 128, 
+                "h": 128
+            }, 
+            "filename": "128x128_white_square.png"
+        }, 
+        {
+            "frame": {
+                "y": 135, 
+                "x": 795, 
                 "w": 128, 
                 "h": 128
             }, 
@@ -137,8 +173,8 @@
         }, 
         {
             "frame": {
-                "y": 3, 
-                "x": 667, 
+                "y": 267, 
+                "x": 263, 
                 "w": 128, 
                 "h": 128
             }, 
@@ -151,7 +187,7 @@
                 "w": 256, 
                 "h": 256
             }, 
-            "filename": "256x256_triangle.png"
+            "filename": "256x256_white_blur_circle.png"
         }, 
         {
             "frame": {
@@ -160,7 +196,7 @@
                 "w": 256, 
                 "h": 256
             }, 
-            "filename": "256x256_white_blur_circle.png"
+            "filename": "256x256_white_circle.png"
         }, 
         {
             "frame": {
@@ -169,7 +205,7 @@
                 "w": 256, 
                 "h": 256
             }, 
-            "filename": "256x256_white_star.png"
+            "filename": "256x256_white_square.png"
         }, 
         {
             "frame": {
@@ -178,7 +214,16 @@
                 "w": 256, 
                 "h": 256
             }, 
-            "filename": "256x256_whtie_circle.png"
+            "filename": "256x256_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 535, 
+                "w": 256, 
+                "h": 256
+            }, 
+            "filename": "256x256_white_triangle.png"
         }
     ], 
     "texture": {
