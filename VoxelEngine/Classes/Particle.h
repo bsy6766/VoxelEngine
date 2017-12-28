@@ -32,6 +32,9 @@ namespace Voxel
 			// current position
 			glm::vec2 pos;
 
+			// emission position (set when particle get spawned)
+			glm::vec2 emitPos;
+
 			// Color
 			glm::vec4 startColor;
 			glm::vec4 endColor;
