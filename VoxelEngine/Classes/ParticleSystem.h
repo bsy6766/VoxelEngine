@@ -61,9 +61,13 @@ namespace Voxel
 
 			// list of particles
 			std::list<Particle*> particles;
+			std::list<Particle*> deadParticles;
 
 			// number of living particles
 			unsigned int livingParticleNumber;
+
+			// extra pool size
+			const unsigned int ExtraParticlesInPool = 10;
 
 			// Gravity mode attributes ----------
 
@@ -102,7 +106,7 @@ namespace Voxel
 			// Shared atrributes ----------------
 
 			// Size of particle
-			unsigned int particleSize;
+			unsigned int totalParticles;
 			
 			// emit angle
 			float emitAngle;
@@ -139,6 +143,9 @@ namespace Voxel
 
 			// end color variance
 			glm::vec4 endColorVar;
+
+			// texture size (width only)
+			float textureSize;
 
 			// start size
 			float startSize;
@@ -181,6 +188,7 @@ namespace Voxel
 
 			// gl
 			GLuint posbo;
+			GLuint srbo;
 			GLuint cbo;
 
 			// initialize
@@ -194,6 +202,107 @@ namespace Voxel
 
 			// Set value from data tree
 			bool setAttributesWithFile(Voxel::DataTree* particleSystemDataTree);
+
+			// set duration
+			void setDuration(const float duration);
+
+			// get emission rate
+			float getEmissionRate() const;
+
+			// get total living particles
+			int getLivingParticleNumber() const;
+
+			// set total particles
+			void setTotalParticles(const unsigned int totalParticles);
+
+			// set particle life span
+			void setParticleLifeSpan(const float lifeSpan);
+
+			// set particle life span var
+			void setParticleLifeSpanVar(const float lifeSpanVar);
+
+			// set speed
+			void setSpeed(const float speed);
+
+			// set speed var
+			void setSpeedVar(const float speedVar);
+
+			// set emit position
+			void setEmitPositionX(const float x);
+			void setEmitPositionY(const float y);
+			void setEmitPosition(const glm::vec2& emitPos);
+
+			// get emission position
+			glm::vec2 getEmissionPosition() const;
+
+			// set emit pos var y
+			void setEmitPosXVar(const float xVar);
+
+			// set emit pos var x
+			void setEmitPosYVar(const float yVar);
+
+			// get emit pos var
+			glm::vec2 getEmissionPositionVar() const;
+
+			// set gravity x
+			void setGravityX(const float gravityX);
+
+			// set gravity y
+			void setGravityY(const float gravityY);
+
+			// set emit angle
+			void setEmitAngle(const float angle);
+
+			// set emit angle var
+			void setEmitAngleVar(const float angleVar);
+
+			// set accel rad
+			void setAccelRad(const float accelRad);
+
+			// set accel rad var
+			void setAccelRadVar(const float accelRadVar);
+
+			// set accel tan
+			void setAccelTan(const float accelTan);
+
+			// set accel tan var
+			void setAccelTanVar(const float accelTanVar);
+
+			// set start size
+			void setStartSize(const float size);
+
+			// set start size var
+			void setStartSizeVar(const float size);
+
+			// set end size
+			void setEndSize(const float size);
+
+			// set end size var
+			void setEndSizeVar(const float size);
+
+			// set start angle
+			void setStartAngle(const float angle);
+
+			// set start angle var
+			void setStartAngleVar(const float angle);
+
+			// set end angle
+			void setEndAngle(const float angle);
+
+			// set end angle var
+			void setEndAngleVar(const float angle);
+
+			// set start color
+			void setStartColor(const glm::vec4& color);
+
+			// set start color var
+			void setStartColorVar(const glm::vec4& color);
+
+			// set end color
+			void setEndColor(const glm::vec4& color);
+
+			// set end color var
+			void setEndColorVar(const glm::vec4& color);
 
 			// override update
 			void update(const float delta) override;
