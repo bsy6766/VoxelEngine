@@ -1,84 +1,20 @@
-#ifndef UI_H
-#define UI_H
+#ifndef TRANSFORM_NODE_H
+#define TRANSFORM_NODE_H
 
-// Config
-#include "Config.h"
-
-// glm
-#include <glm/glm.hpp>
-
-// gl
-#include <GL\glew.h>
-
-// cpp
-#include <string>
-#include <map>
-#include <list>
-#include <functional>
-
-// Voxel
+// voxel
+#include "BaseNode.h"
 #include "ZOrder.h"
-#include "Shape.h"
 
 namespace Voxel
 {
-	// Forward declarations
-	class Texture2D;
-	class Font;
-	class Program;
-
 	namespace UI
 	{
-		// Forward declaration
-		class BaseNode;
-		class TransformNode;
-		class RenderNode;
-		class Action;
-
-		typedef std::map<ZOrder, TransformNode*, ZOrderComp> Children;
-
-		/**
-		*	@class BaseNode
-		*	@brief Base class of all UI component
-		*	
-		*	Node is simple base class that has id number and name. 
-		*	Node itself does nothing and can't be created as instance.
-		*/
-		class BaseNode
-		{
-		private:
-			static unsigned int idCounter;
-		protected:
-			// Constructor
-			BaseNode() = delete;
-			BaseNode(const std::string& name);
-
-			// name
-			std::string name;
-
-			// id
-			unsigned int id;
-		public:
-			// Destructor
-			~BaseNode();
-
-			/**
-			*	Get number id of ui
-			*/
-			unsigned int getID() const;
-
-			/**
-			*	Get name of ui
-			*/
-			std::string getName() const;
-		};
-
 		/**
 		*	@class TransformNode
 		*	@brief A node that can be transformed. Derived from Node class.
 		*
 		*	TransfromNode has own model mat and can have parent and children.
-		*	Even though TransformNode itself doesn't renders on screen, 
+		*	Even though TransformNode itself doesn't renders on screen,
 		*	but derived classes can, that is why it has pure virtual render function, opacity and visibility.
 		*/
 		class TransformNode : public BaseNode
@@ -142,7 +78,7 @@ namespace Voxel
 
 			// Bounding box
 			Voxel::Shape::Rect boundingBox;
-			
+
 			// Action sequence
 			std::list<Voxel::UI::Action*> actions;
 
@@ -154,7 +90,7 @@ namespace Voxel
 
 			// calculate model matrix
 			virtual glm::mat4 getModelMatrix();
-						
+
 			// Mouse callbacks
 
 			// on mouse pressed on ui. Only called when press is valid
@@ -254,7 +190,7 @@ namespace Voxel
 			*/
 			void setScale(const glm::vec2& scale);
 			void setScale(const float x, const float y);
-			
+
 
 			/**
 			*	Get scale of ui.
@@ -326,7 +262,7 @@ namespace Voxel
 			*	Set ui draggable
 			*/
 			void setDraggable();
-			
+
 			/**
 			*	Set ui undraggable
 			*/
@@ -380,7 +316,7 @@ namespace Voxel
 			bool removeChild(const unsigned int id, const bool releaseChild = false);
 
 			/**
-			*	Remove child by instance. 
+			*	Remove child by instance.
 			*	This attemps to find by z order. If fails, searcehs with id.
 			*/
 			bool removeChild(TransformNode* child, const bool releaseChild = false);
@@ -463,7 +399,7 @@ namespace Voxel
 			*	@param mouseDelta Amount of mouse moved.
 			*/
 			virtual bool updateMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
-			
+
 			/**
 			*	update mouse click
 			*	@param mousePosition Current position of mouse in screen space
@@ -494,7 +430,7 @@ namespace Voxel
 			*	Set callback function for mouse press.
 			*	This callback is called when mouse is pressed on ui.
 			*	int param on callback tells which mouse button was clicked
-			*	@param func Callback func. 
+			*	@param func Callback func.
 			*/
 			void setOnMousePressedCallback(const std::function<void(TransformNode* sender, const int)>& func);
 
@@ -553,65 +489,19 @@ namespace Voxel
 			*/
 			void stopAllActions();
 
-			// Debug print
-			virtual void print(const int tab);
-			void printChildren(const int tab);
-
 			// render
 			virtual void render() = 0;
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG
+#if V_DEBUG_PRINT
+			void printChildren(const int tab);
+#endif
+#if V_DEBUG_DRAW_UI_BOUNDING_BOX
 			// gl
 			GLuint bbVao;
 			virtual void createDebugBoundingBoxLine();
 #endif
-		};
-
-		/**
-		*	@class RenderNode
-		*	@brief A node that can be rendered. Derived from TransfomNode. Used by different UI classes.
-		*/
-		class RenderNode : public TransformNode
-		{
-		protected:
-			// Constructor
-			RenderNode() = delete;
-			RenderNode(const std::string& name);
-			
-			// Program ptr
-			Program* program;
-
-			// gl 
-			GLuint vao;
-
-			// Texture that image uses
-			Texture2D* texture;
-			
-			// Color of object
-			glm::vec3 color;
-		public:
-			virtual ~RenderNode();
-
-			/**
-			*	Set color. 
-			*	@color Color to apply. Color is multiplied with texture. White by default. [0.0f, 1.0f]
-			*/
-			void setColor(const glm::vec3& color);
-
-			/**
-			*	Get color
-			*/
-			glm::vec3 getColor() const;
-			
-			/**
-			*	Render self. Pure virtual. All UI need to override this to render itself during the ui graph traversal
-			*/
-			virtual void renderSelf() = 0;
-
-			/**
-			*	Render self and children
-			*/
-			void render() override;
+#endif
 		};
 	}
 }

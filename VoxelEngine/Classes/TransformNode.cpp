@@ -1,7 +1,7 @@
 // pch
-#include "PreCompiled.h"
+#include "Precompiled.h"
 
-#include "UI.h"
+#include "TransformNode.h"
 
 // voxel
 #include "Texture2D.h"
@@ -15,36 +15,7 @@
 #include "Utility.h"
 #include "Canvas.h"
 #include "UIActions.h"
-
-using namespace Voxel::UI;
-
-//=============================================================== Node ===============================================================
-
-unsigned int BaseNode::idCounter = 0;
-
-Voxel::UI::BaseNode::BaseNode(const std::string & name)
-	: name(name)
-	, id(++BaseNode::idCounter)
-{}
-
-Voxel::UI::BaseNode::~BaseNode()
-{
-	//std::cout << "~Node()\n";
-}
-
-unsigned int Voxel::UI::BaseNode::getID() const
-{
-	return id;
-}
-
-std::string Voxel::UI::BaseNode::getName() const
-{
-	return name;
-}
-
-//====================================================================================================================================
-
-//=========================================================== Transform Node =========================================================
+#include "Logger.h"
 
 Voxel::UI::TransformNode::TransformNode(const std::string & name)
 	: BaseNode(name)
@@ -161,17 +132,17 @@ void Voxel::UI::TransformNode::setAngle(const float angle)
 
 	if (newAngle > 360.0f)
 	{
-		while (newAngle > 360.0f)
-		{
-			newAngle -= 360.0f;
-		}
+	while (newAngle > 360.0f)
+	{
+	newAngle -= 360.0f;
+	}
 	}
 	else if (newAngle <= -360.0f)
 	{
-		while (newAngle <= -360.0f)
-		{
-			newAngle += 360.0f;
-		}
+	while (newAngle <= -360.0f)
+	{
+	newAngle += 360.0f;
+	}
 	}
 	*/
 
@@ -563,81 +534,55 @@ void Voxel::UI::TransformNode::removeParent()
 
 bool Voxel::UI::TransformNode::getNextZOrder(Voxel::ZOrder & curZOrder)
 {
-	bool lookForLocal = false;
-	int globalTemp = std::numeric_limits<int>::min();
-	int localTemp = globalTemp;
-	bool found = false;
+	auto it = children.begin();
 
-	for (auto& e : children)
+	bool hasUIWithSameGlobalZorder = false;
+
+	for (; it != children.end();)
 	{
-		if (!lookForLocal)
+		if ((it->first).getGlobalZOrder() == curZOrder.getGlobalZOrder())
 		{
-			if (e.first.getGlobalZOrder() == curZOrder.getGlobalZOrder())
-			{
-				lookForLocal = true;
-				globalTemp = e.first.getGlobalZOrder();
-				localTemp = e.first.getLocalZOrder();
-
-				if (e.first.isLocalZOrderMaxInt())
-				{
-					return false;
-				}
-				else
-				{
-					continue;
-				}
-			}
+			// there is ui with same global z order
+			hasUIWithSameGlobalZorder = true;
+			break;
 		}
-		else
-		{
-			localTemp = e.first.getLocalZOrder();
 
-			if (e.first.getGlobalZOrder() != globalTemp)
-			{
-				if (localTemp == std::numeric_limits<int>::max())
-				{
-					return false;
-				}
-				else
-				{
-					found = true;
-					curZOrder.globalZOrder = globalTemp;
-					curZOrder.localZOrder = localTemp + 1;
-					break;
-				}
-			}
-			else
-			{
-				continue;
-			}
-		}
+		it++;
 	}
 
-	if (lookForLocal)
+	if (hasUIWithSameGlobalZorder)
 	{
-		if (found)
-		{
-			return true;
-		}
-		else
-		{
-			if (localTemp == std::numeric_limits<int>::max())
-			{
-				return false;
-			}
-			else
-			{
-				curZOrder.globalZOrder = globalTemp;
-				curZOrder.localZOrder = localTemp + 1;
-				return true;
-			}
-		}
-	}
+		int targetZOrder = (it->first).getGlobalZOrder();
+		int curLocalZOrder = (it->first).getLocalZOrder();
 
-	return true;
+		it++;
+
+		for (; it != children.end();)
+		{
+			if ((it->first).getGlobalZOrder() > targetZOrder)
+			{
+				break;
+			}
+
+			curLocalZOrder = (it->first).getLocalZOrder();
+
+			it++;
+		}
+
+		curZOrder.globalZOrder = targetZOrder;
+		curZOrder.localZOrder = curLocalZOrder + 1;
+
+		return true;
+	}
+	else
+	{
+		// there wasn't any ui with same z order
+		curZOrder.localZOrder = 0;
+		return true;
+	}
 }
 
-TransformNode * Voxel::UI::TransformNode::getChild(const std::string & name)
+Voxel::UI::TransformNode * Voxel::UI::TransformNode::getChild(const std::string & name)
 {
 	for (auto& e : children)
 	{
@@ -718,32 +663,6 @@ void Voxel::UI::TransformNode::stopAllActions()
 	actions.clear();
 }
 
-void Voxel::UI::TransformNode::print(const int tab)
-{
-	for (int i = 0; i < tab; i++)
-	{
-		std::cout << "\t";
-	}
-
-	std::cout << name << "\n";
-}
-
-void Voxel::UI::TransformNode::printChildren(const int tab)
-{
-	std::string str = "";
-
-	for (int i = 0; i < tab; i++)
-	{
-		str += "\t";
-	}
-
-	for (auto& e : children)
-	{
-		std::cout << str << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
-		e.second->printChildren(tab + 1);
-	}
-}
-
 glm::vec2 Voxel::UI::TransformNode::getContentSize() const
 {
 	return contentSize;
@@ -814,7 +733,7 @@ void Voxel::UI::TransformNode::updateModelMatrix()
 void Voxel::UI::TransformNode::updateModelMatrix(const glm::mat4 & parentMatrix)
 {
 	modelMat = parentMatrix * getModelMatrix();
-	
+
 	// Check if this node has children
 	if (hasChildren())
 	{
@@ -1047,7 +966,30 @@ void Voxel::UI::TransformNode::restartAllActions()
 	}
 }
 
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
+#if V_DEBUG
+#if V_DEBUG_PRINT
+void Voxel::UI::TransformNode::printChildren(const int tab)
+{
+#if V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
+
+	std::string tabStr = "";
+
+	for (int i = 0; i < tab; i++)
+	{
+		tabStr += "\t";
+	}
+
+	for (auto& e : children)
+	{
+		logger->consoleInfo(tabStr + "ZOrder (" + std::to_string(e.first.globalZOrder) + ", " + std::to_string(e.first.localZOrder) + "), Name: " + e.second->getName());
+
+		e.second->printChildren(tab + 1);
+	}
+#endif
+}
+#endif
+#if V_DEBUG_DRAW_UI_BOUNDING_BOX
 void Voxel::UI::TransformNode::createDebugBoundingBoxLine()
 {
 	if (bbVao)
@@ -1098,84 +1040,4 @@ void Voxel::UI::TransformNode::createDebugBoundingBoxLine()
 	glDeleteBuffers(1, &lineVbo);
 }
 #endif
-
-//====================================================================================================================================
-
-//======================================================= RenderNode =================================================================
-
-Voxel::UI::RenderNode::RenderNode(const std::string & name)
-	: TransformNode(name)
-	, program(nullptr)
-	, vao(0)
-	, texture(nullptr)
-	, color(1.0f)
-{}
-
-Voxel::UI::RenderNode::~RenderNode()
-{
-	std::cout << "~RenderNode() " + name + "\n";
-	if (vao)
-	{
-		// Delte array
-		std::cout << "vao = " << vao << "\n";
-		glDeleteVertexArrays(1, &vao);
-		vao = 0;
-	}
-
-#if V_DEBUG && V_DEBUG_DRAW_UI_BOUNDING_BOX
-	if (bbVao)
-	{
-		// Delte array
-		glDeleteVertexArrays(1, &bbVao);
-	}
 #endif
-}
-
-void Voxel::UI::RenderNode::setColor(const glm::vec3 & color)
-{
-	this->color = glm::clamp(color, 0.0f, 1.0f);
-}
-
-glm::vec3 Voxel::UI::RenderNode::getColor() const
-{
-	return color;
-}
-
-void Voxel::UI::RenderNode::render()
-{
-	if (children.empty())
-	{
-		if (visibility)
-		{
-			renderSelf();
-		}
-	}
-	else
-	{
-		if (visibility)
-		{
-			auto children_it = children.begin();
-			auto beginZOrder = ((children_it)->first).getGlobalZOrder();
-
-			if (beginZOrder < 0)
-			{
-				// has negative ordered children
-				for (; ((children_it)->first).getGlobalZOrder() < 0; children_it++)
-				{
-					((children_it)->second)->render();
-				}
-			}
-			// else, doesn't have negative ordered children
-
-			// Render self
-			renderSelf();
-
-			// Render positive 
-			for (; children_it != children.end(); children_it++)
-			{
-				((children_it)->second)->render();
-			}
-		}
-	}
-}
-//====================================================================================================================================
