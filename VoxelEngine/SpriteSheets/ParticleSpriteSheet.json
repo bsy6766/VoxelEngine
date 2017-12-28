@@ -1,0 +1,189 @@
+{
+    "frames": [
+        {
+            "frame": {
+                "y": 983, 
+                "x": 147, 
+                "w": 16, 
+                "h": 16
+            }, 
+            "filename": "16x16_white_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 1003, 
+                "x": 147, 
+                "w": 16, 
+                "h": 16
+            }, 
+            "filename": "16x16_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 167, 
+                "w": 16, 
+                "h": 16
+            }, 
+            "filename": "16x16_white_triangle.png"
+        }, 
+        {
+            "frame": {
+                "y": 1003, 
+                "x": 167, 
+                "w": 16, 
+                "h": 16
+            }, 
+            "filename": "16x16_whtie_blur_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 3, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "32x32_white_blur_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 39, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "32x32_white_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 75, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "32x32_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 983, 
+                "x": 111, 
+                "w": 32, 
+                "h": 32
+            }, 
+            "filename": "32x32_white_triangle.png"
+        }, 
+        {
+            "frame": {
+                "y": 915, 
+                "x": 3, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "64x64_white_blur_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 915, 
+                "x": 71, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "64x64_white_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 915, 
+                "x": 139, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "64x64_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 915, 
+                "x": 207, 
+                "w": 64, 
+                "h": 64
+            }, 
+            "filename": "64x64_white_triangle.png"
+        }, 
+        {
+            "frame": {
+                "y": 783, 
+                "x": 3, 
+                "w": 128, 
+                "h": 128
+            }, 
+            "filename": "128x128_white_blur_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 783, 
+                "x": 135, 
+                "w": 128, 
+                "h": 128
+            }, 
+            "filename": "128x128_white_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 535, 
+                "w": 128, 
+                "h": 128
+            }, 
+            "filename": "128x128_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 667, 
+                "w": 128, 
+                "h": 128
+            }, 
+            "filename": "128x128_white_triangle.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 3, 
+                "w": 256, 
+                "h": 256
+            }, 
+            "filename": "256x256_triangle.png"
+        }, 
+        {
+            "frame": {
+                "y": 263, 
+                "x": 3, 
+                "w": 256, 
+                "h": 256
+            }, 
+            "filename": "256x256_white_blur_circle.png"
+        }, 
+        {
+            "frame": {
+                "y": 523, 
+                "x": 3, 
+                "w": 256, 
+                "h": 256
+            }, 
+            "filename": "256x256_white_star.png"
+        }, 
+        {
+            "frame": {
+                "y": 3, 
+                "x": 275, 
+                "w": 256, 
+                "h": 256
+            }, 
+            "filename": "256x256_whtie_circle.png"
+        }
+    ], 
+    "texture": {
+        "path": "ParticleSpriteSheet.png", 
+        "height": 1024, 
+        "width": 1024
+    }
+}

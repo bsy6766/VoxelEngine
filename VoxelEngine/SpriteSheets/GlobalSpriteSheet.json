@@ -2,8 +2,8 @@
     "frames": [
         {
             "frame": {
-                "y": 1015, 
-                "x": 9, 
+                "y": 39, 
+                "x": 3, 
                 "w": 1, 
                 "h": 1
             }, 
@@ -11,8 +11,8 @@
         }, 
         {
             "frame": {
-                "y": 1020, 
-                "x": 9, 
+                "y": 44, 
+                "x": 3, 
                 "w": 1, 
                 "h": 1
             }, 
@@ -20,8 +20,8 @@
         }, 
         {
             "frame": {
-                "y": 1015, 
-                "x": 14, 
+                "y": 49, 
+                "x": 3, 
                 "w": 1, 
                 "h": 1
             }, 
@@ -29,7 +29,7 @@
         }, 
         {
             "frame": {
-                "y": 1015, 
+                "y": 33, 
                 "x": 3, 
                 "w": 2, 
                 "h": 2
@@ -38,98 +38,17 @@
         }, 
         {
             "frame": {
-                "y": 995, 
-                "x": 3, 
-                "w": 16, 
-                "h": 16
-            }, 
-            "filename": "16x16_white_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 995, 
-                "x": 23, 
-                "w": 16, 
-                "h": 16
-            }, 
-            "filename": "16x16_whtie_blur_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 923, 
-                "x": 3, 
-                "w": 32, 
-                "h": 32
-            }, 
-            "filename": "32x32_white_blur_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 959, 
-                "x": 3, 
-                "w": 32, 
-                "h": 32
-            }, 
-            "filename": "32x32_white_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 787, 
-                "x": 3, 
-                "w": 64, 
-                "h": 64
-            }, 
-            "filename": "64x64_white_blur_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 855, 
-                "x": 3, 
-                "w": 64, 
-                "h": 64
-            }, 
-            "filename": "64x64_white_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 523, 
-                "x": 3, 
-                "w": 128, 
-                "h": 128
-            }, 
-            "filename": "128x128_white_blur_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 655, 
-                "x": 3, 
-                "w": 128, 
-                "h": 128
-            }, 
-            "filename": "128x128_white_circle.png"
-        }, 
-        {
-            "frame": {
                 "y": 3, 
                 "x": 3, 
-                "w": 256, 
-                "h": 256
+                "w": 26, 
+                "h": 26
             }, 
-            "filename": "256x256_white_blur_circle.png"
-        }, 
-        {
-            "frame": {
-                "y": 263, 
-                "x": 3, 
-                "w": 256, 
-                "h": 256
-            }, 
-            "filename": "256x256_whtie_circle.png"
+            "filename": "26x26_white_square.png"
         }
     ], 
     "texture": {
         "path": "GlobalSpriteSheet.png", 
-        "height": 1024, 
-        "width": 1024
+        "height": 64, 
+        "width": 64
     }
 }
