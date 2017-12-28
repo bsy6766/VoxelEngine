@@ -2,7 +2,7 @@
 #define PROGRESS_TIMER_H
 
 // voxel
-#include "UIBase.h"
+#include "RenderNode.h"
 
 namespace Voxel
 {

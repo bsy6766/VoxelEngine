@@ -2,14 +2,16 @@
 #define NINE_PATCH_IMAGE_H
 
 // voxel
-#include "UIBase.h"
-#include "SpriteSheet.h"
+#include "RenderNode.h"
 
 // cpp
 #include <array>
 
 namespace Voxel
 {
+	// foward declaration
+	class SpriteSheet;
+
 	namespace UI
 	{
 		/**
@@ -24,7 +26,7 @@ namespace Voxel
 			NinePatchImage(const std::string& name);
 
 			// init
-			bool init(SpriteSheet* ss, const std::string& textureName, const float leftPadding, const float rightPadding, const float topPadding, const float bottomPadding, const glm::vec2& bodySize);
+			bool init(const std::string& spriteSheetName, const std::string& textureName, const float leftPadding, const float rightPadding, const float topPadding, const float bottomPadding, const glm::vec2& bodySize);
 
 			// build quad section
 			void buildQuadSection(const glm::vec2& min, const glm::vec2& max, const int offset, std::array<float, 48>& vertices);

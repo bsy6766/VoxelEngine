@@ -1,7 +1,8 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "UIBase.h"
+// voxel
+#include "RenderNode.h"
 
 // voxel
 #include "SpriteSheet.h"

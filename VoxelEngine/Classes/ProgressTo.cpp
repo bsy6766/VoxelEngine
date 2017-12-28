@@ -1,7 +1,7 @@
 #include "ProgressTo.h"
 
 // voxel
-#include "UIBase.h"
+#include "BaseNode.h"
 #include "ProgressTimer.h"
 
 Voxel::UI::ProgressTo::ProgressTo()

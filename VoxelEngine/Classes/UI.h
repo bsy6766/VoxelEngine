@@ -1,4 +1,6 @@
-#include "UIBase.h"
+#include "BaseNode.h"
+#include "TransformNode.h"
+#include "RenderNode.h"
 #include "Node.h"
 #include "Canvas.h"
 #include "Image.h"

@@ -2,7 +2,7 @@
 
 // voxel
 #include "Action.h"
-#include "UIBase.h"
+#include "BaseNode.h"
 
 Voxel::UI::Sequence::Sequence()
 	: Action()

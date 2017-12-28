@@ -27,6 +27,7 @@ namespace Voxel
 			ASK_SAVE_MODIFIED_FILE,
 			ASK_FILE_NAME_FOR_MODIFIED_FILE,
 			ASK_OVERWRITE,
+			OPEN_FILE,
 		};
 
 		enum class MouseState
@@ -70,6 +71,20 @@ namespace Voxel
 			END_COLOR,
 			END_COLOR_VAR
 		};
+
+		enum class ZOrder
+		{
+			BG = 0,
+			WORKING_PARTICLE_SYSTEM,
+			MOIFIER,
+			GUIDE_LINES,
+			EMIT_AREA,
+			MENU_BAR,
+			FILE_DROP_DOWN,
+			CHECK_BOXES,
+			WINDOWS,
+			FPS_LABEL,
+		};
 	private:
 		// canvas
 		Voxel::UI::Canvas* canvas;
@@ -92,6 +107,11 @@ namespace Voxel
 		// overwrite window
 		Voxel::UI::NinePatchImage* overwriteWindow;
 		Voxel::UI::Text* overwritePrompt;
+
+		// open window
+		Voxel::UI::Node* openWindowNode;
+		Voxel::UI::Button* openConfirmBtn;
+		Voxel::UI::InputField* openFileNameInputField;
 
 		// fpslabel
 		Voxel::UI::Text* fpsLabel;
@@ -119,11 +139,15 @@ namespace Voxel
 		Voxel::UI::CheckBox* emissionAreaCB;
 
 		// emit pos guid line
+		Voxel::UI::Node* emitPosLineNode;
 		Voxel::UI::Line* emitPosXLine;
 		Voxel::UI::Line* emitPosYLine;
 
+		// check boxes node
+
 		// new file name
 		std::string newFileName;
+		std::string openFileName;
 
 		// state
 		State state;
@@ -141,6 +165,7 @@ namespace Voxel
 		void initFileDropDownMenu();
 		void initNewCreateWindow();
 		void initOverwriteWindow();
+		void initOpenWindow();
 		void initModifiers();
 		Voxel::UI::Slider* initModifierSlider(const std::string& name, const std::string& initLabel, const std::string& label,  const float min, const float max, const float value, float& y);
 		void initSpawnBoundaryImage();
@@ -160,6 +185,8 @@ namespace Voxel
 		void createEmptyParticleSystem();
 		bool attempToCreateFile();
 		void askOverwrite();
+		void resetModifierLabelAndSlider();
+		void removeExistingWorkingParticleSystem();
 
 		// callback
 		void onFPSCount(int fps);
@@ -167,9 +194,13 @@ namespace Voxel
 		void onReturnToMainMenuButtonClicked(Voxel::UI::Button* sender);
 		void onExitButtonClicked(Voxel::UI::Button* sender);
 		void onNewButtonClicked(Voxel::UI::Button* sender);
+		void onOpenButtonClicked(Voxel::UI::Button* sender);
 		void onNewCancelButtonClicked(Voxel::UI::Button* sender);
 		void onNewFileNameEdit(Voxel::UI::InputField* sender, const std::string text);
 		void onNewCreateButtonClicked(Voxel::UI::Button* sender);
+		void onOpenFileNameEdit(Voxel::UI::InputField* sender, const std::string text);
+		void onOpenConfirmButtonClicked(Voxel::UI::Button* sender);
+		void onOpenCancelButtonClicked(Voxel::UI::Button* sender);
 		void onOverwrite(Voxel::UI::Button* sender);
 		void onOverwriteCancel(Voxel::UI::Button* sender);
 		void onEmissionAreaCheckBoxSelected(Voxel::UI::CheckBox* sender);

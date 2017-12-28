@@ -1,7 +1,7 @@
 #include "TintTo.h"
 
 // voxel
-#include "UIBase.h"
+#include "RenderNode.h"
 
 Voxel::UI::TintTo::TintTo()
 	: Action()

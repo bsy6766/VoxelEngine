@@ -2,7 +2,7 @@
 #define SLIDER_H
 
 // voxel
-#include "UIBase.h"
+#include "RenderNode.h"
 
 // cpp
 #include <functional>

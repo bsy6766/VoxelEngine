@@ -181,8 +181,15 @@ void Voxel::MenuScene::updateKeyboardInput()
 
 	if (input->getKeyDown(GLFW_KEY_T, true))
 	{
-		auto ps = Voxel::UI::ParticleSystem::create("Magical Orbits", "Data/ParticleSystem/magicalOrbits");
-		canvas->addChild(ps);
+		auto n1 = Voxel::UI::Node::create("0");
+		canvas->addChild(n1, 2);
+		canvas->addChild(Voxel::UI::Node::create("1"), 2);
+		canvas->addChild(Voxel::UI::Node::create("2"), 2);
+		canvas->addChild(Voxel::UI::Node::create("3"), 2);
+		canvas->addChild(Voxel::UI::Node::create("4"), 2);
+		canvas->addChild(Voxel::UI::Node::create("5"), 2);
+
+		canvas->print();
 	}
 	else if (input->getKeyDown(GLFW_KEY_R, true))
 	{

@@ -6,7 +6,7 @@
 #include <functional>
 
 // voxel
-#include "UIBase.h"
+#include "RenderNode.h"
 #include "SpriteSheet.h"
 
 namespace Voxel

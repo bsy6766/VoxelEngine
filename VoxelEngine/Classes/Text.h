@@ -1,7 +1,8 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "UIBase.h"
+// voxel
+#include "RenderNode.h"
 
 namespace Voxel
 {

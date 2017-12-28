@@ -2,7 +2,7 @@
 #define PARTICLE_SYSTEM_H
 
 // voxel
-#include <UIBase.h>
+#include "RenderNode.h"
 
 // glm
 #include <glm\glm.hpp>

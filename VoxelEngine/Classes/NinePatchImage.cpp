@@ -5,6 +5,7 @@
 
 // voxel
 #include "Quad.h"
+#include "SpriteSheet.h"
 #include "ProgramManager.h"
 #include "Program.h"
 
@@ -12,14 +13,19 @@ Voxel::UI::NinePatchImage::NinePatchImage(const std::string& name)
 	: RenderNode(name)
 {}
 
-bool Voxel::UI::NinePatchImage::init(SpriteSheet * ss, const std::string & textureName, const float leftPadding, const float rightPadding, const float topPadding, const float bottomPadding, const glm::vec2 & bodySize)
+bool Voxel::UI::NinePatchImage::init(const std::string& spriteSheetName, const std::string & textureName, const float leftPadding, const float rightPadding, const float topPadding, const float bottomPadding, const glm::vec2 & bodySize)
 {
+	auto ssm = &Voxel::SpriteSheetManager::getInstance();
+
+	if (ssm == nullptr) return false;
+
+	auto ss = ssm->getSpriteSheetByKey(spriteSheetName);
+
+	if (ss == nullptr) return false;
+
 	texture = ss->getTexture();
 
-	if (texture == nullptr)
-	{
-		return false;
-	}
+	if (texture == nullptr) return false;
 
 	texture->setLocationOnProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
 
@@ -231,26 +237,15 @@ void Voxel::UI::NinePatchImage::build(const std::array<float, 48>& vertices, con
 
 Voxel::UI::NinePatchImage * Voxel::UI::NinePatchImage::create(const std::string & name, const std::string & spriteSheetName, const std::string & imageFileName, const float leftPadding, const float rightPadding, const float topPadding, const float bottomPadding, const glm::vec2 & bodySize)
 {
-	auto& ssm = SpriteSheetManager::getInstance();
+	auto newImage = new NinePatchImage(name);
 
-	auto ss = ssm.getSpriteSheetByKey(spriteSheetName);
-
-	if (ss)
+	if (newImage->init(spriteSheetName, imageFileName, leftPadding, rightPadding, topPadding, bottomPadding, bodySize))
 	{
-		auto newImage = new NinePatchImage(name);
-
-		if (newImage->init(ss, imageFileName, leftPadding, rightPadding, topPadding, bottomPadding, bodySize))
-		{
-			return newImage;
-		}
-		else
-		{
-			delete newImage;
-			return nullptr;
-		}
+		return newImage;
 	}
 	else
 	{
+		delete newImage;
 		return nullptr;
 	}
 }

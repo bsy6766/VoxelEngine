@@ -2,7 +2,7 @@
 #define ANIMATED_IMAGE_H
 
 // voxel
-#include "UIBase.h"
+#include "RenderNode.h"
 #include "SpriteSheet.h"
 
 namespace Voxel

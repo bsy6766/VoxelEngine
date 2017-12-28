@@ -33,6 +33,9 @@ Voxel::ParticleSystemEditorScene::ParticleSystemEditorScene()
 	, newFileNameInputField(nullptr)
 	, overwriteWindow(nullptr)
 	, overwritePrompt(nullptr)
+	, openWindowNode(nullptr)
+	, openConfirmBtn(nullptr)
+	, openFileNameInputField(nullptr)
 	, fpsLabel(nullptr)
 	, workingParticleSystem(nullptr)
 	, workingParticleSystemDataTree(nullptr)
@@ -50,6 +53,7 @@ Voxel::ParticleSystemEditorScene::ParticleSystemEditorScene()
 	, emissionAreaCB(nullptr)
 	, emitPosXLine(nullptr)
 	, emitPosYLine(nullptr)
+	, emitPosLineNode(nullptr)
 	, state(State::IDLE)
 	, mouseState(MouseState::IDLE)
 	, input(&Voxel::InputHandler::getInstance())
@@ -83,15 +87,18 @@ void Voxel::ParticleSystemEditorScene::initUI()
 	fpsLabel->setPivot(glm::vec2(-0.5f, -0.5f));
 	fpsLabel->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
 	fpsLabel->setPosition(5.0f, 5.0f);
-	canvas->addChild(fpsLabel);
+	canvas->addChild(fpsLabel, static_cast<int>(ZOrder::FPS_LABEL));
 
 	initMenuBar();
 	initFileDropDownMenu();
 	initNewCreateWindow();
 	initOverwriteWindow();
+	initOpenWindow();
 	initModifiers();
 	initSpawnBoundaryImage();
 	initEmitPosLine();
+
+	canvas->print();
 }
 
 void Voxel::ParticleSystemEditorScene::initMenuBar()
@@ -104,7 +111,7 @@ void Voxel::ParticleSystemEditorScene::initMenuBar()
 	menuBar->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	menuBar->setPosition(0.0f, 0.0f);
 	menuBar->setInteractable();
-	canvas->addChild(menuBar);
+	canvas->addChild(menuBar, static_cast<int>(ZOrder::MENU_BAR));
 
 	fileBtn = Voxel::UI::Button::create("fBtn", ss, "file_button.png");
 	fileBtn->setPosition(26.0f, -14.0f);
@@ -134,7 +141,7 @@ void Voxel::ParticleSystemEditorScene::initFileDropDownMenu()
 	fileDropDownBg->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
 	fileDropDownBg->setPosition(0.0f, -30.0f);
 	fileDropDownBg->setVisibility(false);
-	canvas->addChild(fileDropDownBg);
+	canvas->addChild(fileDropDownBg, static_cast<int>(ZOrder::FILE_DROP_DOWN));
 
 	auto newBtn = Voxel::UI::Button::create("nBtn", ss, "file_new_button.png");
 	newBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
@@ -145,6 +152,7 @@ void Voxel::ParticleSystemEditorScene::initFileDropDownMenu()
 	auto openBtn = Voxel::UI::Button::create("oBtn", ss, "file_open_button.png");
 	openBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	openBtn->setPosition(0.0f, -40.0f);
+	openBtn->setOnTriggeredCallbackFunc(std::bind(&ParticleSystemEditorScene::onOpenButtonClicked, this, std::placeholders::_1));
 	fileDropDownBg->addChild(openBtn);
 
 	saveBtn = Voxel::UI::Button::create("sBtn", ss, "file_save_button.png");
@@ -167,7 +175,7 @@ void Voxel::ParticleSystemEditorScene::initNewCreateWindow()
 	newCreateWindow = Voxel::UI::NinePatchImage::create("ncw", ss, "new_window_bg.png", 8.0f, 8.0f, 44.0f, 16.0f, glm::vec2(250.0f, 40.0f));
 	newCreateWindow->setPosition(0.0f, 0.0f);
 	newCreateWindow->setVisibility(false);
-	canvas->addChild(newCreateWindow);
+	canvas->addChild(newCreateWindow, static_cast<int>(ZOrder::WINDOWS));
 	
 	newFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
 	newFileNameInputField->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
@@ -199,7 +207,7 @@ void Voxel::ParticleSystemEditorScene::initOverwriteWindow()
 {
 	overwriteWindow = Voxel::UI::NinePatchImage::create("owWin", "EditorUISpriteSheet", "overwrite_window_bg.png", 4, 4, 20, 4.0f, glm::vec2(162.0f, 83.0f));
 	overwriteWindow->setVisibility(false);
-	canvas->addChild(overwriteWindow);
+	canvas->addChild(overwriteWindow, static_cast<int>(ZOrder::WINDOWS));
 	
 	auto title = Voxel::UI::Text::create("owWinTitle", "Overwrite?", 1);
 	title->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
@@ -222,12 +230,48 @@ void Voxel::ParticleSystemEditorScene::initOverwriteWindow()
 	overwriteWindow->addChild(noBtn);
 }
 
+void Voxel::ParticleSystemEditorScene::initOpenWindow()
+{
+	const auto ss = "EditorUISpriteSheet";
+
+	openWindowNode = Voxel::UI::Node::create("oWinNode");
+	canvas->addChild(openWindowNode, static_cast<int>(ZOrder::WINDOWS));
+
+	auto bg = Voxel::UI::NinePatchImage::create("oBg", ss, "new_window_bg.png", 8.0f, 8.0f, 44.0f, 16.0f, glm::vec2(250.0f, 40.0f));
+	openWindowNode->addChild(bg);
+
+	openFileNameInputField = Voxel::UI::InputField::create("nfIF", "Enter file name", "DebugSpriteSheet", 1, "debug_input_field_cursor.png");
+	openFileNameInputField->setCoordinateOrigin(glm::vec2(-0.5f, 0.5f));
+	openFileNameInputField->setPivot(-0.5f, 0.0f);
+	openFileNameInputField->setPosition(8.0f, -33.0f);
+	openFileNameInputField->setOnEditCallback(std::bind(&Voxel::ParticleSystemEditorScene::onNewFileNameEdit, this, std::placeholders::_1, std::placeholders::_2));
+	bg->addChild(openFileNameInputField);
+
+	auto openLabel = Voxel::UI::Text::create("oLabel", "open", 1);
+	openLabel->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
+	openLabel->setPosition(0.0f, -9.0f);
+	bg->addChild(openLabel);
+
+	openConfirmBtn = Voxel::UI::Button::create("cBtn", ss, "new_create_button.png");
+	openConfirmBtn->setCoordinateOrigin(glm::vec2(-0.5f, -0.5f));
+	openConfirmBtn->setPosition(35.0f, 15.0f);
+	openConfirmBtn->setOnTriggeredCallbackFunc(std::bind(&ParticleSystemEditorScene::onOpenConfirmButtonClicked, this, std::placeholders::_1));
+	openConfirmBtn->disable();
+	bg->addChild(openConfirmBtn);
+
+	auto cancelBtn = Voxel::UI::Button::create("clBtn", ss, "new_cancel_button.png");
+	cancelBtn->setCoordinateOrigin(glm::vec2(0.5f, -0.5f));
+	cancelBtn->setPosition(-35.0f, 15.0f);
+	cancelBtn->setOnTriggeredCallbackFunc(std::bind(&ParticleSystemEditorScene::onOpenCancelButtonClicked, this, std::placeholders::_1));
+	bg->addChild(cancelBtn);
+}
+
 void Voxel::ParticleSystemEditorScene::initModifiers()
 {
 	modifierNode = Voxel::UI::Node::create("modNode");
 	modifierNode->setPosition(-957.0f, 382.0f);
 	modifierNode->setVisibility(false);
-	canvas->addChild(modifierNode);
+	canvas->addChild(modifierNode, static_cast<int>(ZOrder::MOIFIER));
 	
 	float y = 0.0f;
 
@@ -337,7 +381,7 @@ void Voxel::ParticleSystemEditorScene::initModifiers()
 	colorPickerNode = Voxel::UI::Node::create("cpNode");
 	colorPickerNode->setPosition(721.0f, 371.0f);
 	colorPickerNode->setVisibility(false);
-	canvas->addChild(colorPickerNode);
+	canvas->addChild(colorPickerNode, static_cast<int>(ZOrder::MOIFIER));
 
 	auto cpBg = Voxel::UI::NinePatchImage::create("cpBg", "DebugSpriteSheet", "debug_color_picker_bg.png", 4.0f, 4.0f, 4.0f, 4.0f, glm::vec2(256.0f));
 	colorPickerNode->addChild(cpBg);
@@ -469,13 +513,13 @@ void Voxel::ParticleSystemEditorScene::initSpawnBoundaryImage()
 	emissionAreaImage->setOpacity(0.25f);
 	emissionAreaImage->setVisibility(false);
 
-	canvas->addChild(emissionAreaImage);
+	canvas->addChild(emissionAreaImage, static_cast<int>(ZOrder::EMIT_AREA));
 
 	emissionAreaCB = Voxel::UI::CheckBox::create("spwnBtn", "EditorUISpriteSheet", "checkbox.png");
 	emissionAreaCB->setPosition(469.0f, -524.0f);
 	emissionAreaCB->setOnSelectedCallbackFunc(std::bind(&ParticleSystemEditorScene::onEmissionAreaCheckBoxSelected, this, std::placeholders::_1));
 	emissionAreaCB->setOnDeselectedCallbackFunc(std::bind(&ParticleSystemEditorScene::onEmissionAreaCheckBoxDeselected, this, std::placeholders::_1));
-	canvas->addChild(emissionAreaCB, 9999);
+	canvas->addChild(emissionAreaCB, static_cast<int>(ZOrder::CHECK_BOXES));
 
 	auto label = Voxel::UI::Text::create("spwnCBLabel", "Show emission area", 1);
 	label->setPosition(19.0f, 0.0f);
@@ -485,11 +529,15 @@ void Voxel::ParticleSystemEditorScene::initSpawnBoundaryImage()
 
 void Voxel::ParticleSystemEditorScene::initEmitPosLine()
 {
+	emitPosLineNode = Voxel::UI::Node::create("lineNode");
+	emitPosLineNode->setVisibility(false);
+	canvas->addChild(emitPosLineNode, static_cast<int>(ZOrder::GUIDE_LINES));
+
 	emitPosXLine = Voxel::UI::Line::create("emitXLine", glm::vec2(-960.0f, 0.0f), glm::vec2(960.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
-	canvas->addChild(emitPosXLine, 9999);
+	emitPosLineNode->addChild(emitPosXLine);
 
 	emitPosYLine = Voxel::UI::Line::create("emitYLine", glm::vec2(0.0f, -540.0f), glm::vec2(0.0f, 540.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
-	canvas->addChild(emitPosYLine, 9999);
+	emitPosLineNode->addChild(emitPosYLine);
 }
 
 void Voxel::ParticleSystemEditorScene::release()
@@ -563,7 +611,7 @@ bool Voxel::ParticleSystemEditorScene::updateMousePress()
 		{
 			if (workingParticleSystem)
 			{
-				if (mouseState == MouseState::IDLE)
+				if (state == State::IDLE && mouseState == MouseState::IDLE)
 				{
 					updateEmissionPos();
 
@@ -725,128 +773,12 @@ void Voxel::ParticleSystemEditorScene::createEmptyParticleSystem()
 
 		workingParticleSystemDataTree->save(path);
 
-		workingParticleSystem = Voxel::UI::ParticleSystem::create("workingPS", "Data/ParticleSystem/" + newFileName);
-		canvas->addChild(workingParticleSystem, 1000);
+		workingParticleSystem = Voxel::UI::ParticleSystem::create("wps", "Data/ParticleSystem/" + newFileName);
+		canvas->addChild(workingParticleSystem, static_cast<int>(ZOrder::WORKING_PARTICLE_SYSTEM));
 
 		emissionAreaImage->setScale(0.0f);
 
-		// reset modifiers
-		
-		// duration
-		modifierLabels.at(static_cast<int>(ModifierLabel::DURATION))->setText("Duration: INF");
-		modifierSliders.at(static_cast<int>(ModifierLabel::DURATION))->setValue(-1.0f);
-
-		// living particle
-		modifierLabels.at(static_cast<int>(ModifierLabel::LIVING_PARTICLES))->setText("Living particleS: 0");
-
-		// total particles
-		modifierLabels.at(static_cast<int>(ModifierLabel::TOTAL_PARTICLES))->setText("Total particles: 0");
-
-		// emit rate
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMISSION_RATE))->setText("Emission rate: 0");
-
-		// particle life span
-		modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN))->setText("Particle life span: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN))->setValue(0.0f);
-
-		// particle life span var
-		modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setText("Particle life span: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setValue(0.0f);
-
-		// speed
-		modifierLabels.at(static_cast<int>(ModifierLabel::SPEED))->setText("Speed: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::SPEED))->setValue(0.0f);
-
-		// speed var
-		modifierLabels.at(static_cast<int>(ModifierLabel::SPEED_VAR))->setText("Speed var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::SPEED_VAR))->setValue(0.0f);
-
-		// emit pos
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS))->setText("Pos var (0, 0)");
-
-		// emit pos var  x
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS_X_VAR))->setText("Pos var x: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_POS_X_VAR))->setValue(0.0f);
-
-		// emit pos var  y
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS_Y_VAR))->setText("Pos var y: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_POS_Y_VAR))->setValue(0.0f);
-
-		// gravity  x
-		modifierLabels.at(static_cast<int>(ModifierLabel::GRAVITY_X))->setText("Gravity x: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::GRAVITY_X))->setValue(0.0f);
-
-		// gravity  y
-		modifierLabels.at(static_cast<int>(ModifierLabel::GRAVITY_Y))->setText("Gravity y: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::GRAVITY_Y))->setValue(0.0f);
-
-		// emit angle
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_ANGLE))->setText("Emit angle: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_ANGLE))->setValue(0.0f);
-
-		// emit angle var
-		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_ANGLE_VAR))->setText("Emit angle var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_ANGLE_VAR))->setValue(0.0f);
-
-		// radial accel
-		modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_RAD))->setText("Radial accel: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_RAD))->setValue(0.0f);
-
-		// radial accel var
-		modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_RAD_VAR))->setText("Radial accel var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_RAD_VAR))->setValue(0.0f);
-
-		// tangential accel
-		modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_TAN))->setText("Tangential accel: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_TAN))->setValue(0.0f);
-
-		// tangential accel var
-		modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_TAN_VAR))->setText("Tangential accel var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_TAN_VAR))->setValue(0.0f);
-
-		// start size
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE))->setText("Start size: 32 px");
-		modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE))->setValue(0.0f);
-
-		// start size var
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE_VAR))->setText("Start size var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE_VAR))->setValue(0.0f);
-
-		// end size
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE))->setText("End size: 32 px");
-		modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE))->setValue(0.0f);
-
-		// end size var
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE_VAR))->setText("End size var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE_VAR))->setValue(0.0f);
-
-		// start angle
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_ANGLE))->setText("Start angle: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::START_ANGLE))->setValue(0.0f);
-
-		// start angle var
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_ANGLE_VAR))->setText("Start angle var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::START_ANGLE_VAR))->setValue(0.0f);
-
-		// end angle
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_ANGLE))->setText("End angle: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::END_ANGLE))->setValue(0.0f);
-
-		// end angle var
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_ANGLE_VAR))->setText("End angle var: 0");
-		modifierSliders.at(static_cast<int>(ModifierLabel::END_ANGLE_VAR))->setValue(0.0f); 
-
-		// color picker
-		colorPicker->setHSB(glm::vec3(0.0f, 0.5f, 0.5f));
-		colorSlider->setValue(0.0f);
-		alphaSlider->setValue(1.0f);
-		modifierLabels.at(static_cast<int>(ModifierLabel::COLOR_PICKER))->setText("RGBA (1.00, 1.00, 1.00, 1.00)");
-
-		// color
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR))->setText("Start color (1.00, 1.00, 1.00, 1.00)");
-		modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR_VAR))->setText("Start color var (1.00, 1.00, 1.00, 1.00)");
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR))->setText("End color (1.00, 1.00, 1.00, 1.00)");
-		modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR_VAR))->setText("End color var(1.00, 1.00, 1.00, 1.00)");
+		resetModifierLabelAndSlider();
 	} 
 	else
 	{
@@ -886,6 +818,141 @@ void Voxel::ParticleSystemEditorScene::askOverwrite()
 	overwritePrompt->setText("File name\n" + newFileName + "\nalready exists.\nOverwrite?");
 }
 
+void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
+{// reset modifiers
+		
+		// duration
+	modifierLabels.at(static_cast<int>(ModifierLabel::DURATION))->setText("Duration: INF");
+	modifierSliders.at(static_cast<int>(ModifierLabel::DURATION))->setValue(-1.0f);
+
+	// living particle
+	modifierLabels.at(static_cast<int>(ModifierLabel::LIVING_PARTICLES))->setText("Living particleS: 0");
+
+	// total particles
+	modifierLabels.at(static_cast<int>(ModifierLabel::TOTAL_PARTICLES))->setText("Total particles: 0");
+
+	// emit rate
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMISSION_RATE))->setText("Emission rate: 0");
+
+	// particle life span
+	modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN))->setText("Particle life span: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN))->setValue(0.0f);
+
+	// particle life span var
+	modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setText("Particle life span: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setValue(0.0f);
+
+	// speed
+	modifierLabels.at(static_cast<int>(ModifierLabel::SPEED))->setText("Speed: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::SPEED))->setValue(0.0f);
+
+	// speed var
+	modifierLabels.at(static_cast<int>(ModifierLabel::SPEED_VAR))->setText("Speed var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::SPEED_VAR))->setValue(0.0f);
+
+	// emit pos
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS))->setText("Pos var (0, 0)");
+
+	// emit pos var  x
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS_X_VAR))->setText("Pos var x: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_POS_X_VAR))->setValue(0.0f);
+
+	// emit pos var  y
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS_Y_VAR))->setText("Pos var y: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_POS_Y_VAR))->setValue(0.0f);
+
+	// gravity  x
+	modifierLabels.at(static_cast<int>(ModifierLabel::GRAVITY_X))->setText("Gravity x: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::GRAVITY_X))->setValue(0.0f);
+
+	// gravity  y
+	modifierLabels.at(static_cast<int>(ModifierLabel::GRAVITY_Y))->setText("Gravity y: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::GRAVITY_Y))->setValue(0.0f);
+
+	// emit angle
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_ANGLE))->setText("Emit angle: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_ANGLE))->setValue(0.0f);
+
+	// emit angle var
+	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_ANGLE_VAR))->setText("Emit angle var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::EMIT_ANGLE_VAR))->setValue(0.0f);
+
+	// radial accel
+	modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_RAD))->setText("Radial accel: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_RAD))->setValue(0.0f);
+
+	// radial accel var
+	modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_RAD_VAR))->setText("Radial accel var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_RAD_VAR))->setValue(0.0f);
+
+	// tangential accel
+	modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_TAN))->setText("Tangential accel: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_TAN))->setValue(0.0f);
+
+	// tangential accel var
+	modifierLabels.at(static_cast<int>(ModifierLabel::ACCEL_TAN_VAR))->setText("Tangential accel var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::ACCEL_TAN_VAR))->setValue(0.0f);
+
+	// start size
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE))->setText("Start size: 32 px");
+	modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE))->setValue(0.0f);
+
+	// start size var
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE_VAR))->setText("Start size var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE_VAR))->setValue(0.0f);
+
+	// end size
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE))->setText("End size: 32 px");
+	modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE))->setValue(0.0f);
+
+	// end size var
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE_VAR))->setText("End size var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE_VAR))->setValue(0.0f);
+
+	// start angle
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_ANGLE))->setText("Start angle: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::START_ANGLE))->setValue(0.0f);
+
+	// start angle var
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_ANGLE_VAR))->setText("Start angle var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::START_ANGLE_VAR))->setValue(0.0f);
+
+	// end angle
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_ANGLE))->setText("End angle: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::END_ANGLE))->setValue(0.0f);
+
+	// end angle var
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_ANGLE_VAR))->setText("End angle var: 0");
+	modifierSliders.at(static_cast<int>(ModifierLabel::END_ANGLE_VAR))->setValue(0.0f);
+
+	// color picker
+	colorPicker->setHSB(glm::vec3(0.0f, 0.5f, 0.5f));
+	colorSlider->setValue(0.0f);
+	alphaSlider->setValue(1.0f);
+	modifierLabels.at(static_cast<int>(ModifierLabel::COLOR_PICKER))->setText("RGBA (1.00, 1.00, 1.00, 1.00)");
+
+	// color
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR))->setText("Start color (1.00, 1.00, 1.00, 1.00)");
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR_VAR))->setText("Start color var (1.00, 1.00, 1.00, 1.00)");
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR))->setText("End color (1.00, 1.00, 1.00, 1.00)");
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR_VAR))->setText("End color var(1.00, 1.00, 1.00, 1.00)");
+}
+
+void Voxel::ParticleSystemEditorScene::removeExistingWorkingParticleSystem()
+{
+	if (workingParticleSystem)
+	{
+		canvas->removeChild(workingParticleSystem->getID(), true);
+		workingParticleSystem = nullptr;
+	}
+
+	if (workingParticleSystemDataTree)
+	{
+		delete workingParticleSystemDataTree;
+		workingParticleSystemDataTree = nullptr;
+	}
+}
+
 void Voxel::ParticleSystemEditorScene::onFPSCount(int fps)
 {
 	if (fpsLabel)
@@ -921,7 +988,31 @@ void Voxel::ParticleSystemEditorScene::onNewButtonClicked(Voxel::UI::Button * se
 
 	newFileNameInputField->setToDefaultText();
 
+	if (workingParticleSystem)
+	{
+		modifierNode->setNonInteractable();
+		colorPickerNode->setNonInteractable();
+	}
+
 	state = State::CREATE_NEW_FILE;
+}
+
+void Voxel::ParticleSystemEditorScene::onOpenButtonClicked(Voxel::UI::Button * sender)
+{
+	state = State::OPEN_FILE;
+
+	openWindowNode->setVisibility(true);
+	fileDropDownBg->setVisibility(false);
+	fileBtn->disable();
+	returnToMainMenuBtn->disable();
+	exitGameBtn->disable();
+	createBtn->disable();
+
+	if (workingParticleSystem)
+	{
+		modifierNode->setNonInteractable();
+		colorPickerNode->setNonInteractable();
+	}
 }
 
 void Voxel::ParticleSystemEditorScene::onNewCancelButtonClicked(Voxel::UI::Button * sender)
@@ -936,18 +1027,31 @@ void Voxel::ParticleSystemEditorScene::onNewCancelButtonClicked(Voxel::UI::Butto
 
 	newFileNameInputField->setToDefaultText();
 
-	state = State::IDLE;
+	state = State::IDLE;	
+	
+	if (workingParticleSystem)
+	{
+		modifierNode->setInteractable();
+		colorPickerNode->setInteractable();
+	}
 }
 
 void Voxel::ParticleSystemEditorScene::onNewFileNameEdit(Voxel::UI::InputField * sender, const std::string text)
 {
-	if (text.empty() == false)
+	if (sender->isTextDefault())
 	{
-		createBtn->enable();
+		createBtn->disable();
 	}
 	else
 	{
-		createBtn->disable();
+		if (text.empty())
+		{
+			createBtn->disable();
+		}
+		else
+		{
+			createBtn->enable();
+		}
 	}
 
 	newFileName = text;
@@ -984,6 +1088,7 @@ void Voxel::ParticleSystemEditorScene::onNewCreateButtonClicked(Voxel::UI::Butto
 
 			modifierNode->setVisibility(true);
 			colorPickerNode->setVisibility(true);
+			emitPosLineNode->setVisibility(true);
 
 			state = State::IDLE;
 		}
@@ -995,6 +1100,35 @@ void Voxel::ParticleSystemEditorScene::onNewCreateButtonClicked(Voxel::UI::Butto
 			askOverwrite();
 		}
 	}
+}
+
+void Voxel::ParticleSystemEditorScene::onOpenFileNameEdit(Voxel::UI::InputField * sender, const std::string text)
+{
+	if (sender->isTextDefault())
+	{
+		openConfirmBtn->disable();
+	}
+	else
+	{
+		if (text.empty())
+		{
+			openConfirmBtn->disable();
+		}
+		else
+		{
+			openConfirmBtn->enable();
+		}
+	}
+
+	newFileName = text;
+}
+
+void Voxel::ParticleSystemEditorScene::onOpenConfirmButtonClicked(Voxel::UI::Button * sender)
+{
+}
+
+void Voxel::ParticleSystemEditorScene::onOpenCancelButtonClicked(Voxel::UI::Button * sender)
+{
 }
 
 void Voxel::ParticleSystemEditorScene::onOverwrite(Voxel::UI::Button * sender)
@@ -1018,6 +1152,7 @@ void Voxel::ParticleSystemEditorScene::onOverwrite(Voxel::UI::Button * sender)
 
 	modifierNode->setVisibility(true);
 	colorPickerNode->setVisibility(true);
+	emitPosLineNode->setVisibility(true);
 
 	state = State::IDLE;
 }

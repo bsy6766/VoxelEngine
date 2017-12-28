@@ -1,7 +1,7 @@
 #include "ScaleTo.h"
 
 // voxel
-#include "UIBase.h"
+#include "TransformNode.h"
 
 Voxel::UI::ScaleTo::ScaleTo()
 	: Action()

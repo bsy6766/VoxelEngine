@@ -209,7 +209,7 @@ void Voxel::DebugConsole::init()
 	drawCallAndVertCount->setVisibility(false);
 	debugCanvas->addChild(drawCallAndVertCount, 0);
 
-	debugCanvas->print(0);
+	debugCanvas->print();
 }
 
 void Voxel::DebugConsole::openConsole()
