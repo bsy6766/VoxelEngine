@@ -29,7 +29,7 @@ namespace Voxel
 			ASK_OVERWRITE,
 			OPEN_FILE,
 		};
-
+		
 		enum class MouseState
 		{
 			IDLE = 0,
@@ -121,6 +121,12 @@ namespace Voxel
 		Voxel::DataTree* workingParticleSystemDataTree;
 		bool particleSystemModified;
 
+		// node (modifier node, texture node, color node, checkbox node)
+		Voxel::UI::Node* node;
+
+		// particle system state
+		Voxel::UI::Text* psState;
+
 		// particle system modifiers
 		Voxel::UI::Node* modifierNode;
 		std::vector<Voxel::UI::Text*> modifierLabels;
@@ -133,6 +139,9 @@ namespace Voxel
 		Voxel::UI::Image* startColorVarPreview;
 		Voxel::UI::Image* endColorPreview;
 		Voxel::UI::Image* endColorVarPreview;
+
+		// texutres node
+		Voxel::UI::Node* textureNode;
 
 		// position rect (Visualize particle spawn area)
 		Voxel::UI::Image* emissionAreaImage;
@@ -147,7 +156,12 @@ namespace Voxel
 
 		// new file name
 		std::string newFileName;
+		std::string curFileName;
 		std::string openFileName;
+
+		// simulator time
+		float simDuration;
+		float simElapsedTime;
 
 		// state
 		State state;
@@ -158,7 +172,7 @@ namespace Voxel
 
 		// cursor
 		Cursor* cursor;
-
+		
 		// init
 		void initUI();
 		void initMenuBar();
@@ -168,6 +182,7 @@ namespace Voxel
 		void initOpenWindow();
 		void initModifiers();
 		Voxel::UI::Slider* initModifierSlider(const std::string& name, const std::string& initLabel, const std::string& label,  const float min, const float max, const float value, float& y);
+		void initTextureList();
 		void initSpawnBoundaryImage();
 		void initEmitPosLine();
 
@@ -190,6 +205,8 @@ namespace Voxel
 
 		// callback
 		void onFPSCount(int fps);
+
+		// menu callbacks
 		void onFileButtonClicked(Voxel::UI::Button* sender);
 		void onReturnToMainMenuButtonClicked(Voxel::UI::Button* sender);
 		void onExitButtonClicked(Voxel::UI::Button* sender);
@@ -203,8 +220,7 @@ namespace Voxel
 		void onOpenCancelButtonClicked(Voxel::UI::Button* sender);
 		void onOverwrite(Voxel::UI::Button* sender);
 		void onOverwriteCancel(Voxel::UI::Button* sender);
-		void onEmissionAreaCheckBoxSelected(Voxel::UI::CheckBox* sender);
-		void onEmissionAreaCheckBoxDeselected(Voxel::UI::CheckBox* sender);
+		void onSaveBtnClicked(Voxel::UI::Button* sender);
 
 		// particle system callback
 		void onDurationChange(Voxel::UI::Slider* sender);
@@ -238,6 +254,15 @@ namespace Voxel
 		void onStartColorVarButtonTriggered(Voxel::UI::Button* sender);
 		void onEndColorButtonTriggered(Voxel::UI::Button* sender);
 		void onEndColorVarButtonTriggered(Voxel::UI::Button* sender);
+		void onEmissionAreaCheckBoxSelected(Voxel::UI::CheckBox* sender);
+		void onEmissionAreaCheckBoxDeselected(Voxel::UI::CheckBox* sender);
+
+		// texture callback
+		void onBlurCircleClicked(Voxel::UI::TransformNode* sender);
+		void onCircleClicked(Voxel::UI::TransformNode* sender);
+		void onTriangleClicked(Voxel::UI::TransformNode* sender);
+		void onSquareClicked(Voxel::UI::TransformNode* sender);
+		void onStarClicked(Voxel::UI::TransformNode* sender);
 	public:
 		ParticleSystemEditorScene();
 		~ParticleSystemEditorScene();

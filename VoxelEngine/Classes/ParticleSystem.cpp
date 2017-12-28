@@ -52,8 +52,10 @@ Voxel::UI::ParticleSystem::ParticleSystem(const std::string & name)
 	, endAngleVar(0.0f)
 	, blendSrc(0)
 	, blendDest(0)
+	, state(State::UNINITIALIZED)
 	, spawnPoint(0.0f)
 	, rand(new Random(name))
+	, uvbo(0)
 	, posbo(0)
 	, srbo(0)
 	, cbo(0)
@@ -80,39 +82,67 @@ Voxel::UI::ParticleSystem::~ParticleSystem()
 
 bool Voxel::UI::ParticleSystem::init(Voxel::DataTree* particleSystemDataTree)
 {	
+	auto logger = &Voxel::Logger::getInstance();
+
 	auto ssm = &Voxel::SpriteSheetManager::getInstance();
 
-	if (ssm == nullptr) return false;
+	if (ssm == nullptr)
+	{
+		logger->error("[Error.ParticleSystem] Sprite sheet manager is null.");
+		return false;
+	}
 
 	program = Voxel::ProgramManager::getInstance().getProgram(Voxel::ProgramManager::PROGRAM_NAME::UI_PARTICLE_SYSTEM_SHADER);
 
-	if (program == nullptr) return false;
+	if (program == nullptr)
+	{
+		logger->error("[Error.ParticleSystem] Particle system shader is null.");
+		return false;
+	}
 
 	const std::string spriteSheetName = particleSystemDataTree->getString("spriteSheetName");
 
-	if (spriteSheetName.empty()) return false;
+	if (spriteSheetName.empty())
+	{
+		logger->error("[Error.ParticleSystem] Empty sprite sheet name");
+		return false;
+	}
 
 	auto ss = ssm->getSpriteSheetByKey(spriteSheetName);
 
-	if (ss == nullptr) return false;
+	if (ss == nullptr)
+	{
+		logger->error("[Error.ParticleSystem] Sprite sheet \"" + spriteSheetName + "\" doesn't exist");
+		return false;
+	}
 
 	this->texture = ss->getTexture();
 
-	if (this->texture == nullptr) return false;
+	if (this->texture == nullptr)
+	{
+		logger->error("[Error.ParticleSystem] \"" + spriteSheetName + "\" sprite sheet's texture is null.");
+		return false;
+	}
 
 	const std::string particleTextureName = particleSystemDataTree->getString("textureName");
 
-	if (particleTextureName.empty()) return false;
+	if (particleTextureName.empty())
+	{
+		logger->error("[Error.ParticleSystem] Particle texture name is empty.");
+		return false;
+	}
 
 	auto ie = ss->getImageEntry(particleTextureName);
 
-	if (ie == nullptr) return false;
+	if (ie == nullptr)
+	{
+		logger->error("[Error.ParticleSystem] \"" + spriteSheetName + "\" sprite sheet does not have image: " + particleTextureName);
+		return false;
+	}
 
 	textureSize = ie->width;
 
-	bool result = setAttributesWithFile(particleSystemDataTree);
-
-	if (result == false) return false;
+	setAttributesWithFile(particleSystemDataTree);
 
 	// init particles
 	for (unsigned int i = 0; i < totalParticles + ExtraParticlesInPool; ++i)
@@ -120,6 +150,9 @@ bool Voxel::UI::ParticleSystem::init(Voxel::DataTree* particleSystemDataTree)
 		// all new particle data are default.
 		particles.push_back(new Particle());
 	}
+
+	// activate
+	state = State::RUNNING;
 	
 	auto size = glm::vec2(ie->width, ie->height);
 	float widthHalf = size.x * 0.5f;
@@ -158,10 +191,10 @@ bool Voxel::UI::ParticleSystem::init(Voxel::DataTree* particleSystemDataTree)
 
 
 	// gen uvbo
-	GLuint uvbo;
+	uvbo;
 	glGenBuffers(1, &uvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs.front(), GL_DYNAMIC_DRAW);
 
 	GLint uvVertLoc = program->getAttribLocation("uvVert");
 
@@ -209,12 +242,9 @@ bool Voxel::UI::ParticleSystem::init(Voxel::DataTree* particleSystemDataTree)
 	glBindVertexArray(0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &uvbo);
 
 
 #if V_DEBUG && V_DEBUG_LOG_CONSOLE
-	auto logger = &Voxel::Logger::getInstance();
-
 	logger->consoleInfo("[ParticleSystem] Creating particle system");
 	logger->consoleInfo("[ParticleSystem] Name = " + name);
 	logger->consoleInfo("[ParticleSystem] Duration = " + std::to_string(duration));
@@ -374,18 +404,85 @@ bool Voxel::UI::ParticleSystem::setAttributesWithFile(Voxel::DataTree * psDataTr
 	return true;
 }
 
+void Voxel::UI::ParticleSystem::pause()
+{
+	if (state == State::RUNNING)
+	{
+		state = State::PAUSED;
+	}
+}
+
+void Voxel::UI::ParticleSystem::resume()
+{
+	if (state == State::PAUSED)
+	{
+		state = State::RUNNING;
+	}
+}
+
+void Voxel::UI::ParticleSystem::stop()
+{
+	if (state == State::RUNNING || state == State::PAUSED)
+	{
+		state = State::STOPPED;
+		reset();
+	}
+}
+
+void Voxel::UI::ParticleSystem::start()
+{
+	if (state == State::FINISHED || state == State::STOPPED)
+	{
+		reset();
+
+		state = State::RUNNING;
+	}
+}
+
+bool Voxel::UI::ParticleSystem::isPaused() const
+{
+	return state == State::PAUSED;
+}
+
+bool Voxel::UI::ParticleSystem::isRunning() const
+{
+	return state == State::RUNNING;
+}
+
+bool Voxel::UI::ParticleSystem::isFinished() const
+{
+	return state == State::FINISHED;
+}
+
 void Voxel::UI::ParticleSystem::setDuration(const float duration)
 {
 	if (duration < 0.0f)
 	{
+		// duration is negtiave. Treat this as infinite duration
 		this->duration = -1.0f;
 	}
 	else
 	{
+		// duration is positive
 		this->duration = duration;
+
+		if (this->duration == 0.0f)
+		{
+			// if 0, finish it
+			state = State::FINISHED;
+		}
+
+		// reset particles and restart if duration is not 0 seconds
+		reset();
 	}
 
+	// reset elapsed time
 	elapsedTime = 0.0f;
+}
+
+bool Voxel::UI::ParticleSystem::isDurationInfinite() const
+{
+	return duration == -1.0f;
 }
 
 float Voxel::UI::ParticleSystem::getEmissionRate() const
@@ -463,6 +560,11 @@ void Voxel::UI::ParticleSystem::setTotalParticles(const unsigned int totalPartic
 		// get emission rate
 		emissionRate = this->totalParticles / particleLifeSpan;
 	}
+
+	if (duration > 0.0f)
+	{
+		reset();
+	}
 }
 
 void Voxel::UI::ParticleSystem::setParticleLifeSpan(const float lifeSpan)
@@ -478,11 +580,21 @@ void Voxel::UI::ParticleSystem::setParticleLifeSpan(const float lifeSpan)
 	{
 		emissionRate = static_cast<float>(this->totalParticles) / particleLifeSpan;
 	}
+
+	if (duration > 0.0f)
+	{
+		reset();
+	}
 }
 
 void Voxel::UI::ParticleSystem::setParticleLifeSpanVar(const float lifeSpanVar)
 {
 	particleLifeSpanVar = lifeSpanVar;
+
+	if (duration > 0.0f)
+	{
+		reset();
+	}
 }
 
 void Voxel::UI::ParticleSystem::setSpeed(const float speed)
@@ -638,8 +750,61 @@ void Voxel::UI::ParticleSystem::setEndColorVar(const glm::vec4 & color)
 	endColorVar = glm::clamp(color, 0.0f, 1.0f);
 }
 
+bool Voxel::UI::ParticleSystem::setTexture(const std::string & spriteSheetName, const std::string & textureName)
+{
+	if (spriteSheetName.empty()) return false;
+	if (textureName.empty()) return false;
+
+	auto sm = &Voxel::SpriteSheetManager::getInstance();
+
+	if (sm == nullptr) return false;
+
+	auto ss = sm->getSpriteSheetByKey(spriteSheetName);
+
+	if (ss == nullptr) return false;
+
+	Voxel::Texture2D* newTexture = ss->getTexture();
+
+	if (newTexture == nullptr) return false;
+
+	if (newTexture->getName() != this->texture->getName())
+	{
+		this->texture = newTexture;
+	}
+
+	auto ie = ss->getImageEntry(textureName);
+
+	if (ie == nullptr) return false;
+
+	auto& uvOrigin = ie->uvOrigin;
+	auto& uvEnd = ie->uvEnd;
+
+	std::array<float, 8> uvs = { uvOrigin.x, uvOrigin.y, uvOrigin.x, uvEnd.y, uvEnd.x, uvOrigin.y, uvEnd.x, uvEnd.y };
+
+	glBindBuffer(GL_ARRAY_BUFFER, uvbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, uvs.size() * sizeof(float), &uvs.front());
+
+	return true;
+}
+
+void Voxel::UI::ParticleSystem::reset()
+{
+	for (auto particle : particles)
+	{
+		if (particle->alive)
+		{
+			particle->alive = false;
+		}
+	}
+
+	livingParticleNumber = 0;
+
+	elapsedTime = 0.0f;
+}
+
 void Voxel::UI::ParticleSystem::update(const float delta)
 {
+	if (state != State::RUNNING) return;
 	if (totalParticles == 0) return;
 
 	float actualTime = 0.0f;
@@ -665,106 +830,18 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 		}
 	}
 	
-	spawnPoint += (emissionRate * actualTime);
-
-	int newParticleNumber = static_cast<int>(glm::floor(spawnPoint));
-
-	if (newParticleNumber > 0)
+	if (actualTime != 0.0f)
 	{
-		spawnPoint -= static_cast<float>(newParticleNumber);
+		spawnPoint += (emissionRate * actualTime);
 
-		int counter = newParticleNumber;
-		while (counter > 0)
+		int newParticleNumber = static_cast<int>(glm::floor(spawnPoint));
+
+		if (newParticleNumber > 0)
 		{
-			// spawn new particle
-			
-			// if life span is 0, there is no point of spawning
-			if (particleLifeSpan <= 0.0f)
-			{
-				counter--;
-				continue;
-			}
-
-			float randLifeSpan = 0.0f;
-
-			if (particleLifeSpanVar == 0.0f)
-			{
-				randLifeSpan = particleLifeSpan;
-			}
-			else
-			{
-				randLifeSpan = rand->randRangeFloat(glm::clamp(particleLifeSpan - particleLifeSpanVar, 0.0f, particleLifeSpan), particleLifeSpan + particleLifeSpanVar);
-			}
-
-			if (randLifeSpan <= 0.0f)
-			{
-				counter--;
-				continue;
-			}
-
-			Particle* lastParticle = particles.back();
-
-			if (lastParticle->alive)
-			{
-				counter--;
-				continue;
-				//std::cout << "Reusing alive particle\n";
-			}
-
-			lastParticle->alive = true;
-
-			lastParticle->id = Voxel::UI::Particle::idCounter++;
-
-			const float randEmitAngle = rand->randRangeFloat(emitAngle - emitAngleVar, emitAngle + emitAngleVar);
-
-			lastParticle->dirVec.x = glm::cos(glm::radians(randEmitAngle));
-			lastParticle->dirVec.y = glm::sin(glm::radians(randEmitAngle));
-			
-			lastParticle->speed = rand->randRangeFloat(speed - speedVar, speed + speedVar);
-
-			lastParticle->dirVec *= lastParticle->speed;
-
-			lastParticle->pos.x = rand->randRangeFloat(emitPos.x - emitPosVar.x, emitPos.x + emitPosVar.x);
-			lastParticle->pos.y = rand->randRangeFloat(emitPos.y - emitPosVar.y, emitPos.y + emitPosVar.y);
-
-			glm::vec4 startMinColor = glm::clamp(startColor - startColorVar, 0.0f, 1.0f);
-			glm::vec4 startMaxColor = glm::clamp(startColor + startColorVar, 0.0f, 1.0f);
-
-			lastParticle->startColor.r = rand->randRangeFloat(startMinColor.r, startMaxColor.r);
-			lastParticle->startColor.g = rand->randRangeFloat(startMinColor.g, startMaxColor.g);
-			lastParticle->startColor.b = rand->randRangeFloat(startMinColor.b, startMaxColor.b);
-			lastParticle->startColor.a = rand->randRangeFloat(startMinColor.a, startMaxColor.a);
-
-			glm::vec4 endMinColor = glm::clamp(endColor - endColorVar, 0.0f, 1.0f);
-			glm::vec4 endMaxColor = glm::clamp(endColor + endColorVar, 0.0f, 1.0f);
-
-			lastParticle->endColor.r = rand->randRangeFloat(endMinColor.r, endMaxColor.r);
-			lastParticle->endColor.g = rand->randRangeFloat(endMinColor.g, endMaxColor.g);
-			lastParticle->endColor.b = rand->randRangeFloat(endMinColor.b, endMaxColor.b);
-			lastParticle->endColor.a = rand->randRangeFloat(endMinColor.a, endMaxColor.a);
-
-			lastParticle->accelRad = rand->randRangeFloat(accelRad - accelRadVar, accelRad + accelRadVar);
-			lastParticle->accelTan = rand->randRangeFloat(accelTan - accelTanVar, accelTan + accelTanVar);
-
-			lastParticle->lifeSpan = randLifeSpan;
-			lastParticle->livedTime = 0.0f;
-
-			lastParticle->startSize = rand->randRangeFloat(startSize - startSizeVar, startSize + startSizeVar);
-			lastParticle->endSize = rand->randRangeFloat(endSize - endSizeVar, endSize + endSizeVar);
-
-			lastParticle->startAngle = rand->randRangeFloat(startAngle - startAngleVar, startAngle + startAngleVar);
-			lastParticle->endAngle = rand->randRangeFloat(endAngle - endAngleVar, endAngle + endAngleVar);
-
-			particles.pop_back();
-
-			particles.push_front(lastParticle);
-
-			//std::cout << "Particle spawned #" + std::to_string(lastParticle->id) + "\n";
-
-			counter--;
+			spawnNewParticles(newParticleNumber);
 		}
+		// Else, nothing to spawn
 	}
-	// Else, nothing to spawn
 
 	// buffer
 	std::vector<float> posBuffer;
@@ -775,9 +852,7 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 	auto p_last = std::prev(particles.end());
 
 	int curLivingParticleNum = 0;
-
-	//std::cout << "iterating particles\n";
-	
+		
 	for (; p_it != particles.end();)
 	{
 		Particle* curP = (*p_it);
@@ -796,9 +871,7 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 		if (curP->alive && curP->livedTime >= curP->lifeSpan)
 		{
 			Particle* deadParticle = curP;
-
-			//std::cout << "Particle dead #" + std::to_string(deadParticle->id) + "\n";
-
+			
 			deadParticle->alive = false;
 
 			p_it = particles.erase(p_it);
@@ -857,9 +930,16 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 			// Update position
 			curP->pos += (curP->dirVec * delta);
 
+			if (positionType == PositionType::PT_GROUPED)
+			{
+				// Grouped position type particles move together when emitter.
+				curP->emitPos = emitPos;
+			}
+			// else, Position type  is relative. Doens't move together with emitter.
+
 			// Add to position buffer.
-			posBuffer.push_back(curP->pos.x);
-			posBuffer.push_back(curP->pos.y);
+			posBuffer.push_back(curP->emitPos.x + curP->pos.x);
+			posBuffer.push_back(curP->emitPos.y + curP->pos.y);
 
 			//std::cout << "pos (" << curP->pos.x << ", " << curP->pos.y << ")\n";
 
@@ -898,7 +978,6 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 	}
 
 	livingParticleNumber = curLivingParticleNum;
-	//std::cout << "livingParticleNumberL " + std::to_string(livingParticleNumber) + "\n";
 
 	particles.insert(particles.end(), deadParticles.begin(), deadParticles.end());
 
@@ -906,13 +985,16 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 
 	assert((particles.size() - totalParticles) == ExtraParticlesInPool);
 
+	if ((duration != -1) && (elapsedTime >= duration) && (livingParticleNumber == 0))
+	{
+		// time's up and all particles are dead
+		state = State::FINISHED;
+	}
+
 	if (livingParticleNumber > 0)
 	{
 		// Update buffers
-
-		// bind vao
-		//glBindVertexArray(vao);
-
+		
 		// pos buffer
 		glBindBuffer(GL_ARRAY_BUFFER, posbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, livingParticleNumber * 2 * sizeof(float), &posBuffer.front());
@@ -922,11 +1004,114 @@ void Voxel::UI::ParticleSystem::update(const float delta)
 
 		glBindBuffer(GL_ARRAY_BUFFER, cbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, livingParticleNumber * 4 * sizeof(float), &colorBuffer.front());
-
-		//glBindVertexArray(0);
 	}
 
 	Voxel::UI::TransformNode::update(delta);
+}
+
+void Voxel::UI::ParticleSystem::spawnNewParticles(const int count)
+{
+	if (count > 0)
+	{
+		spawnPoint -= static_cast<float>(count);
+
+		int counter = count;
+
+		while (counter > 0)
+		{
+			// spawn new particle
+
+			// if life span is 0, there is no point of spawning
+			if (particleLifeSpan <= 0.0f)
+			{
+				counter--;
+				continue;
+			}
+
+			float randLifeSpan = 0.0f;
+
+			if (particleLifeSpanVar == 0.0f)
+			{
+				randLifeSpan = particleLifeSpan;
+			}
+			else
+			{
+				randLifeSpan = rand->randRangeFloat(glm::clamp(particleLifeSpan - particleLifeSpanVar, 0.0f, particleLifeSpan), particleLifeSpan + particleLifeSpanVar);
+			}
+
+			if (randLifeSpan <= 0.0f)
+			{
+				counter--;
+				continue;
+			}
+
+			Particle* lastParticle = particles.back();
+
+			if (lastParticle->alive)
+			{
+				counter--;
+				continue;
+				//std::cout << "Reusing alive particle\n";
+			}
+
+			lastParticle->alive = true;
+
+			lastParticle->id = Voxel::UI::Particle::idCounter++;
+
+			const float randEmitAngle = rand->randRangeFloat(emitAngle - emitAngleVar, emitAngle + emitAngleVar);
+
+			lastParticle->dirVec.x = glm::cos(glm::radians(randEmitAngle));
+			lastParticle->dirVec.y = glm::sin(glm::radians(randEmitAngle));
+
+			lastParticle->speed = rand->randRangeFloat(speed - speedVar, speed + speedVar);
+
+			lastParticle->dirVec *= lastParticle->speed;
+
+			//lastParticle->pos.x = rand->randRangeFloat(emitPos.x - emitPosVar.x, emitPos.x + emitPosVar.x);
+			//lastParticle->pos.y = rand->randRangeFloat(emitPos.y - emitPosVar.y, emitPos.y + emitPosVar.y);
+			lastParticle->pos.x = rand->randRangeFloat(-emitPosVar.x, emitPosVar.x);
+			lastParticle->pos.y = rand->randRangeFloat(-emitPosVar.y, emitPosVar.y);
+
+			lastParticle->emitPos = emitPos;
+
+			glm::vec4 startMinColor = glm::clamp(startColor - startColorVar, 0.0f, 1.0f);
+			glm::vec4 startMaxColor = glm::clamp(startColor + startColorVar, 0.0f, 1.0f);
+
+			lastParticle->startColor.r = rand->randRangeFloat(startMinColor.r, startMaxColor.r);
+			lastParticle->startColor.g = rand->randRangeFloat(startMinColor.g, startMaxColor.g);
+			lastParticle->startColor.b = rand->randRangeFloat(startMinColor.b, startMaxColor.b);
+			lastParticle->startColor.a = rand->randRangeFloat(startMinColor.a, startMaxColor.a);
+
+			glm::vec4 endMinColor = glm::clamp(endColor - endColorVar, 0.0f, 1.0f);
+			glm::vec4 endMaxColor = glm::clamp(endColor + endColorVar, 0.0f, 1.0f);
+
+			lastParticle->endColor.r = rand->randRangeFloat(endMinColor.r, endMaxColor.r);
+			lastParticle->endColor.g = rand->randRangeFloat(endMinColor.g, endMaxColor.g);
+			lastParticle->endColor.b = rand->randRangeFloat(endMinColor.b, endMaxColor.b);
+			lastParticle->endColor.a = rand->randRangeFloat(endMinColor.a, endMaxColor.a);
+
+			lastParticle->accelRad = rand->randRangeFloat(accelRad - accelRadVar, accelRad + accelRadVar);
+			lastParticle->accelTan = rand->randRangeFloat(accelTan - accelTanVar, accelTan + accelTanVar);
+
+			lastParticle->lifeSpan = randLifeSpan;
+			lastParticle->livedTime = 0.0f;
+
+			lastParticle->startSize = rand->randRangeFloat(startSize - startSizeVar, startSize + startSizeVar);
+			lastParticle->endSize = rand->randRangeFloat(endSize - endSizeVar, endSize + endSizeVar);
+
+			lastParticle->startAngle = rand->randRangeFloat(startAngle - startAngleVar, startAngle + startAngleVar);
+			lastParticle->endAngle = rand->randRangeFloat(endAngle - endAngleVar, endAngle + endAngleVar);
+
+			particles.pop_back();
+
+			particles.push_front(lastParticle);
+
+			//std::cout << "Particle spawned #" + std::to_string(lastParticle->id) + "\n";
+
+			counter--;
+		}
+	}
+	// Else, nothing to spawn
 }
 
 void Voxel::UI::ParticleSystem::renderSelf()

@@ -50,6 +50,15 @@ namespace Voxel
 				*/
 				PT_GROUPED,
 			};
+
+			enum class State
+			{
+				UNINITIALIZED = 0,
+				RUNNING,
+				FINISHED,
+				PAUSED,
+				STOPPED,
+			};
 		private:
 			// Types
 
@@ -68,6 +77,9 @@ namespace Voxel
 
 			// extra pool size
 			const unsigned int ExtraParticlesInPool = 10;
+
+			// state
+			State state;
 
 			// Gravity mode attributes ----------
 
@@ -186,13 +198,21 @@ namespace Voxel
 			// random generator
 			Random* rand;
 
-			// gl
+			// Vertex buffer objects
+			// Particle position buffer (vec2)
 			GLuint posbo;
+			// Particle scale & rotation buffer (vec4)
 			GLuint srbo;
+			// Particle color buffer (vec4)
 			GLuint cbo;
+			// Particle texture coordinate (vec2)
+			GLuint uvbo;
 
 			// initialize
 			bool init(Voxel::DataTree* particleSystemDataTree);
+
+			// spawn new particles
+			void spawnNewParticles(const int count);
 		public:
 			// Destructor
 			~ParticleSystem();
@@ -203,8 +223,32 @@ namespace Voxel
 			// Set value from data tree
 			bool setAttributesWithFile(Voxel::DataTree* particleSystemDataTree);
 
+			// pause
+			void pause();
+
+			// resume. Only works if particle system was paused before
+			void resume();
+
+			// stop. Can't be resumed
+			void stop();
+
+			// start. Only works if particle system is done or stopped
+			void start();
+
+			// check if particle system is paused
+			bool isPaused() const;
+
+			// Check if particle system is running
+			bool isRunning() const;
+
+			// Check if particle system is finished
+			bool isFinished() const;
+
 			// set duration
 			void setDuration(const float duration);
+
+			// Check if duration is infinite
+			bool isDurationInfinite() const;
 
 			// get emission rate
 			float getEmissionRate() const;
@@ -303,6 +347,12 @@ namespace Voxel
 
 			// set end color var
 			void setEndColorVar(const glm::vec4& color);
+
+			// set texture
+			bool setTexture(const std::string& spriteSheetName, const std::string& textureName);
+
+			// reset particles
+			void reset();
 
 			// override update
 			void update(const float delta) override;

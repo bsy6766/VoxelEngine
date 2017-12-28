@@ -40,6 +40,8 @@ Voxel::ParticleSystemEditorScene::ParticleSystemEditorScene()
 	, workingParticleSystem(nullptr)
 	, workingParticleSystemDataTree(nullptr)
 	, particleSystemModified(false)
+	, node(nullptr)
+	//, psState(nullptr)
 	, modifierNode(nullptr)
 	, colorPickerNode(nullptr)
 	, colorPicker(nullptr)
@@ -49,11 +51,14 @@ Voxel::ParticleSystemEditorScene::ParticleSystemEditorScene()
 	, startColorVarPreview(nullptr)
 	, endColorPreview(nullptr)
 	, endColorVarPreview(nullptr)
+	, textureNode(nullptr)
 	, emissionAreaImage(nullptr)
 	, emissionAreaCB(nullptr)
 	, emitPosXLine(nullptr)
 	, emitPosYLine(nullptr)
 	, emitPosLineNode(nullptr)
+	, simDuration(0.0f)
+	, simElapsedTime(0.0f)
 	, state(State::IDLE)
 	, mouseState(MouseState::IDLE)
 	, input(&Voxel::InputHandler::getInstance())
@@ -89,12 +94,25 @@ void Voxel::ParticleSystemEditorScene::initUI()
 	fpsLabel->setPosition(5.0f, 5.0f);
 	canvas->addChild(fpsLabel, static_cast<int>(ZOrder::FPS_LABEL));
 
+	node = Voxel::UI::Node::create("node");
+	node->setVisibility(false);
+	canvas->addChild(node, static_cast<int>(ZOrder::MOIFIER));
+
+	/*
+	psState = Voxel::UI::Text::create("psState", "Running", 1);
+	psState->setPosition(0.0f, 500.0f);
+	psState->setScale(2.0f);
+	psState->setColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+	node->addChild(psState);
+	*/
+
 	initMenuBar();
 	initFileDropDownMenu();
 	initNewCreateWindow();
 	initOverwriteWindow();
 	initOpenWindow();
 	initModifiers();
+	initTextureList();
 	initSpawnBoundaryImage();
 	initEmitPosLine();
 
@@ -158,6 +176,7 @@ void Voxel::ParticleSystemEditorScene::initFileDropDownMenu()
 	saveBtn = Voxel::UI::Button::create("sBtn", ss, "file_save_button.png");
 	saveBtn->setCoordinateOrigin(glm::vec2(0.0f, 0.5f));
 	saveBtn->setPosition(0.0f, -66.0f);
+	saveBtn->setOnTriggeredCallbackFunc(std::bind(&ParticleSystemEditorScene::onSaveBtnClicked, this, std::placeholders::_1));
 	saveBtn->disable();
 	fileDropDownBg->addChild(saveBtn);
 
@@ -235,6 +254,7 @@ void Voxel::ParticleSystemEditorScene::initOpenWindow()
 	const auto ss = "EditorUISpriteSheet";
 
 	openWindowNode = Voxel::UI::Node::create("oWinNode");
+	openWindowNode->setVisibility(false);
 	canvas->addChild(openWindowNode, static_cast<int>(ZOrder::WINDOWS));
 
 	auto bg = Voxel::UI::NinePatchImage::create("oBg", ss, "new_window_bg.png", 8.0f, 8.0f, 44.0f, 16.0f, glm::vec2(250.0f, 40.0f));
@@ -270,8 +290,7 @@ void Voxel::ParticleSystemEditorScene::initModifiers()
 {
 	modifierNode = Voxel::UI::Node::create("modNode");
 	modifierNode->setPosition(-957.0f, 382.0f);
-	modifierNode->setVisibility(false);
-	canvas->addChild(modifierNode, static_cast<int>(ZOrder::MOIFIER));
+	node->addChild(modifierNode, static_cast<int>(ZOrder::MOIFIER));
 	
 	float y = 0.0f;
 
@@ -380,8 +399,7 @@ void Voxel::ParticleSystemEditorScene::initModifiers()
 	// color picker
 	colorPickerNode = Voxel::UI::Node::create("cpNode");
 	colorPickerNode->setPosition(721.0f, 371.0f);
-	colorPickerNode->setVisibility(false);
-	canvas->addChild(colorPickerNode, static_cast<int>(ZOrder::MOIFIER));
+	node->addChild(colorPickerNode, static_cast<int>(ZOrder::MOIFIER));
 
 	auto cpBg = Voxel::UI::NinePatchImage::create("cpBg", "DebugSpriteSheet", "debug_color_picker_bg.png", 4.0f, 4.0f, 4.0f, 4.0f, glm::vec2(256.0f));
 	colorPickerNode->addChild(cpBg);
@@ -506,6 +524,58 @@ Voxel::UI::Slider* Voxel::ParticleSystemEditorScene::initModifierSlider(const st
 	return slider;
 }
 
+void Voxel::ParticleSystemEditorScene::initTextureList()
+{
+	textureNode = Voxel::UI::Node::create("texNode");
+	textureNode->setPosition(593.0f, 62.0f);
+	node->addChild(textureNode, static_cast<int>(ZOrder::MOIFIER));
+
+	auto label = Voxel::UI::Text::create("textureLable", "Textures", 1);
+	label->setPivot(-0.5f, 0.0f);
+	textureNode->addChild(label);
+
+	float textureX = 16.0f;
+	const float textureXOffset = 40.0f;
+
+	auto blurCircle = Voxel::UI::Image::createFromSpriteSheet("bCircleTex", "ParticleSpriteSheet", "32x32_white_blur_circle.png");
+	blurCircle->setPosition(textureX, -28.0f);
+	blurCircle->setInteractable();
+	blurCircle->setOnMousePressedCallback(std::bind(&ParticleSystemEditorScene::onBlurCircleClicked, this, std::placeholders::_1));
+	textureNode->addChild(blurCircle);
+
+	textureX += textureXOffset;
+
+	auto circle = Voxel::UI::Image::createFromSpriteSheet("circleTex", "ParticleSpriteSheet", "32x32_white_circle.png");
+	circle->setPosition(textureX, -28.0f);
+	circle->setInteractable();
+	circle->setOnMousePressedCallback(std::bind(&ParticleSystemEditorScene::onCircleClicked, this, std::placeholders::_1));
+	textureNode->addChild(circle);
+
+	textureX += textureXOffset;
+
+	auto triangle = Voxel::UI::Image::createFromSpriteSheet("triTex", "ParticleSpriteSheet", "32x32_white_triangle.png");
+	triangle->setPosition(textureX, -28.0f);
+	triangle->setInteractable();
+	triangle->setOnMousePressedCallback(std::bind(&ParticleSystemEditorScene::onTriangleClicked, this, std::placeholders::_1));
+	textureNode->addChild(triangle);
+
+	textureX += textureXOffset;
+
+	auto square = Voxel::UI::Image::createFromSpriteSheet("sqTex", "ParticleSpriteSheet", "32x32_white_square.png");
+	square->setPosition(textureX, -28.0f);
+	square->setInteractable();
+	square->setOnMousePressedCallback(std::bind(&ParticleSystemEditorScene::onSquareClicked, this, std::placeholders::_1));
+	textureNode->addChild(square);
+
+	textureX += textureXOffset;
+
+	auto star = Voxel::UI::Image::createFromSpriteSheet("starTex", "ParticleSpriteSheet", "32x32_white_star.png");
+	star->setPosition(textureX, -28.0f);
+	star->setInteractable();
+	star->setOnMousePressedCallback(std::bind(&ParticleSystemEditorScene::onStarClicked, this, std::placeholders::_1));
+	textureNode->addChild(star);
+}
+
 void Voxel::ParticleSystemEditorScene::initSpawnBoundaryImage()
 {
 	emissionAreaImage = Voxel::UI::Image::createFromSpriteSheet("spwnBB", "GlobalSpriteSheet", "1x1_white.png");
@@ -530,8 +600,7 @@ void Voxel::ParticleSystemEditorScene::initSpawnBoundaryImage()
 void Voxel::ParticleSystemEditorScene::initEmitPosLine()
 {
 	emitPosLineNode = Voxel::UI::Node::create("lineNode");
-	emitPosLineNode->setVisibility(false);
-	canvas->addChild(emitPosLineNode, static_cast<int>(ZOrder::GUIDE_LINES));
+	node->addChild(emitPosLineNode, static_cast<int>(ZOrder::GUIDE_LINES));
 
 	emitPosXLine = Voxel::UI::Line::create("emitXLine", glm::vec2(-960.0f, 0.0f), glm::vec2(960.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
 	emitPosLineNode->addChild(emitPosXLine);
@@ -556,6 +625,24 @@ void Voxel::ParticleSystemEditorScene::release()
 
 void Voxel::ParticleSystemEditorScene::updateKey()
 {
+	if (input->getKeyDown(GLFW_KEY_SPACE, true))
+	{
+		if (workingParticleSystem->isPaused())
+		{
+			workingParticleSystem->resume();
+		}
+		else if (workingParticleSystem->isRunning())
+		{
+			workingParticleSystem->pause();
+		}
+	}
+	else if (input->getKeyDown(GLFW_KEY_R, true))
+	{
+		if (workingParticleSystem)
+		{
+			workingParticleSystem->reset();
+		}
+	}
 }
 
 bool Voxel::ParticleSystemEditorScene::updateMouseMove(const float delta)
@@ -684,6 +771,19 @@ void Voxel::ParticleSystemEditorScene::update(const float delta)
 
 		if (workingParticleSystem)
 		{
+			if (workingParticleSystem->isDurationInfinite() == false)
+			{
+				simElapsedTime += delta;
+				
+				if (simElapsedTime >= simDuration)
+				{
+					if (workingParticleSystem->isFinished())
+					{
+						workingParticleSystem->start();
+					}
+				}
+			}
+
 			modifierLabels.at(static_cast<int>(ModifierLabel::LIVING_PARTICLES))->setText("Living particles: " + std::to_string(workingParticleSystem->getLivingParticleNumber()));
 		}
 	}
@@ -702,17 +802,26 @@ void Voxel::ParticleSystemEditorScene::render()
 
 void Voxel::ParticleSystemEditorScene::updateEmissionPos()
 {
-	auto cp = cursor->getPosition();
-	workingParticleSystem->setEmitPosition(cp);
+	if (workingParticleSystem)
+	{
+		auto cp = cursor->getPosition();
+		workingParticleSystem->setEmitPosition(cp);
 
-	modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS))->setText("Pos (" + Utility::String::floatToStrTwoDPoints(cp.x) + ", " + Utility::String::floatToStrTwoDPoints(cp.y) + ")");
+		modifierLabels.at(static_cast<int>(ModifierLabel::EMIT_POS))->setText("Pos (" + Utility::String::floatToStrTwoDPoints(cp.x) + ", " + Utility::String::floatToStrTwoDPoints(cp.y) + ")");
 
-	emissionAreaImage->setPosition(cp);
+		emissionAreaImage->setPosition(cp);
 
-	auto emitPos = workingParticleSystem->getEmissionPosition();
+		auto emitPos = workingParticleSystem->getEmissionPosition();
 
-	emitPosXLine->setPosition(0.0f, emitPos.y);
-	emitPosYLine->setPosition(emitPos.x, 0.0f);
+		emitPosXLine->setPosition(0.0f, emitPos.y);
+		emitPosYLine->setPosition(emitPos.x, 0.0f);
+
+		if (workingParticleSystem->isDurationInfinite() == false)
+		{
+			workingParticleSystem->stop();
+			workingParticleSystem->start();
+		}
+	}
 }
 
 void Voxel::ParticleSystemEditorScene::createEmptyParticleSystem()
@@ -769,7 +878,7 @@ void Voxel::ParticleSystemEditorScene::createEmptyParticleSystem()
 		workingParticleSystemDataTree->setFloat("angle.endVar", 0);
 		workingParticleSystemDataTree->setString("spriteSheetName", "ParticleSpriteSheet");
 		//workingParticleSystemDataTree->setString("textureName", "32x32_white_circle.png");
-		workingParticleSystemDataTree->setString("textureName", "32x32_white_star.png");
+		workingParticleSystemDataTree->setString("textureName", "256x256_white_circle.png");
 
 		workingParticleSystemDataTree->save(path);
 
@@ -779,6 +888,8 @@ void Voxel::ParticleSystemEditorScene::createEmptyParticleSystem()
 		emissionAreaImage->setScale(0.0f);
 
 		resetModifierLabelAndSlider();
+
+		//psState->setText("Running");
 	} 
 	else
 	{
@@ -819,9 +930,10 @@ void Voxel::ParticleSystemEditorScene::askOverwrite()
 }
 
 void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
-{// reset modifiers
+{
+	// reset modifiers
 		
-		// duration
+	// duration
 	modifierLabels.at(static_cast<int>(ModifierLabel::DURATION))->setText("Duration: INF");
 	modifierSliders.at(static_cast<int>(ModifierLabel::DURATION))->setValue(-1.0f);
 
@@ -839,7 +951,7 @@ void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
 	modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN))->setValue(0.0f);
 
 	// particle life span var
-	modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setText("Particle life span: 0");
+	modifierLabels.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setText("Particle life span var: 0");
 	modifierSliders.at(static_cast<int>(ModifierLabel::PARTICLE_LIFE_SPAN_VAR))->setValue(0.0f);
 
 	// speed
@@ -895,7 +1007,7 @@ void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
 
 	// start size
 	modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE))->setText("Start size: 32 px");
-	modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE))->setValue(0.0f);
+	modifierSliders.at(static_cast<int>(ModifierLabel::START_SIZE))->setValue(32.0f);
 
 	// start size var
 	modifierLabels.at(static_cast<int>(ModifierLabel::START_SIZE_VAR))->setText("Start size var: 0");
@@ -903,7 +1015,7 @@ void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
 
 	// end size
 	modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE))->setText("End size: 32 px");
-	modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE))->setValue(0.0f);
+	modifierSliders.at(static_cast<int>(ModifierLabel::END_SIZE))->setValue(32.0f);
 
 	// end size var
 	modifierLabels.at(static_cast<int>(ModifierLabel::END_SIZE_VAR))->setText("End size var: 0");
@@ -933,9 +1045,11 @@ void Voxel::ParticleSystemEditorScene::resetModifierLabelAndSlider()
 
 	// color
 	modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR))->setText("Start color (1.00, 1.00, 1.00, 1.00)");
-	modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR_VAR))->setText("Start color var (1.00, 1.00, 1.00, 1.00)");
+	modifierLabels.at(static_cast<int>(ModifierLabel::START_COLOR_VAR))->setText("Start color var (0.00, 0.00, 0.00, 0.00)");
+	startColorVarPreview->setColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR))->setText("End color (1.00, 1.00, 1.00, 1.00)");
-	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR_VAR))->setText("End color var(1.00, 1.00, 1.00, 1.00)");
+	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR_VAR))->setText("End color var(0.00, 0.00, 1.00, 0.00)");
+	endColorVarPreview->setColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 void Voxel::ParticleSystemEditorScene::removeExistingWorkingParticleSystem()
@@ -1086,9 +1200,10 @@ void Voxel::ParticleSystemEditorScene::onNewCreateButtonClicked(Voxel::UI::Butto
 			
 			newFileNameInputField->setToDefaultText();
 
-			modifierNode->setVisibility(true);
-			colorPickerNode->setVisibility(true);
-			emitPosLineNode->setVisibility(true);
+			node->setVisibility(true);
+
+			curFileName = newFileName;
+			newFileName = "";
 
 			state = State::IDLE;
 		}
@@ -1150,9 +1265,10 @@ void Voxel::ParticleSystemEditorScene::onOverwrite(Voxel::UI::Button * sender)
 
 	newFileNameInputField->setToDefaultText();
 
-	modifierNode->setVisibility(true);
-	colorPickerNode->setVisibility(true);
-	emitPosLineNode->setVisibility(true);
+	node->setVisibility(true);
+
+	curFileName = newFileName;
+	newFileName = "";
 
 	state = State::IDLE;
 }
@@ -1170,6 +1286,20 @@ void Voxel::ParticleSystemEditorScene::onOverwriteCancel(Voxel::UI::Button * sen
 	newFileNameInputField->setToDefaultText();
 
 	state = State::IDLE;
+}
+
+void Voxel::ParticleSystemEditorScene::onSaveBtnClicked(Voxel::UI::Button * sender)
+{
+	if (workingParticleSystem && workingParticleSystemDataTree)
+	{
+		particleSystemModified = false;
+
+		auto fs = &Voxel::FileSystem::getInstance();
+
+		workingParticleSystemDataTree->save(fs->getWorkingDirectory() + "/Data/ParticleSystem/" + curFileName);
+
+		fileDropDownBg->setVisibility(false);
+	}
 }
 
 void Voxel::ParticleSystemEditorScene::onEmissionAreaCheckBoxSelected(Voxel::UI::CheckBox * sender)
@@ -1195,6 +1325,9 @@ void Voxel::ParticleSystemEditorScene::onDurationChange(Voxel::UI::Slider * send
 	{
 		workingParticleSystem->setDuration(0.0f);
 		modifierLabels.at(static_cast<int>(ModifierLabel::DURATION))->setText("Duration: 0.0");
+
+		//psState->setText("Finished");
+		//psState->setColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 	else
 	{
@@ -1202,8 +1335,10 @@ void Voxel::ParticleSystemEditorScene::onDurationChange(Voxel::UI::Slider * send
 		const std::string newDurStr = std::to_string(newDuration);
 		modifierLabels.at(static_cast<int>(ModifierLabel::DURATION))->setText("Duration: " + newDurStr.substr(0, (newDurStr).find_first_of('.') + 3));
 		workingParticleSystem->setDuration(newDuration);
-	}
 
+		simDuration = newDuration + 2.0f;
+		simElapsedTime = 0.0f;
+	}
 }
 
 void Voxel::ParticleSystemEditorScene::onTotalParticlesChange(Voxel::UI::Slider * sender)
@@ -1472,4 +1607,44 @@ void Voxel::ParticleSystemEditorScene::onEndColorVarButtonTriggered(Voxel::UI::B
 	modifierLabels.at(static_cast<int>(ModifierLabel::END_COLOR_VAR))->setText("end color var (" + Utility::String::floatToStrTwoDPoints(rgb.r) + ", " + Utility::String::floatToStrTwoDPoints(rgb.g) + ", " + Utility::String::floatToStrTwoDPoints(rgb.b) + ", " + Utility::String::floatToStrTwoDPoints(a) + ")");
 
 	workingParticleSystem->setEndColorVar(glm::vec4(rgb, a));
+}
+
+void Voxel::ParticleSystemEditorScene::onBlurCircleClicked(Voxel::UI::TransformNode * sender)
+{
+	if (workingParticleSystem)
+	{
+		workingParticleSystem->setTexture("ParticleSpriteSheet", "256x256_white_blur_circle.png");
+	}
+}
+
+void Voxel::ParticleSystemEditorScene::onCircleClicked(Voxel::UI::TransformNode * sender)
+{
+	if (workingParticleSystem)
+	{
+		workingParticleSystem->setTexture("ParticleSpriteSheet", "256x256_white_circle.png");
+	}
+}
+
+void Voxel::ParticleSystemEditorScene::onTriangleClicked(Voxel::UI::TransformNode * sender)
+{
+	if (workingParticleSystem)
+	{
+		workingParticleSystem->setTexture("ParticleSpriteSheet", "256x256_white_triangle.png");
+	}
+}
+
+void Voxel::ParticleSystemEditorScene::onSquareClicked(Voxel::UI::TransformNode * sender)
+{
+	if (workingParticleSystem)
+	{
+		workingParticleSystem->setTexture("ParticleSpriteSheet", "256x256_white_square.png");
+	}
+}
+
+void Voxel::ParticleSystemEditorScene::onStarClicked(Voxel::UI::TransformNode * sender)
+{
+	if (workingParticleSystem)
+	{
+		workingParticleSystem->setTexture("ParticleSpriteSheet", "256x256_white_star.png");
+	}
 }
