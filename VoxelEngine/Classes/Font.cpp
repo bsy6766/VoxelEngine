@@ -145,7 +145,6 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 	texture->bind();
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	// iterate over char map (whitespace to tilde) again. 
 
 	auto startBinPack = Utility::Time::now();
@@ -162,7 +161,7 @@ bool Voxel::Font::init(const std::string & fontName, const int fontSize, const i
 		break;
 	}
 	auto endBinPack = Utility::Time::now();
-	
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 	auto end = Utility::Time::now();
@@ -407,11 +406,6 @@ void Voxel::Font::closeFreetype()
 void Voxel::Font::activateTexture(unsigned int textureUnit)
 {
 	texture->activate(textureUnit);
-}
-
-void Voxel::Font::bind()
-{
-	texture->bind();
 }
 
 bool Voxel::Font::isOutlineEnabled()
