@@ -43,7 +43,6 @@ Application::Application()
 	auto logger = &Voxel::Logger::getInstance();
 
 	logger->info("[Application] Initializing application");
-
 	/*
 	// old version
 	cout << "Creating Application" << endl;
@@ -170,8 +169,8 @@ void Application::run()
 	input.update();
 
 	// Reset time
-	glView->resetTime();
-	
+	glView->resetTime();		
+		
 	// Iterate while GLView is running
 	while (glView->isRunning())
 	{
@@ -226,7 +225,15 @@ void Application::run()
 		// Swap buffer and poll events. All glfw events are called here.
 		glView->render();
 
+#if V_DEBUG
 		// loop finished
+		auto error = glGetError();
+
+		if (error)
+		{
+			std::cout << "GL Error: " << glewGetErrorString(error) << "\n";
+		}
+#endif
 	}
 	// Main while loop ends
 	
