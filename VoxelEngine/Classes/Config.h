@@ -69,6 +69,15 @@
 #endif
 
 /**
+*	@def V_DEBUG_PRINT
+*	If enabled, can call print functions on classes that provides logger out put.
+*	V_DEBUG_CONSOLE must be enabled to be logged.
+*/
+#ifndef V_DEBUG_PRINT
+#define V_DEBUG_PRINT 1
+#endif
+
+/**
 *	@def V_DEBUG_DRAW_UI_BOUNDING_BOX
 *	If enabled, draws UI bounding box. Need to enable each ui bounding boxe configs.
 */

@@ -1,7 +1,10 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include "UIBase.h"
+#include "TransformNode.h"
+
+// voxel
+#include "Config.h"
 
 namespace Voxel
 {
@@ -101,8 +104,9 @@ namespace Voxel
 			*/
 			void render() override;
 
-			// print
-			void print(const int tab) override;
+#if V_DEBUG && V_DEBUG_PRINT
+			void print();
+#endif
 		};
 	}
 }

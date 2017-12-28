@@ -5,6 +5,7 @@
 
 // Voxel
 #include "Camera.h"
+#include "Logger.h"
 
 Voxel::UI::Canvas::Canvas(const glm::vec2& size, const glm::vec2& centerPosition)
 	: TransformNode("")
@@ -136,22 +137,26 @@ void Voxel::UI::Canvas::render()
 	}
 }
 
-void Voxel::UI::Canvas::print(const int tab)
+#if V_DEBUG && V_DEBUG_PRINT
+void Voxel::UI::Canvas::print()
 {
-	std::cout << "[Canvas] Canvas info...\n";
-	std::cout << "Size (" << size.x << ", " << size.y << ")\n";
-	std::cout << "Pos  (" << position.x << ", " << position.y << ")\n";
+#if V_DEBUG_LOG_CONSOLE
+	auto logger = &Voxel::Logger::getInstance();
 
-	std::cout << "UIs\n";
+	logger->consoleInfo("[Canvas] Canvas info");
+	logger->consoleInfo("[Canvas] Size (" + std::to_string(size.x) + ", " + std::to_string(size.y) + ")");
+	logger->consoleInfo("[Canvas] Pos (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")");
+	logger->consoleInfo("[Canvas] UIs");
 
 	for (auto& e : children)
 	{
-		std::cout << "ZOrder: (" << e.first.globalZOrder << ", " << e.first.localZOrder << "), Name: " << e.second->getName() << "\n";
+		logger->consoleInfo("[Canvas] ZOrder (" + std::to_string(e.first.globalZOrder) + ", " + std::to_string(e.first.localZOrder) + "), Name: " + e.second->getName());
+
 		if (e.second->hasChildren())
 		{
 			e.second->printChildren(1);
 		}
 	}
-
-	std::cout << "\n";
+#endif
 }
+#endif
