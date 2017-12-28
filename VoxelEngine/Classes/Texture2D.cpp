@@ -315,8 +315,14 @@ void Voxel::Texture2D::activate(GLenum textureUnit)
 void Voxel::Texture2D::bind()
 {
 	glBindTexture(textureTarget, textureObject);
-	assert(textureLocation != -1);
-	glUniform1i(textureLocation, 0);
+}
+
+void Voxel::Texture2D::enableTexLoc()
+{
+	if (textureLocation != -1)
+	{
+		glUniform1i(textureLocation, 0);
+	}
 }
 
 void Voxel::Texture2D::print()

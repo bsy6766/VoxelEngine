@@ -103,6 +103,9 @@ namespace Voxel
 		// bind texture
 		void bind();
 
+		// enable texture location
+		void enableTexLoc();
+
 		// print texture info
 		void print();
 	};
