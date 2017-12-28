@@ -1,4 +1,3 @@
-name "Magical Orbits"
 duration -1
 totalParticles 20
 particleLifeSpan 1
@@ -16,18 +15,22 @@ color
 		r 0
 		g 0
 		b 0
+		a 0
 	startVar
 		r 0
 		g 0
 		b 0
+		a 0
 	end
 		r 0
 		g 0
 		b 0
+		a 0
 	endVar
 		r 0
 		g 0
 		b 0
+		a 0
 speed 70
 speedVar 5
 gravity
