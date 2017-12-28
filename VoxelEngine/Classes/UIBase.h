@@ -30,7 +30,7 @@ namespace Voxel
 	namespace UI
 	{
 		// Forward declaration
-		class Node;
+		class BaseNode;
 		class TransformNode;
 		class RenderNode;
 		class Action;
@@ -38,20 +38,20 @@ namespace Voxel
 		typedef std::map<ZOrder, TransformNode*, ZOrderComp> Children;
 
 		/**
-		*	@class Node
+		*	@class BaseNode
 		*	@brief Base class of all UI component
 		*	
 		*	Node is simple base class that has id number and name. 
 		*	Node itself does nothing and can't be created as instance.
 		*/
-		class Node
+		class BaseNode
 		{
 		private:
 			static unsigned int idCounter;
 		protected:
 			// Constructor
-			Node() = delete;
-			Node(const std::string& name);
+			BaseNode() = delete;
+			BaseNode(const std::string& name);
 
 			// name
 			std::string name;
@@ -60,7 +60,7 @@ namespace Voxel
 			unsigned int id;
 		public:
 			// Destructor
-			~Node();
+			~BaseNode();
 
 			/**
 			*	Get number id of ui
@@ -81,7 +81,7 @@ namespace Voxel
 		*	Even though TransformNode itself doesn't renders on screen, 
 		*	but derived classes can, that is why it has pure virtual render function, opacity and visibility.
 		*/
-		class TransformNode : public Node
+		class TransformNode : public BaseNode
 		{
 		public:
 			enum InteractionFlag
@@ -237,10 +237,24 @@ namespace Voxel
 			virtual void setScale(const float scale);
 
 			/**
+			*	Set scale x of ui
+			*	@param scaleX Scale value for x axis of ui.
+			*/
+			void setScaleX(const float scaleX);
+
+			/**
+			*	Set scale y of ui
+			*	@param scaleY Scale value for y axis of ui
+			*/
+			void setScaleY(const float scaleY);
+
+			/**
 			*	Set scale of ui.
 			*	@param scale Scale of ui in x and y axis. Default value is 1.0. Must be positive number.
 			*/
 			void setScale(const glm::vec2& scale);
+			void setScale(const float x, const float y);
+			
 
 			/**
 			*	Get scale of ui.

@@ -20,24 +20,24 @@ using namespace Voxel::UI;
 
 //=============================================================== Node ===============================================================
 
-unsigned int Node::idCounter = 0;
+unsigned int BaseNode::idCounter = 0;
 
-Voxel::UI::Node::Node(const std::string & name)
+Voxel::UI::BaseNode::BaseNode(const std::string & name)
 	: name(name)
-	, id(++Node::idCounter)
+	, id(++BaseNode::idCounter)
 {}
 
-Voxel::UI::Node::~Node()
+Voxel::UI::BaseNode::~BaseNode()
 {
 	//std::cout << "~Node()\n";
 }
 
-unsigned int Voxel::UI::Node::getID() const
+unsigned int Voxel::UI::BaseNode::getID() const
 {
 	return id;
 }
 
-std::string Voxel::UI::Node::getName() const
+std::string Voxel::UI::BaseNode::getName() const
 {
 	return name;
 }
@@ -47,7 +47,7 @@ std::string Voxel::UI::Node::getName() const
 //=========================================================== Transform Node =========================================================
 
 Voxel::UI::TransformNode::TransformNode(const std::string & name)
-	: Node(name)
+	: BaseNode(name)
 	, visibility(true)
 	, opacity(1.0f)
 	, position(0.0f)
@@ -187,22 +187,28 @@ float Voxel::UI::TransformNode::getAngle() const
 
 void Voxel::UI::TransformNode::setScale(const float scale)
 {
-	setScale(glm::vec2(scale));
+	setScale(scale, scale);
+}
+
+void Voxel::UI::TransformNode::setScaleX(const float scaleX)
+{
+	setScale(glm::vec2(scaleX, scale.y));
+}
+
+void Voxel::UI::TransformNode::setScaleY(const float scaleY)
+{
+	setScale(glm::vec2(scale.x, scaleY));
 }
 
 void Voxel::UI::TransformNode::setScale(const glm::vec2 & scale)
 {
-	this->scale = scale;
+	setScale(scale.x, scale.y);
+}
 
-	if (this->scale.x < 0.0f)
-	{
-		this->scale.x = 0.0f;
-	}
-
-	if (this->scale.y < 0.0f)
-	{
-		this->scale.y = 0.0f;
-	}
+void Voxel::UI::TransformNode::setScale(const float x, const float y)
+{
+	scale.x = x;
+	scale.y = y;
 
 	needToUpdateModelMat = true;
 }
