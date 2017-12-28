@@ -12,6 +12,8 @@ out vec4 vertColor;
 void main()
 {
 	vec4 finalPos = projMat * viewMat * modelMat * vec4(vert, 1);
+	
 	gl_Position = finalPos;
+
 	vertColor = color;
 }

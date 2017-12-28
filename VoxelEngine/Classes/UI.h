@@ -1,4 +1,5 @@
 #include "UIBase.h"
+#include "Node.h"
 #include "Canvas.h"
 #include "Image.h"
 #include "AnimatedImage.h"
@@ -11,3 +12,4 @@
 #include "Slider.h"
 #include "ColorPicker.h"
 #include "ParticleSystem.h"
+#include "Line.h"
