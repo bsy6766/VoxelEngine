@@ -91,8 +91,8 @@ Voxel::Scene * Voxel::Director::createScene(const SceneName sceneName)
 #if V_DEBUG_PARTICLE_SYSTEM_EDITOR
 	case Voxel::Director::SceneName::PARTICLE_SYSTEM_EDITOR_SCENE:
 	{
-		//newScene = new Editor();
-		//newScene->init();
+		newScene = new ParticleSystemEditorScene();
+		newScene->init();
 	}
 	break;
 #endif

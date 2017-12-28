@@ -319,7 +319,7 @@ void Voxel::MenuScene::onEditorClicked(Voxel::UI::Button* sender)
 #if V_DEBUG_PARTICLE_SYSTEM_EDITOR
 void Voxel::MenuScene::onParticleSystemEditorClicked(Voxel::UI::Button * sender)
 {
-
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::PARTICLE_SYSTEM_EDITOR_SCENE, 0.5f);
 }
 #endif
 #if V_DEBUG_UI_TEST
