@@ -261,6 +261,11 @@ namespace Voxel
 
 				return (1.0f - t) * a + t * b;
 			}
+
+			static float floorTwoDecimalPoint(const float value)
+			{
+				return glm::floor(value * 100.0f) * 0.01f;
+			}
 		}
 
 		namespace Log 
@@ -316,6 +321,13 @@ namespace Voxel
 				s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
 					return !(ch == 32);
 				}).base(), s.end());
+			}
+
+			// float to string with up to 2 decimal points
+			static inline std::string floatToStrTwoDPoints(const float value)
+			{
+				auto strF = std::to_string(value);
+				return strF.substr(0, (strF).find_first_of('.') + 3);
 			}
 		}
 
