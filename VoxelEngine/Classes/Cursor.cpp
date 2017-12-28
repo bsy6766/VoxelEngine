@@ -220,17 +220,16 @@ void Voxel::Cursor::render()
 		if (vao)
 		{
 			auto program = ProgramManager::getInstance().getProgram(ProgramManager::PROGRAM_NAME::UI_TEXTURE_SHADER);
+
 			program->use(true);
 			program->setUniformMat4("projMat", Camera::mainCamera->getProjection(Camera::UIFovy));
-
-			auto uiMat = glm::translate(glm::translate(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(position.x, position.y, 0)), glm::vec3(-pivot.x * size.x, -pivot.y * size.y, 0));
+			program->setUniformMat4("modelMat", glm::translate(glm::translate(Camera::mainCamera->getScreenSpaceMatrix(), glm::vec3(position.x, position.y, 0)), glm::vec3(-pivot.x * size.x, -pivot.y * size.y, 0)));
+			program->setUniformFloat("opacity", 1.0f);
+			program->setUniformVec3("color", glm::vec3(1.0f));
 
 			texture->activate(GL_TEXTURE0);
 			texture->bind();
-
-			program->setUniformMat4("modelMat", uiMat);
-			program->setUniformFloat("opacity", 1.0f);
-			program->setUniformVec3("color", glm::vec3(1.0f));
+			texture->enableTexLoc();
 
 			glBindVertexArray(vao);
 
