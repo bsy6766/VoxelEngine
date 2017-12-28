@@ -9,6 +9,7 @@
 
 // cpp
 #include <string>
+#include <functional>
 
 // voxel
 #include "UIBase.h"
@@ -90,6 +91,9 @@ namespace Voxel
 			// state
 			State state;
 
+			// On value change callback
+			std::function<void(Voxel::UI::ColorPicker*)> onValueChange;
+
 			// init
 			bool init(const glm::vec2& palleteSize, const std::string& spriteSheetName, const std::string& palleteIconImageName);
 
@@ -110,18 +114,27 @@ namespace Voxel
 			
 			// update mouse move
 			bool updateColorPickerMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
+
 		public:
+			// Destructor
+			~ColorPicker();
 
 			static ColorPicker* create(const std::string& name, const glm::vec2& palleteSize, const std::string& spriteSheetName, const std::string& palleteIconImageName);
 
 			// set h
 			void setH(const float h);
 
+			// set HSB(HSV)
+			void setHSB(const glm::vec3& hsb);
+
 			// get hsb(hsv)
 			glm::vec3 getHSB() const;
 
 			// get rgb
 			glm::vec3 getRGB() const;
+
+			// set on value change callback
+			void setOnValueChangeCallback(const std::function<void(Voxel::UI::ColorPicker*)>& func);
 
 			// override
 			void updateModelMatrix() override;

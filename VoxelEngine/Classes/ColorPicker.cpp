@@ -25,6 +25,14 @@ Voxel::UI::ColorPicker::ColorPicker(const std::string& name)
 	, state(State::IDLE)
 {}
 
+Voxel::UI::ColorPicker::~ColorPicker()
+{
+	if (palleteVao)
+	{
+		glDeleteVertexArrays(1, &palleteVao);
+	}
+}
+
 Voxel::UI::ColorPicker * Voxel::UI::ColorPicker::create(const std::string & name, const glm::vec2 & palleteSize, const std::string & spriteSheetName, const std::string & palleteIconImageName)
 {
 	auto newColorPicker = new ColorPicker(name);
@@ -204,35 +212,36 @@ void Voxel::UI::ColorPicker::loadIconBuffer(const Voxel::ImageEntry * ie)
 
 void Voxel::UI::ColorPicker::updateHSB(const glm::vec2 & mousePosition)
 {
-	if (boundingBox.containsPoint(mousePosition))
-	{
-		auto d = mousePosition - (boundingBox.center - (boundingBox.size * 0.5f));
+	auto min = boundingBox.getMin();
+	auto max = boundingBox.getMax();
 
-		s = d.x / boundingBox.size.x;
-		b = d.y / boundingBox.size.y;
+	bool xOut = mousePosition.x < min.x || mousePosition.x > max.x;
+	bool yOut = mousePosition.y < min.y || mousePosition.y > max.y;
+
+	if (mousePosition.x < min.x)
+	{
+		s = 0.0f;
+	}
+	else if(mousePosition.x > max.x)
+	{
+		s = 1.0f;
 	}
 	else
 	{
-		auto min = boundingBox.getMin();
-		auto max = boundingBox.getMax();
+		s = (mousePosition.x - (boundingBox.center.x - (boundingBox.size.x * 0.5f))) / boundingBox.size.x;
+	}
 
-		if (mousePosition.x < min.x)
-		{
-			s = 0.0f;
-		}
-		else if (mousePosition.x > max.x)
-		{
-			s = 1.0f;
-		}
-
-		if (mousePosition.y < min.y)
-		{
-			b = 0.0f;
-		}
-		else if (mousePosition.y > max.y)
-		{
-			b = 1.0f;
-		}
+	if (mousePosition.y < min.y)
+	{
+		b = 0.0f;
+	}
+	else if (mousePosition.y > max.y)
+	{
+		b = 1.0f;
+	}
+	else
+	{
+		b = (mousePosition.y - (boundingBox.center.y - (boundingBox.size.y * 0.5f))) / boundingBox.size.y;
 	}
 }
 
@@ -320,6 +329,11 @@ bool Voxel::UI::ColorPicker::updateColorPickerMouseMove(const glm::vec2 & mouseP
 		{
 			updateHSB(mousePosition);
 			updateIconPos(mousePosition);
+
+			if (onValueChange)
+			{
+				onValueChange(this);
+			}
 
 			return true;
 		}
@@ -463,6 +477,11 @@ bool Voxel::UI::ColorPicker::updateMousePress(const glm::vec2 & mousePosition, c
 						{
 							onMousePressed(this, button);
 						}
+
+						if (onValueChange)
+						{
+							onValueChange(this);
+						}
 					}
 
 					pressed = true;
@@ -528,6 +547,18 @@ void Voxel::UI::ColorPicker::setH(const float h)
 	updateColor();
 }
 
+void Voxel::UI::ColorPicker::setHSB(const glm::vec3 & hsb)
+{
+	h = hsb.x;
+	s = hsb.y;
+	b = hsb.z;
+
+	updateColor();
+
+	iconPos = boundingBox.center;
+	iconModelMat = modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(iconPos, 0.0f));
+}
+
 glm::vec3 Voxel::UI::ColorPicker::getHSB() const
 {
 	return glm::vec3(h, s, b);
@@ -536,6 +567,11 @@ glm::vec3 Voxel::UI::ColorPicker::getHSB() const
 glm::vec3 Voxel::UI::ColorPicker::getRGB() const
 {
 	return Color::HSV2RGB(h / 360.0f, s, b);
+}
+
+void Voxel::UI::ColorPicker::setOnValueChangeCallback(const std::function<void(Voxel::UI::ColorPicker*)>& func)
+{
+	onValueChange = func;
 }
 
 void Voxel::UI::ColorPicker::renderSelf()
@@ -564,6 +600,7 @@ void Voxel::UI::ColorPicker::renderSelf()
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
+	texture->enableTexLoc();
 
 	if (vao)
 	{
