@@ -904,6 +904,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 		glBindVertexArray(yLineVao);
 
 		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 		glDrawArrays(GL_LINES, 0, 2);
 
 		drawCall++;
@@ -921,6 +922,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 		rayMat = glm::rotate(rayMat, glm::radians(-rotation.z), glm::vec3(0, 0, 1));
 
 		lineProgram->setUniformMat4("modelMat", rayMat);
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 		glDrawArrays(GL_LINES, 0, 2);
 
 		drawCall++;
@@ -933,6 +935,7 @@ void Voxel::Player::renderDebugLines(Program* lineProgram)
 	{
 		glBindVertexArray(boundingBoxVao);
 		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 		glDrawArrays(GL_LINES, 0, 24);
 
 		drawCall++;

@@ -66,8 +66,17 @@ bool Voxel::UI::Slider::init(const std::string & spriteSheetName, const std::str
 
 		this->type = type;
 
-		this->minValue = minValue;
-		this->maxValue = maxValue;
+		if (minValue <= maxValue)
+		{
+			this->minValue = minValue;
+			this->maxValue = maxValue;
+		}
+		else
+		{
+			this->minValue = maxValue;
+			this->maxValue = minValue;
+		}
+
 		this->currentValue = minValue;
 
 		std::array<float, 12> barVertices;
@@ -360,7 +369,7 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 		{
 			// center
 			buttonBoundingBox.center.x = barBoundingBox.center.x;
-			newValue = maxValue * 0.5f;
+			newValue = (minValue + maxValue) * 0.5f;
 		}
 		else
 		{
@@ -413,7 +422,7 @@ float Voxel::UI::Slider::getValueOnMousePosition(const glm::vec2 & mousePosition
 		{
 			// center
 			buttonBoundingBox.center.y = barBoundingBox.center.y;
-			newValue = maxValue * 0.5f;
+			newValue = (minValue + maxValue) * 0.5f;
 		}
 		else
 		{
@@ -859,6 +868,7 @@ void Voxel::UI::Slider::renderSelf()
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
+	texture->enableTexLoc();
 
 	if (barVao)
 	{
@@ -888,6 +898,7 @@ void Voxel::UI::Slider::renderSelf()
 		lineProgram->use(true);
 		lineProgram->setUniformMat4("modelMat", modelMat);
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(bbVao);
 		glDrawArrays(GL_LINES, 0, 24);

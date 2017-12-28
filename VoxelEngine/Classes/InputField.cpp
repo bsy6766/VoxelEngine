@@ -640,6 +640,7 @@ void Voxel::UI::InputField::renderSelf()
 
 		cursorTexture->activate(GL_TEXTURE0);
 		cursorTexture->bind();
+		cursorTexture->enableTexLoc();
 
 		glBindVertexArray(cursorVao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

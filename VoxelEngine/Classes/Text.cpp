@@ -1300,13 +1300,14 @@ void Voxel::UI::Text::renderSelf()
 	if (program == nullptr) return;
 	if (textSize == 0) return;
 
-	texture->activate(GL_TEXTURE0);
-	texture->bind();
-
 	program->use(true);
 	program->setUniformMat4("modelMat", glm::scale(modelMat, glm::vec3(scale, 1)));
 	program->setUniformFloat("opacity", opacity);
 	program->setUniformVec3("color", color);
+
+	texture->activate(GL_TEXTURE0);
+	texture->bind();
+	texture->enableTexLoc();
 
 	if (outlined)
 	{
@@ -1336,6 +1337,7 @@ void Voxel::UI::Text::renderSelf()
 		lineProgram->use(true);
 		lineProgram->setUniformMat4("modelMat", modelMat);
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(bbVao);
 		glDrawArrays(GL_LINES, 0, lineIndicesSize);

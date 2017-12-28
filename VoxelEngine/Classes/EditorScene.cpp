@@ -1045,7 +1045,7 @@ void Voxel::EditorScene::onEditButtonClicked(Voxel::UI::Button* sender)
 
 void Voxel::EditorScene::onReturnToMainMenuButtonClicked(Voxel::UI::Button* sender)
 {
-	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 1.5f);
+	Application::getInstance().getDirector()->replaceScene(Voxel::Director::SceneName::MENU_SCENE, 0.5f);
 }
 
 void Voxel::EditorScene::onExitButtonClicked(Voxel::UI::Button* sender)
@@ -1164,6 +1164,7 @@ void Voxel::EditorScene::render()
 		lineProgram->use(true);
 		lineProgram->setUniformMat4("viewMat", Camera::mainCamera->getViewMat() * Camera::mainCamera->getWorldMat());
 		lineProgram->setUniformMat4("modelMat", floorModelMat);
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(axisLineVao);
 		glDrawArrays(GL_LINES, 0, 6);

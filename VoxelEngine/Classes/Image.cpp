@@ -13,11 +13,6 @@ Voxel::UI::Image::Image(const std::string& name)
 	, state(State::IDLE)
 {}
 
-Voxel::UI::Image::~Image()
-{
-	//std::cout << "~Image()\n";
-}
-
 Voxel::UI::Image * Voxel::UI::Image::create(const std::string & name, const std::string & imageFileName)
 {
 	auto newImage = new Image(name);
@@ -502,6 +497,7 @@ void Voxel::UI::Image::renderSelf()
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
+	texture->enableTexLoc();
 
 	if (vao)
 	{
@@ -529,6 +525,7 @@ void Voxel::UI::Image::renderSelf()
 
 		lineProgram->setUniformMat4("modelMat", mat);
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(bbVao);
 		glDrawArrays(GL_LINES, 0, 8);

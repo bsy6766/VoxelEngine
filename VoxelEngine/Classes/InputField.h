@@ -23,7 +23,6 @@ namespace Voxel
 		private:
 			InputField() = delete;
 			InputField(const std::string& name);
-			~InputField();
 
 			// cursor 
 			GLuint cursorVao;
@@ -69,6 +68,9 @@ namespace Voxel
 			// update cursor position
 			void updateCursorModelMatrix();
 		public:
+			// Destructor
+			~InputField();
+
 			// Creates input field.
 			static InputField* create(const std::string& name, const std::string& defaultText, const std::string& spriteSheetName, const int fontId, const std::string& cursorImageName, const Voxel::UI::Text::ALIGN align = Voxel::UI::Text::ALIGN::LEFT, const int textMaxLength = -1, const unsigned int lineBreakWidth = 0);
 

@@ -2059,6 +2059,7 @@ void Voxel::ChunkMap::renderBlockOutline(Program * lineProgram, const glm::vec3&
 
 		glm::mat4 cubeMat = glm::translate(glm::mat4(1.0f), blockPosition);
 		lineProgram->setUniformMat4("modelMat", cubeMat);
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 
@@ -2272,6 +2273,7 @@ void Voxel::ChunkMap::renderChunkBorder(Program * program)
 		glBindVertexArray(chunkBorderVao);
 
 		program->setUniformMat4("modelMat", chunkBorderModelMat);
+		program->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
 
@@ -2308,6 +2310,7 @@ void Voxel::ChunkMap::renderCameraChunkBorder(Program * program, const glm::vec3
 			glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), chunkWP - cameraPosition);
 
 			program->setUniformMat4("modelMat", modelMat);
+			program->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 			glDrawArrays(GL_LINES, 0, chunkBorderLineSize);
 

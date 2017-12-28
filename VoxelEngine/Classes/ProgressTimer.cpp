@@ -1073,6 +1073,7 @@ void Voxel::UI::ProgressTimer::renderSelf()
 
 	texture->activate(GL_TEXTURE0);
 	texture->bind();
+	texture->enableTexLoc();
 
 	if (vao)
 	{
@@ -1087,6 +1088,7 @@ void Voxel::UI::ProgressTimer::renderSelf()
 		lineProgram->use(true);
 		lineProgram->setUniformMat4("modelMat", modelMat);
 		lineProgram->setUniformMat4("viewMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(bbVao);
 		glDrawArrays(GL_LINES, 0, 8);

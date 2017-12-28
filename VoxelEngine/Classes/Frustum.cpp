@@ -379,6 +379,7 @@ void Voxel::Frustum::render(const glm::mat4 & modelMat, Program* prog)
 	if (vao)
 	{
 		prog->setUniformMat4("modelMat", modelMat);
+		prog->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		glBindVertexArray(vao);
 		glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);

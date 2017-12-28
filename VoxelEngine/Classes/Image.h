@@ -82,7 +82,7 @@ namespace Voxel
 			bool updateImageMouseMove(const glm::vec2& mousePosition, const glm::vec2& mouseDelta);
 		public:
 			// Destructor.
-			~Image();
+			~Image() = default;
 
 			/**
 			*	Creates image with single image file.

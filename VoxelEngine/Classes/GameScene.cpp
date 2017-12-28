@@ -1941,6 +1941,7 @@ void Voxel::GameScene::renderWorldMap()
 
 		lineProgram->setUniformMat4("viewMat", viewMat);
 		lineProgram->setUniformMat4("modelMat", glm::mat4(1.0f));
+		lineProgram->setUniformVec4("lineColor", glm::vec4(1.0f));
 
 		worldMap->renderCenterLine();
 		worldMap->renderRay();
