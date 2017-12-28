@@ -97,6 +97,7 @@ void Voxel::GLView::init(const std::string& windowTitle)
 	initShaderPrograms();
 
 	glfwSetCursorPos(window, 0, 0);
+	// note: 12/27/2017 no gl error.
 }
 
 void Voxel::GLView::initGLFW()
@@ -267,6 +268,22 @@ void Voxel::GLView::initWindow(const int screenWidth, const int screenHeight, co
 	// if window successfully made, make it current window
 	glfwMakeContextCurrent(window);
 	
+	if (windowMode == 2)
+	{
+		if (monitorIndex != 0)
+		{
+			GLFWmonitor* monitor = getMonitorFromIndex(monitorIndex);
+
+			if (monitor)
+			{
+				int x, y;
+				glfwGetMonitorPos(monitor, &x, &y);
+
+				glfwSetWindowPos(window, x, y);
+			}
+		}
+	}
+
 	/*
 	*	Vsync. 
 	*	Vsync synchronizes game's frame rate to monitors frame rate.
