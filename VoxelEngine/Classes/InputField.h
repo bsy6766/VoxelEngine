@@ -49,10 +49,13 @@ namespace Voxel
 
 			// On input field clicked 
 			std::function<void(Voxel::UI::InputField*)> onEditStart;
+
 			// Called when user modifies the text.
 			std::function<void(Voxel::UI::InputField*, const std::string)> onEdit;
+
 			// Called when user finishes modifying text and confirms
 			std::function<void(Voxel::UI::InputField*, const std::string)> onEditFinished;
+
 			// Called when user cancels edit
 			std::function<void(Voxel::UI::InputField*)> onEditCancelled;
 
@@ -82,6 +85,9 @@ namespace Voxel
 
 			// Set text to default text
 			void setToDefaultText();
+
+			// Check if text is default text
+			bool isTextDefault() const;
 			
 			// start edit
 			void startEdit();

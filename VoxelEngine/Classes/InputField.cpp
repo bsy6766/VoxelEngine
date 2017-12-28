@@ -163,6 +163,11 @@ void Voxel::UI::InputField::setToDefaultText()
 	modifyText(defaultText);
 }
 
+bool Voxel::UI::InputField::isTextDefault() const
+{
+	return defaultTextMode;
+}
+
 bool Voxel::UI::InputField::updateInputFieldMouseMove(const glm::vec2 & mousePosition, const glm::vec2 & mouseDelta)
 {
 	// check if button is interacble
@@ -498,9 +503,9 @@ void Voxel::UI::InputField::startEdit()
 		{
 			if (defaultTextMode)
 			{
-				modifyText("");
 				defaultTextMode = false;
 				prevDefaultTextMode = true;
+				modifyText("");
 			}
 		}
 
@@ -530,9 +535,9 @@ void Voxel::UI::InputField::finishEdit()
 
 		if (text.empty())
 		{
-			modifyText(defaultText);
 			defaultTextMode = true;
 			prevDefaultTextMode = false;
+			modifyText(defaultText);
 		}
 
 		editting = false;
