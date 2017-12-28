@@ -555,8 +555,8 @@ void Voxel::UI::ColorPicker::setHSB(const glm::vec3 & hsb)
 
 	updateColor();
 
-	iconPos = boundingBox.center;
-	iconModelMat = modelMat * glm::translate(glm::mat4(1.0f), glm::vec3(iconPos, 0.0f));
+	iconPos.x = (boundingBox.size.x * s) + boundingBox.getMin().x;
+	iconPos.y = (boundingBox.size.y * b) + boundingBox.getMin().y;
 }
 
 glm::vec3 Voxel::UI::ColorPicker::getHSB() const
