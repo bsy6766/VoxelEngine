@@ -20,6 +20,15 @@ namespace Voxel
 			// Constructor
 			Particle();
 
+			// id
+			int id;
+
+			// id counter
+			static int idCounter;
+
+			// alive state
+			bool alive;
+
 			// current position
 			glm::vec2 pos;
 

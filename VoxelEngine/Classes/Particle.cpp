@@ -3,8 +3,12 @@
 
 #include "Particle.h"
 
+int Voxel::UI::Particle::idCounter = 0;
+
 Voxel::UI::Particle::Particle()
-	: pos(0.0f)
+	: alive(false)
+	, id(-1)
+	, pos(0.0f)
 	, startColor(0.0f)
 	, endColor(0.0f)
 	, speed(0.0f)
