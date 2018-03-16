@@ -53,6 +53,6 @@
 #include <spdlog\spdlog.h>
 
 // libpng
-#include <png.h>
+#include <libpng\png.h>
 
 #endif
